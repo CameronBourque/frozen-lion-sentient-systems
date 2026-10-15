@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      core-released: ${{ steps.release.outputs['packages/core--release_created'] }}
+      core-tag: ${{ steps.release.outputs['packages/core--tag_name'] }}
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+  bridge:
+    needs: release-please
+    if: needs.release-please.outputs.core-released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build the bridge
+        working-directory: packages/core/bridge
+        run: |
+          npm ci
+          npm run build:exe
+      - name: Upload to the release
+        working-directory: packages/core/bridge/dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha256sum * > checksums.txt
+          gh release upload "${{ needs.release-please.outputs.core-tag }}" * --clobber

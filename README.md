@@ -1,1 +1,1 @@
-# civ-ai-agent-integration
+# Frozen Lion's Sentient Systems
