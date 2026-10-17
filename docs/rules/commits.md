@@ -15,6 +15,6 @@ When a change touches one package, use it as the scope, for example `feat(core):
 | `fix: ...` | PATCH |
 | `feat: ...` | MINOR |
 | `feat!: ...`, or a `BREAKING CHANGE:` footer | MAJOR |
-| `docs: ...`, `chore: ...`, `test: ...` | None |
+| `docs: ...`, `chore: ...`, `test: ...`, `ci: ...`, `refactor: ...` | None |
 
 Changes to prompts and knowledge files use `fix:`, because they change how agents play.
