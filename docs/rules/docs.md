@@ -69,7 +69,7 @@ Where each kind of fact lives:
 
 ## Automated check
 
-`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, indexes, required sections, the punctuation and word patterns, and file length. Each check is its own file there. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes.
+`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, indexes, required sections, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes.
 
 The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there. Files over 150 lines get a warning, not a failure.
 

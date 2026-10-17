@@ -1,8 +1,8 @@
 // Tests for parse.mjs.
 
 import { describe, expect, test } from "vitest";
-import { parse, resolveLink, slug } from "./parse.mjs";
-import { lines } from "./test-helpers.mjs";
+import { parse, resolveLink, slug } from "../src/parse.mjs";
+import { lines } from "./helpers.mjs";
 
 describe("parse", () => {
 	test("slug follows GitHub's anchor rules", () => {

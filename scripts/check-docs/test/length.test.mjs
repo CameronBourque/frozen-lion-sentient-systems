@@ -1,9 +1,9 @@
 // Tests for length.mjs, check 5.
 
 import { describe, expect, test } from "vitest";
-import { checkLength, MAX_LINES } from "./length.mjs";
-import { buildRepo } from "./parse.mjs";
-import { textOfLength } from "./test-helpers.mjs";
+import { checkLength, MAX_LINES } from "../src/length.mjs";
+import { buildRepo } from "../src/parse.mjs";
+import { textOfLength } from "./helpers.mjs";
 
 describe("length", () => {
 	test("warns only over the limit", () => {

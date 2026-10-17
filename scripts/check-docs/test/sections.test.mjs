@@ -1,9 +1,9 @@
 // Tests for sections.mjs, check 3.
 
 import { describe, expect, test } from "vitest";
-import { buildRepo } from "./parse.mjs";
-import { checkSections } from "./sections.mjs";
-import { lines, messages } from "./test-helpers.mjs";
+import { buildRepo } from "../src/parse.mjs";
+import { checkSections } from "../src/sections.mjs";
+import { lines, messages } from "./helpers.mjs";
 
 describe("sections", () => {
 	const finding = lines("# F", "Status: open.", "## Questions", "## What we know now", "## Method", "## Results", "Date checked: not yet.");

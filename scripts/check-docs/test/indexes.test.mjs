@@ -1,9 +1,9 @@
 // Tests for indexes.mjs, check 2.
 
 import { describe, expect, test } from "vitest";
-import { checkIndexes } from "./indexes.mjs";
-import { buildRepo } from "./parse.mjs";
-import { lines, messages } from "./test-helpers.mjs";
+import { checkIndexes } from "../src/indexes.mjs";
+import { buildRepo } from "../src/parse.mjs";
+import { lines, messages } from "./helpers.mjs";
 
 describe("indexes", () => {
 	test("passes when every file and subfolder is linked", () => {

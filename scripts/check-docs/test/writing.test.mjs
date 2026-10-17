@@ -1,9 +1,9 @@
 // Tests for writing.mjs, check 4. They run each rule through checkWriting.
 
 import { describe, expect, test } from "vitest";
-import { buildRepo } from "./parse.mjs";
-import { lines } from "./test-helpers.mjs";
-import { checkWriting } from "./writing.mjs";
+import { buildRepo } from "../src/parse.mjs";
+import { lines } from "./helpers.mjs";
+import { checkWriting } from "../src/writing.mjs";
 
 describe("writing", () => {
 	const writingRules = lines(

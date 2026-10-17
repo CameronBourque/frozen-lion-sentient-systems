@@ -3,10 +3,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
-import { fixedRules, wordRules } from "./writing-rules.mjs";
+import { fixedRules, wordRules } from "../src/writing-rules.mjs";
 
 describe("writing rule table", () => {
-	const realWritingRules = fs.readFileSync(path.resolve(import.meta.dirname, "../../docs/rules/writing.md"), "utf8");
+	const realWritingRules = fs.readFileSync(path.resolve(import.meta.dirname, "../../../docs/rules/writing.md"), "utf8");
 	const rules = [...fixedRules, ...wordRules(realWritingRules)];
 
 	test("every pattern is global, so matchAll works", () => {

@@ -1,9 +1,9 @@
 // Tests for run.mjs: the output lines and the exit code.
 
 import { describe, expect, test } from "vitest";
-import { MAX_LINES } from "./length.mjs";
-import { runChecks } from "./run.mjs";
-import { lines, textOfLength } from "./test-helpers.mjs";
+import { MAX_LINES } from "../src/length.mjs";
+import { runChecks } from "../src/run.mjs";
+import { lines, textOfLength } from "./helpers.mjs";
 
 describe("runChecks", () => {
 	// The smallest repo that passes every check.

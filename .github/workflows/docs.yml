@@ -16,4 +16,4 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - run: node scripts/check-docs/index.mjs
+      - run: node scripts/check-docs/src/index.mjs

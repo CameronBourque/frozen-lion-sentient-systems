@@ -1,9 +1,9 @@
 // Tests for links.mjs, check 1.
 
 import { describe, expect, test } from "vitest";
-import { checkLinks } from "./links.mjs";
-import { buildRepo } from "./parse.mjs";
-import { lines, messages } from "./test-helpers.mjs";
+import { checkLinks } from "../src/links.mjs";
+import { buildRepo } from "../src/parse.mjs";
+import { lines, messages } from "./helpers.mjs";
 
 describe("links", () => {
 	test("reports missing files and anchors only", () => {

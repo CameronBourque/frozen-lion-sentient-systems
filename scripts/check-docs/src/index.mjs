@@ -1,5 +1,5 @@
 // Checks the mechanical parts of docs/rules/docs.md and docs/rules/writing.md.
-// Usage: node scripts/check-docs/index.mjs
+// Usage: node scripts/check-docs/src/index.mjs
 // Prints one line per problem as file:line: rule: message, and exits 1 if there are any.
 // This file only reads and prints. run.mjs holds the logic, so tests can reach it.
 
@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { runChecks } from "./run.mjs";
 
-const root = path.resolve(import.meta.dirname, "../..");
+const root = path.resolve(import.meta.dirname, "../../..");
 
 // Committed files plus new files that git doesn't ignore. Git applies .gitignore
 // and .git/info/exclude, so local-only docs are skipped.

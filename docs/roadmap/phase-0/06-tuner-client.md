@@ -4,7 +4,7 @@ Build the bridge's tuner client as small modules under `src/tuner/`, from the fr
 
 ## Tasks
 
-1. **`framing.ts`.** Write a pure `encodeFrame(...)` function and a streaming `FrameDecoder` that handles split and merged TCP chunks. Test it with the hex dumps from step 3. Framing is the easiest part to unit-test. Put its tests in `framing.test.ts`, which `npm test` runs.
+1. **`framing.ts`.** Write a pure `encodeFrame(...)` function and a streaming `FrameDecoder` that handles split and merged TCP chunks. Test it with the hex dumps from step 3. Framing is the easiest part to unit-test. Put its tests in `test/tuner/framing.test.ts`, which `npm test` runs.
 2. **`connection.ts`.** Open a TCP connection to `127.0.0.1:<port>`, and add:
    - reconnect with backoff when the game isn't running or closes,
    - the events `connected`, `disconnected`, and `frame`.

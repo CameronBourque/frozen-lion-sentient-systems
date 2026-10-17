@@ -6,7 +6,7 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "check-docs": "node scripts/check-docs/index.mjs",
+    "check-docs": "node scripts/check-docs/src/index.mjs",
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
     "test": "vitest run"
