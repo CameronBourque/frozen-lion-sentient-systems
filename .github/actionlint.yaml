@@ -1,0 +1,8 @@
+# actionlint reads this file on its own.
+paths:
+  .github/workflows/release.yml:
+    ignore:
+      # actionlint 1.7.12 predates the client-id input of actions/create-github-app-token@v3,
+      # which replaced app-id. Remove these lines once a newer actionlint knows client-id.
+      - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'
+      - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
