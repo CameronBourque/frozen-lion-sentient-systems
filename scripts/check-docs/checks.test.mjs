@@ -10,6 +10,7 @@ import { checkSections } from "./sections.mjs";
 import { checkWriting } from "./writing.mjs";
 import { checkLength, MAX_LINES } from "./length.mjs";
 import { fixedRules, wordRules } from "./writing-rules.mjs";
+import { runChecks } from "./run.mjs";
 
 const lines = (...rows) => rows.join("\n") + "\n";
 const messages = (problems) => problems.map((p) => `${p.file}:${p.line}: ${p.rule}: ${p.message}`);
@@ -44,6 +45,7 @@ describe("parse", () => {
 		expect(resolveLink("docs/a.md", "../")).toEqual({ path: "", anchor: undefined });
 		expect(resolveLink("docs/a.md", "https://example.com")).toBe(null);
 		expect(resolveLink("docs/a.md", "mailto:a@example.com")).toBe(null);
+		expect(resolveLink("docs/a.md", "/")).toEqual({ path: "", anchor: undefined });
 	});
 });
 
@@ -64,6 +66,15 @@ describe("links", () => {
 			"docs/a.md:2: link: nope.md does not exist",
 			"docs/a.md:2: link: #nope is not a heading in docs/b.md",
 		]);
+	});
+
+	test("reads reference links, and skips anchors into files that aren't Markdown", () => {
+		const repo = buildRepo({
+			"README.md": lines("# Root", "[image](docs/image.png#top)", "[ref]: docs/nope.md"),
+			"docs/image.png": null,
+		});
+
+		expect(messages(checkLinks(repo))).toEqual(["README.md:3: link: docs/nope.md does not exist"]);
 	});
 });
 
@@ -130,6 +141,15 @@ describe("sections", () => {
 		]);
 		expect(messages(checkSections(buildRepo({ "docs/design/d.md": wrongEnd })))).toEqual([
 			"docs/design/d.md:3: sections: design file must end with ## Decisions",
+		]);
+	});
+
+	test("a design file with no sections, or with no table, fails", () => {
+		expect(messages(checkSections(buildRepo({ "docs/design/d.md": "# D\n" })))).toEqual([
+			"docs/design/d.md:1: sections: design file must end with ## Decisions",
+		]);
+		expect(messages(checkSections(buildRepo({ "docs/design/d.md": lines("# D", "## Decisions", "None yet.") })))).toEqual([
+			"docs/design/d.md:2: sections: ## Decisions table header must be Decision | Reason",
 		]);
 	});
 
@@ -202,6 +222,10 @@ describe("writing", () => {
 		expect(rulesHit(`# Lua and FireTuner\n${body}`)).toEqual([]);
 	});
 
+	test("fails without writing.md, because the word lists come from it", () => {
+		expect(() => checkWriting(buildRepo({ "docs/a.md": "# A\n" }))).toThrow("docs/rules/writing.md is missing");
+	});
+
 	test("writing.md itself is skipped", () => {
 		expect(checkWriting(buildRepo({ "docs/rules/writing.md": `${writingRules}Robust — “x” →\n` }))).toEqual([]);
 	});
@@ -223,6 +247,10 @@ describe("writing rule table", () => {
 		}
 	});
 
+	test("a writing.md without the word lists fails", () => {
+		expect(() => wordRules("No lists here.")).toThrow("has no");
+	});
+
 	test("the word lists load from the real writing.md", () => {
 		expect("delve".match(rules.find((r) => r.rule === "inflated-word").pattern)).toBeTruthy();
 		expect("scaffolding".match(rules.find((r) => r.rule === "metaphor-noun").pattern)).toBeTruthy();
@@ -239,5 +267,39 @@ describe("length", () => {
 
 		expect(warning.warning).toBe(true);
 		expect(warning.line).toBe(MAX_LINES + 1);
+	});
+});
+
+describe("runChecks", () => {
+	// The smallest repo that passes every check.
+	const cleanRepo = {
+		"docs/README.md": lines("# Docs", "[Rules](rules/README.md)"),
+		"docs/rules/README.md": lines("# Rules", "[Writing](writing.md)"),
+		"docs/rules/writing.md": lines("# Writing", "**Inflated words.** Robust. Use the plain word.", "**Abstract metaphor nouns.** Wedge. Use the concrete word."),
+	};
+
+	test("a clean repo exits 0", () => {
+		expect(runChecks(cleanRepo)).toEqual({ lines: ["Checked 3 files. No problems."], exitCode: 0 });
+	});
+
+	test("prints warnings first, then problems and a count, and exits 1", () => {
+		const longFile = Array.from({ length: MAX_LINES + 1 }, (_, i) => `Line ${i}.`).join("\n");
+		const result = runChecks({ ...cleanRepo, "README.md": "# Root\n\nA robust plan.\n", "notes.md": longFile });
+
+		expect(result).toEqual({
+			lines: [
+				"notes.md:151: length: 151 lines. Aim for under 150 (warning)",
+				'README.md:3: inflated-word: "robust". Use the plain word',
+				"",
+				"1 problem in 5 files.",
+			],
+			exitCode: 1,
+		});
+	});
+
+	test("counts more than one problem in the plural", () => {
+		const result = runChecks({ ...cleanRepo, "README.md": "# Root\n\nA robust, robust plan.\n" });
+
+		expect(result.lines.at(-1)).toBe("2 problems in 4 files.");
 	});
 });
