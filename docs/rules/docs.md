@@ -67,6 +67,17 @@ Where each kind of fact lives:
 - An open question that a test can answer belongs in a finding's `## Questions`. The risk row links to it.
 - An open design question belongs in the design file it affects.
 
+## Automated check
+
+`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, indexes, required sections, the punctuation and word patterns, and file length. Each check is its own file there. CI runs the check and its tests on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run them locally, run these commands from the repo root:
+
+```sh
+node scripts/check-docs/index.mjs
+node --test scripts/check-docs/checks.test.mjs
+```
+
+The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there. Files over 150 lines get a warning, not a failure.
+
 ## Local-only docs
 
 - A doc that must not be committed gets a note at the top that says so.
