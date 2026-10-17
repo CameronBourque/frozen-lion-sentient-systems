@@ -6,7 +6,7 @@ import stylistic from "@stylistic/eslint-plugin";
 import globals from "globals";
 
 export default [
-	{ ignores: [".claude/", "**/build/", "**/dist/"] },
+	{ ignores: [".claude/", "coverage/", "**/build/", "**/dist/"] },
 
 	js.configs.recommended,
 
