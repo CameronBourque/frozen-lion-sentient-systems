@@ -12,7 +12,7 @@ Repo setup is done, apart from the first `feat` PR. No bridge or mod code exists
 
 | # | Step | Covers | Status |
 | --- | --- | --- | --- |
-| 1 | [Create the findings folder](01-findings-folder.md) | One file per research topic | Files written. Not committed yet |
+| 1 | Create the findings folder | One file per research topic | Done. The step file is deleted, and the results are in [findings/](../../findings/README.md) |
 | 2 | [Turn on the tuner](02-turn-on-tuner.md) | Enable the tuner and run Lua from FireTuner | |
 | 3 | [Capture the tuner protocol](03-capture-protocol.md) | Record the wire format from real traffic | |
 | 4 | [Scaffold the bridge project](04-scaffold-bridge.md) | TypeScript project in `packages/core/bridge/` | |
