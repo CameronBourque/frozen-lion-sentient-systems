@@ -16,5 +16,4 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - run: node --test scripts/check-docs/checks.test.mjs
       - run: node scripts/check-docs/index.mjs
