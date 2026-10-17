@@ -28,6 +28,7 @@ const warnings = results.filter((r) => r.warning);
 const problems = results.filter((r) => !r.warning);
 
 const format = (r) => `${r.file}:${r.line}: ${r.rule}: ${r.message}`;
+
 for (const warning of warnings) console.log(`${format(warning)} (warning)`);
 for (const p of problems) console.log(format(p));
 
@@ -35,4 +36,5 @@ if (problems.length > 0) {
 	console.log(`\n${problems.length} problem${problems.length === 1 ? "" : "s"} in ${repo.docs.size} files.`);
 	process.exit(1);
 }
+
 console.log(`Checked ${repo.docs.size} files. No problems.`);

@@ -6,12 +6,15 @@ import { problem, resolveLink } from "./parse.mjs";
 
 export function checkLinks(repo) {
 	const problems = [];
+
 	for (const doc of repo.docs.values()) {
 		for (const link of doc.links) {
 			const target = resolveLink(doc.path, link.target);
+
 			if (!target) continue; // External link.
 
 			const isFolder = repo.dirs.has(target.path);
+
 			if (!isFolder && !repo.files.has(target.path)) {
 				problems.push(problem(doc.path, link.line, "link", `${link.target} does not exist`));
 				continue;
@@ -21,12 +24,14 @@ export function checkLinks(repo) {
 
 			// A link to a folder shows its README, so the anchor is in the README.
 			const anchorDoc = repo.docs.get(isFolder ? path.posix.join(target.path, "README.md") : target.path);
+
 			if (!anchorDoc) continue; // Only Markdown headings are checked.
-			
+
 			if (!anchorDoc.anchors.has(target.anchor.toLowerCase())) {
 				problems.push(problem(doc.path, link.line, "link", `#${target.anchor} is not a heading in ${anchorDoc.path}`));
 			}
 		}
 	}
+
 	return problems;
 }

@@ -24,6 +24,7 @@ export function checkIndexes(repo) {
 			if (linked.has(child.path) || linked.has(`${child.path}/README.md`)) continue;
 
 			const name = posix.basename(child.path) + (child.isFolder ? "/" : "");
+
 			problems.push(problem(readme.path, 1, "index", `${name} is not linked from this index`));
 		}
 	}
@@ -47,6 +48,6 @@ function childrenOf(folder, repo, folders) {
 		.filter((p) => posix.dirname(p) === folder && posix.basename(p) !== "README.md")
 		.map((p) => ({ path: p, isFolder: false }));
 	const subfolders = folders.filter((dir) => posix.dirname(dir) === folder).map((dir) => ({ path: dir, isFolder: true }));
-	
+
 	return [...files, ...subfolders];
 }

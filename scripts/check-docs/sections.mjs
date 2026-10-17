@@ -29,7 +29,7 @@ const kinds = [
 
 export function checkSections(repo) {
 	const problems = [];
-	
+
 	for (const doc of repo.docs.values()) {
 		for (const kind of kinds) {
 			if (kind.matches(doc.path)) problems.push(...checkKind(doc, kind));
@@ -69,7 +69,7 @@ function checkLastSection(doc, sections, kind) {
 
 	const header = doc.text.slice(last.line).find((line) => line.trim().startsWith("|"));
 	const cells = header ? tableCells(header) : [];
-	
+
 	if (cells.join(" | ") !== columns.join(" | ")) {
 		return [problem(doc.path, last.line, "sections", `## ${heading} table header must be ${columns.join(" | ")}`)];
 	}

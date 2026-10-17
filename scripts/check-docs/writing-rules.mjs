@@ -110,6 +110,6 @@ function wordPattern(words) {
 
 		return `${escaped}(?:s|es|d|ed|ing)?${withoutE}`;
 	});
-	
+
 	return new RegExp(`\\b(?:${forms.join("|")})\\b`, "gi");
 }

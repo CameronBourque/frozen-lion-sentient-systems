@@ -17,7 +17,7 @@ export function buildRepo(files) {
 
 		if (filePath.endsWith(".md")) repo.docs.set(filePath, parse(filePath, text));
 	}
-	
+
 	return repo;
 }
 
@@ -44,7 +44,7 @@ function blankCode(lines) {
 
 		if (fence) {
 			if (isClosingFence(line, fence)) fence = null;
-			
+
 			text.push("");
 		} else if (marker) {
 			fence = marker;
@@ -74,6 +74,7 @@ function findHeadings(lines, text) {
 		if (text[i] === "") return;
 
 		const match = line.match(/^(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/);
+
 		if (match) headings.push({ level: match[1].length, text: match[2], line: i + 1 });
 	});
 
@@ -88,6 +89,7 @@ function anchorsFor(headings) {
 	for (const heading of headings) {
 		const base = slug(heading.text);
 		const count = seen.get(base) ?? 0;
+
 		seen.set(base, count + 1);
 		anchors.add(count === 0 ? base : `${base}-${count}`);
 	}
@@ -115,6 +117,7 @@ function findLinks(text) {
 	text.forEach((line, i) => {
 		for (const match of line.matchAll(inlineLink)) links.push({ target: match[1], line: i + 1 });
 		const reference = line.match(referenceLink);
+
 		if (reference) links.push({ target: reference[1], line: i + 1 });
 	});
 

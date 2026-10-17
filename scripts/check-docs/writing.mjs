@@ -43,9 +43,11 @@ function checkLine(file, lineNumber, text, rules) {
 			if (rule.allow?.(line, match)) continue;
 
 			const message = typeof rule.message === "function" ? rule.message(match) : rule.message;
+
 			found.push(problem(file, lineNumber, rule.rule, message));
 		}
 	}
+
 	return found;
 }
 
@@ -90,6 +92,6 @@ function isTitleCase(heading, lowercase) {
 
 		if (ordinary.length > 0 && ordinary.every((word) => /^\p{Lu}/u.test(word))) return true;
 	}
-	
+
 	return false;
 }
