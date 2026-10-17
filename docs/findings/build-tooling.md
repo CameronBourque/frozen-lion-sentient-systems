@@ -13,7 +13,7 @@ The bridge ships as one executable. The release workflow runs `npm ci` and `npm 
 5. Do the MCP SDK and the Vercel AI SDK bundle cleanly with it?
 6. Can CI build the Windows executable? The release job runs on `ubuntu-latest`.
 
-## Candidates
+## What we know now
 
 | | Node SEA | Bun |
 | --- | --- | --- |

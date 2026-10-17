@@ -12,7 +12,7 @@ These descriptions are a starting point. Tuning comes from logs, decision record
 
 The level files live in `sweat/`. See [knowledge-files.md](../knowledge-files.md).
 
-## AI Difficulty
+## AI difficulty
 
 The base **Difficulty** setting keeps its job. It sets the native AI's bonuses. Agents are human slots, so the setting affects only the native AI. We plan to relabel the setting **AI Difficulty** with a text change.
 

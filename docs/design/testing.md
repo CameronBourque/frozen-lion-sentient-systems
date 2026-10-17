@@ -20,3 +20,12 @@ Two checks cannot be automated. Agent players must be more fun to play against t
 ## State size
 
 Measurement sets the state size per turn. Phase 1 sends the full state, measures it, and trims. See the [risk](../risks.md).
+
+## Decisions
+
+| Decision | Reason |
+| --- | --- |
+| Tests use fixed presets with a fixed map seed | A rerun shows whether a change helped or the agent got lucky |
+| The test matrix starts after phase 1 and changes one setting at a time | A failure points at the one setting that changed |
+| Playtests judge fun and advice quality | These two checks cannot be automated |
+| Phase 1 sends the full state, measures it, and then trims it | The state size per turn is unknown until it is measured |

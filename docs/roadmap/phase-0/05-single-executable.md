@@ -4,7 +4,7 @@ Choose the tool that builds the bridge into one executable, and wire it into the
 
 ## Tasks
 
-1. Compare the [candidates](../../findings/build-tooling.md#candidates) by following the [build tooling method](../../findings/build-tooling.md#method).
+1. Compare the [candidates](../../findings/build-tooling.md#what-we-know-now) by following the [build tooling method](../../findings/build-tooling.md#method).
 2. Add a `"build:exe"` script that meets the `dist/` requirement in [build-tooling.md](../../findings/build-tooling.md).
 
 ## Done when

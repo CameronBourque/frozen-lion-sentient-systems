@@ -11,6 +11,10 @@ The advisors mod needs the tuner in online games, because advisors should work t
 3. Does a read-only command cause a desync warning or other odd behavior?
 4. Do event-driven prints, such as the turn signal, arrive in an online game?
 
+## What we know now
+
+Nothing yet.
+
 ## Rules for the test
 
 - Run read-only Lua only. Do not request any action, because an action can cause a desync.
@@ -40,3 +44,5 @@ Nothing yet.
 | Read-only Lua runs | | |
 | No desync | | |
 | Event prints arrive | | |
+
+Date checked: not yet.

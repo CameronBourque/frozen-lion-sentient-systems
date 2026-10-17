@@ -95,7 +95,21 @@ See [lua-contexts.md](lua-contexts.md). The gameplay event is `GameEvents.Player
 - Official `.modinfo` files use a whole-number version, for example `<Mod id="..." version="1">` in `DLC/Australia/Australia.modinfo` and `DLC/Expansion2/Expansion2.modinfo`. Confirmed in files. Whole-number versions support the fallback in [design/versioning.md](../design/versioning.md#release-flow), where the `.modinfo` gets a release counter and the full version comes from the Lua constant.
 - The Gathering Storm mod ID is `4873eb62-8ccc-4574-b784-dda455e74e68` (`Expansion2`). Use it for a dependency or in criteria.
 
-## Results from testing
+## Method
+
+Run each step through the tuner, and record the Lua state you ran it in.
+
+1. **List cities.** Use the [city loop](#cities) for `Game.GetLocalPlayer()`, and print `name, x, y, population` for each city. Run the loop in a gameplay state first, then in a UI state. Compare what each state sees.
+2. **List units.** Loop over `Players[id]:GetUnits():Members()` and print `id, type, x, y, moves left`. You need a unit ID for the next step.
+3. **Move a unit.** In a UI state, follow the [move path](#moving-a-unit):
+   - get the unit with `UnitManager.GetUnit(playerID, unitID)`,
+   - set the target to an adjacent passable tile,
+   - print the result of `CanStartOperation`, then call `RequestOperation`,
+   - read the unit's position again on the next call, because the move may complete asynchronously.
+4. **Negative test.** Request a move into deep water for a land unit, and record what `CanStartOperation` returns. This answers question 4.
+5. **End the turn.** Run `UI.RequestAction(ActionTypes.ACTION_ENDTURN)`, and check that the next `AGENT_TURN` line arrives.
+
+## Results
 
 | Call | Lua state | Result | Date |
 | --- | --- | --- | --- |
