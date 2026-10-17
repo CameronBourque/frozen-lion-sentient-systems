@@ -29,6 +29,8 @@ These conventions come from `scripts/check-docs/`, the first code in the repo. E
 
 - `npm run lint` runs ESLint with the rules in `eslint.config.js`. It checks tabs, trailing spaces, and blank lines: one after a run of definitions, one before and after each block, and one before `return`.
 - `npm test` runs Vitest. Name a test file `*.test.mjs` or `*.test.ts`, and put it next to the file it tests. Give each rule a case that it catches and a case that it lets through.
+- `npm run coverage` runs the tests and measures coverage. Statements, branches, functions, and lines must each stay at 98% or more, or the run fails. To leave a file out, add it to the coverage `exclude` list in `vitest.config.js` with a comment that gives the reason.
+- The CI `test` job runs `npm run coverage`. It puts the coverage table in the job summary and uploads the HTML report as the `coverage-report` artifact.
 - CI runs lint and test as separate jobs in `.github/workflows/ci.yml`, plus an `actionlint` job that checks the workflow files. Lint and test need Node 22.13 or later. `.nvmrc` sets the Node version for CI.
 - Phase 0 [step 4](../roadmap/phase-0/04-scaffold-bridge.md) adds TypeScript linting when it sets up the bridge.
 - Lua code needs its own test runner. Pick one when the core mod gets tests.

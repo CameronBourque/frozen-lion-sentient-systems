@@ -17,7 +17,7 @@ The root Vitest setup runs the bridge's `*.test.ts` files, so the bridge needs n
 
 ## Done when
 
-`npm run dev` prints a line, and `npm run build` compiles. From the repo root, `npm run lint` and `npm test` pass.
+`npm run dev` prints a line, and `npm run build` compiles. From the repo root, `npm run lint` and `npm run coverage` pass.
 
 ## Record
 

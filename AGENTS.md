@@ -12,7 +12,7 @@ Follow [docs/rules/](docs/rules/README.md): [docs](docs/rules/docs.md), [writing
 
 ## Checks
 
-Before you open a pull request, run `npm run lint`, `npm test`, and `npm run check-docs` from the repo root. [code.md](docs/rules/code.md#lint-and-test) and [docs.md](docs/rules/docs.md#automated-check) describe them.
+Before you open a pull request, run `npm run lint`, `npm run coverage`, and `npm run check-docs` from the repo root. [code.md](docs/rules/code.md#lint-and-test) and [docs.md](docs/rules/docs.md#automated-check) describe them.
 
 ## Layout
 
