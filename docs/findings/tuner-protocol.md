@@ -17,7 +17,7 @@ Status: open. Two community projects describe the protocol. Nothing captured on 
 
 ## What we know now
 
-Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/main/docs/ARCHITECTURE.md) by PatrickJYKang verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp) by lmwilki is an MIT-licensed MCP server that lets LLM agents play full games. Treat their details as unconfirmed until the Windows capture in the [method](#method) matches them. Sources read on 2026-10-16. How to turn the tuner on is in [tuner-setup.md](tuner-setup.md).
+Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/c21795250050447c89d42858afdf3decbac49bd8/docs/ARCHITECTURE.md) by PatrickJYKang, read at commit `c217952`, verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a) by lmwilki, read at commit `dd20190`, is an MIT-licensed MCP server that lets LLM agents play full games. Treat their details as unconfirmed until the Windows capture in the [method](#method) matches them. Sources read on 2026-10-16. How to turn the tuner on is in [tuner-setup.md](tuner-setup.md).
 
 | Item | Value | Status | Source |
 | --- | --- | --- | --- |
