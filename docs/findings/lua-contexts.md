@@ -38,7 +38,7 @@ The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.R
 
 We assume, without confirmation yet, that the core mod's action API runs in a UI state that the mod adds. The phase 0 gate tests it.
 
-An earlier note said gameplay scripts move units with `UnitManager.MoveUnit`. On 2026-10-16, a search of the game's Lua files found no use of that function, so treat it as unverified. Gameplay scenario scripts do use `UnitManager.InitUnit` and `UnitManager.PlaceUnit`, for example in `DLC/VikingsScenario/Scripts/VikingScenario.lua`.
+The game's Lua files never call `UnitManager.MoveUnit`, so don't rely on it. Checked on 2026-10-16. Gameplay scenario scripts do use `UnitManager.InitUnit` and `UnitManager.PlaceUnit`, for example in `DLC/VikingsScenario/Scripts/VikingScenario.lua`.
 
 ### State names from other projects
 

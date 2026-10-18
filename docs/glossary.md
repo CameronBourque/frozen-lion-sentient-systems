@@ -28,8 +28,10 @@ The one name for each thing in this project, and what it means. Use these names 
 | Personality | A file that sets an agent's priorities, behavior rules, and narrator voice | [knowledge-files.md](design/knowledge-files.md#layers) |
 | Phase | One stage of the roadmap, with one gate, in `roadmap/phase-N/`. Write "phase 0" in lowercase in running text | [roadmap/](roadmap/README.md) |
 | Request function | A game function, such as `UnitManager.RequestOperation`, that asks the engine to do an action. The engine checks that the action is legal | [game-api.md](findings/game-api.md) |
+| Single executable application (SEA) | Node's way to build one executable that holds the Node runtime and a bundled program. The bridge ships as one | [build-tooling.md](findings/build-tooling.md) |
 | Spectator mode | A game setup option for agent-only games that lets you watch agents play | [cover-and-spectator.md](design/agents/cover-and-spectator.md#spectator-mode) |
 | Step | One unit of work in a phase, in its own file `NN-short-name.md` | [rules/docs.md](rules/docs.md#roadmap) |
 | Sweat level | How hard an agent pushes toward victory: no sweat, balanced, or super sweat | [sweat-level.md](design/agents/sweat-level.md) |
 | Tuner | The debug server inside the game. FireTuner and the bridge connect to it over TCP | [tuner-setup.md](findings/tuner-setup.md) |
 | Turn signal | The tagged line that the core mod prints when a turn starts, such as `AGENT_TURN 3` | [architecture.md](design/architecture.md#turn-signal) |
+| Windows Sandbox | A clean, throwaway copy of Windows built into Windows 10 and 11 Pro, Enterprise, and Education. It tests the executable on a machine with no Node | [build-tooling.md](findings/build-tooling.md#method) |
