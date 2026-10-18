@@ -8,6 +8,7 @@ How docs are organized. These rules apply to every file under `docs/`, to packag
 - **Start each file with a one- or two-sentence summary.** The folder index reuses it.
 - **Every folder has a `README.md` index.** The index has one row per file or subfolder. Add each new file to its folder's index.
 - **Use relative links.** Readers and tools can follow them.
+- **Describe the present and the plan.** A doc says how things are now and what comes next. When something changes, rewrite the text to match, and remove what no longer applies, such as old versions, replaced choices, and answered questions. Git keeps the history.
 
 ## No repetition
 
@@ -31,7 +32,7 @@ Where each kind of fact lives:
 ## Decisions
 
 - Each design file ends with a `## Decisions` table with two columns: Decision and Reason.
-- When a decision changes, mark the old row as replaced and say why. Don't delete it.
+- When a decision changes, rewrite its row and its reason to match. Don't keep the old row.
 
 ## Findings
 
@@ -40,7 +41,8 @@ Where each kind of fact lives:
   - **Unconfirmed.** From community sources, or a guess. Test it before code depends on it.
 - Each finding notes how it was checked and when.
 - Link an external source at a pinned commit or release, never a branch such as `main`, so the cited lines and sections stay where the link says. Name the short commit ID in the text.
-- When a test changes a finding, update it, but keep the old result. Mark it as replaced and say why.
+- When a test changes a finding, update it to the new result. Don't keep the old one.
+- When a question is answered, remove it from `## Questions`. Put a fact in `## What we know now` or `## Results`, and a choice in the `## Decisions` table of the design file it affects. A finding records facts, not decisions. Then update any doc that cites a question by its number, because the numbers shift.
 - A finding file has these parts: a status line, `## Questions`, `## What we know now`, `## Method`, `## Results`, and a "Date checked" line.
 
 ## Roadmap

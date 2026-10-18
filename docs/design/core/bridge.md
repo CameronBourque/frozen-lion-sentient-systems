@@ -12,7 +12,7 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 - **Logs.** The mod config file sets the log level: off, decisions only, or full. Full logs include every prompt and response. Each game writes its own log file.
 - **Settings.** The bridge stores the API key in its own config. The key never goes into a game setup parameter, because saves and multiplayer games share those.
 
-TypeScript has the reference MCP SDK and compiles to a single executable, so users download one file. The agent and advisor features are modules in the same codebase, not plugins. [findings/build-tooling.md](../../findings/build-tooling.md) tracks the build tool choice.
+TypeScript has the reference MCP SDK and compiles to a single executable, so users download one file. The agent and advisor features are modules in the same codebase, not plugins. [findings/build-tooling.md](../../findings/build-tooling.md) tracks the executable build. The TypeScript setup is in [rules/code.md](../../rules/code.md#typescript).
 
 ## Decisions
 
@@ -24,4 +24,12 @@ TypeScript has the reference MCP SDK and compiles to a single executable, so use
 | Log levels set in the mod config file | Full logs can be large |
 | Generate the tool reference from the tool schemas, and commit it | Each tool fact has one home, in the code. The model reads the same descriptions, so one text serves both. A tool change shows as a doc diff in its pull request |
 | Regenerate the tool reference in a two-job `pull_request` workflow that pushes with the release app token | PR code never runs where the token is. Pushes with an app token re-run the required checks, and the release app already has write access. Separate jobs also leave room for later jobs with other dependencies |
+| Node 26 for development, CI, and the executable | The executable ships with the Node version that builds it, so that version must be a supported LTS release. Node 26 is the LTS release with the longest support, and it builds the executable with `node --build-sea` |
+| The bridge is an npm workspace of the root package | One lockfile and one `npm ci`, so CI's tests can import the bridge's packages. The bridge and `typescript-eslint` share one TypeScript |
+| `tsx` runs TypeScript in development | It allows enums and other TypeScript features that Node's built-in type stripping can't run, which keeps code organized |
+| `tsc` only type-checks, as its own CI job | `tsx`, Vitest, and esbuild don't check types. Nothing uses compiled output, because esbuild bundles the release from `src/` |
+| ES modules, with no namespaces | Modules are standard JavaScript, fit one file per concern, show each file's dependencies, and let esbuild drop unused code |
+| typescript-eslint `recommended`, plus the promise, `no-unsafe-*`, and error rules | An unawaited promise fails silently in socket code. Data typed `any` from the socket must get a checked type before code uses it |
+| Node SEA builds the executable | It runs on the same Node as development and tests. Bun would ship a second runtime, so a bug could appear only in the release |
+| Build the executable on a `windows-latest` runner, as a one-entry matrix | The build machine matches the target. A later platform is one more matrix entry |
 | The bridge updates itself to the mod's version, after the user agrees | Nontechnical users should not install updates by hand. A matching version beats the latest one |

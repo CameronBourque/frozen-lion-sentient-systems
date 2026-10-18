@@ -16,7 +16,7 @@ Repo setup is done, apart from the first `feat` PR. No bridge or mod code exists
 | 2 | [Turn on the tuner](02-turn-on-tuner.md) | Enable the tuner and run Lua from FireTuner | |
 | 3 | [Capture the tuner protocol](03-capture-protocol.md) | Record the wire format from real traffic | |
 | 4 | [Scaffold the bridge project](04-scaffold-bridge.md) | TypeScript project in `packages/core/bridge/` | |
-| 5 | [Pick the single-executable build](05-single-executable.md) | Choose the tool and add `build:exe` | |
+| 5 | [Build the single executable](05-single-executable.md) | Add `build:exe` with Node SEA, and build it in the release | |
 | 6 | [Tuner client](06-tuner-client.md) | Framing, connection, and protocol modules | |
 | 7 | [Minimal core mod](07-minimal-core-mod.md) | `.modinfo`, turn signal, version report, tag format | |
 | 8 | [Receive the turn signal](08-receive-turn-signal.md) | Parse tagged lines into events in the bridge | |
@@ -29,7 +29,7 @@ Repo setup is done, apart from the first `feat` PR. No bridge or mod code exists
 
 PR titles follow [rules/commits.md](../../rules/commits.md).
 
-1. `docs: add findings folder` (step 1, plus the step 3 protocol notes)
+1. `chore: upgrade to node 26 and record bridge build decisions` (the choices for steps 4 and 5)
 2. `chore(core): scaffold bridge project` (steps 4 and 5)
 3. `feat(core): add tuner client` (step 6). This triggers core `0.1.0`
 4. `feat(core): add turn signal and resync` (steps 7 to 9)

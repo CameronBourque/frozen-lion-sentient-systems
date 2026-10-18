@@ -1,24 +1,27 @@
 # Step 4: Scaffold the bridge project
 
-Set up the TypeScript project in `packages/core/bridge/` so it runs in dev and compiles. Part of [phase 0](README.md).
+Set up `packages/core/bridge/` as an npm workspace with TypeScript, so it runs in development, type-checks, and passes lint and tests. Part of [phase 0](README.md). The choices behind these tasks are in [rules/code.md](../../rules/code.md#typescript).
 
 ## Tasks
 
-1. `package.json` already exists. Add `"type": "module"`, plus `"engines": { "node": ">=22.13" }` to match the root `package.json`.
-2. Install dev dependencies: `typescript`, `tsx`, `@types/node`. Commit `package-lock.json`, because CI runs `npm ci`.
-3. Add a `tsconfig.json` with `target ES2022`, `module NodeNext`, `strict true`, and `outDir build`.
-4. Create the folders `src/`, `src/tuner/`, and `src/scripts/` (for throwaway gate scripts), and `test/` and `test/tuner/` for their tests.
-5. Add the scripts `"dev": "tsx src/main.ts"` and `"build": "tsc"`.
-6. Check that `.gitignore` covers `node_modules/`, `build/`, and `dist/`.
-7. From the repo root, run `npm install --save-dev typescript-eslint`.
-8. In the root `eslint.config.js`, add the `typescript-eslint` recommended config for `**/*.ts` files, with the same `@stylistic` rules as the JavaScript files.
+1. In the root `package.json`, add `"workspaces": ["packages/core/bridge"]`. The workspace shares the root `package-lock.json`, so the bridge gets no lockfile of its own.
+2. In the bridge `package.json`, add `"type": "module"` and `"engines": { "node": ">=26" }`, to match the root.
+3. From the repo root, install `typescript`, `tsx`, `@types/node`, and `typescript-eslint` as root dev dependencies. Commit the updated `package-lock.json`, because CI runs `npm ci`.
+4. Add `packages/core/bridge/tsconfig.json` with `target ES2024`, `module NodeNext`, `strict true`, and `noEmit true`. Include `src/` and `test/`.
+5. Create the folders `src/`, `src/tuner/`, `src/scripts/` (for throwaway gate scripts), `test/`, and `test/tuner/`. Add a `src/main.ts` that prints one line.
+6. `src/main.ts` only starts the program, so add it to the coverage `exclude` list in `vitest.config.js`, with the reason, as `scripts/check-docs/src/index.mjs` is.
+7. Add the bridge scripts `"dev": "tsx src/main.ts"` and `"typecheck": "tsc"`. In the root `package.json`, add `"typecheck": "npm run typecheck --workspaces --if-present"`.
+8. In the root `eslint.config.js`, add a block for `**/*.ts` files with the same `@stylistic` rules as the JavaScript files, plus the TypeScript rules in [rules/code.md](../../rules/code.md#typescript). Turn on `parserOptions.projectService`, because the promise and `no-unsafe-*` rules need type information.
+9. In `.github/workflows/ci.yml`, add a `typecheck` job that runs `npm ci` and `npm run typecheck`, in the same form as the `lint` job.
+10. In `.github/dependabot.yml`, merge the two npm entries into one for `/`, with `prefix: fix`, `prefix-development: chore`, and `include: scope`. The workspace has one lockfile, so one entry covers the bridge and the root.
+11. Add `build/` and `dist/` to `.gitignore`. Step 5 writes to both.
 
-The root Vitest setup runs the `*.test.ts` files in the bridge's `test/` folder, so the bridge needs no test runner of its own.
+After the PR merges, add `typecheck` to the required status checks in the `main` ruleset.
 
 ## Done when
 
-`npm run dev` prints a line, and `npm run build` compiles. From the repo root, `npm run lint` and `npm run coverage` pass.
+`npm run dev --workspace packages/core/bridge` prints a line. From the repo root, `npm run lint`, `npm run typecheck`, and `npm run coverage` pass. An unawaited promise in a `.ts` file fails `npm run lint`.
 
 ## Record
 
-The settled TypeScript conventions, in [rules/code.md](../../rules/code.md#conventions).
+If setting up the project changed any of the choices, update the TypeScript section of [rules/code.md](../../rules/code.md#typescript).
