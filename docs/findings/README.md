@@ -13,7 +13,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 
 ## Local paths
 
-These paths are from Cameron's machine. Other machines may differ.
+These paths are from one Windows test machine. Other machines may differ.
 
 | Item | Path |
 | --- | --- |
