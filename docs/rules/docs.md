@@ -56,12 +56,14 @@ Where each kind of fact lives:
   - `## Done when`,
   - `## Record`, which says which findings or design files to update.
 - Steps link to a finding's `## Method` instead of restating a test procedure.
+- A step file exists only to get its results into findings and design. When a step is done and its `## Record` items are written, delete its file. Git keeps its history. In the step table, set its status to "Done" and link the files that hold its results.
+- If a step that isn't done yet links to a done step's file, keep that file until the linking step is done.
 - To close a phase:
   1. Check that every step's status is Done.
   2. Update its status in [roadmap/README.md](../roadmap/README.md).
   3. Update [risks.md](../risks.md).
   4. Move what it proved into findings or design.
-  5. Delete the step files. Git keeps their history. In the phase README, replace the step table with links to the findings and design files that now hold the results.
+  5. Delete any step files that remain. In the phase README, replace the step table with links to the findings and design files that now hold the results.
 
 ## Risks
 

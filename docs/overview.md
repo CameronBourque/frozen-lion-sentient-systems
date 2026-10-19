@@ -1,7 +1,5 @@
 # Overview
 
-2026-10-14 · @Cameron Bourque
-
 What the project builds, why, and what comes first. For how each part works, see [design/](design/README.md).
 
 ## What we build

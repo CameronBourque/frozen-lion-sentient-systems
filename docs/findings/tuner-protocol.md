@@ -1,10 +1,10 @@
 # FireTuner protocol
 
-Status: open. Two community projects describe the protocol. Nothing captured on Windows yet.
+Status: open. Two community projects describe the protocol. The port is confirmed on Windows. No traffic is captured yet.
 
 ## Questions
 
-1. Which port does the game listen on, and does it change?
+1. Does the port change between sessions or after a crash?
 2. What does a frame look like: length prefix size, byte order, and any type or tag field?
 3. Are strings null-terminated, length-only, or both?
 4. What does the client send when it connects (the handshake)?
@@ -22,10 +22,11 @@ Two open-source projects describe the protocol from their own use of it. [civ6-l
 | Item | Value | Status | Source |
 | --- | --- | --- | --- |
 | Official client | `FireTuner2.exe` in the SDK | Confirmed | SDK folder |
-| Port | `127.0.0.1:4318`. A second port, `4319`, completes the handshake but lists no Lua states. After a crash, `4318` may not come back until you restart the game and Steam | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "Two ports, and which Lua state to use" |
+| Port | `127.0.0.1:4318`. The game process, `CivilizationVI`, listens on it. `netstat -ano` and `Get-Process` showed `FireTuner2` connected to it | Confirmed | Running game on Windows, 2026-10-19 |
+| Second port and recovery | A second port, `4319`, completes the handshake but lists no Lua states. After a crash, `4318` may not come back until you restart the game and Steam | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "Two ports, and which Lua state to use" |
 | Framing | A 4-byte little-endian unsigned length, a 4-byte little-endian signed tag, then the payload. In outgoing frames, the length is the payload byte count. The payload is UTF-8 text with a trailing null byte | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol". The byte widths are in civ6-mcp's [`tuner_client.py`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/tuner_client.py#L18) |
 | Handshake | Send `APP:<name>` with tag 4, then `LSQ:` with tag 4. The game replies with an app ID frame, then a state list frame | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
-| State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state, about 98 in all. The state names are in [lua-contexts.md](lua-contexts.md#state-names-from-other-projects) | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
+| State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state. The state names are in [lua-contexts.md](lua-contexts.md#lua-state-list) | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
 | Run command | `CMD:<stateIndex>:<lua>` with tag 3 | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
 | Output | Frames with tag `0xFFFFFFFF` and the payload `<channel>\0<text>\0`. A tag 3 ack ends the command | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
 | Complete output | civ6-logger appends a unique `print` to each command and reads frames until that text arrives, because TCP can split the output | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
@@ -35,7 +36,7 @@ Two open-source projects describe the protocol from their own use of it. [civ6-l
 ## Method
 
 1. Close the game, then set `EnableTuner 1`. The game rewrites `AppOptions.txt` when it exits, so edit the file only while the game is closed.
-2. Start a game and run `netstat -ano | findstr LISTENING`. Match the PID to the game process in Task Manager to find the port.
+2. Start a game and run `netstat -ano | findstr LISTENING`. To name the process behind a port, run `Get-Process -Id <pid>` in PowerShell.
 3. Install Wireshark with Npcap, and select loopback capture support. Capture on the loopback adapter with the filter `tcp.port == <port>`.
 4. In FireTuner, do one action at a time and note the time of each:
    - connect,

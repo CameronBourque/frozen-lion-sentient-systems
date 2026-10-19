@@ -6,8 +6,8 @@ Tests use fixed presets with a fixed map seed, so a rerun shows whether a change
 
 | Preset | Map | Players | Speed and difficulty | Other settings |
 | --- | --- | --- | --- | --- |
-| Smoke test | Tiny, Pangaea | One agent, one AI | Online, Settler or Chieftain | Barbarians off |
-| MVP gate | Small, Pangaea | One agent, two or three AIs, a few city-states | Online, Prince | Barbarians on, all victory types, Gathering Storm rules, no optional game modes, autosave every turn |
+| Smoke test | Duel, Pangaea | One agent, one AI | Online, Settler or Chieftain | Barbarians off, 0 city-states, disaster intensity 0 |
+| MVP gate | Tiny, Pangaea | One agent, three AIs, a few city-states | Online, Prince | Barbarians on, all victory types, Gathering Storm rules, no optional game modes, autosave every turn |
 
 ## Test matrix
 
