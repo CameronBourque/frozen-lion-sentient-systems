@@ -11,6 +11,8 @@ export default defineConfig({
 			exclude: [
 				// Only reads files and prints. Its logic is in run.mjs, which the tests cover.
 				"scripts/check-docs/src/index.mjs",
+				// Only starts the bridge. Its logic goes in the other files, which the tests cover.
+				"packages/core/bridge/src/main.ts",
 			],
 			// The table in the log, the same text as files for the CI job summary, and HTML for the report artifact.
 			reporter: ["text", ["text", { file: "coverage.txt" }], ["text-summary", { file: "coverage-summary.txt" }], "html"],

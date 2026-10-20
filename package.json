@@ -5,18 +5,26 @@
   "engines": {
     "node": ">=26"
   },
+  "workspaces": [
+    "packages/core/bridge"
+  ],
   "scripts": {
     "check-docs": "node scripts/check-docs/src/index.mjs",
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^26.6.5",
     "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0",
     "vitest": "^5.0.5"
   }
 }
