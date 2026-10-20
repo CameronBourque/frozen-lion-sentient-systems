@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "tsx src/main.ts",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "build:exe": "node scripts/build-exe.mjs"
   }
 }
