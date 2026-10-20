@@ -21,4 +21,4 @@ Build the bridge's tuner client as small modules under `src/tuner/`, from the fr
 
 ## Record
 
-The answer to question 10 and the behavior notes, in [tuner-protocol.md](../../findings/tuner-protocol.md#behavior-notes).
+The answer to question 3 and the behavior notes, in [tuner-protocol.md](../../findings/tuner-protocol.md#behavior-notes).

@@ -1,71 +1,143 @@
 # FireTuner protocol
 
-Status: open. Two community projects describe the protocol. The port is confirmed on Windows. No traffic is captured yet.
+Status: open. A Windows capture confirmed the port, the frame format, and each message type that FireTuner uses. How the game wraps commands, unprompted output, and output limits are still open.
 
 ## Questions
 
-1. Does the port change between sessions or after a crash?
-2. What does a frame look like: length prefix size, byte order, and any type or tag field?
-3. Are strings null-terminated, length-only, or both?
-4. What does the client send when it connects (the handshake)?
-5. Which command lists the Lua states, and what does the reply look like?
-6. Which command runs Lua in one state, and how does it name the state?
-7. How do `print` output and Lua errors come back? Does each line carry its state?
-8. Does the game send output that no command asked for, such as prints from event handlers?
-9. Can more than one client connect at once, for example FireTuner and the bridge?
-10. What are the round-trip time for a small command and the largest output that arrives intact?
+1. Does the game send output that no command asked for, such as prints from event handlers?
+2. The game runs each command as `_cmdr = {<lua>}`, which the error text shows. Do statements such as `x = 5` run as statements? Does the tag 3 reply carry the command's return values?
+3. What is the largest output that arrives intact, and can long output arrive after the tag 3 reply?
 
 ## What we know now
 
-Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/c21795250050447c89d42858afdf3decbac49bd8/docs/ARCHITECTURE.md) by PatrickJYKang, read at commit `c217952`, verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a) by lmwilki, read at commit `dd20190`, is an MIT-licensed MCP server that lets LLM agents play full games. Treat their details as unconfirmed until the Windows capture in the [method](#method) matches them. Sources read on 2026-10-16. How to turn the tuner on is in [tuner-setup.md](tuner-setup.md).
+Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/c21795250050447c89d42858afdf3decbac49bd8/docs/ARCHITECTURE.md), read at commit `c217952`, verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a), read at commit `dd20190`, is an MIT-licensed MCP server that lets LLM agents play full games. Sources read on 2026-10-16. The Windows capture on 2026-10-19 confirmed most of their framing and corrected some details. The dumps are in [Results](#results). How to turn the tuner on is in [tuner-setup.md](tuner-setup.md).
 
 | Item | Value | Status | Source |
 | --- | --- | --- | --- |
 | Official client | `FireTuner2.exe` in the SDK | Confirmed | SDK folder |
-| Port | `127.0.0.1:4318`. The game process, `CivilizationVI`, listens on it. `netstat -ano` and `Get-Process` showed `FireTuner2` connected to it | Confirmed | Running game on Windows, 2026-10-19 |
-| Second port and recovery | A second port, `4319`, completes the handshake but lists no Lua states. After a crash, `4318` may not come back until you restart the game and Steam | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "Two ports, and which Lua state to use" |
-| Framing | A 4-byte little-endian unsigned length, a 4-byte little-endian signed tag, then the payload. In outgoing frames, the length is the payload byte count. The payload is UTF-8 text with a trailing null byte | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol". The byte widths are in civ6-mcp's [`tuner_client.py`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/tuner_client.py#L18) |
-| Handshake | Send `APP:<name>` with tag 4, then `LSQ:` with tag 4. The game replies with an app ID frame, then a state list frame | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
-| State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state. The state names are in [lua-contexts.md](lua-contexts.md#lua-state-list) | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
-| Run command | `CMD:<stateIndex>:<lua>` with tag 3 | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
-| Output | Frames with tag `0xFFFFFFFF` and the payload `<channel>\0<text>\0`. A tag 3 ack ends the command | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
+| Port | `127.0.0.1:4318`. The game process, `CivilizationVI`, listens on it. It also listens on `127.0.0.1:4319` | Confirmed | `netstat` and `Get-NetTCPConnection` on Windows, 2026-10-19 |
+| Port after a crash | After the game was ended from Task Manager and relaunched, it listened on 4318 and 4319 again under a new process ID. Steam did not need a restart. FireTuner kept retrying and reconnected by itself | Confirmed, one test | Windows, 2026-10-19 |
+| Second port | Port 4319 completes the handshake but lists no Lua states | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "Two ports, and which Lua state to use" |
+| Connections | The game accepts one client on 4318 at a time. While FireTuner was connected, 4318 was not in the listening state, and `Test-NetConnection 127.0.0.1 -Port 4318` failed. After FireTuner closed, the same test succeeded | Confirmed | Windows, 2026-10-19 |
+| Framing | A 4-byte little-endian length, a 4-byte little-endian signed tag, then the payload. The length counts payload bytes only, including the trailing null byte. Both directions use this format | Confirmed | [Frame format](#frame-format) |
+| Strings | The payload is UTF-8 strings, each ending in a null byte. A payload can hold several strings | Confirmed | [Message examples](#message-examples) |
+| Tags | Each reply carries the tag of its request: `APP:` uses 4, `LSQ:` uses 0, and `CMD:` uses 3. Output frames use -1 (`0xFFFFFFFF`). civ6-logger sends `LSQ:` with tag 4 | Confirmed | [Message examples](#message-examples) |
+| Handshake | FireTuner sends `APP:` with no name, then `LSQ:`. The game replies to `APP:` with three strings: `Civ6`, `Sid Meier's Civilization 6`, and the path of the game's `Base\Binaries\Debug` folder | Confirmed | [Message examples](#message-examples) |
+| State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state, in index order. `Main State` is 0. The names are in [lua-contexts.md](lua-contexts.md#lua-state-list) | Confirmed | [Message examples](#message-examples) |
+| Run command | `CMD:<stateIndex>:<lua>` with tag 3 | Confirmed | [Message examples](#message-examples) |
+| Output | Each `print` arrives as a tag -1 frame with the payload `O\0<text>\0`. Text printed in any state except `Main State` starts with the state name and a colon, such as `InGame: hello` | Confirmed | [Message examples](#message-examples) |
+| End of a command | A tag 3 frame ends each command. On success its payload is one empty string. On a Lua error it is one string that starts with `ERR:` and holds the error and a stack trace, and no other tag 3 frame follows | Confirmed | [Message examples](#message-examples) |
+| Merged frames | The output frame and the tag 3 frame arrived in one TCP segment, so one read can hold more than one frame | Confirmed | [Message examples](#message-examples) |
 | Complete output | civ6-logger appends a unique `print` to each command and reads frames until that text arrives, because TCP can split the output | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
-| Connections | The game allows one tuner connection at a time. Close FireTuner before another client connects | Unconfirmed | civ6-mcp README |
 | Recovery | After a bad handshake, the tuner often hangs until the game restarts | Unconfirmed | civ6-mcp README |
 
 ## Method
 
 1. Close the game, then set `EnableTuner 1`. The game rewrites `AppOptions.txt` when it exits, so edit the file only while the game is closed.
-2. Start a game and run `netstat -ano | findstr LISTENING`. To name the process behind a port, run `Get-Process -Id <pid>` in PowerShell.
-3. Install Wireshark with Npcap, and select loopback capture support. Capture on the loopback adapter with the filter `tcp.port == <port>`.
-4. In FireTuner, do one action at a time and note the time of each:
-   - connect,
-   - load the Lua state list,
-   - run `print("hello")` in one state,
-   - run `print("hello")` in a different state,
-   - run `error("boom")`,
-   - end a turn in the game and watch for unprompted output.
-5. For each action, use **Follow TCP Stream** and save the hex dump.
+2. Start a game and connect FireTuner.
+3. Install Wireshark with Npcap. Capture on **Adapter for loopback traffic capture** with the filter `tcp.port == 4318`.
+4. In FireTuner, run each test in `InGame` and note the time of each:
+   - `1+1`, then read the tag 3 reply's payload. This answers question 2,
+   - `x = 5`, then `print(x)`. This answers question 2,
+   - `print(string.rep("a", 1000))`, then repeat with 10,000, 100,000, and 1,000,000. This answers question 3,
+   - end a turn and watch for frames that no command asked for. This answers question 1.
+5. Save the capture as `.pcapng`. Then use **Follow TCP Stream**, set **Show as** to **YAML**, and save it.
 
 ## Results
 
-Nothing yet. Fill in the sections below.
+Captured with Wireshark on Windows, in a Duel game with Gathering Storm rules, on 2026-10-19.
 
 ### Frame format
 
 ```
 offset  size  field
-0       ?     length
-?       ?     type or tag
-?       ?     payload
+0       4     length: payload bytes, little-endian unsigned
+4       4     tag: little-endian signed
+8       n     payload: null-terminated UTF-8 strings
 ```
 
 ### Message examples
 
-For each message type, add the action, the direction (client to game, or game to client), the hex dump, and the decoded text.
+Each example shows the header bytes, then the payload as text. `\0` is a null byte.
+
+**Connect, client to game.**
+
+```
+05000000 04000000 4150503a00
+length 5, tag 4, "APP:\0"
+```
+
+**Connect reply, game to client.**
+
+```
+71000000 04000000 43697636 00 536964...
+length 113, tag 4, "Civ6\0Sid Meier's Civilization 6\0E:\SteamLibrary\steamapps\common\Sid Meier's Civilization VI\Base\Binaries\Debug\0"
+```
+
+**State list, client to game.**
+
+```
+05000000 00000000 4c53513a00
+length 5, tag 0, "LSQ:\0"
+```
+
+**State list reply, game to client.** The full reply is 2,350 bytes of payload for 124 states.
+
+```
+2e090000 00000000 30004d61696e20537461746500 3100...
+length 2350, tag 0, "0\0Main State\01\0DebugHotloadCache\0 ... 123\0InvitePopup\0"
+```
+
+**`print("hello")` in `Main State`, client to game.**
+
+```
+15000000 03000000 434d443a303a7072696e74282268656c6c6f222900
+length 21, tag 3, "CMD:0:print(\"hello\")\0"
+```
+
+**Reply, game to client.** Two frames arrived in one TCP segment.
+
+```
+08000000 ffffffff 4f0068656c6c6f00
+length 8, tag -1, "O\0hello\0"
+01000000 03000000 00
+length 1, tag 3, "\0"
+```
+
+**`print("hello")` in `InGame`, client to game.**
+
+```
+17000000 03000000 434d443a3131393a7072696e74282268656c6c6f222900
+length 23, tag 3, "CMD:119:print(\"hello\")\0"
+```
+
+**Reply, game to client.**
+
+```
+10000000 ffffffff 4f00496e47616d653a2068656c6c6f00
+length 16, tag -1, "O\0InGame: hello\0"
+01000000 03000000 00
+length 1, tag 3, "\0"
+```
+
+**`error("boom")` in `InGame`, client to game.**
+
+```
+16000000 03000000 434d443a3131393a6572726f722822626f6f6d222900
+length 22, tag 3, "CMD:119:error(\"boom\")\0"
+```
+
+**Error reply, game to client.** No other frame followed.
+
+```
+bd000000 03000000 4552523a52756e74696d65...
+length 189, tag 3, "ERR:Runtime Error: [string \"_cmdr = {error(\"boom\")}\"]:1: boom\nstack traceback:\n\t[C]: in function 'error'\n\t[string \"_cmdr = {error(\"boom\")}\"]:1: in function '(main chunk)'\r\nLua callstack:\r\n\0"
+```
 
 ### Behavior notes
 
-Latency, output limits, merged prints, and behavior with more than one client.
+- **Round-trip time.** From a request to its reply took 19 to 27 ms for the handshake and for each command.
+- **Segments.** Each reply arrived in one TCP segment, the 2,358-byte state list included.
+- **Unprompted output.** One turn end produced no frames on 4318 in the 48 seconds after the last command.
 
-Date checked: not yet.
+Date checked: 2026-10-19.

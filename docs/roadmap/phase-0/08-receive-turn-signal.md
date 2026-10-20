@@ -16,4 +16,4 @@ Ending a turn in the game makes the bridge log `turn 0` within about a second.
 
 ## Record
 
-Whether output from every state arrives on one connection, in [tuner-protocol.md](../../findings/tuner-protocol.md#behavior-notes), question 8.
+Whether output from every state arrives on one connection, in [tuner-protocol.md](../../findings/tuner-protocol.md#behavior-notes), question 1.
