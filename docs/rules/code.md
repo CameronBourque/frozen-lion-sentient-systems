@@ -27,7 +27,7 @@ These conventions come from `scripts/check-docs/`, the first code in the repo. E
 
 ## TypeScript
 
-The bridge's TypeScript setup. Phase 0 [step 4](../roadmap/phase-0/04-scaffold-bridge.md) builds it. Why each choice was made is in [design/core/bridge.md](../design/core/bridge.md#decisions).
+The bridge's TypeScript setup. Why each choice was made is in [design/core/bridge.md](../design/core/bridge.md#decisions).
 
 - **Node 26.** `.nvmrc` and the `engines` fields set it, and the bridge executable ships with it. Node 26 is an LTS release, supported until 2029-04-30. Move the repo to the next LTS release before then, so the executable never ships a runtime without security fixes.
 - **`tsx` runs TypeScript in development.** TypeScript features that need more than removing types, such as enums, are allowed.

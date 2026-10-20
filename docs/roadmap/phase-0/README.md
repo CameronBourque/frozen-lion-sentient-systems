@@ -6,7 +6,7 @@ Every later phase depends on the FireTuner channel, and its protocol is undocume
 
 ## Starting point
 
-Repo setup is done, apart from the first `feat` PR. No bridge or mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
+Repo setup is done, apart from the first `feat` PR. The bridge project is set up in `packages/core/bridge/`, with no tuner code yet. No mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
 
 ## Steps
 
@@ -15,7 +15,7 @@ Repo setup is done, apart from the first `feat` PR. No bridge or mod code exists
 | 1 | Create the findings folder | One file per research topic | Done. The step file is deleted, and the results are in [findings/](../../findings/README.md) |
 | 2 | Turn on the tuner | Enable the tuner and run Lua from FireTuner | Done. The step file is deleted, and the results are in [tuner-setup.md](../../findings/tuner-setup.md#results), [tuner-protocol.md](../../findings/tuner-protocol.md#what-we-know-now), and [lua-contexts.md](../../findings/lua-contexts.md#results) |
 | 3 | Capture the tuner protocol | Record the wire format from real traffic | Done. The step file is deleted, and the results are in [tuner-protocol.md](../../findings/tuner-protocol.md#results) |
-| 4 | [Scaffold the bridge project](04-scaffold-bridge.md) | TypeScript project in `packages/core/bridge/` | |
+| 4 | Scaffold the bridge project | TypeScript project in `packages/core/bridge/` | Done. The step file is deleted, and the choices are in [rules/code.md](../../rules/code.md#typescript) |
 | 5 | [Build the single executable](05-single-executable.md) | Add `build:exe` with Node SEA, and build it in the release | |
 | 6 | [Tuner client](06-tuner-client.md) | Framing, connection, and protocol modules | |
 | 7 | [Minimal core mod](07-minimal-core-mod.md) | `.modinfo`, turn signal, version report, tag format | |
