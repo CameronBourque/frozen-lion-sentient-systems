@@ -1,19 +1,14 @@
 version: 2
 updates:
+  # The bridge is a workspace of the root package, so this one entry covers both.
   - package-ecosystem: npm
-    directory: /packages/core/bridge
+    directory: /
     schedule:
       interval: weekly
     commit-message:
       prefix: fix
       prefix-development: chore
       include: scope
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: weekly
-    commit-message:
-      prefix: chore
   - package-ecosystem: github-actions
     directory: /
     schedule:
