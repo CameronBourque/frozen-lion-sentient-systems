@@ -2,7 +2,7 @@
 // docs/findings/tuner-protocol.md#message-examples.
 
 import { describe, expect, test } from "vitest";
-import { encodeFrame, FrameDecoder, Tag } from "../../src/tuner/framing.js";
+import { encodeFrame, FrameDecoder, FrameError, MAX_PAYLOAD_BYTES, Tag } from "../../src/tuner/framing.js";
 
 // Turns a dump such as "05000000 04000000 4150503a00" into bytes.
 function hex(dump: string): Buffer {
@@ -46,7 +46,7 @@ describe("encodeFrame", () => {
 	});
 
 	test("rejects a string with a null byte", () => {
-		expect(() => encodeFrame(Tag.Command, ["CMD:0:a\0b"])).toThrow("can't contain a null byte");
+		expect(() => encodeFrame(Tag.Command, ["CMD:0:a\0b"])).toThrow(FrameError);
 	});
 });
 
@@ -92,5 +92,30 @@ describe("FrameDecoder", () => {
 		// Byte 10 is the first byte of "é", so this read ends inside the character.
 		expect(decoder.push(bytes.subarray(0, 11))).toEqual([]);
 		expect(decoder.push(bytes.subarray(11))).toEqual([{ tag: Tag.Output, strings: ["O", "é"] }]);
+	});
+
+	test("decodes an empty payload as no strings", () => {
+		expect(new FrameDecoder().push(hex("00000000 03000000"))).toEqual([{ tag: Tag.Command, strings: [] }]);
+	});
+
+	test("rejects a payload that doesn't end in a null byte", () => {
+		// "O\0hello" with the last null missing.
+		expect(() => new FrameDecoder().push(hex("07000000 ffffffff 4f0068656c6c6f"))).toThrow(FrameError);
+	});
+
+	test("waits for a frame at the length limit", () => {
+		const header = Buffer.alloc(8);
+
+		header.writeUInt32LE(MAX_PAYLOAD_BYTES, 0);
+
+		expect(new FrameDecoder().push(header)).toEqual([]);
+	});
+
+	test("rejects a length over the limit as soon as the header arrives", () => {
+		const header = Buffer.alloc(8);
+
+		header.writeUInt32LE(MAX_PAYLOAD_BYTES + 1, 0);
+
+		expect(() => new FrameDecoder().push(header)).toThrow(FrameError);
 	});
 });

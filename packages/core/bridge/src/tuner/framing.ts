@@ -17,10 +17,20 @@ export interface Frame {
 
 export const HEADER_BYTES = 8;
 
+// No real reply comes near this. The probe's largest output test prints 1,000,000 characters. A
+// bigger length means the header is garbage, and waiting for that many bytes would never end.
+export const MAX_PAYLOAD_BYTES = 64 * 1024 * 1024;
+
+// Bytes that can't be a tuner frame. The connection drops the socket and starts over, because
+// after a bad frame there's no way to find where the next one begins.
+export class FrameError extends Error {
+	override name = "FrameError";
+}
+
 export function encodeFrame(tag: number, strings: readonly string[]): Buffer {
 	// A null inside a string would end it early, and the game would read two strings.
 	if (strings.some((text) => text.includes("\0"))) {
-		throw new Error("A tuner frame string can't contain a null byte");
+		throw new FrameError("A tuner frame string can't contain a null byte");
 	}
 
 	const payload = Buffer.from(strings.map((text) => `${text}\0`).join(""), "utf8");
@@ -35,7 +45,8 @@ export function encodeFrame(tag: number, strings: readonly string[]): Buffer {
 
 // Turns a TCP byte stream back into frames. TCP keeps no message boundaries, so one read can
 // end partway through a frame or hold several frames. The decoder keeps the bytes it can't use
-// yet and returns each frame once all of its bytes have arrived.
+// yet and returns each frame once all of its bytes have arrived. After it throws a FrameError,
+// make a new decoder for the new connection.
 export class FrameDecoder {
 	private pending = Buffer.alloc(0);
 
@@ -46,7 +57,14 @@ export class FrameDecoder {
 		const frames: Frame[] = [];
 
 		while (this.pending.length >= HEADER_BYTES) {
-			const end = HEADER_BYTES + this.pending.readUInt32LE(0);
+			const length = this.pending.readUInt32LE(0);
+
+			// Checked as soon as the header arrives, so a bad length fails at once.
+			if (length > MAX_PAYLOAD_BYTES) {
+				throw new FrameError(`Tuner frame length ${length} is over the ${MAX_PAYLOAD_BYTES}-byte limit`);
+			}
+
+			const end = HEADER_BYTES + length;
 
 			if (this.pending.length < end) {
 				break;
@@ -67,5 +85,10 @@ export class FrameDecoder {
 // the end, which isn't a string. Decoding before splitting is safe, because no UTF-8 character
 // holds a null byte.
 function splitStrings(payload: Buffer): string[] {
+	// Without the null, the last string would be dropped with no sign that anything was lost.
+	if (payload.length > 0 && payload.at(-1) !== 0) {
+		throw new FrameError("Tuner frame payload doesn't end in a null byte");
+	}
+
 	return payload.toString("utf8").split("\0").slice(0, -1);
 }
