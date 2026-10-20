@@ -8,7 +8,7 @@ Set up `packages/core/bridge/` as an npm workspace with TypeScript, so it runs i
 2. In the bridge `package.json`, add `"type": "module"` and `"engines": { "node": ">=26" }`, to match the root.
 3. From the repo root, install `typescript`, `tsx`, `@types/node`, and `typescript-eslint` as root dev dependencies. Commit the updated `package-lock.json`, because CI runs `npm ci`.
 4. Add `packages/core/bridge/tsconfig.json` with `target ES2024`, `module NodeNext`, `strict true`, and `noEmit true`. Include `src/` and `test/`.
-5. Create the folders `src/`, `src/tuner/`, `src/scripts/` (for throwaway gate scripts), `test/`, and `test/tuner/`. Add a `src/main.ts` that prints one line.
+5. Add a `src/main.ts` that prints one line. Git doesn't keep empty folders, so `src/tuner/`, `src/scripts/` (for throwaway gate scripts), `test/`, and `test/tuner/` come with their first files in later steps.
 6. `src/main.ts` only starts the program, so add it to the coverage `exclude` list in `vitest.config.js`, with the reason, as `scripts/check-docs/src/index.mjs` is.
 7. Add the bridge scripts `"dev": "tsx src/main.ts"` and `"typecheck": "tsc"`. In the root `package.json`, add `"typecheck": "npm run typecheck --workspaces --if-present"`.
 8. In the root `eslint.config.js`, add a block for `**/*.ts` files with the same `@stylistic` rules as the JavaScript files, plus the TypeScript rules in [rules/code.md](../../rules/code.md#typescript). Turn on `parserOptions.projectService`, because the promise and `no-unsafe-*` rules need type information.
