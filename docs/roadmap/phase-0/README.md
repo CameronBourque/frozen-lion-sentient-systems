@@ -6,7 +6,7 @@ Every later phase depends on the FireTuner channel, and its protocol is undocume
 
 ## Starting point
 
-Repo setup is done, apart from the first `feat` PR. The bridge project is set up in `packages/core/bridge/`, with no tuner code yet. No mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
+Repo setup is done, apart from the first `feat` PR. The bridge project is set up in `packages/core/bridge/`, and `build:exe` builds it into one executable. It has no tuner code yet. No mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
 
 ## Steps
 
@@ -16,7 +16,7 @@ Repo setup is done, apart from the first `feat` PR. The bridge project is set up
 | 2 | Turn on the tuner | Enable the tuner and run Lua from FireTuner | Done. The step file is deleted, and the results are in [tuner-setup.md](../../findings/tuner-setup.md#results), [tuner-protocol.md](../../findings/tuner-protocol.md#what-we-know-now), and [lua-contexts.md](../../findings/lua-contexts.md#results) |
 | 3 | Capture the tuner protocol | Record the wire format from real traffic | Done. The step file is deleted, and the results are in [tuner-protocol.md](../../findings/tuner-protocol.md#results) |
 | 4 | Scaffold the bridge project | TypeScript project in `packages/core/bridge/` | Done. The step file is deleted, and the choices are in [rules/code.md](../../rules/code.md#typescript) |
-| 5 | [Build the single executable](05-single-executable.md) | Add `build:exe` with Node SEA, and build it in the release | |
+| 5 | Build the single executable | Add `build:exe` with Node SEA, and build it in the release | Done. The step file is deleted, and the results are in [build-tooling.md](../../findings/build-tooling.md#results) |
 | 6 | [Tuner client](06-tuner-client.md) | Framing, connection, and protocol modules | |
 | 7 | [Minimal core mod](07-minimal-core-mod.md) | `.modinfo`, turn signal, version report, tag format | |
 | 8 | [Receive the turn signal](08-receive-turn-signal.md) | Parse tagged lines into events in the bridge | |
@@ -30,7 +30,8 @@ Repo setup is done, apart from the first `feat` PR. The bridge project is set up
 PR titles follow [rules/commits.md](../../rules/commits.md).
 
 1. `chore: upgrade to node 26 and record bridge build decisions` (the choices for steps 4 and 5)
-2. `chore(core): scaffold bridge project` (steps 4 and 5)
-3. `feat(core): add tuner client` (step 6). This triggers core `0.1.0`
-4. `feat(core): add turn signal and resync` (steps 7 to 9)
-5. `docs: record phase 0 results` (steps 10 to 12, with the gate script if you keep it)
+2. `chore(core): set up bridge workspace` (step 4)
+3. `chore(core): build the bridge executable` (step 5)
+4. `feat(core): add tuner client` (step 6). This triggers core `0.1.0`
+5. `feat(core): add turn signal and resync` (steps 7 to 9)
+6. `docs: record phase 0 results` (steps 10 to 12, with the gate script if you keep it)

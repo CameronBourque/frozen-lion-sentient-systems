@@ -1,23 +1,23 @@
 # Build tooling
 
-Status: open. Not built yet.
+Status: open. The executable builds and runs on the development machine. It still needs a test on a clean Windows with no Node.
 
 The bridge ships as one executable that Node SEA builds. [design/core/bridge.md](../design/core/bridge.md#decisions) says why. The release workflow runs `npm ci` at the repo root and `npm run build:exe` in the bridge workspace on a `windows-latest` runner, then checksums and uploads every file in `dist/`. `build:exe` must therefore leave only the executable in `dist/`.
 
 ## Questions
 
-1. How large is the output?
-2. Does the output run on a clean Windows machine with no Node installed?
-3. Does Windows Defender or SmartScreen flag it?
-4. Do the MCP SDK and the Vercel AI SDK bundle cleanly with esbuild?
-5. Does `node --build-sea` on Windows need any extra step, such as removing the signature from the Node binary before it writes the program in?
+1. Does the output run on a clean Windows machine with no Node installed?
+2. Does SmartScreen flag the executable when a user downloads it?
 
 ## What we know now
 
 | Item | Value | Status | Source |
 | --- | --- | --- | --- |
-| Build command | `node --build-sea <config>` builds the executable in one command on Node 26 | Unconfirmed on our setup | [Node.js 26.8.2 docs](https://nodejs.org/download/release/v26.8.2/docs/api/single-executable-applications.html) |
-| Bundling | A SEA runs one script, so esbuild bundles `src/main.ts` and every dependency into one file first | Unconfirmed on our setup | Node.js 26.8.2 docs, same page |
+| Build command | `node --build-sea sea-config.json` builds the executable in one command on Node 26. `packages/core/bridge/scripts/build-exe.mjs` runs it after esbuild | Confirmed on Node 26.12.0 | Local build, 2026-10-20 |
+| Bundling | A SEA runs one script, so esbuild bundles `src/main.ts` and every dependency into one CommonJS file, `build/main.cjs`, first | Confirmed with esbuild 0.28.2 | Local build, 2026-10-20 |
+| Output folder | `--build-sea` does not create the output folder. It fails with "no such file or directory", so the build script creates `dist/` first | Confirmed | Local build, 2026-10-20 |
+| Signature | The output is unsigned. `--build-sea` needs no extra step for the signature of the Node binary, and it prints no warning about it | Confirmed | `Get-AuthenticodeSignature` reports `NotSigned`, 2026-10-20 |
+| Size | About 105 MB. Almost all of it is the Node runtime. The MCP SDK and the AI SDK add about 2 MB | Confirmed | [Results](#results) |
 
 ## Method
 
@@ -29,11 +29,11 @@ The bridge ships as one executable that Node SEA builds. [design/core/bridge.md]
 
 ## Results
 
-Nothing yet.
+Each build ran from a folder in `Downloads` and exited with code 0. The SDK build was a test only, and its dependencies were not committed. It started an MCP server and client over an in-memory transport, listed and called one tool, and ran `generateText` from the AI SDK against a mock model. esbuild printed no warnings for either SDK.
 
 | Build | Size | Runs outside the repo | Runs in Windows Sandbox | Antivirus and SmartScreen | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Hello-world | | | | | |
-| With the MCP SDK | | | | | |
+| Hello-world | 105,442,632 bytes | Yes | Not yet | Defender found nothing. SmartScreen not tested, because a local copy has no download mark | |
+| With the MCP SDK and the AI SDK | 107,501,384 bytes | Yes | Not yet | Defender found nothing. SmartScreen not tested | `@modelcontextprotocol/sdk` 1.32.1, `ai` 7.0.146, and `zod` 4.6.7. The bundle is 2,058,635 bytes |
 
-Date checked: not yet.
+Date checked: 2026-10-20, on Windows 10 with Node 26.12.0.
