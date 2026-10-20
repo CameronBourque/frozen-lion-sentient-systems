@@ -27,23 +27,27 @@ jobs:
   bridge:
     needs: release-please
     if: needs.release-please.outputs.core-released == 'true'
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - name: Build the bridge
-        working-directory: packages/core/bridge
-        run: |
-          npm ci
-          npm run build:exe
+      - run: npm ci
+      - run: npm run build:exe --workspace packages/core/bridge
       - name: Upload to the release
         working-directory: packages/core/bridge/dist
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.core-tag }}
         run: |
           sha256sum -- * > checksums.txt
-          gh release upload "${{ needs.release-please.outputs.core-tag }}" ./* --clobber
+          gh release upload "$TAG" ./* --clobber
