@@ -1,5 +1,13 @@
 {
-    "name": "@sentient-systems/bridge",
-    "version": "0.0.0",
-    "private": true
+  "name": "@sentient-systems/bridge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "typecheck": "tsc"
+  }
 }

@@ -27,11 +27,12 @@ These conventions come from `scripts/check-docs/`, the first code in the repo. E
 
 ## TypeScript
 
-The bridge's TypeScript setup. Phase 0 [step 4](../roadmap/phase-0/04-scaffold-bridge.md) builds it. Why each choice was made is in [design/core/bridge.md](../design/core/bridge.md#decisions).
+The bridge's TypeScript setup. Why each choice was made is in [design/core/bridge.md](../design/core/bridge.md#decisions).
 
 - **Node 26.** `.nvmrc` and the `engines` fields set it, and the bridge executable ships with it. Node 26 is an LTS release, supported until 2029-04-30. Move the repo to the next LTS release before then, so the executable never ships a runtime without security fixes.
 - **`tsx` runs TypeScript in development.** TypeScript features that need more than removing types, such as enums, are allowed.
 - **`tsc` only type-checks.** `npm run typecheck` runs it with `noEmit`, as its own CI job. esbuild bundles the release, so nothing uses compiled output.
+- **TypeScript 6 loads no `@types` packages by default.** The bridge `tsconfig.json` lists `"types": ["node"]`. Add a package there when its types are needed.
 - **ES modules, with no namespaces.** Group code by file, and import what each file needs. `declare namespace` in a `.d.ts` file is still allowed, to describe a library's types.
 - **Lint rules.** `.ts` files use typescript-eslint's `recommended` rules, plus these rules that need type information:
   - promises: `no-floating-promises`, `no-misused-promises`, `await-thenable`, and `require-await`,
@@ -44,6 +45,5 @@ The bridge's TypeScript setup. Phase 0 [step 4](../roadmap/phase-0/04-scaffold-b
 - `npm test` runs Vitest. Put code in a `src/` folder and tests in a `test/` folder beside it, in each package and script folder. `test/` mirrors `src/`, so the tests for `src/tuner/framing.ts` go in `test/tuner/framing.test.ts`. Shared test helpers go in `test/` too. Give each rule a case that it catches and a case that it lets through.
 - `npm run coverage` runs the tests and measures coverage. Statements, branches, functions, and lines must each stay at 98% or more, or the run fails. To leave a file out, add it to the coverage `exclude` list in `vitest.config.js` with a comment that gives the reason.
 - The CI `test` job runs `npm run coverage`. It puts the coverage table in the job summary and uploads the HTML report as the `coverage-report` artifact.
-- CI runs lint and test as separate jobs in `.github/workflows/ci.yml`, plus an `actionlint` job that checks the workflow files. Lint and test need Node 26 or later. `.nvmrc` sets the Node version for CI.
-- Phase 0 [step 4](../roadmap/phase-0/04-scaffold-bridge.md) adds the TypeScript lint rules and a `typecheck` job.
+- CI runs lint, typecheck, and test as separate jobs in `.github/workflows/ci.yml`, plus an `actionlint` job that checks the workflow files. Lint and test need Node 26 or later. `.nvmrc` sets the Node version for CI.
 - Lua code needs its own test runner. Pick one when the core mod gets tests.
