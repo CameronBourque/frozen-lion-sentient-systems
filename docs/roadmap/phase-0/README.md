@@ -6,7 +6,7 @@ Every later phase depends on the FireTuner channel, and its protocol is undocume
 
 ## Starting point
 
-Repo setup is done, apart from the first `feat` PR. The bridge project is set up in `packages/core/bridge/`, and `build:exe` builds it into one executable. It has no tuner code yet. No mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
+Repo setup is done, apart from the first `feat` PR. The bridge project is set up in `packages/core/bridge/`, and `build:exe` builds it into one executable. No mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
 
 ## Steps
 
@@ -17,7 +17,7 @@ Repo setup is done, apart from the first `feat` PR. The bridge project is set up
 | 3 | Capture the tuner protocol | Record the wire format from real traffic | Done. The step file is deleted, and the results are in [tuner-protocol.md](../../findings/tuner-protocol.md#results) |
 | 4 | Scaffold the bridge project | TypeScript project in `packages/core/bridge/` | Done. The step file is deleted, and the choices are in [rules/code.md](../../rules/code.md#typescript) |
 | 5 | Build the single executable | Add `build:exe` with Node SEA, and build it in the release | Done. The step file is deleted, and the results are in [build-tooling.md](../../findings/build-tooling.md#results) |
-| 6 | [Tuner client](06-tuner-client.md) | Framing, connection, and protocol modules | |
+| 6 | Tuner client | Framing, connection, and protocol modules | Done. The step file is deleted, and the results are in [tuner-commands.md](../../findings/tuner-commands.md#results), [lua-contexts.md](../../findings/lua-contexts.md#state-list-over-a-session), and [bridge.md](../../design/core/bridge.md#decisions) |
 | 7 | [Minimal core mod](07-minimal-core-mod.md) | `.modinfo`, turn signal, version report, tag format | |
 | 8 | [Receive the turn signal](08-receive-turn-signal.md) | Parse tagged lines into events in the bridge | |
 | 9 | [Resync on connect](09-resync-on-connect.md) | Recover the turn state after a bridge restart | |
