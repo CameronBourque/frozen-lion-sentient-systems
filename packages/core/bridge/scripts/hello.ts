@@ -54,7 +54,7 @@ for (const { name, lua, lines, error } of checks) {
 
 		console.log(`  lines: ${JSON.stringify(result.lines)}`);
 		check(JSON.stringify(result.lines) === JSON.stringify(lines), `lines are ${JSON.stringify(lines)}`);
-		check(error === undefined, error === undefined ? "no error" : `an error ending in ${JSON.stringify(error)}`);
+		check(error === undefined, error === undefined ? "no error" : `an error whose first line ends in ${JSON.stringify(error)}`);
 	} catch (caught) {
 		if (!(caught instanceof TunerLuaError)) {
 			throw caught;
@@ -63,7 +63,10 @@ for (const { name, lua, lines, error } of checks) {
 		console.log(`  error: ${caught.message}`);
 		console.log(`  lines: ${JSON.stringify(caught.lines)}`);
 		check(JSON.stringify(caught.lines) === JSON.stringify(lines), `lines are ${JSON.stringify(lines)}`);
-		check(error !== undefined && caught.message.endsWith(error), `an error ending in ${JSON.stringify(error)}`);
+		// The game puts a stack trace after the message, so only the first line ends in the error.
+		const firstLine = caught.message.split("\n")[0];
+
+		check(error !== undefined && firstLine.endsWith(error), `an error whose first line ends in ${JSON.stringify(error)}`);
 	}
 }
 
