@@ -13,11 +13,11 @@ Build the bridge's tuner client as small modules under `src/tuner/`, from the [f
    - `findState(name)`, which looks a state up by name each time you connect, because indexes may change between loads,
    - `run(stateName, lua)`, which sends the command. Before you write it, answer question 2 with the [tuner protocol method](../../findings/tuner-protocol.md#method), because the answer decides how `run` wraps the Lua,
    - an `output` event stream that splits output into lines.
-4. **`src/scripts/hello.ts`.** Write a script that connects, lists states, runs `print("hello from bridge")` in one state, and prints what comes back.
+4. **`scripts/hello.ts`.** Write a script that connects, lists states, runs `print("hello from bridge")` in one state, and prints what comes back.
 
 ## Done when
 
-`tsx src/scripts/hello.ts` against a running game prints the state list and the echoed line.
+`tsx scripts/hello.ts` against a running game prints the state list and the echoed line.
 
 ## Record
 

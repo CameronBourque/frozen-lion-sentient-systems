@@ -1,6 +1,6 @@
 # Step 10: The gate
 
-List your cities and move a unit from the bridge. Write the gate as `src/scripts/gate.ts`. It's throwaway code, because [phase 1](../phase-1/README.md) builds the real action API. Part of [phase 0](README.md).
+List your cities and move a unit from the bridge. Write the gate as `scripts/gate.ts`. It's throwaway code, because [phase 1](../phase-1/README.md) builds the real action API. Part of [phase 0](README.md).
 
 ## Tasks
 
