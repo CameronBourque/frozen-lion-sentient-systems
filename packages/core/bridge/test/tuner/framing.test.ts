@@ -3,6 +3,7 @@
 
 import { describe, expect, test } from "vitest";
 import { encodeFrame, FrameDecoder, FrameError, MAX_PAYLOAD_BYTES, Tag } from "../../src/tuner/framing.js";
+import { appReply } from "./captured.js";
 
 // Turns a dump such as "05000000 04000000 4150503a00" into bytes.
 function hex(dump: string): Buffer {
@@ -34,6 +35,11 @@ const capturedFrames = [
 describe("encodeFrame", () => {
 	test.each(capturedFrames)("matches the captured $name frame", ({ tag, strings, bytes }) => {
 		expect(encodeFrame(tag, strings)).toEqual(hex(bytes));
+	});
+
+	test("matches the captured connect reply's header", () => {
+		// The findings give this reply as strings and a length of 113, and list only its first bytes.
+		expect(encodeFrame(Tag.App, appReply).subarray(0, 13)).toEqual(hex("71000000 04000000 4369763600"));
 	});
 
 	test("counts payload bytes, not characters", () => {
@@ -72,16 +78,14 @@ describe("FrameDecoder", () => {
 		expect(frames).toEqual(expected);
 	});
 
-	test("decodes a frame split at each offset", () => {
-		// The shape of the connect reply, whose full bytes the findings don't list.
-		const strings = ["Civ6", "Sid Meier's Civilization 6", "E:\\Base\\Binaries\\Debug\\"];
-		const bytes = encodeFrame(Tag.App, strings);
+	test("decodes the connect reply split at each offset", () => {
+		const bytes = encodeFrame(Tag.App, appReply);
 
 		for (let offset = 0; offset < bytes.length; offset++) {
 			const decoder = new FrameDecoder();
 
 			expect(decoder.push(bytes.subarray(0, offset))).toEqual([]);
-			expect(decoder.push(bytes.subarray(offset))).toEqual([{ tag: Tag.App, strings }]);
+			expect(decoder.push(bytes.subarray(offset))).toEqual([{ tag: Tag.App, strings: appReply }]);
 		}
 	});
 
