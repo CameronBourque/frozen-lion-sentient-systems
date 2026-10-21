@@ -9,8 +9,6 @@ import { type ConnectionOptions, TunerConnection } from "./connection.js";
 import { type Frame, Tag } from "./framing.js";
 import { type Ending, parseMarker, wrap } from "./wrapper.js";
 
-export const DEFAULT_TIMEOUT_MS = 10_000;
-
 export interface ClientOptions extends ConnectionOptions {
 	// How long a request waits for its reply after it's sent.
 	timeoutMs?: number;
@@ -67,8 +65,6 @@ interface Pending {
 	ending: Ending | undefined;
 	resolve: (reply: Reply) => void;
 	reject: (error: Error) => void;
-	// True after a timeout. The reply still arrives later, and is dropped.
-	abandoned: boolean;
 	timer: NodeJS.Timeout | undefined;
 }
 
@@ -103,7 +99,7 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 	constructor(options: ClientOptions = {}) {
 		super();
 		this.connection = new TunerConnection(options);
-		this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+		this.timeoutMs = options.timeoutMs ?? 10_000;
 		this.connection.on("connected", () => {
 			// A failed handshake means the socket dropped, and the connection retries on its own.
 			this.handshake().catch(() => {});
@@ -152,18 +148,14 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 	// Runs Lua in the named state and resolves with the lines it printed in that state. A stale
 	// state list gets one more try, with a fresh list.
 	async run(stateName: string, lua: string): Promise<RunResult> {
-		const first = await this.runOnce(stateName, lua);
+		for (let attempt = 0; attempt < 2; attempt++) {
+			const result = await this.runOnce(stateName, lua);
 
-		if (first !== STALE) {
-			return first;
-		}
+			if (result !== STALE) {
+				return result;
+			}
 
-		this.states = undefined;
-
-		const second = await this.runOnce(stateName, lua);
-
-		if (second !== STALE) {
-			return second;
+			this.states = undefined;
 		}
 
 		throw new TunerStateError(`The Lua state ${stateName} moved again after a fresh state list`);
@@ -228,12 +220,13 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 
 		return new Promise((resolve, reject) => {
 			const request: Pending = {
-				tag, id, prefix, lines: [], ending: undefined, resolve, reject, abandoned: false, timer: undefined,
+				tag, id, prefix, lines: [], ending: undefined, resolve, reject, timer: undefined,
 			};
 
 			if (timed) {
+				// The request stays in pending, so its late reply is still taken and dropped. Resolving a
+				// promise that already rejected does nothing.
 				request.timer = setTimeout(() => {
-					request.abandoned = true;
 					reject(new TunerTimeoutError(`No reply from the tuner in ${this.timeoutMs} ms`));
 				}, this.timeoutMs);
 			}
@@ -260,9 +253,7 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 
 		clearTimeout(request.timer);
 
-		if (!request.abandoned) {
-			request.resolve({ frame, lines: request.lines, ending: request.ending });
-		}
+		request.resolve({ frame, lines: request.lines, ending: request.ending });
 	}
 
 	private receiveOutput(text: string): void {

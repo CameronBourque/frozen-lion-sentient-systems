@@ -6,11 +6,7 @@ import { EventEmitter } from "node:events";
 import net from "node:net";
 import { encodeFrame, type Frame, FrameDecoder } from "./framing.js";
 
-export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_PORT = 4318;
-// The wait before the first retry. It doubles after each failed attempt, up to the maximum.
-export const DEFAULT_RETRY_DELAY_MS = 500;
-export const DEFAULT_MAX_RETRY_DELAY_MS = 10_000;
 
 export interface ConnectionOptions {
 	host?: string;
@@ -40,20 +36,19 @@ export class TunerConnection extends EventEmitter<ConnectionEvents> {
 	private wanted = false;
 	// The socket from the moment it opens until it closes.
 	private socket: net.Socket | undefined;
-	// The same socket, but only while it's connected.
-	private openSocket: net.Socket | undefined;
 
 	constructor(options: ConnectionOptions = {}) {
 		super();
-		this.host = options.host ?? DEFAULT_HOST;
+		this.host = options.host ?? "127.0.0.1";
 		this.port = options.port ?? DEFAULT_PORT;
-		this.retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
-		this.maxRetryDelayMs = options.maxRetryDelayMs ?? DEFAULT_MAX_RETRY_DELAY_MS;
+		// The wait before the first retry. It doubles after each failed attempt, up to the maximum.
+		this.retryDelayMs = options.retryDelayMs ?? 500;
+		this.maxRetryDelayMs = options.maxRetryDelayMs ?? 10_000;
 		this.nextRetryDelayMs = this.retryDelayMs;
 	}
 
 	get connected(): boolean {
-		return this.openSocket !== undefined;
+		return this.socket?.readyState === "open";
 	}
 
 	connect(): void {
@@ -64,11 +59,11 @@ export class TunerConnection extends EventEmitter<ConnectionEvents> {
 	}
 
 	send(tag: number, strings: readonly string[]): void {
-		if (!this.openSocket) {
+		if (this.socket?.readyState !== "open") {
 			throw new Error("Not connected to the tuner");
 		}
 
-		this.openSocket.write(encodeFrame(tag, strings));
+		this.socket.write(encodeFrame(tag, strings));
 	}
 
 	close(): void {
@@ -90,7 +85,6 @@ export class TunerConnection extends EventEmitter<ConnectionEvents> {
 
 		this.socket = socket;
 		socket.on("connect", () => {
-			this.openSocket = socket;
 			this.nextRetryDelayMs = this.retryDelayMs;
 			this.emit("connected");
 		});
@@ -117,7 +111,6 @@ export class TunerConnection extends EventEmitter<ConnectionEvents> {
 		});
 		socket.on("close", () => {
 			this.socket = undefined;
-			this.openSocket = undefined;
 			this.emit("disconnected", failure);
 
 			// A disconnected listener may have called close().

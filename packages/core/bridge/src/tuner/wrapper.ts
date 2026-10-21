@@ -22,7 +22,8 @@ export function wrap(id: number, stateName: string, lua: string): string {
 	return [
 		"(function()",
 		`print("@@ss:begin:${id}")`,
-		`if ContextPtr and ContextPtr:GetID() ~= ${luaString(stateName)} then print("@@ss:end:${id}:state:" .. ContextPtr:GetID()) return end`,
+		// JSON escapes quotes and backslashes the way Lua does, so it gives a Lua string for a state name.
+		`if ContextPtr and ContextPtr:GetID() ~= ${JSON.stringify(stateName)} then print("@@ss:end:${id}:state:" .. ContextPtr:GetID()) return end`,
 		"local ok, err = pcall(function()",
 		lua,
 		"end)",
@@ -66,9 +67,4 @@ export function parseMarker(text: string): Marker | undefined {
 	}
 
 	return { kind: "end", id: Number(id), ending: { kind: "state", actual } };
-}
-
-// A Lua string literal. State names are plain words, but quotes and backslashes are escaped anyway.
-function luaString(text: string): string {
-	return `"${text.replaceAll("\\", "\\\\").replaceAll("\"", "\\\"")}"`;
 }
