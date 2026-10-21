@@ -11,7 +11,7 @@ Build the bridge's tuner client as small modules under `src/tuner/`, from the [f
 3. **`client.ts`.** Build the protocol layer on top of the connection, with:
    - `listStates(): Promise<LuaState[]>`, with index and name,
    - `findState(name)`, which looks a state up by name each time you connect, because indexes may change between loads,
-   - `run(stateName, lua)`, which sends the command. Before you write it, answer question 2 with the [tuner protocol method](../../findings/tuner-protocol.md#method), because the answer decides how `run` wraps the Lua,
+   - `run(stateName, lua)`, which sends the command inside the marker wrapper from the [probe results](../../findings/tuner-commands.md#probe-results),
    - an `output` event stream that splits output into lines.
 4. **`scripts/hello.ts`.** Write a script that connects, lists states, runs `print("hello from bridge")` in one state, and prints what comes back.
 
@@ -21,4 +21,4 @@ Build the bridge's tuner client as small modules under `src/tuner/`, from the [f
 
 ## Record
 
-The answers to questions 2 and 3, and the behavior notes, in [tuner-protocol.md](../../findings/tuner-protocol.md#results).
+The probe results and the behavior notes, in [tuner-commands.md](../../findings/tuner-commands.md#results).

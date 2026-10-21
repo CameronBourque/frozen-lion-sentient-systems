@@ -1,6 +1,6 @@
 // Sends test commands to the running game's InGame state and prints every frame that comes back,
 // with the time since the send. The output answers the open questions in
-// docs/findings/tuner-protocol.md: how the game wraps commands, how large output arrives, and
+// docs/findings/tuner-commands.md: how the game wraps commands, how large output arrives, and
 // whether replies keep their order. Run it with `npm run probe`, with a game loaded.
 
 import { once } from "node:events";
@@ -179,7 +179,7 @@ for (const step of steps) {
 	}
 }
 
-console.log(`\nListening for ${IDLE_LISTEN_MS / 1000} s. End a turn in the game now.`);
+console.log(`\nListening for ${IDLE_LISTEN_MS / 1000} s. Select a city, open and close the full-screen map, and end a turn.`);
 
 const listenedAt = Date.now();
 

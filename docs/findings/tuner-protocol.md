@@ -1,12 +1,12 @@
 # FireTuner protocol
 
-Status: open. A Windows capture confirmed the port, the frame format, and each message type that FireTuner uses. How the game wraps commands, unprompted output, and output limits are still open.
+Status: confirmed. A Windows capture confirmed the port, the frame format, and each message type that FireTuner uses. Two rows from community sources are still unconfirmed on Windows.
+
+The wire format between a client and the game. How the game runs commands and sends back their output is in [tuner-commands.md](tuner-commands.md).
 
 ## Questions
 
-1. Does the game send output that no command asked for, such as prints from event handlers?
-2. The game runs each command as `_cmdr = {<lua>}`, which the error text shows. Do statements such as `x = 5` run as statements? Does the tag 3 reply carry the command's return values?
-3. What is the largest output that arrives intact, and can long output arrive after the tag 3 reply?
+None are open. The unconfirmed rows below come from community sources, and nothing in the bridge depends on them yet.
 
 ## What we know now
 
@@ -26,21 +26,16 @@ Two open-source projects describe the protocol from their own use of it. [civ6-l
 | State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state, in index order. `Main State` is 0. The names are in [lua-contexts.md](lua-contexts.md#lua-state-list) | Confirmed | [Message examples](#message-examples) |
 | Run command | `CMD:<stateIndex>:<lua>` with tag 3 | Confirmed | [Message examples](#message-examples) |
 | Output | Each `print` arrives as a tag -1 frame with the payload `O\0<text>\0`. Text printed in any state except `Main State` starts with the state name and a colon, such as `InGame: hello` | Confirmed | [Message examples](#message-examples) |
-| End of a command | A tag 3 frame ends each command. On success its payload is one empty string. On a Lua error it is one string that starts with `ERR:` and holds the error and a stack trace, and no other tag 3 frame follows | Confirmed | [Message examples](#message-examples) |
+| End of a command | A tag 3 frame ends each command. On success its payload is one string, which holds the command's values. On a Lua error it is one string that starts with `ERR:` and holds the error and a stack trace, and no other tag 3 frame follows. What the values look like is in [tuner-commands.md](tuner-commands.md#what-we-know-now) | Confirmed | [Message examples](#message-examples) |
 | Merged frames | The output frame and the tag 3 frame arrived in one TCP segment, so one read can hold more than one frame | Confirmed | [Message examples](#message-examples) |
-| Complete output | civ6-logger appends a unique `print` to each command and reads frames until that text arrives, because TCP can split the output | Unconfirmed on Windows | civ6-logger ARCHITECTURE.md, "The FireTuner wire protocol" |
 | Recovery | After a bad handshake, the tuner often hangs until the game restarts | Unconfirmed | civ6-mcp README |
 
 ## Method
 
 1. Close the game, then set `EnableTuner 1`. The game rewrites `AppOptions.txt` when it exits, so edit the file only while the game is closed.
-2. Start a game and connect FireTuner.
+2. Start a game. Load a save or start a new game, so the `InGame` state exists.
 3. Install Wireshark with Npcap. Capture on **Adapter for loopback traffic capture** with the filter `tcp.port == 4318`.
-4. In FireTuner, run each test in `InGame` and note the time of each:
-   - `1+1`, then read the tag 3 reply's payload. This answers question 2,
-   - `x = 5`, then `print(x)`. This answers question 2,
-   - `print(string.rep("a", 1000))`, then repeat with 10,000, 100,000, and 1,000,000. This answers question 3,
-   - end a turn and watch for frames that no command asked for. This answers question 1.
+4. Connect FireTuner and run commands in it.
 5. Save the capture as `.pcapng`. Then use **Follow TCP Stream**, set **Show as** to **YAML**, and save it.
 
 ## Results
@@ -138,6 +133,5 @@ length 189, tag 3, "ERR:Runtime Error: [string \"_cmdr = {error(\"boom\")}\"]:1:
 
 - **Round-trip time.** From a request to its reply took 19 to 27 ms for the handshake and for each command.
 - **Segments.** Each reply arrived in one TCP segment, the 2,358-byte state list included.
-- **Unprompted output.** One turn end produced no frames on 4318 in the 48 seconds after the last command.
 
 Date checked: 2026-10-19.

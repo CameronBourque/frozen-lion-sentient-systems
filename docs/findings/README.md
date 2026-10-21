@@ -5,6 +5,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | File | Topic |
 | --- | --- |
 | [tuner-protocol.md](tuner-protocol.md) | FireTuner port, frame format, and message types |
+| [tuner-commands.md](tuner-commands.md) | How the game runs commands, what replies carry, and output order |
 | [tuner-setup.md](tuner-setup.md) | Turning on the tuner: the menu toggle, the SDK, and achievements |
 | [lua-contexts.md](lua-contexts.md) | Lua states and what each one can call |
 | [game-api.md](game-api.md) | Game calls for cities, units, turns, and properties |
