@@ -5,7 +5,7 @@
 import { EventEmitter, once } from "node:events";
 import net from "node:net";
 import { encodeFrame, type Frame, FrameDecoder, Tag } from "../../src/tuner/framing.js";
-import { appReply, states } from "./captured.js";
+import * as captured from "./captured.js";
 
 // What a command does. Output lines are given without the state prefix, which the fake adds.
 // An error is the full ERR: text. Returning undefined sends no reply, for timeout tests.
@@ -23,6 +23,10 @@ const commandPattern = /^CMD:(\d+):(.*)$/s;
 export class FakeGame extends EventEmitter {
 	readonly received: Frame[] = [];
 	onCommand: CommandHandler = () => ({});
+	// The state list the fake reports. A test can change it, like a game that loads a new save.
+	states = captured.states;
+	// Frames with these tags get no reply, so a test can drop the client while a request waits.
+	readonly silentTags = new Set<number>();
 	private client: net.Socket | undefined;
 
 	private constructor(private readonly server: net.Server) {
@@ -50,7 +54,7 @@ export class FakeGame extends EventEmitter {
 	// An output frame the way the game prints it, such as an event handler's print. Waits for a
 	// client, like send().
 	async print(stateIndex: number, text: string): Promise<void> {
-		await this.send(outputFrame(stateIndex, text));
+		await this.send(outputFrame(this.states, stateIndex, text));
 	}
 
 	// Raw bytes, for split, merged, or broken frames. Waits for a client, because the client can see
@@ -100,10 +104,14 @@ export class FakeGame extends EventEmitter {
 
 	// Replies go to the socket the frame came from, which is connected.
 	private reply(socket: net.Socket, frame: Frame): void {
+		if (this.silentTags.has(frame.tag)) {
+			return;
+		}
+
 		if (frame.tag === Tag.App) {
-			socket.write(encodeFrame(Tag.App, appReply));
+			socket.write(encodeFrame(Tag.App, captured.appReply));
 		} else if (frame.tag === Tag.StateList) {
-			socket.write(encodeFrame(Tag.StateList, states.flatMap(({ index, name }) => [String(index), name])));
+			socket.write(encodeFrame(Tag.StateList, this.states.flatMap(({ index, name }) => [String(index), name])));
 		} else if (frame.tag === Tag.Command) {
 			this.runCommand(socket, frame.strings[0] ?? "");
 		}
@@ -123,7 +131,7 @@ export class FakeGame extends EventEmitter {
 			return;
 		}
 
-		const output = (result.output ?? []).map((line) => outputFrame(stateIndex, line));
+		const output = (result.output ?? []).map((line) => outputFrame(this.states, stateIndex, line));
 		const end = encodeFrame(Tag.Command, [result.error ?? ""]);
 
 		// One write, because the game sent output and its tag 3 reply in one TCP segment.
@@ -132,7 +140,7 @@ export class FakeGame extends EventEmitter {
 }
 
 // Every state but Main State puts its name before printed text, such as "InGame: hello".
-function outputFrame(stateIndex: number, text: string): Buffer {
+function outputFrame(states: typeof captured.states, stateIndex: number, text: string): Buffer {
 	const name = states.find(({ index }) => index === stateIndex)?.name;
 	const prefix = stateIndex === 0 || !name ? "" : `${name}: `;
 
