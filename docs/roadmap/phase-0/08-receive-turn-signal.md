@@ -8,7 +8,6 @@ Turn the tagged lines from [step 7](07-minimal-core-mod.md) into typed events in
 2. Log each event with a timestamp.
 3. To test, end a turn. Check that the log shows `turn 0` when your turn starts.
 4. Check whether AI turns also print. If they do, adjust the filter.
-5. Check whether output from every Lua state arrives on one connection, or only from the selected state. The answer decides how the bridge listens.
 
 ## Done when
 
@@ -16,4 +15,4 @@ Ending a turn in the game makes the bridge log `turn 0` within about a second.
 
 ## Record
 
-Whether output from every state arrives on one connection, in [tuner-protocol.md](../../findings/tuner-protocol.md#behavior-notes), question 1.
+Whether AI turns print the turn signal, in [tuner-commands.md](../../findings/tuner-commands.md#behavior-notes).

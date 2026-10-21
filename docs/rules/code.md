@@ -24,6 +24,7 @@ These conventions come from `scripts/check-docs/`, the first code in the repo. E
 - **Name the parts of a long regex.** Build it from named strings, and comment it with an example that it matches.
 - **Split a line only when it helps.** Break up a line that does several steps. Keep a short chain that reads top to bottom, and comment it.
 - **Comment the reason, not the action.** Say why a line exists or which case it handles.
+- **Put each comment where its subject is.** A comment above a function describes the whole function. A comment about one step goes on the line before that step.
 
 ## TypeScript
 

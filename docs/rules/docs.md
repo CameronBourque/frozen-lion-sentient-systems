@@ -82,3 +82,4 @@ The check skips `writing.md` for the pattern rules, because that file quotes the
 - A doc that must not be committed gets a note at the top that says so.
 - List it in `.git/info/exclude`, which git never commits. Don't use `.gitignore`, because that file is committed.
 - Don't link to it from committed docs.
+- Put local scratch files, such as probe output, in `tmp/` at the repo root. List `tmp/` in `.git/info/exclude` too.
