@@ -20,6 +20,7 @@ The minimum viable product is the full agent loop playing a whole single-player 
 - One default personality and the balanced sweat level
 - Civilopedia `lookup` tool
 - A config file marks the agent slot. No setup screen changes yet
+- A bridge tool that starts a test preset game from the main menu
 - Pass the smoke test preset, then the MVP gate preset
 - Measure the state size and the cost of one full game
 
