@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx src/main.ts",
     "probe": "tsx scripts/probe.ts",
+    "watch-states": "tsx scripts/watch-states.ts",
     "typecheck": "tsc",
     "build:exe": "node scripts/build-exe.mjs"
   }
