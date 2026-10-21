@@ -60,7 +60,7 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
   | Action | Prints |
   | --- | --- |
   | Select a city, then deselect it | `PlotInfo: PlotInfo::OnCitySelectionChanged` with the city's details, once for each |
-  | Not recorded, about 1 s after the city was deselected | Four `MapLabelManager: INDIAN OCEAN` prints with screen positions, at the same moment |
+  | Move a unit that reveals two tiles of an ocean never seen before. The prints may come from the reveal or from the mouse passing over the ocean | Four `MapLabelManager: INDIAN OCEAN` prints with screen positions, at the same moment |
   | Open, then close the full-screen map | `InGame: Request to BulkHide( true, FullscreenMap ), Show on 0 = 1`, then the same with `false` and `0` |
 
 Date checked: 2026-10-21.
