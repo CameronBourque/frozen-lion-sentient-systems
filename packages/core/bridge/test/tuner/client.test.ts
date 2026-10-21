@@ -2,9 +2,9 @@
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { parseStates, TunerClient } from "../../src/tuner/client.js";
-import { Tag } from "../../src/tuner/framing.js";
-import { states } from "./captured.js";
+import { parseStates, TunerClient, TunerLuaError, TunerTimeoutError } from "../../src/tuner/client.js";
+import { encodeFrame, Tag } from "../../src/tuner/framing.js";
+import { errorReply, states } from "./captured.js";
 import { FakeGame } from "./fake-game.js";
 
 describe("TunerClient", () => {
@@ -13,7 +13,8 @@ describe("TunerClient", () => {
 
 	beforeEach(async () => {
 		game = await FakeGame.start();
-		client = new TunerClient({ port: game.port, retryDelayMs: 10 });
+		// A short timeout, so timeout tests take milliseconds.
+		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
 	});
 
 	afterEach(async () => {
@@ -112,11 +113,152 @@ describe("TunerClient", () => {
 		expect(sent(Tag.App)).toBe(2);
 	});
 
-	test("ignores a frame that no request waits for", async () => {
+	test("defaults to a 10 s timeout", () => {
+		// Reads the private field, because a client with no options would reach for the real game.
+		expect(new TunerClient()).toMatchObject({ timeoutMs: 10_000 });
+	});
+
+	test("ignores output and replies that no request waits for", async () => {
 		await connect();
 		await game.print(119, "unprompted");
+		await game.send(encodeFrame(Tag.Command, [""]));
 
 		expect(await client.listStates()).toEqual(states);
+	});
+});
+
+describe("TunerClient.run", () => {
+	let game: FakeGame;
+	let client: TunerClient;
+
+	beforeEach(async () => {
+		game = await FakeGame.start();
+		// Long enough for a test to answer by hand, and short enough for the timeout tests.
+		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 300 });
+		client.connect();
+		await once(client, "connected");
+	});
+
+	afterEach(async () => {
+		client.close();
+		await game.close();
+	});
+
+	// The commands the fake has received, without the CMD: and state index.
+	function commands(): string[] {
+		return game.received.filter(({ tag }) => tag === Tag.Command).map(({ strings }) => strings[0].replace(/^CMD:\d+:/, ""));
+	}
+
+	// An output frame and a tag 3 reply, the way the game answers a command in InGame.
+	function answer(line: string, result = ""): Buffer {
+		return Buffer.concat([encodeFrame(Tag.Output, ["O", `InGame: ${line}`]), encodeFrame(Tag.Command, [result])]);
+	}
+
+	test("sends the Lua to the state's index, and returns its lines without the prefix", async () => {
+		game.onCommand = () => ({ output: ["hello", "world"] });
+
+		expect(await client.run("InGame", "print(1)")).toEqual({ lines: ["hello", "world"] });
+		expect(game.received.at(-1)).toEqual({ tag: Tag.Command, strings: ["CMD:119:print(1)"] });
+	});
+
+	test("returns Main State lines, which have no prefix", async () => {
+		game.onCommand = () => ({ output: ["Main: not a prefix"] });
+
+		expect(await client.run("Main State", "print(1)")).toEqual({ lines: ["Main: not a prefix"] });
+	});
+
+	test("keeps a line from another state whole", async () => {
+		game.onCommand = () => undefined;
+
+		const result = client.run("InGame", "print(1)");
+
+		await vi.waitFor(() => expect(commands()).toHaveLength(1));
+		await game.print(11, "from an event handler");
+		await game.send(answer("mine"));
+
+		expect(await result).toEqual({ lines: ["from an event handler", "mine"] });
+	});
+
+	test("rejects with the game's error and the lines before it", async () => {
+		game.onCommand = () => ({ output: ["before"], error: errorReply });
+
+		const error = await client.run("InGame", "error(\"boom\")").catch((caught: unknown) => caught);
+
+		expect(error).toBeInstanceOf(TunerLuaError);
+		expect(error).toMatchObject({ message: errorReply.slice("ERR:".length), lines: ["before"] });
+	});
+
+	test("treats a reply with no strings as success", async () => {
+		game.onCommand = () => undefined;
+
+		const result = client.run("InGame", "print(1)");
+
+		await vi.waitFor(() => expect(commands()).toHaveLength(1));
+		await game.send(Buffer.concat([encodeFrame(Tag.Output, ["O"]), encodeFrame(Tag.Command, [])]));
+
+		// An output frame with no text gives an empty line.
+		expect(await result).toEqual({ lines: [""] });
+	});
+
+	test("rejects a state name it can't find", async () => {
+		await expect(client.run("Nowhere", "print(1)")).rejects.toThrow("No Lua state is named Nowhere");
+		expect(commands()).toEqual([]);
+	});
+
+	test("sends one command at a time", async () => {
+		game.onCommand = () => undefined;
+
+		const results = [client.run("InGame", "first"), client.run("InGame", "second")];
+
+		await vi.waitFor(() => expect(commands()).toEqual(["first"]));
+		await game.send(answer("1"));
+		await vi.waitFor(() => expect(commands()).toEqual(["first", "second"]));
+		await game.send(answer("2"));
+
+		expect(await Promise.all(results)).toEqual([{ lines: ["1"] }, { lines: ["2"] }]);
+	});
+
+	test("keeps going after a failed command", async () => {
+		game.onCommand = (_state, lua) => (lua === "bad" ? { error: errorReply } : { output: ["ok"] });
+
+		const failed = client.run("InGame", "bad");
+		const passed = client.run("InGame", "good");
+
+		await expect(failed).rejects.toThrow(TunerLuaError);
+		expect(await passed).toEqual({ lines: ["ok"] });
+	});
+
+	test("times out, sends the next command, and drops the late reply", async () => {
+		game.onCommand = () => undefined;
+
+		const slow = client.run("InGame", "slow");
+
+		await expect(slow).rejects.toThrow(TunerTimeoutError);
+
+		const next = client.run("InGame", "next");
+
+		await vi.waitFor(() => expect(commands()).toEqual(["slow", "next"]));
+		// The game runs commands in order, so the slow command's output and reply come first.
+		await game.send(Buffer.concat([answer("late"), answer("on time")]));
+
+		expect(await next).toEqual({ lines: ["on time"] });
+	});
+
+	test("times out a state list request too", async () => {
+		game.silentTags.add(Tag.StateList);
+
+		await expect(client.listStates()).rejects.toThrow("No reply from the tuner in 300 ms");
+	});
+
+	test("rejects a command in flight when the connection drops", async () => {
+		game.onCommand = () => undefined;
+
+		const result = client.run("InGame", "print(1)");
+
+		await vi.waitFor(() => expect(commands()).toHaveLength(1));
+		await game.dropClient();
+
+		await expect(result).rejects.toThrow("Disconnected from the tuner");
 	});
 });
 
