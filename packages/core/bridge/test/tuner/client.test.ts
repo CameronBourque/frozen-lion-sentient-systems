@@ -2,7 +2,7 @@
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { parseStates, TunerClient, TunerLuaError, TunerTimeoutError } from "../../src/tuner/client.js";
+import { parseStates, TunerClient, TunerLuaError, TunerStateError, TunerTimeoutError } from "../../src/tuner/client.js";
 import { encodeFrame, Tag } from "../../src/tuner/framing.js";
 import { errorReply, states } from "./captured.js";
 import { FakeGame } from "./fake-game.js";
@@ -130,11 +130,14 @@ describe("TunerClient", () => {
 describe("TunerClient.run", () => {
 	let game: FakeGame;
 	let client: TunerClient;
+	let output: string[];
 
 	beforeEach(async () => {
 		game = await FakeGame.start();
 		// Long enough for a test to answer by hand, and short enough for the timeout tests.
 		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 300 });
+		output = [];
+		client.on("output", (line) => output.push(line));
 		client.connect();
 		await once(client, "connected");
 	});
@@ -144,48 +147,106 @@ describe("TunerClient.run", () => {
 		await game.close();
 	});
 
-	// The commands the fake has received, without the CMD: and state index.
-	function commands(): string[] {
-		return game.received.filter(({ tag }) => tag === Tag.Command).map(({ strings }) => strings[0].replace(/^CMD:\d+:/, ""));
+	// Resolves once the fake has received `count` commands in all.
+	async function commandCount(count: number): Promise<void> {
+		await vi.waitFor(() => expect(game.commands).toHaveLength(count));
 	}
 
-	// An output frame and a tag 3 reply, the way the game answers a command in InGame.
-	function answer(line: string, result = ""): Buffer {
-		return Buffer.concat([encodeFrame(Tag.Output, ["O", `InGame: ${line}`]), encodeFrame(Tag.Command, [result])]);
+	function inGame(text: string): Buffer {
+		return encodeFrame(Tag.Output, ["O", `InGame: ${text}`]);
 	}
 
-	test("sends the Lua to the state's index, and returns its lines without the prefix", async () => {
+	// What the game sends back for a wrapped command in InGame that printed these lines.
+	function answer(id: number | undefined, lines: string[], ending = "ok"): Buffer {
+		return Buffer.concat([
+			inGame(`@@ss:begin:${id}`),
+			...lines.map(inGame),
+			inGame(`@@ss:end:${id}:${ending}`),
+			encodeFrame(Tag.Command, [""]),
+		]);
+	}
+
+	test("sends the wrapped Lua to the state's index, and returns its lines without the prefix", async () => {
 		game.onCommand = () => ({ output: ["hello", "world"] });
 
 		expect(await client.run("InGame", "print(1)")).toEqual({ lines: ["hello", "world"] });
-		expect(game.received.at(-1)).toEqual({ tag: Tag.Command, strings: ["CMD:119:print(1)"] });
+		expect(game.received.at(-1)?.strings[0]).toMatch(/^CMD:119:\(function\(\)\n/);
+		expect(game.commands).toEqual([{ id: 1, stateIndex: 119, lua: "print(1)" }]);
 	});
 
-	test("returns Main State lines, which have no prefix", async () => {
+	test("runs in Main State, whose prints have no prefix", async () => {
 		game.onCommand = () => ({ output: ["Main: not a prefix"] });
 
 		expect(await client.run("Main State", "print(1)")).toEqual({ lines: ["Main: not a prefix"] });
 	});
 
-	test("keeps a line from another state whole", async () => {
+	test("splits a print with a newline into lines", async () => {
+		game.onCommand = () => ({ output: ["first\nsecond"] });
+
+		expect(await client.run("InGame", "print(1)")).toEqual({ lines: ["first", "second"] });
+	});
+
+	test("sends prints outside the markers and from other states to the output event", async () => {
 		game.onCommand = () => undefined;
 
 		const result = client.run("InGame", "print(1)");
 
-		await vi.waitFor(() => expect(commands()).toHaveLength(1));
-		await game.print(11, "from an event handler");
-		await game.send(answer("mine"));
+		await commandCount(1);
+		await game.send(Buffer.concat([
+			inGame("before"),
+			inGame("@@ss:begin:1"),
+			encodeFrame(Tag.Output, ["O", "PlotInfo: during"]),
+			inGame("mine"),
+			inGame("@@ss:end:1:ok"),
+			encodeFrame(Tag.Command, [""]),
+		]));
 
-		expect(await result).toEqual({ lines: ["from an event handler", "mine"] });
+		expect(await result).toEqual({ lines: ["mine"] });
+		expect(output).toEqual(["InGame: before", "PlotInfo: during"]);
 	});
 
-	test("rejects with the game's error and the lines before it", async () => {
-		game.onCommand = () => ({ output: ["before"], error: errorReply });
+	test("emits each line of an unprompted print", async () => {
+		await game.print(123, "first\nsecond");
+
+		await vi.waitFor(() => expect(output).toEqual(["InvitePopup: first", "second"]));
+	});
+
+	test("drops the markers of a command it doesn't know", async () => {
+		await game.send(Buffer.concat([inGame("@@ss:begin:98"), inGame("@@ss:end:99:ok")]));
+		game.onCommand = () => ({ output: ["after"] });
+
+		expect(await client.run("InGame", "print(1)")).toEqual({ lines: ["after"] });
+		expect(output).toEqual([]);
+	});
+
+	test("rejects with a Lua error from the end marker and the lines before it", async () => {
+		game.onCommand = () => ({ output: ["before"], luaError: "boom" });
 
 		const error = await client.run("InGame", "error(\"boom\")").catch((caught: unknown) => caught);
 
 		expect(error).toBeInstanceOf(TunerLuaError);
-		expect(error).toMatchObject({ message: errorReply.slice("ERR:".length), lines: ["before"] });
+		expect(error).toMatchObject({ message: "boom", lines: ["before"] });
+	});
+
+	test("rejects with the game's error for a syntax error, which has no markers", async () => {
+		game.onCommand = () => ({ error: errorReply });
+
+		await expect(client.run("InGame", "local end")).rejects.toMatchObject({
+			name: "TunerLuaError",
+			message: errorReply.slice("ERR:".length),
+			lines: [],
+		});
+	});
+
+	test("rejects a command that ends without its end marker", async () => {
+		game.onCommand = () => undefined;
+
+		const result = client.run("InGame", "print(1)");
+
+		await commandCount(1);
+		await game.send(encodeFrame(Tag.Command, [""]));
+
+		await expect(result).rejects.toThrow("without its end marker");
 	});
 
 	test("treats a reply with no strings as success", async () => {
@@ -193,16 +254,52 @@ describe("TunerClient.run", () => {
 
 		const result = client.run("InGame", "print(1)");
 
-		await vi.waitFor(() => expect(commands()).toHaveLength(1));
-		await game.send(Buffer.concat([encodeFrame(Tag.Output, ["O"]), encodeFrame(Tag.Command, [])]));
+		await commandCount(1);
+		// An output frame with no text is an empty line, with no prefix.
+		await game.send(Buffer.concat([
+			inGame("@@ss:begin:1"),
+			encodeFrame(Tag.Output, ["O"]),
+			inGame("@@ss:end:1:ok"),
+			encodeFrame(Tag.Command, []),
+		]));
 
-		// An output frame with no text gives an empty line.
-		expect(await result).toEqual({ lines: [""] });
+		expect(await result).toEqual({ lines: [] });
+		expect(output).toEqual([""]);
+	});
+
+	test("lists the states again and retries when the index is gone", async () => {
+		await client.run("InGame", "print(1)");
+		// Like a quit to the main menu and a load that moved InGame.
+		game.states = [{ index: 0, name: "Main State" }, { index: 120, name: "InGame" }];
+
+		expect(await client.run("InGame", "print(2)")).toEqual({ lines: [] });
+		expect(game.commands.map(({ stateIndex }) => stateIndex)).toEqual([119, 119, 120]);
+	});
+
+	test("lists the states again and retries when the index is another state", async () => {
+		await client.run("InGame", "print(1)");
+		game.states = [{ index: 0, name: "Main State" }, { index: 119, name: "PlotInfo" }, { index: 120, name: "InGame" }];
+
+		expect(await client.run("InGame", "print(2)")).toEqual({ lines: [] });
+		expect(game.commands.map(({ stateIndex }) => stateIndex)).toEqual([119, 119, 120]);
+	});
+
+	test("rejects when the state moves again after a fresh list", async () => {
+		await client.run("InGame", "print(1)");
+		game.states = [{ index: 120, name: "InGame" }];
+		// The fake answers the fresh list with index 120, then moves InGame before the retry arrives.
+		game.on("frame", ({ tag }: { tag: number }) => {
+			if (tag === Tag.StateList) {
+				game.states = [{ index: 121, name: "InGame" }];
+			}
+		});
+
+		await expect(client.run("InGame", "print(2)")).rejects.toThrow(TunerStateError);
 	});
 
 	test("rejects a state name it can't find", async () => {
 		await expect(client.run("Nowhere", "print(1)")).rejects.toThrow("No Lua state is named Nowhere");
-		expect(commands()).toEqual([]);
+		expect(game.commands).toEqual([]);
 	});
 
 	test("sends one command at a time", async () => {
@@ -210,16 +307,17 @@ describe("TunerClient.run", () => {
 
 		const results = [client.run("InGame", "first"), client.run("InGame", "second")];
 
-		await vi.waitFor(() => expect(commands()).toEqual(["first"]));
-		await game.send(answer("1"));
-		await vi.waitFor(() => expect(commands()).toEqual(["first", "second"]));
-		await game.send(answer("2"));
+		await commandCount(1);
+		await game.send(answer(game.commands[0].id, ["1"]));
+		await commandCount(2);
+		await game.send(answer(game.commands[1].id, ["2"]));
 
 		expect(await Promise.all(results)).toEqual([{ lines: ["1"] }, { lines: ["2"] }]);
+		expect(game.commands.map(({ lua }) => lua)).toEqual(["first", "second"]);
 	});
 
 	test("keeps going after a failed command", async () => {
-		game.onCommand = (_state, lua) => (lua === "bad" ? { error: errorReply } : { output: ["ok"] });
+		game.onCommand = (_state, lua) => (lua === "bad" ? { luaError: "boom" } : { output: ["ok"] });
 
 		const failed = client.run("InGame", "bad");
 		const passed = client.run("InGame", "good");
@@ -237,11 +335,12 @@ describe("TunerClient.run", () => {
 
 		const next = client.run("InGame", "next");
 
-		await vi.waitFor(() => expect(commands()).toEqual(["slow", "next"]));
+		await commandCount(2);
 		// The game runs commands in order, so the slow command's output and reply come first.
-		await game.send(Buffer.concat([answer("late"), answer("on time")]));
+		await game.send(Buffer.concat([answer(game.commands[0].id, ["late"]), answer(game.commands[1].id, ["on time"])]));
 
 		expect(await next).toEqual({ lines: ["on time"] });
+		expect(output).toEqual([]);
 	});
 
 	test("times out a state list request too", async () => {
@@ -255,7 +354,7 @@ describe("TunerClient.run", () => {
 
 		const result = client.run("InGame", "print(1)");
 
-		await vi.waitFor(() => expect(commands()).toHaveLength(1));
+		await commandCount(1);
 		await game.dropClient();
 
 		await expect(result).rejects.toThrow("Disconnected from the tuner");

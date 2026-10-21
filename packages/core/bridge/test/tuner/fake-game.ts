@@ -1,6 +1,8 @@
 // A stand-in for the game's tuner socket, for the connection and client tests. It listens on a
-// free local port and answers the handshake and commands the way the capture shows. Tests
-// decide what each command does, because the fake runs no Lua, and can break things on purpose.
+// free local port and answers the handshake and commands the way the capture and the probe show.
+// It runs no Lua, so tests decide what each command does. It does act out the marker wrapper from
+// src/tuner/wrapper.ts: it prints the markers, checks the state name the way ContextPtr:GetID()
+// would, and answers a command to a missing index with ERR:Invalid Lua State.
 
 import { EventEmitter, once } from "node:events";
 import net from "node:net";
@@ -8,20 +10,42 @@ import { encodeFrame, type Frame, FrameDecoder, Tag } from "../../src/tuner/fram
 import * as captured from "./captured.js";
 
 // What a command does. Output lines are given without the state prefix, which the fake adds.
-// An error is the full ERR: text. Returning undefined sends no reply, for timeout tests.
+// An error is the full ERR: text of the tag 3 reply, like a syntax error. A Lua error is a runtime
+// error inside the wrapper, which the end marker carries. Returning undefined sends no reply, for
+// timeout tests.
 export interface CommandResult {
 	output?: string[];
 	error?: string;
+	luaError?: string;
+}
+
+// A command the fake received. A wrapped command has its marker ID, and its Lua without the wrapper.
+export interface ReceivedCommand {
+	id: number | undefined;
+	stateIndex: number;
+	lua: string;
 }
 
 export type CommandHandler = (stateIndex: number, lua: string) => CommandResult | undefined;
 
 // "CMD:119:print(1)" splits into the state index and the Lua. The s flag lets the Lua span lines.
 const commandPattern = /^CMD:(\d+):(.*)$/s;
+// The wrapper that wrap() builds, with its marker ID, the state name it expects, and the Lua.
+const wrapperPattern = new RegExp([
+	"^\\(function\\(\\)",
+	"print\\(\"@@ss:begin:(\\d+)\"\\)",
+	"if ContextPtr and ContextPtr:GetID\\(\\) ~= \"([^\"]*)\" then .*",
+	"local ok, err = pcall\\(function\\(\\)",
+	"([\\s\\S]*)",
+	"end\\)",
+	"print\\(.*\\)",
+	"end\\)\\(\\)$",
+].join("\n"));
 
 // Emits "client" when a client connects, and "frame" after each frame it receives.
 export class FakeGame extends EventEmitter {
 	readonly received: Frame[] = [];
+	readonly commands: ReceivedCommand[] = [];
 	onCommand: CommandHandler = () => ({});
 	// The state list the fake reports. A test can change it, like a game that loads a new save.
 	states = captured.states;
@@ -125,17 +149,45 @@ export class FakeGame extends EventEmitter {
 		}
 
 		const stateIndex = Number(match[1]);
-		const result = this.onCommand(stateIndex, match[2]);
+		const wrapped = wrapperPattern.exec(match[2]);
+		const lua = wrapped ? wrapped[3] : match[2];
+		const id = wrapped ? Number(wrapped[1]) : undefined;
+		const state = this.states.find(({ index }) => index === stateIndex);
+
+		this.commands.push({ id, stateIndex, lua });
+
+		if (!state) {
+			socket.write(encodeFrame(Tag.Command, ["ERR:Invalid Lua State"]));
+
+			return;
+		}
+
+		const result = this.onCommand(stateIndex, lua);
 
 		if (!result) {
 			return;
 		}
 
-		const output = (result.output ?? []).map((line) => outputFrame(this.states, stateIndex, line));
-		const end = encodeFrame(Tag.Command, [result.error ?? ""]);
+		const print = (line: string) => outputFrame(this.states, stateIndex, line);
+		const output = (result.output ?? []).map(print);
+		const frames: Buffer[] = [];
+
+		if (result.error !== undefined) {
+			// A wrapped command with a syntax error fails before its first print.
+			frames.push(...(wrapped ? [] : output), encodeFrame(Tag.Command, [result.error]));
+		} else if (wrapped && stateIndex !== 0 && state.name !== wrapped[2]) {
+			// ContextPtr:GetID() names the state at this index. Main State has no ContextPtr.
+			frames.push(print(`@@ss:begin:${id}`), print(`@@ss:end:${id}:state:${state.name}`), encodeFrame(Tag.Command, [""]));
+		} else if (wrapped) {
+			const ending = result.luaError === undefined ? "ok" : `error:${result.luaError}`;
+
+			frames.push(print(`@@ss:begin:${id}`), ...output, print(`@@ss:end:${id}:${ending}`), encodeFrame(Tag.Command, [""]));
+		} else {
+			frames.push(...output, encodeFrame(Tag.Command, [""]));
+		}
 
 		// One write, because the game sent output and its tag 3 reply in one TCP segment.
-		socket.write(Buffer.concat([...output, end]));
+		socket.write(Buffer.concat(frames));
 	}
 }
 

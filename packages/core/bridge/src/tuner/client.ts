@@ -1,11 +1,13 @@
 // The tuner protocol on top of a connection: the handshake, the Lua state list, state lookup by
-// name, and running Lua. Requests go out one at a time, through one queue.
+// name, and running Lua. Requests go out one at a time, through one queue. Each command runs inside
+// the marker wrapper from wrapper.ts, so its output can be told apart from other prints.
 // docs/findings/tuner-protocol.md has the messages, and docs/findings/tuner-commands.md has how
 // the game runs commands.
 
 import { EventEmitter } from "node:events";
 import { type ConnectionOptions, TunerConnection } from "./connection.js";
 import { type Frame, Tag } from "./framing.js";
+import { type Ending, parseMarker, wrap } from "./wrapper.js";
 
 export const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -36,19 +38,33 @@ export class TunerTimeoutError extends Error {
 	override name = "TunerTimeoutError";
 }
 
-// "connected" fires once the game answers the handshake, not when the socket opens.
+// The state's index changed again after the client listed the states once more.
+export class TunerStateError extends Error {
+	override name = "TunerStateError";
+}
+
+// "connected" fires once the game answers the handshake, not when the socket opens. "output" fires
+// for each printed line that belongs to no command, such as an event handler's print. The line
+// keeps its state prefix, such as "PlotInfo: ".
 export interface ClientEvents {
 	connected: [];
 	disconnected: [];
+	output: [line: string];
 }
+
+// What one try at a command gives back when the state list is stale.
+const STALE = Symbol("stale");
 
 // A request waiting for the next frame with its tag. A command also collects the output that
 // arrives before its reply.
 interface Pending {
 	tag: number;
+	// The marker ID of a command.
+	id: number | undefined;
 	// The state name and colon that the game puts before each printed line.
 	prefix: string;
 	lines: string[];
+	ending: Ending | undefined;
 	resolve: (reply: Reply) => void;
 	reject: (error: Error) => void;
 	// True after a timeout. The reply still arrives later, and is dropped.
@@ -59,6 +75,13 @@ interface Pending {
 interface Reply {
 	frame: Frame;
 	lines: string[];
+	ending: Ending | undefined;
+}
+
+interface RequestOptions {
+	id?: number;
+	prefix?: string;
+	timed?: boolean;
 }
 
 export class TunerClient extends EventEmitter<ClientEvents> {
@@ -73,6 +96,9 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 	private states: LuaState[] | undefined;
 	// The end of the queue. Each request starts after the one before it settles.
 	private queue: Promise<unknown> = Promise.resolve();
+	private lastId = 0;
+	// The command between its begin and end markers. Its state's prints are its lines.
+	private openCommand: Pending | undefined;
 
 	constructor(options: ClientOptions = {}) {
 		super();
@@ -123,24 +149,59 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 		return matches[0];
 	}
 
-	// Runs Lua in the named state and resolves with the lines it printed.
+	// Runs Lua in the named state and resolves with the lines it printed in that state. A stale
+	// state list gets one more try, with a fresh list.
 	async run(stateName: string, lua: string): Promise<RunResult> {
-		const state = await this.findState(stateName);
-		// Main State is the only state whose prints have no prefix.
-		const prefix = state.index === 0 ? "" : `${state.name}: `;
-		const reply = await this.enqueue(() => this.request(Tag.Command, `CMD:${state.index}:${lua}`, prefix));
-		const [result = ""] = reply.frame.strings;
+		const first = await this.runOnce(stateName, lua);
 
-		if (result.startsWith("ERR:")) {
-			throw new TunerLuaError(result.slice("ERR:".length), reply.lines);
+		if (first !== STALE) {
+			return first;
 		}
 
-		return { lines: reply.lines };
+		this.states = undefined;
+
+		const second = await this.runOnce(stateName, lua);
+
+		if (second !== STALE) {
+			return second;
+		}
+
+		throw new TunerStateError(`The Lua state ${stateName} moved again after a fresh state list`);
+	}
+
+	private async runOnce(stateName: string, lua: string): Promise<RunResult | typeof STALE> {
+		const state = await this.findState(stateName);
+		const id = ++this.lastId;
+		// Main State is the only state whose prints have no prefix.
+		const prefix = state.index === 0 ? "" : `${state.name}: `;
+		const text = `CMD:${state.index}:${wrap(id, state.name, lua)}`;
+		const { frame, lines, ending } = await this.enqueue(() => this.request(Tag.Command, text, { id, prefix }));
+		const [result = ""] = frame.strings;
+
+		// The index points at no state, such as after a quit to the main menu, or at another state.
+		if (result === "ERR:Invalid Lua State" || ending?.kind === "state") {
+			return STALE;
+		}
+
+		// A syntax error fails before the wrapper runs, so it has no markers.
+		if (result.startsWith("ERR:")) {
+			throw new TunerLuaError(result.slice("ERR:".length), lines);
+		}
+
+		if (ending?.kind === "error") {
+			throw new TunerLuaError(ending.message, lines);
+		}
+
+		if (!ending) {
+			throw new Error("The command ended without its end marker");
+		}
+
+		return { lines };
 	}
 
 	private async handshake(): Promise<void> {
 		// No timeout, because nothing else can be sent until the game answers.
-		await this.request(Tag.App, "APP:", "", false);
+		await this.request(Tag.App, "APP:", { timed: false });
 		this.ready = true;
 		this.readyWaiters.splice(0).forEach((wake) => wake());
 		this.emit("connected");
@@ -162,9 +223,13 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 	}
 
 	// Sends one frame and resolves with the next frame that has the same tag.
-	private request(tag: number, text: string, prefix = "", timed = true): Promise<Reply> {
+	private request(tag: number, text: string, options: RequestOptions = {}): Promise<Reply> {
+		const { id, prefix = "", timed = true } = options;
+
 		return new Promise((resolve, reject) => {
-			const request: Pending = { tag, prefix, lines: [], resolve, reject, abandoned: false, timer: undefined };
+			const request: Pending = {
+				tag, id, prefix, lines: [], ending: undefined, resolve, reject, abandoned: false, timer: undefined,
+			};
 
 			if (timed) {
 				request.timer = setTimeout(() => {
@@ -180,12 +245,7 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 
 	private receive(frame: Frame): void {
 		if (frame.tag === Tag.Output) {
-			// The game runs commands one at a time, so output belongs to the oldest command waiting,
-			// even one that timed out.
-			const command = this.pending.find((request) => request.tag === Tag.Command);
-			const text = frame.strings[1] ?? "";
-
-			command?.lines.push(text.startsWith(command.prefix) ? text.slice(command.prefix.length) : text);
+			this.receiveOutput(frame.strings[1] ?? "");
 
 			return;
 		}
@@ -201,7 +261,37 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 		clearTimeout(request.timer);
 
 		if (!request.abandoned) {
-			request.resolve({ frame, lines: request.lines });
+			request.resolve({ frame, lines: request.lines, ending: request.ending });
+		}
+	}
+
+	private receiveOutput(text: string): void {
+		const marker = parseMarker(text);
+
+		if (marker) {
+			// A timed-out command's markers still arrive, so it opens and closes like any other.
+			const command = this.pending.find((request) => request.id === marker.id);
+
+			if (marker.kind === "begin") {
+				this.openCommand = command;
+			} else {
+				if (command) {
+					command.ending = marker.ending;
+				}
+
+				this.openCommand = undefined;
+			}
+
+			return;
+		}
+
+		const command = this.openCommand;
+
+		// A print with a newline is several lines. Only the first has the state prefix.
+		if (command && text.startsWith(command.prefix)) {
+			command.lines.push(...text.slice(command.prefix.length).split("\n"));
+		} else {
+			text.split("\n").forEach((line) => this.emit("output", line));
 		}
 	}
 
@@ -210,6 +300,7 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 
 		this.ready = false;
 		this.states = undefined;
+		this.openCommand = undefined;
 		this.pending.splice(0).forEach((request) => {
 			clearTimeout(request.timer);
 			request.reject(new Error("Disconnected from the tuner"));
