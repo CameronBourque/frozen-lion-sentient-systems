@@ -11,6 +11,11 @@ Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have differe
 3. Do the core mod's own states show in the tuner list under predictable names, and can the tuner call the mod's global functions in them?
 4. Which state fires the turn-start event reliably for each human slot, including in hotseat?
 5. Does a UI state see globals from `Version.lua`, or does it need its own `include`?
+6. Does the tuner socket stay open when the player saves and quits to the main menu, and when they load a game again?
+7. Does the state list or any state's index change across a load, or when the player opens an in-game menu such as the tech tree?
+8. What does the game reply to a command sent to a state index that no longer exists?
+9. Does `ContextPtr:GetID()` return the state's name in a UI state, so that a command can check that it runs in the state it expects?
+10. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
 
 ## What we know now
 
