@@ -1,6 +1,6 @@
 # Lua states
 
-Status: open. The state list and the `InGame` probe are confirmed in a running game on Windows. The rest is partly confirmed from game files.
+Status: open. The state list, the `InGame` probe, and how the list changes over a session are confirmed in a running game on Windows. The rest is partly confirmed from game files.
 
 Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have different APIs. The FireTuner state list shows which states exist in a running game.
 
@@ -11,11 +11,8 @@ Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have differe
 3. Do the core mod's own states show in the tuner list under predictable names, and can the tuner call the mod's global functions in them?
 4. Which state fires the turn-start event reliably for each human slot, including in hotseat?
 5. Does a UI state see globals from `Version.lua`, or does it need its own `include`?
-6. Does the tuner socket stay open when the player saves and quits to the main menu, and when they load a game again?
-7. Does the state list or any state's index change across a load, or when the player opens an in-game menu such as the tech tree?
-8. What does the game reply to a command sent to a state index that no longer exists?
-9. Does `ContextPtr:GetID()` return the state's name in a UI state, so that a command can check that it runs in the state it expects?
-10. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
+6. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
+7. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this, because the in-game states appear only after the click.
 
 ## What we know now
 
@@ -55,6 +52,17 @@ Two community projects name the states they use. Both states appear in the [Wind
 
 civ6-mcp sends commands to `InGame`, which matches the assumption that the action API runs in a UI state.
 
+### State list over a session
+
+| Item | Value | Status |
+| --- | --- | --- |
+| In-game menus | Opening in-game menus, such as the tech tree and a city screen, doesn't change the state list. Each menu is one of the states that always exist | Confirmed |
+| Quit to the main menu | The tuner socket stays open. The list becomes the 32 front-end states, such as `MainMenu`, `FrontEnd`, `Lobby`, and `StagingRoom`. `Main State` stays 0 and `DebugHotloadCache` stays 1 | Confirmed |
+| A command to a state that's gone | The tag 3 reply is `ERR:Invalid Lua State`, and no output comes back | Confirmed |
+| Loading a game | The tuner doesn't answer `LSQ:` while the game loads and while the loading screen waits for the player to click its button. Then the game resets the socket, and the in-game list comes back on the next connection | Confirmed, one load |
+| Indexes after a load | After a reload of the same save, all 122 in-game states other than `Main State` and `DebugHotloadCache` had their old indexes | Confirmed, one load |
+| `ContextPtr:GetID()` | Returns the state's name in a UI state: `InGame` in `InGame`, and `PlotInfo` in `PlotInfo`. `Main State` has no `ContextPtr` | Confirmed |
+
 ## Method
 
 1. Connect FireTuner to a running game and copy the full state list here.
@@ -65,6 +73,7 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
    ```
 
 3. Load the core mod and check which new states appear.
+4. Close FireTuner, and run `npm run watch-states --workspace packages/core/bridge`. Open a few in-game menus. Save, quit to the main menu, and load the save. Click the loading screen's button to start the game, then stop the script.
 
 ## Results
 
@@ -74,10 +83,25 @@ FireTuner listed 124 states in a Duel game with Gathering Storm rules, sorted by
 
 `ActionPanel`, `AdvisorPopup`, `ARXManager`, `Automation_NarrationPopup`, `BoostUnlockedPopup`, `CameraManager`, `ChatPanel`, `ChooseArtifact`, `CityBannerManager`, `CityPanel`, `CityPanelCulture`, `CityPanelOverview`, `CityPanelPower`, `CityStates`, `CivicsChooser`, `CivicsTree`, `CivilopediaScreen`, `ClimateScreen`, `ConfirmKick`, `DebugHotloadCache`, `DeclareWarPopup`, `DedicationPopup`, `DiplomacyActionView`, `DiplomacyDealView`, `DiplomacyRibbon`, `DisloyalCityChooser`, `DistrictPlotIconManager`, `EdgeScroll`, `EndGameMenu`, `EraCompletePopup`, `EraProgressPanel`, `EraReviewPopup`, `EspionageChooser`, `EspionageEscape`, `EspionageOverview`, `EspionagePopup`, `EventPopup`, `ExpansionIntro`, `FullscreenMapPopup`, `GameCore_Tuner`, `GenVFX`, `GlobalResourcePopup`, `GovernmentScreen`, `GovernorAssignmentChooser`, `GovernorDetailsPanel`, `GovernorPanel`, `GreatPeoplePopup`, `GreatWorkShowcase`, `GreatWorksOverview`, `HistoricMoments`, `HotSeatBackground`, `InGame`, `InGamePopup`, `InGameTopOptionsMenu`, `InvitePopup`, `LaunchBar`, `LeaderScene`, `LoadGameMenu`, `Main State`, `MapLabelManager`, `MapPinListPanel`, `MapPinManager`, `MapPinPopup`, `MapSearchPanel`, `MinimapPanel`, `ModalLensPanel`, `MultiplayerTurnManager`, `NaturalDisasterPopup`, `NaturalWonderPopup`, `NewTurnPanel`, `NotificationPanel`, `Options`, `PantheonChooser`, `PartialScreenHooks`, `PausePanel`, `PBCNotificationPopup`, `PlayerChange`, `PlotInfo`, `PlotToolTip`, `PowerLensManager`, `ProductionManager`, `ProductionPanel`, `ProjectBuiltPopup`, `RazeCity`, `ReligionScreen`, `ReportScreen`, `ReportsList`, `ResearchChooser`, `RockBandMoviePopup`, `RockBandPopup`, `SaveGameMenu`, `SelectedUnit`, `SettlerInfluenceIconManager`, `SettlerWarningIconManager`, `StatusMessagePanel`, `StrategicView`, `SwitchLayoutPopup`, `TechCivicCompletedPopup`, `TechTree`, `TopPanel`, `TourismBannerManager`, `TradeOriginChooser`, `TradeOverview`, `TradeRouteChooser`, `TutorialGoals`, `TutorialUIRoot`, `TutorialWorldAnchor`, `UnitCaptured`, `UnitFlagManager`, `UnitPanel`, `UnitPromotionPopup`, `WonderBuiltPopup`, `WorldCongress`, `WorldCongressBetweenTurns`, `WorldCongressIntro`, `WorldCongressPopup`, `WorldCrisisPopup`, `WorldCrisisTracker`, `WorldInput`, `WorldRankings`, `WorldTracker`, `WorldViewIconsManager`, `WorldViewPlotMessages`
 
+### State lifecycle
+
+`watch-states` listed the states every 5 s on Windows on 2026-10-21, in the same game.
+
+| Time | What the player did | What the script saw |
+| --- | --- | --- |
+| 15:23:31 | Nothing yet | 124 states, `InGame` at 119. The three `ContextPtr:GetID()` checks gave `no ContextPtr`, `InGame`, and `PlotInfo` |
+| 15:23:31 to 15:25:56 | Opened in-game menus | No change |
+| 15:25:56 | Quit to the main menu | 32 states, with no `InGame`. `print("still here")` sent to index 119 got `ERR:Invalid Lua State` |
+| 15:26:52 to 15:27:42 | Loaded the save, and waited at the loading screen's button | No reply to `LSQ:` in 5 s, six times |
+| 15:27:48 | Clicked the button | The socket reset with `ECONNRESET`. The script reconnected at once, and one more `LSQ:` got no reply |
+| 15:27:57 | Nothing | 124 states, `InGame` at 119, and every in-game state at its old index |
+
+The main menu's 32 states are `Main State`, `DebugHotloadCache`, `Options`, `CreditsScreen`, `My2K`, `LoadGameMenu` three times, `PBCNotifyRemind`, `Lobby`, `Mods`, `SaveGameMenu` twice, `MultiSelectWindow`, `CityStatePicker`, `LeaderPicker`, `HostGame`, `ConfirmKick`, `EditHotseatPlayer`, `StagingRoom`, `FrontEndPopup`, `CivRoyaleIntro`, `PiratesIntro`, `CrossPlayLogin`, `MainMenu`, `StateTransition`, `JoiningRoom`, `UserSetupWarning`, `SwitchLayoutPopup`, `Test`, `FrontEnd`, and `InvitePopup`.
+
 ### API probe by state
 
 | State | `RequestOperation` | `UI` | `UI.RequestAction` | `Game.GetLocalPlayer` |
 | --- | --- | --- | --- | --- |
 | `InGame` | `function` | `table` | `function` | `function` |
 
-Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-19.
+Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-21.
