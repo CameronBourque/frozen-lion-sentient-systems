@@ -26,7 +26,7 @@ The protocol between the core mod and the bridge does not count toward MAJOR, be
 
 Memory files, civ notes, and the config file each carry their own schema version. When a format changes, the bridge migrates old files when it loads them. A format change with a migration is not breaking.
 
-Development starts at `0.1.0`. Below `1.0.0`, a breaking change bumps MINOR. The first public Workshop release is `1.0.0`.
+Development starts at `0.1.0`. `initial-version` in `release-please-config.json` sets each package's first release, because release-please otherwise starts a package at `1.0.0`. Below `1.0.0`, a breaking change bumps MINOR. The first public Workshop release is `1.0.0`.
 
 ## Commits
 
@@ -36,7 +36,7 @@ Commit messages trigger the bumps. The commit format and which type bumps which 
 
 Release-please runs in manifest mode. It bumps only the packages whose files a commit touched. The bridge and the core mod live in one package folder, `packages/core`, so they always share one version.
 
-Release-please keeps a release pull request open with the next versions and the changelogs. Merging it starts the release:
+Release-please keeps a release pull request open with the next versions and the changelogs. It rewrites that pull request only when the changelog notes change, so a change to `release-please-config.json` alone leaves the pull request as it was. To rebuild it, close the pull request, delete its branch, and run the **Release** workflow again. Merging the release pull request starts the release:
 
 1. Release-please writes each new version into its package's `package.json` and into a version constant in that package's Lua.
 2. It tags each released package and creates its GitHub release.
@@ -57,4 +57,7 @@ At runtime, the bridge matches the core version exactly, as described in [core/b
 | --- | --- |
 | One repository. The bridge and core share a version, and feature mods have their own | The bridge must match core exactly. Feature mods change on their own schedule and declare a core range. One repository keeps cross-package changes in one pull request |
 | Conventional Commits and release-please decide bumps | Bumps and changelogs come from commits, with no manual step |
+| Release-please opens its pull requests with a GitHub App token | A pull request opened with `GITHUB_TOKEN` starts no workflows, so the required checks would never run on the release pull request. An app token doesn't expire, unlike a personal access token |
+| Dependabot titles use `fix(deps)` for dependencies the bridge ships, `chore(deps-dev)` for development tools, and `ci` for GitHub Actions | An update to what ships releases a core PATCH. Updates to development tools and Actions change nothing that ships, so they release nothing |
+| Workflows use the `pull_request` event, not `pull_request_target` | The checks only read the pull request. `pull_request_target` gives more access than they need |
 | Schema versions in memory, civ note, and config files | Migrations keep format changes from breaking saved games |

@@ -6,7 +6,7 @@ Every later phase depends on the FireTuner channel, and its protocol is undocume
 
 ## Starting point
 
-Repo setup is done, apart from the first `feat` PR. The bridge project is set up in `packages/core/bridge/`, and `build:exe` builds it into one executable. No mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
+Repo setup is done, and core `0.1.0` tested the release flow. The bridge project is set up in `packages/core/bridge/`, and `build:exe` builds it into one executable. No mod code exists yet. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
 
 ## Steps
 
