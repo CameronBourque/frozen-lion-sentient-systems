@@ -1,13 +1,12 @@
 # Build tooling
 
-Status: open. The executable builds and runs on the development machine. It still needs a test on a clean Windows with no Node.
+Status: open. The executable builds and runs on the development machine, and SmartScreen blocks the released download. It still needs a test on a clean Windows with no Node.
 
 The bridge ships as one executable that Node SEA builds. [design/core/bridge.md](../design/core/bridge.md#decisions) says why. The release workflow runs `npm ci` at the repo root and `npm run build:exe` in the bridge workspace on a `windows-latest` runner, then checksums and uploads every file in `dist/`. `build:exe` must therefore leave only the executable in `dist/`.
 
 ## Questions
 
 1. Does the output run on a clean Windows machine with no Node installed?
-2. Does SmartScreen flag the executable when a user downloads it?
 
 ## What we know now
 
@@ -18,6 +17,7 @@ The bridge ships as one executable that Node SEA builds. [design/core/bridge.md]
 | Output folder | `--build-sea` does not create the output folder. It fails with "no such file or directory", so the build script creates `dist/` first | Confirmed | Local build, 2026-10-20 |
 | Signature | The output is unsigned. `--build-sea` needs no extra step for the signature of the Node binary, and it prints no warning about it | Confirmed | `Get-AuthenticodeSignature` reports `NotSigned`, 2026-10-20 |
 | Size | About 105 MB. Almost all of it is the Node runtime. The MCP SDK and the AI SDK add about 2 MB | Confirmed | [Results](#results) |
+| SmartScreen | Blocks the released executable the first time it runs after a download. The dialog says "Windows protected your PC" and shows only **Don't run**, beside a **More info** link. **More info** adds a **Run anyway** button, which starts it. The executable is unsigned and has no download history | Confirmed, one machine | `core-v0.1.0` download on Windows 10, 2026-10-21 |
 
 ## Method
 
@@ -35,5 +35,6 @@ Each build ran from a folder in `Downloads` and exited with code 0. The SDK buil
 | --- | --- | --- | --- | --- | --- |
 | Hello-world | 105,442,632 bytes | Yes | Not yet | Defender found nothing. SmartScreen not tested, because a local copy has no download mark | |
 | With the MCP SDK and the AI SDK | 107,501,384 bytes | Yes | Not yet | Defender found nothing. SmartScreen not tested | `@modelcontextprotocol/sdk` 1.32.1, `ai` 7.0.146, and `zod` 4.6.7. The bundle is 2,058,635 bytes |
+| `core-v0.1.0` release, built by CI | 105,462,088 bytes | Yes | Not yet | SmartScreen blocked it on its first run | Downloaded from the GitHub release. Its SHA-256 matched `checksums.txt`. Started from File Explorer, its console window opened and closed at once, because it prints one line and exits |
 
-Date checked: 2026-10-20, on Windows 10 with Node 26.12.0.
+Date checked: 2026-10-20, on Windows 10 with Node 26.12.0. The release download: 2026-10-21.
