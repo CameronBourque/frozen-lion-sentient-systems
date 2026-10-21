@@ -1,1 +1,1 @@
-CORE_VERSION = "0.0.0" -- x-release-please-version
+CORE_VERSION = "0.1.0" -- x-release-please-version
