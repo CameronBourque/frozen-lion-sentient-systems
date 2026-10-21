@@ -81,14 +81,14 @@ export class FrameDecoder {
 	}
 }
 
-// "O\0hello\0" becomes ["O", "hello"]. The null after the last string leaves an empty piece at
-// the end, which isn't a string. Decoding before splitting is safe, because no UTF-8 character
-// holds a null byte.
+// "O\0hello\0" becomes ["O", "hello"].
 function splitStrings(payload: Buffer): string[] {
 	// Without the null, the last string would be dropped with no sign that anything was lost.
 	if (payload.length > 0 && payload.at(-1) !== 0) {
 		throw new FrameError("Tuner frame payload doesn't end in a null byte");
 	}
 
+	// Decoding before splitting is safe, because no UTF-8 character holds a null byte. The null
+	// after the last string leaves an empty piece at the end, which slice drops.
 	return payload.toString("utf8").split("\0").slice(0, -1);
 }
