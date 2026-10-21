@@ -17,6 +17,7 @@ How the game runs a `CMD:` command and sends back its output. The wire format, m
 | Complete output | All of a command's output arrives before its tag 3 reply. A 1,000,000-character print arrived intact as one output frame. 2,000 prints in one command arrived in order. No output arrived after any tag 3 reply | Confirmed | [Probe results](#probe-results) |
 | Reply order | The game runs commands one at a time, in the order they arrive. Commands sent without waiting got their output and tag 3 replies back in send order, a fast command after a slow one included | Confirmed | [Probe results](#probe-results) |
 | Unprompted output | UI event handlers print with no command running, and their prints arrive on the tuner connection. Prints from three Lua states, `PlotInfo`, `MapLabelManager`, and `InGame`, arrived on the one connection, each with its state's prefix. An unprompted `InGame:` print looks the same as a command's output. A turn end printed nothing | Confirmed | [Behavior notes](#behavior-notes) |
+| Runtime errors | A runtime error's message is the error, then `stack traceback:` and one line for each call, all in one string. The chunk name is the first line of the command, such as `[string "(function()..."]`. Inside the marker wrapper, line N of the caller's Lua is line N + 4 of the command | Confirmed | [Behavior notes](#behavior-notes) |
 
 ## Method
 
@@ -53,6 +54,7 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
 
 ### Behavior notes
 
+- **Hello check.** `npm run hello` on Windows on 2026-10-21 listed 124 states and ran three commands in `InGame` through the marker wrapper. A one-line print and a command over three lines, with a `local` and a trailing `--` comment, both came back as expected. `print("before the error")` and then `error("boom")` came back as a runtime error with the print before it. The message was `[string "(function()..."]:6: boom`, then a stack trace of five calls through `error`, `pcall`, and the wrapper.
 - **Round-trip time.** From a send to its tag 3 reply took 18 to 54 ms, up to the 1,000,000-character print.
 - **Late output.** No frame arrived in the 500 ms after any tag 3 reply.
 - **Unprompted output.** One turn end on 2026-10-19 produced no frames on 4318 in the 48 seconds after the last command. One turn end during the probe's 60-second listen on 2026-10-21 produced no frames either. During the second run's listen, these actions each printed with no command running:
