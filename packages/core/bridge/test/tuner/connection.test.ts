@@ -14,7 +14,8 @@ describe("TunerConnection", () => {
 
 	beforeEach(async () => {
 		game = await FakeGame.start();
-		connection = new TunerConnection({ port: game.port });
+		// Short waits, so retry tests take milliseconds.
+		connection = new TunerConnection({ port: game.port, retryDelayMs: 10, maxRetryDelayMs: 40 });
 	});
 
 	afterEach(async () => {
@@ -31,7 +32,6 @@ describe("TunerConnection", () => {
 	async function connect(): Promise<void> {
 		connection.connect();
 		await once(connection, "connected");
-		await game.waitForClient();
 	}
 
 	test("connects, sends a frame, and emits the reply", async () => {
@@ -52,8 +52,8 @@ describe("TunerConnection", () => {
 		const frames = vi.fn();
 
 		connection.on("frame", frames);
-		game.send(bytes.subarray(0, 5));
-		game.send(bytes.subarray(5));
+		await game.send(bytes.subarray(0, 5));
+		await game.send(bytes.subarray(5));
 		await vi.waitFor(() => expect(frames).toHaveBeenCalledOnce());
 
 		expect(frames).toHaveBeenCalledWith({ tag: Tag.Output, strings: ["O", "InGame: hello"] });
@@ -65,7 +65,7 @@ describe("TunerConnection", () => {
 		const frames = vi.fn();
 
 		connection.on("frame", frames);
-		game.send(Buffer.concat([encodeFrame(Tag.Output, ["O", "a"]), encodeFrame(Tag.Command, [""])]));
+		await game.send(Buffer.concat([encodeFrame(Tag.Output, ["O", "a"]), encodeFrame(Tag.Command, [""])]));
 		await vi.waitFor(() => expect(frames).toHaveBeenCalledTimes(2));
 	});
 
@@ -73,7 +73,7 @@ describe("TunerConnection", () => {
 		await connect();
 
 		// "O\0hello" with the last null missing.
-		game.send(Buffer.from("07000000ffffffff4f0068656c6c6f", "hex"));
+		await game.send(Buffer.from("07000000ffffffff4f0068656c6c6f", "hex"));
 
 		const [error] = await next("disconnected");
 
@@ -83,7 +83,7 @@ describe("TunerConnection", () => {
 
 	test("emits disconnected with no error when the game closes", async () => {
 		await connect();
-		game.dropClient();
+		await game.dropClient();
 
 		const [error] = await next("disconnected");
 
@@ -104,8 +104,8 @@ describe("TunerConnection", () => {
 	test("starts each socket with an empty decoder", async () => {
 		await connect();
 		// Half a frame, then the game closes.
-		game.send(encodeFrame(Tag.Output, ["O", "lost"]).subarray(0, 6));
-		game.dropClient();
+		await game.send(encodeFrame(Tag.Output, ["O", "lost"]).subarray(0, 6));
+		await game.dropClient();
 		await once(connection, "disconnected");
 		await connect();
 
@@ -140,8 +140,108 @@ describe("TunerConnection", () => {
 		expect(connection.connected).toBe(false);
 	});
 
-	test("defaults to the game's tuner port", () => {
+	test("defaults to the game's tuner port and retry waits", () => {
 		// Reads the private fields, because a connection with no options would reach for the real game.
-		expect(new TunerConnection()).toMatchObject({ host: "127.0.0.1", port: 4318 });
+		expect(new TunerConnection()).toMatchObject({
+			host: "127.0.0.1",
+			port: 4318,
+			retryDelayMs: 500,
+			maxRetryDelayMs: 10_000,
+		});
+	});
+
+	describe("reconnect", () => {
+		// Stops the fake, so the port is free, like the game's port while the game isn't running.
+		async function stopGame(): Promise<number> {
+			const port = game.port;
+
+			await game.close();
+
+			return port;
+		}
+
+		test("connects once the game starts", async () => {
+			const port = await stopGame();
+
+			connection.connect();
+			await next("retrying");
+			// Wait first, because a retry can connect before start() returns.
+			const connected = next("connected");
+
+			game = await FakeGame.start(port);
+			await connected;
+
+			expect(connection.connected).toBe(true);
+		});
+
+		test("reconnects after the game closes", async () => {
+			await connect();
+			await game.dropClient();
+			await next("connected");
+
+			expect(connection.connected).toBe(true);
+		});
+
+		test("doubles the wait up to the maximum, and resets it after a connection", async () => {
+			const port = await stopGame();
+			const delays: number[] = [];
+
+			connection.on("retrying", (delayMs) => delays.push(delayMs));
+			connection.connect();
+			await vi.waitFor(() => expect(delays.length).toBeGreaterThanOrEqual(4), { interval: 5 });
+			expect(delays.slice(0, 4)).toEqual([10, 20, 40, 40]);
+
+			// Wait first, because a retry can connect before start() returns.
+			const connected = next("connected");
+
+			game = await FakeGame.start(port);
+			await connected;
+			delays.length = 0;
+			await game.dropClient();
+			await next("connected");
+
+			expect(delays).toEqual([10]);
+		});
+
+		test("stops retrying after close", async () => {
+			await stopGame();
+
+			const opened = vi.spyOn(net, "connect");
+
+			connection.connect();
+			await next("retrying");
+			connection.close();
+			// Longer than the 10 ms wait, so a retry that wasn't cancelled would have run.
+			await new Promise((resolve) => setTimeout(resolve, 30));
+
+			expect(opened).toHaveBeenCalledOnce();
+		});
+
+		test("doesn't retry when a disconnected listener calls close", async () => {
+			const retrying = vi.fn();
+
+			await stopGame();
+			connection.on("disconnected", () => connection.close());
+			connection.on("retrying", retrying);
+			connection.connect();
+			await next("disconnected");
+
+			expect(retrying).not.toHaveBeenCalled();
+		});
+
+		test("tries at once when connect is called during the wait", async () => {
+			const port = await stopGame();
+			const patient = new TunerConnection({ port, retryDelayMs: 60_000 });
+
+			patient.connect();
+
+			const [delayMs] = await (once(patient, "retrying") as Promise<ConnectionEvents["retrying"]>);
+
+			expect(delayMs).toBe(60_000);
+			game = await FakeGame.start(port);
+			patient.connect();
+			await once(patient, "connected");
+			patient.close();
+		});
 	});
 });

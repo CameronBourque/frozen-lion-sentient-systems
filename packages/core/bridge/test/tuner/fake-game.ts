@@ -29,14 +29,15 @@ export class FakeGame extends EventEmitter {
 		super();
 	}
 
-	static async start(): Promise<FakeGame> {
+	// Port 0 picks a free port. A test that restarts the game passes the old port.
+	static async start(port = 0): Promise<FakeGame> {
 		const server = net.createServer();
 		const game = new FakeGame(server);
 
 		// The game takes one client at a time.
 		server.maxConnections = 1;
 		server.on("connection", (socket) => game.accept(socket));
-		server.listen(0, "127.0.0.1");
+		server.listen(port, "127.0.0.1");
 		await once(server, "listening");
 
 		return game;
@@ -46,34 +47,35 @@ export class FakeGame extends EventEmitter {
 		return (this.server.address() as net.AddressInfo).port;
 	}
 
-	get connected(): boolean {
-		return this.client !== undefined;
+	// An output frame the way the game prints it, such as an event handler's print. Waits for a
+	// client, like send().
+	async print(stateIndex: number, text: string): Promise<void> {
+		await this.send(outputFrame(stateIndex, text));
 	}
 
-	async waitForClient(): Promise<void> {
-		if (!this.client) {
-			await once(this, "client");
-		}
+	// Raw bytes, for split, merged, or broken frames. Waits for a client, because the client can see
+	// its connection before the fake does.
+	async send(bytes: Buffer): Promise<void> {
+		(await this.waitForClient()).write(bytes);
 	}
 
-	// An output frame the way the game prints it, such as an event handler's print.
-	print(stateIndex: number, text: string): void {
-		this.send(outputFrame(stateIndex, text));
-	}
-
-	// Raw bytes, for split, merged, or broken frames.
-	send(bytes: Buffer): void {
-		this.client?.write(bytes);
-	}
-
-	// Like the game closing or crashing.
-	dropClient(): void {
-		this.client?.destroy();
+	// Like the game closing or crashing. Waits for a client, like send().
+	async dropClient(): Promise<void> {
+		(await this.waitForClient()).destroy();
 	}
 
 	async close(): Promise<void> {
-		this.dropClient();
+		// No waiting here, because a test may close the fake with no client on the way.
+		this.client?.destroy();
 		await new Promise((resolve) => this.server.close(resolve));
+	}
+
+	private async waitForClient(): Promise<net.Socket> {
+		while (!this.client) {
+			await once(this, "client");
+		}
+
+		return this.client;
 	}
 
 	private accept(socket: net.Socket): void {
@@ -89,24 +91,25 @@ export class FakeGame extends EventEmitter {
 		socket.on("data", (chunk: Buffer) => {
 			for (const frame of decoder.push(chunk)) {
 				this.received.push(frame);
-				this.reply(frame);
+				this.reply(socket, frame);
 				this.emit("frame", frame);
 			}
 		});
 		this.emit("client");
 	}
 
-	private reply(frame: Frame): void {
+	// Replies go to the socket the frame came from, which is connected.
+	private reply(socket: net.Socket, frame: Frame): void {
 		if (frame.tag === Tag.App) {
-			this.send(encodeFrame(Tag.App, appReply));
+			socket.write(encodeFrame(Tag.App, appReply));
 		} else if (frame.tag === Tag.StateList) {
-			this.send(encodeFrame(Tag.StateList, states.flatMap(({ index, name }) => [String(index), name])));
+			socket.write(encodeFrame(Tag.StateList, states.flatMap(({ index, name }) => [String(index), name])));
 		} else if (frame.tag === Tag.Command) {
-			this.runCommand(frame.strings[0] ?? "");
+			this.runCommand(socket, frame.strings[0] ?? "");
 		}
 	}
 
-	private runCommand(text: string): void {
+	private runCommand(socket: net.Socket, text: string): void {
 		const match = commandPattern.exec(text);
 
 		if (!match) {
@@ -124,7 +127,7 @@ export class FakeGame extends EventEmitter {
 		const end = encodeFrame(Tag.Command, [result.error ?? ""]);
 
 		// One write, because the game sent output and its tag 3 reply in one TCP segment.
-		this.send(Buffer.concat([...output, end]));
+		socket.write(Buffer.concat([...output, end]));
 	}
 }
 
