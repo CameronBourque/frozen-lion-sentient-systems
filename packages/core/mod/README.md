@@ -19,6 +19,6 @@ A directory junction links this folder into the game's user mods folder, so the 
 3. Start the game, open **Additional Content**, and turn on **Sentient Systems Core**.
 4. Start or load a game with the mod on.
 
-After a change, load the game again.
+After a change, load the game again. You don't need to restart the game or turn the mod on again. This held for changes to the Lua files and to the `.modinfo` on 2026-10-22.
 
 To remove the link, run `rmdir` on the junction in the `Mods` folder. `rmdir` without `/S` removes only the link and leaves this folder alone.

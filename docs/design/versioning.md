@@ -38,14 +38,14 @@ Release-please runs in manifest mode. It bumps only the packages whose files a c
 
 Release-please keeps a release pull request open with the next versions and the changelogs. It rewrites that pull request only when the changelog notes change, so a change to `release-please-config.json` alone leaves the pull request as it was. To rebuild it, close the pull request, delete its branch, and run the **Release** workflow again. Merging the release pull request starts the release:
 
-1. Release-please writes each new version into its package's `package.json`, its `.modinfo`, and a version constant in its Lua.
+1. Release-please writes each new version into its package's `package.json` and its `.modinfo`.
 2. It tags each released package and creates its GitHub release.
 3. If core changed, CI builds the bridge executable and publishes it to the core release with a checksum.
 4. CI packages the changed mods, and they go to the Workshop.
 
 The GitHub release always comes before the Workshop upload. Each Workshop version of the core mod then has a matching bridge release.
 
-Each `.modinfo` holds the full version twice: in the `version` attribute on `<Mod>`, and in `<Properties><Version>`. A UI script reads the second one at runtime with `Modding.GetModProperty`. Gameplay states have no `Modding`, so they read the Lua constant. See [findings/game-api.md](../findings/game-api.md#mod-metadata).
+Each `.modinfo` holds the full version twice: in the `version` attribute on `<Mod>`, and in `<Properties><Version>`. A UI script reads the second one at runtime with `Modding.GetModProperty`. Gameplay states have no `Modding`, so only a UI script can read the version. The `.modinfo` is the only place the mod's version lives. See [findings/game-api.md](../findings/game-api.md#mod-metadata).
 
 ## Runtime checks
 
