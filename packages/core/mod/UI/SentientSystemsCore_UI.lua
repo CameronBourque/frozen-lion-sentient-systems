@@ -23,12 +23,18 @@ function SentientSystems_GetVersion()
 	return version
 end
 
--- Prints the turn signal, "[SENTIENTSYSTEMS] AGENT_TURN <playerID>", when a human player's turn starts.
--- isFirstTime is false when the event fires again for a turn that already started.
+-- Whether an agent plays this player. Every turn check goes through here. For now agents play the
+-- human slots. Later an agent can play any slot, human or AI, and only this check changes.
+local function IsAgentPlayer(player)
+	return player:IsHuman()
+end
+
+-- Prints the turn signal, "[SENTIENTSYSTEMS] AGENT_TURN <playerID>", when an agent player's turn
+-- starts. isFirstTime is false when the event fires again for a turn that already started.
 local function OnPlayerTurnActivated(playerID, isFirstTime)
 	local player = Players[playerID]
 
-	if player ~= nil and player:IsHuman() then
+	if player ~= nil and IsAgentPlayer(player) then
 		SentientSystems_Print("AGENT_TURN", playerID)
 	end
 end
