@@ -41,6 +41,18 @@ end
 
 Events.PlayerTurnActivated.Add(OnPlayerTurnActivated)
 
+-- Prints the turn signal again for each agent player whose turn is active now, so a bridge that
+-- connects in the middle of a turn learns of it. Prints nothing between turns or during AI turns.
+-- PlayerManager.GetAlive() lists every living player, AI and city-states too, so the loop needs no
+-- change when agents can play other slots.
+function SentientSystems_Resync()
+	for _, player in ipairs(PlayerManager.GetAlive()) do
+		if IsAgentPlayer(player) and player:IsTurnActive() then
+			SentientSystems_Print("AGENT_TURN", player:GetID())
+		end
+	end
+end
+
 -- Prints "[SENTIENTSYSTEMS] CORE_LOADED <state>" each time the script loads, including after a live
 -- reload, so the log shows where the core mod started.
 SentientSystems_Print("CORE_LOADED", ContextPtr:GetID())
