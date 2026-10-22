@@ -23,5 +23,5 @@ The mod appears in **Additional Content**, the game loads with the mod on, and F
 
 ## Record
 
-- Which state fires the turn signal reliably, and whether a UI state sees globals from an imported file, in [lua-contexts.md](../../findings/lua-contexts.md#results), questions 3 to 5.
-- The tag format, in [game-api.md](../../findings/game-api.md).
+- Which state fires the turn signal reliably, and whether a UI state sees globals from an imported file, in [lua-contexts.md](../../findings/lua-contexts.md#the-core-mods-states).
+- The tag format, in [in-game-lua.md](../../design/core/in-game-lua.md).

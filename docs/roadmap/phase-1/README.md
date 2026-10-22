@@ -21,6 +21,7 @@ The minimum viable product is the full agent loop playing a whole single-player 
 - Civilopedia `lookup` tool
 - A config file marks the agent slot. No setup screen changes yet
 - A bridge tool that starts a test preset game from the main menu
+- A script that links the core mod into the game's `Mods` folder, in place of the manual steps in the [core mod README](../../../packages/core/mod/README.md#install-for-testing)
 - Pass the smoke test preset, then the MVP gate preset
 - Measure the state size and the cost of one full game
 

@@ -34,5 +34,5 @@ The one name for each thing in this project, and what it means. Use these names 
 | Step | One unit of work in a phase, in its own file `NN-short-name.md` | [rules/docs.md](rules/docs.md#roadmap) |
 | Sweat level | How hard an agent pushes toward victory: no sweat, balanced, or super sweat | [sweat-level.md](design/agents/sweat-level.md) |
 | Tuner | The debug server inside the game. FireTuner and the bridge connect to it over TCP | [tuner-setup.md](findings/tuner-setup.md) |
-| Turn signal | The tagged line that the core mod prints when a turn starts, such as `AGENT_TURN 3` | [architecture.md](design/architecture.md#turn-signal) |
+| Turn signal | The tagged line that the core mod prints when a human player's turn starts, such as `[SENTIENTSYSTEMS] AGENT_TURN 0` | [architecture.md](design/architecture.md#turn-signal) |
 | Windows Sandbox | A clean, throwaway copy of Windows built into Windows 10 and 11 Pro, Enterprise, and Education. It tests the executable on a machine with no Node | [build-tooling.md](findings/build-tooling.md#method) |

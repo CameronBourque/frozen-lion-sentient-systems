@@ -1,6 +1,6 @@
 # Lua states
 
-Status: open. The state list, the `InGame` probe, and how the list changes over a session are confirmed in a running game on Windows. The rest is partly confirmed from game files.
+Status: open. The state list, the `InGame` probe, how the list changes over a session, and the core mod's own states are confirmed in a running game on Windows. The rest is partly confirmed from game files.
 
 Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have different APIs. The FireTuner state list shows which states exist in a running game.
 
@@ -8,12 +8,9 @@ Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have differe
 
 1. Which state can issue player actions through the UI's request functions?
 2. Can a UI state read data from a gameplay state, and the other way around? Through what: `ExposedMembers`, `LuaEvents`, or properties?
-3. Do the core mod's own states show in the tuner list under predictable names, and can the tuner call the mod's global functions in them?
-4. Which state fires the turn-start event reliably for the human player in single player?
-5. Does a UI state see globals from a file that the mod imports, such as `SentientSystemsCore_Tag.lua`, or does it need its own `include`?
-6. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
-7. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this if the in-game states appear only after the click. See question 8.
-8. During a load, do the in-game states appear when the loading screen shows its button, or only after the player clicks it? Two loads disagree. See [state lifecycle](#state-lifecycle).
+3. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
+4. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this, because commands return nothing until after the click. See question 5.
+5. Why did the tuner not answer `LSQ:` before the click in one load, when FireTuner listed the in-game states before the click in another? See [state lifecycle](#state-lifecycle).
 
 ## What we know now
 
@@ -22,7 +19,7 @@ Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have differe
 | Script type | How a mod adds it | Example in the game files | Status |
 | --- | --- | --- | --- |
 | Gameplay script | `<AddGameplayScripts>` in `.modinfo` | `DLC/AlexanderScenario/AlexanderScenario.modinfo`, line 59 | Confirmed |
-| UI script | `<AddUserInterfaces>` in `.modinfo`, with a Lua file and an XML file | `Base/Assets/UI/*.lua`, each with a matching `.xml` | The files are confirmed. The `.modinfo` action is unconfirmed |
+| UI script | `<AddUserInterfaces>` in `.modinfo`, with `<Context>InGame</Context>`. The action lists only the XML file, and the game loads the Lua file with the same name | `Base/Assets/UI/*.lua`, each with a matching `.xml` | Confirmed with the core mod on Windows, 2026-10-22 |
 
 ### Turn events differ by script type
 
@@ -32,13 +29,13 @@ Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have differe
 | `Events.PlayerTurnActivated` | UI scripts | `Base/Assets/UI/Automation/Automation_ObserverCamera.lua`, line 560 | Confirmed |
 | `Events.LocalPlayerTurnBegin` | UI scripts | `Base/Assets/UI/ActionPanel.lua`, line 1334 | Confirmed |
 
-The base game UI uses `Events.*`, and scenario gameplay scripts use `GameEvents.*`. The core mod's turn signal should use the event that belongs to the state it runs in.
+The base game UI uses `Events.*`, and scenario gameplay scripts use `GameEvents.*`. In single player on Windows on 2026-10-22, `GameEvents.PlayerTurnStarted` in a gameplay script and `Events.PlayerTurnActivated` in a UI script each fired once when the human's turn started, gameplay first. Neither fired for AI players, checked with `IsHuman()`. Neither fired when a save loaded. The first signal came when the player ended a turn and the next one started.
 
 ### Where actions can come from
 
 The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/in-game-lua.md](../design/core/in-game-lua.md).
 
-We assume, without confirmation yet, that the core mod's action API runs in a UI state that the mod adds. The phase 0 gate tests it.
+The core mod's own UI state has `UnitManager.RequestOperation` and `UI.RequestAction`. See [the core mod's states](#the-core-mods-states). Whether an action requested there takes effect is untested. The phase 0 gate tests it.
 
 The game's Lua files never call `UnitManager.MoveUnit`, so don't rely on it. Checked on 2026-10-16. Gameplay scenario scripts do use `UnitManager.InitUnit` and `UnitManager.PlaceUnit`, for example in `DLC/VikingsScenario/Scripts/VikingScenario.lua`.
 
@@ -53,6 +50,18 @@ Two community projects name the states they use. Both states appear in the [Wind
 
 civ6-mcp sends commands to `InGame`, which matches the assumption that the action API runs in a UI state.
 
+### The core mod's states
+
+| Item | Value | Status |
+| --- | --- | --- |
+| State names | Each script gets its own state, named after its file. The UI script `SentientSystemsCore_UI.lua` runs in `SentientSystemsCore_UI`, and `ContextPtr:GetID()` returns that name. A gameplay script `SentientSystemsCore_Gameplay.lua` ran in `SentientSystemsCore_Gameplay`. The tuner list and `Lua.log` both use these names | Confirmed |
+| Globals | Two files in one `AddGameplayScripts` action don't share globals. A global set in the first read as `nil` in the second | Confirmed |
+| Shared files | A file listed in `ImportFiles` loads into a state with `include("SentientSystemsCore_Tag")`, the file name without its extension. It worked in a gameplay state and in a UI state. `include` finds a file by name among the imported files of every enabled mod, so a generic name such as `Version` can load another mod's file | Confirmed |
+| Calls from the tuner | The tuner can call the mod's global functions, such as `SentientSystems_Print` and `SentientSystems_GetVersion`, in the mod's gameplay and UI states | Confirmed |
+| Request functions | In `SentientSystemsCore_UI`, `type(UnitManager.RequestOperation)` and `type(UI.RequestAction)` are both `function` | Confirmed |
+
+All rows were checked on Windows on 2026-10-22.
+
 ### State list over a session
 
 | Item | Value | Status |
@@ -60,7 +69,7 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 | In-game menus | Opening in-game menus, such as the tech tree and a city screen, doesn't change the state list. Each menu is one of the states that always exist | Confirmed |
 | Quit to the main menu | The tuner socket stays open. The list becomes the 32 front-end states, such as `MainMenu`, `FrontEnd`, `Lobby`, and `StagingRoom`. `Main State` stays 0 and `DebugHotloadCache` stays 1 | Confirmed |
 | A command to a state that's gone | The tag 3 reply is `ERR:Invalid Lua State`, and no output comes back | Confirmed |
-| Loading a game | The tuner doesn't answer `LSQ:` while the game loads. The in-game list comes back after the load, but two loads disagree on when: before or after the player clicks the loading screen's button. In the first load, the socket reset at the click. See question 8 | Open |
+| Loading a game | The tuner doesn't answer `LSQ:` while the game loads. `Lua.log` prints `LoadScreen: OnLoadGameViewStateDone` when the loading screen shows its button. In FireTuner, the in-game states were listed from then on, but commands to the core mod's states returned no output and no error until the player clicked the button. In one load watched with `watch-states`, `LSQ:` got no reply before the click, and the socket reset at the click. See question 5 | Confirmed, except question 5 |
 | Indexes after a load | After a reload of the same save, all 122 in-game states other than `Main State` and `DebugHotloadCache` had their old indexes | Confirmed, one load |
 | Live reload | Editing the core mod's UI Lua file while a game runs rebuilds that UI context, and its load line prints again. This works in single player and in hotseat. Editing the gameplay Lua file doesn't reload it. Not measured: the delay, whether it needs `EnableTuner 1`, and what the reload resets | Confirmed, 2026-10-22 |
 | `ContextPtr:GetID()` | Returns the state's name in a UI state: `InGame` in `InGame`, and `PlotInfo` in `PlotInfo`. `Main State` has no `ContextPtr` | Confirmed |
@@ -76,7 +85,7 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 
 3. Load the core mod and check which new states appear.
 4. Close FireTuner, and run `npm run watch-states --workspace packages/core/bridge`. Open a few in-game menus. Save, quit to the main menu, and load the save. Click the loading screen's button to start the game, then stop the script.
-5. To answer question 8, load a save and wait at the loading screen's button without clicking it. Check whether the client lists the in-game states. Do it four times: with `watch-states` and with FireTuner, each with the core mod off and on.
+5. To answer question 5, load a save and wait at the loading screen's button without clicking it. Check whether the client lists the in-game states. Do it four times: with `watch-states` and with FireTuner, each with the core mod off and on.
 
 ## Results
 
@@ -101,7 +110,7 @@ FireTuner listed 124 states in a Duel game with Gathering Storm rules, sorted by
 
 The script's output showed up late, so the times in the table may lag the player's actions by an unknown amount.
 
-A second load on 2026-10-22, watched in FireTuner with the core mod on, disagrees with this table. FireTuner's state list showed the in-game states, `SentientSystemsCore_UI` among them, while the loading screen still showed its button. `Lua.log` shows the core mod's UI context loading before `LoadScreen: OnLoadGameViewStateDone`. Two things differ between the loads: the client, which was the script or FireTuner, and the core mod, which was off or on. `watch-states` needs FireTuner closed, because the game takes one client at a time. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now).
+Later loads on 2026-10-22, watched in FireTuner with the core mod on, disagree with this table. FireTuner's state list showed the in-game states, `SentientSystemsCore_UI` among them, while the loading screen still showed its button. `Lua.log` shows the core mod's UI context loading before `LoadScreen: OnLoadGameViewStateDone`. `SentientSystems_Print` sent to the mod's states before the click printed nothing and returned no error. After the click, the same call printed in both states. Two things differ between the loads: the client, which was the script or FireTuner, and the core mod, which was off or on. `watch-states` needs FireTuner closed, because the game takes one client at a time. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now).
 
 The main menu's 32 states are `Main State`, `DebugHotloadCache`, `Options`, `CreditsScreen`, `My2K`, `LoadGameMenu` three times, `PBCNotifyRemind`, `Lobby`, `Mods`, `SaveGameMenu` twice, `MultiSelectWindow`, `CityStatePicker`, `LeaderPicker`, `HostGame`, `ConfirmKick`, `EditHotseatPlayer`, `StagingRoom`, `FrontEndPopup`, `CivRoyaleIntro`, `PiratesIntro`, `CrossPlayLogin`, `MainMenu`, `StateTransition`, `JoiningRoom`, `UserSetupWarning`, `SwitchLayoutPopup`, `Test`, `FrontEnd`, and `InvitePopup`.
 
@@ -110,5 +119,6 @@ The main menu's 32 states are `Main State`, `DebugHotloadCache`, `Options`, `Cre
 | State | `RequestOperation` | `UI` | `UI.RequestAction` | `Game.GetLocalPlayer` |
 | --- | --- | --- | --- | --- |
 | `InGame` | `function` | `table` | `function` | `function` |
+| `SentientSystemsCore_UI` | `function` | Not checked | `function` | Not checked |
 
-Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-21.
+Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-22.
