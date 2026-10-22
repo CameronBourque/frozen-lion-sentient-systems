@@ -10,7 +10,8 @@
       "extra-files": [
         { "type": "json", "path": "bridge/package.json", "jsonpath": "$.version" },
         { "type": "json", "path": "/package-lock.json", "jsonpath": "$.packages['packages/core/bridge'].version" },
-        "mod/Scripts/SentientSystemsCore_Version.lua"
+        "mod/Scripts/SentientSystemsCore_Version.lua",
+        "mod/SentientSystemsCore.modinfo"
       ]
     },
     "packages/agents": {

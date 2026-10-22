@@ -92,7 +92,10 @@ See [lua-contexts.md](lua-contexts.md). The gameplay event is `GameEvents.Player
 
 ### Mod metadata
 
-- Official `.modinfo` files use a whole-number version, for example `<Mod id="..." version="1">` in `DLC/Australia/Australia.modinfo` and `DLC/Expansion2/Expansion2.modinfo`. Confirmed in files. Whole-number versions support the fallback in [design/versioning.md](../design/versioning.md#release-flow), where the `.modinfo` gets a release counter and the full version comes from the Lua constant.
+- Official `.modinfo` files use a whole-number version, for example `<Mod id="..." version="1">` in `DLC/Australia/Australia.modinfo` and `DLC/Expansion2/Expansion2.modinfo`. Confirmed in files. Most workshop mods do too, but some use `1.2` or `4.2`.
+- The game accepts `version="0.1.0"` on `<Mod>`. The mod lists in **Additional Content** and loads. A save made with `version="1"` loads after the change, and a save made with `version="0.1.0"` reloads. Confirmed on Windows on 2026-10-22.
+- `Modding.GetModProperty(handle, "Version")` returns `<Properties><Version>`, not the `version` attribute. With the property set to `0.1.0-test`, it returned `0.1.0-test`. Get the handle from `Modding.GetActiveMods()`, whose entries have `Id` and `Handle` but no `Version` field. Confirmed in `InGame` on Windows on 2026-10-22.
+- Gameplay states have no `Modding`. `type(Modding)` is `nil` in the core mod's gameplay state. Confirmed on Windows on 2026-10-22.
 - The Gathering Storm mod ID is `4873eb62-8ccc-4574-b784-dda455e74e68` (`Expansion2`). Use it for a dependency or in criteria.
 
 ## Method
@@ -115,4 +118,4 @@ Run each step through the tuner, and record the Lua state you ran it in.
 | --- | --- | --- | --- |
 | | | | |
 
-Date checked: game files on 2026-10-16. Running game: not yet.
+Date checked: game files on 2026-10-16. Running game on Windows: mod metadata on 2026-10-22.

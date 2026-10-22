@@ -7,7 +7,7 @@ Create the smallest core mod that loads, prints a tagged turn signal, and report
 In `packages/core/mod/`:
 
 1. **Mod file.** Create `SentientSystemsCore.modinfo` with:
-   - a fixed mod GUID, a name, and a `<Version>`. Generate the GUID once and never change it. Use a whole number for the version, as [game-api.md](../../findings/game-api.md#mod-metadata) shows.
+   - a fixed mod GUID, a name, and a `<Version>`. Generate the GUID once and never change it. Put the full version, such as `0.1.0`, in both the `version` attribute and `<Properties><Version>`, as [game-api.md](../../findings/game-api.md#mod-metadata) shows.
    - `<InGameActions>`:
      - `AddGameplayScripts`, pointing to `Scripts/SentientSystemsCore_Gameplay.lua`
      - `ImportFiles`, pointing to `Scripts/SentientSystemsCore_Version.lua`, so each script can load it with `include("SentientSystemsCore_Version")`
