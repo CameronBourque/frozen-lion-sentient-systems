@@ -8,9 +8,6 @@
 		<Version>0.1.0</Version> <!-- x-release-please-version -->
 	</Properties>
 	<InGameActions>
-		<AddGameplayScripts id="SentientSystemsCore_GameplayScripts">
-			<File>Scripts/SentientSystemsCore_Gameplay.lua</File>
-		</AddGameplayScripts>
 		<AddUserInterfaces id="SentientSystemsCore_UserInterfaces">
 			<Properties>
 				<Context>InGame</Context>
@@ -23,7 +20,6 @@
 	</InGameActions>
 	<Files>
 		<File>Scripts/SentientSystemsCore_Tag.lua</File>
-		<File>Scripts/SentientSystemsCore_Gameplay.lua</File>
 		<File>UI/SentientSystemsCore_UI.lua</File>
 		<File>UI/SentientSystemsCore_UI.xml</File>
 	</Files>
