@@ -62,6 +62,7 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 | A command to a state that's gone | The tag 3 reply is `ERR:Invalid Lua State`, and no output comes back | Confirmed |
 | Loading a game | The tuner doesn't answer `LSQ:` while the game loads. The in-game list comes back after the load, but two loads disagree on when: before or after the player clicks the loading screen's button. In the first load, the socket reset at the click. See question 8 | Open |
 | Indexes after a load | After a reload of the same save, all 122 in-game states other than `Main State` and `DebugHotloadCache` had their old indexes | Confirmed, one load |
+| Live reload | Editing the core mod's UI Lua file while a game runs rebuilds that UI context, and its load line prints again. This works in single player and in hotseat. Editing the gameplay Lua file doesn't reload it. Not measured: the delay, whether it needs `EnableTuner 1`, and what the reload resets | Confirmed, 2026-10-22 |
 | `ContextPtr:GetID()` | Returns the state's name in a UI state: `InGame` in `InGame`, and `PlotInfo` in `PlotInfo`. `Main State` has no `ContextPtr` | Confirmed |
 
 ## Method

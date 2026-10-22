@@ -10,7 +10,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [lua-contexts.md](lua-contexts.md) | Lua states and what each one can call |
 | [game-api.md](game-api.md) | Game calls for cities, units, turns, and properties |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |
-| [multiplayer.md](multiplayer.md) | Whether the tuner works in an online game |
+| [multiplayer.md](multiplayer.md) | What the tuner and the core mod can do in hotseat and online games |
 
 ## Local paths
 
