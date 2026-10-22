@@ -1,6 +1,6 @@
 # Step 8: Receive the turn signal
 
-Turn the tagged lines from [step 7](07-minimal-core-mod.md) into typed events in the bridge. Part of [phase 0](README.md).
+Turn the core mod's [tagged lines](../../design/core/in-game-lua.md) into typed events in the bridge. Part of [phase 0](README.md).
 
 ## Tasks
 
