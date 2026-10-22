@@ -2,13 +2,17 @@
 <Mod id="5D4B5856-E71F-492C-A434-A0938AF49451" version="1">
 	<Properties>
 		<Name>Sentient Systems Core</Name>
+		<Teaser>Lets LLM agents play through the Sentient Systems bridge.</Teaser>
 		<Description>Lets LLM agents play through the Sentient Systems bridge.</Description>
+		<CompatibleVersions>1.2,2.0</CompatibleVersions>
 	</Properties>
 	<InGameActions>
 		<AddGameplayScripts id="CoreGameplayScripts">
-			<File>Scripts/Version.lua</File>
 			<File>Scripts/CoreGameplay.lua</File>
 		</AddGameplayScripts>
+		<ImportFiles id="CoreSharedScripts">
+			<File>Scripts/Version.lua</File>
+		</ImportFiles>
 	</InGameActions>
 	<Files>
 		<File>Scripts/Version.lua</File>
