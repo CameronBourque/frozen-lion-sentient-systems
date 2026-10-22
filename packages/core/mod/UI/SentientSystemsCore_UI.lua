@@ -23,4 +23,16 @@ function SentientSystems_GetVersion()
 	return version
 end
 
+-- Prints the turn signal, "[SENTIENTSYSTEMS] AGENT_TURN <playerID>", when a human player's turn starts.
+-- isFirstTime is false when the event fires again for a turn that already started.
+local function OnPlayerTurnActivated(playerID, isFirstTime)
+	local player = Players[playerID]
+
+	if player ~= nil and player:IsHuman() then
+		SentientSystems_Print("AGENT_TURN", playerID)
+	end
+end
+
+Events.PlayerTurnActivated.Add(OnPlayerTurnActivated)
+
 print("SentientSystemsCore_UI loaded, context is " .. ContextPtr:GetID())
