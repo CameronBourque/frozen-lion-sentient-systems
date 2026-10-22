@@ -25,6 +25,10 @@ describe("describeEvent", () => {
 	test("names the core version", () => {
 		expect(describeEvent({ type: "version", version: "0.1.0" })).toBe("core version 0.1.0");
 	});
+
+	test("names the state the core mod loaded in", () => {
+		expect(describeEvent({ type: "loaded", context: "SentientSystemsCore_UI" })).toBe("core loaded in SentientSystemsCore_UI");
+	});
 });
 
 describe("parseLine", () => {
@@ -38,6 +42,10 @@ describe("parseLine", () => {
 
 	test.each(["0.1.0", "12.0.3", "1.0.0-beta.1"])("reads the version %s", (version) => {
 		expect(parseLine(`[SENTIENTSYSTEMS] CORE_VERSION ${version}`)).toEqual({ result: "event", event: { type: "version", version } });
+	});
+
+	test("reads the state name of a load line", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] CORE_LOADED SentientSystemsCore_UI")).toEqual({ result: "event", event: { type: "loaded", context: "SentientSystemsCore_UI" } });
 	});
 
 	test.each([
@@ -61,6 +69,9 @@ describe("parseLine", () => {
 		{ name: "a missing version", line: "[SENTIENTSYSTEMS] CORE_VERSION nil", reason: "CORE_VERSION needs one version, and got \"nil\"" },
 		{ name: "a version with two parts", line: "[SENTIENTSYSTEMS] CORE_VERSION 0.1", reason: "CORE_VERSION needs one version, and got \"0.1\"" },
 		{ name: "two versions", line: "[SENTIENTSYSTEMS] CORE_VERSION 0.1.0 0.2.0", reason: "CORE_VERSION needs one version, and got \"0.1.0 0.2.0\"" },
+		{ name: "a load line with no state name", line: "[SENTIENTSYSTEMS] CORE_LOADED", reason: "CORE_LOADED needs one state name, and got \"\"" },
+		{ name: "a state name with a colon", line: "[SENTIENTSYSTEMS] CORE_LOADED InGame:", reason: "CORE_LOADED needs one state name, and got \"InGame:\"" },
+		{ name: "two state names", line: "[SENTIENTSYSTEMS] CORE_LOADED InGame PlotInfo", reason: "CORE_LOADED needs one state name, and got \"InGame PlotInfo\"" },
 	])("reports $name as invalid", ({ line, reason }) => {
 		expect(parseLine(line)).toEqual({ result: "invalid", reason });
 	});

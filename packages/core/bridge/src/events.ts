@@ -6,7 +6,8 @@ export const TAG = "[SENTIENTSYSTEMS]";
 
 export type CoreEvent =
 	| { type: "turn"; playerId: number }
-	| { type: "version"; version: string };
+	| { type: "version"; version: string }
+	| { type: "loaded"; context: string };
 
 // "untagged" is a line from the game or another mod. "invalid" is a tagged line the bridge can't
 // read, such as a kind from a newer core mod, with the reason.
@@ -26,6 +27,8 @@ const PLAYER_ID = /^\d+$/;
 // A release version such as "0.1.0", with an optional suffix such as "-beta.1". A mod with no
 // version prints "nil".
 const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
+// A Lua state's name, from ContextPtr:GetID(), such as "SentientSystemsCore_UI".
+const CONTEXT = /^\w+$/;
 
 export const KINDS: Kind[] = [
 	{
@@ -41,6 +44,13 @@ export const KINDS: Kind[] = [
 		parse: (args) => args.length === 1 && VERSION.test(args[0])
 			? { type: "version", version: args[0] }
 			: `CORE_VERSION needs one version, and got "${args.join(" ")}"`,
+	},
+	{
+		name: "CORE_LOADED",
+		example: "[SENTIENTSYSTEMS] CORE_LOADED SentientSystemsCore_UI",
+		parse: (args) => args.length === 1 && CONTEXT.test(args[0])
+			? { type: "loaded", context: args[0] }
+			: `CORE_LOADED needs one state name, and got "${args.join(" ")}"`,
 	},
 ];
 
@@ -60,6 +70,8 @@ export function describeEvent(event: CoreEvent): string {
 			return `turn ${event.playerId}`;
 		case "version":
 			return `core version ${event.version}`;
+		case "loaded":
+			return `core loaded in ${event.context}`;
 	}
 }
 
