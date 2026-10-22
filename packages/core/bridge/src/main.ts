@@ -1,5 +1,5 @@
-// Starts the bridge. It connects to the game's tuner, logs the core mod's version on each connect,
-// and logs each event the core mod prints, until you press Ctrl+C.
+// Starts the bridge. It connects to the game's tuner, logs the core mod's version and any active
+// turn on each connect, and logs each event the core mod prints, until you press Ctrl+C.
 
 import { onConnect } from "./connect.js";
 import { readLine } from "./events.js";
