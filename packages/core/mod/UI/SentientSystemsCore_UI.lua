@@ -35,4 +35,6 @@ end
 
 Events.PlayerTurnActivated.Add(OnPlayerTurnActivated)
 
-print("SentientSystemsCore_UI loaded, context is " .. ContextPtr:GetID())
+-- Prints "[SENTIENTSYSTEMS] CORE_LOADED <state>" each time the script loads, including after a live
+-- reload, so the log shows where the core mod started.
+SentientSystems_Print("CORE_LOADED", ContextPtr:GetID())

@@ -4,6 +4,7 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 
 - **Tagged lines.** Every line the bridge must read has the form `[SENTIENTSYSTEMS] <KIND> <args>`, joined with spaces. `SentientSystems_Print` in `Scripts/SentientSystemsCore_Tag.lua` prints them. The tuner adds the state's name in front, so the bridge receives lines such as `SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0`. See [findings/tuner-protocol.md](../../findings/tuner-protocol.md#what-we-know-now).
 - **Turn events.** The UI script listens for `Events.PlayerTurnActivated` and prints `AGENT_TURN <playerID>` when a human player's turn starts. The tuner connection carries that line to the bridge.
+- **Load line.** Each time the UI script loads, including after a live reload, it prints `CORE_LOADED <state>`, with the state name from `ContextPtr:GetID()`. The bridge logs it, which marks where the core mod started in the log.
 - **Version report.** `SentientSystems_GetVersion()` in the UI script reads `<Properties><Version>` from the mod's `.modinfo` and prints `CORE_VERSION <version>`. See [versioning.md](../versioning.md#release-flow).
 - **State serializer.** It builds a view of one player's game from that player's own visibility data, never from what is on screen. A map-reveal toggle can then never leak hidden information to an agent. The view includes:
   - cities, units, visible tiles, and what blocks the end of the turn,
