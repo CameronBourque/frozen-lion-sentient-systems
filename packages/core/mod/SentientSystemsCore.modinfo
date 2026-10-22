@@ -19,10 +19,12 @@
 		</AddUserInterfaces>
 		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Version.lua</File>
+			<File>Scripts/SentientSystemsCore_Tag.lua</File>
 		</ImportFiles>
 	</InGameActions>
 	<Files>
 		<File>Scripts/SentientSystemsCore_Version.lua</File>
+		<File>Scripts/SentientSystemsCore_Tag.lua</File>
 		<File>Scripts/SentientSystemsCore_Gameplay.lua</File>
 		<File>UI/SentientSystemsCore_UI.lua</File>
 		<File>UI/SentientSystemsCore_UI.xml</File>
