@@ -16,7 +16,7 @@ A directory junction links this folder into the game's user mods folder, so the 
 	```
 
 	If OneDrive backs up your Documents folder, use `%USERPROFILE%\OneDrive\Documents` in the first path.
-3. Start the game, open **Additional Content**, and turn on the core mod.
+3. Start the game, open **Additional Content**, and turn on **Sentient Systems Core**.
 4. Start or load a game with the mod on.
 
 After a change, load the game again.

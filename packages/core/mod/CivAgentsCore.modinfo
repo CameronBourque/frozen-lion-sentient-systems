@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Mod id="5D4B5856-E71F-492C-A434-A0938AF49451" version="1">
+	<Properties>
+		<Name>Sentient Systems Core</Name>
+		<Description>Lets LLM agents play through the Sentient Systems bridge.</Description>
+	</Properties>
+	<InGameActions>
+		<AddGameplayScripts id="CoreGameplayScripts">
+			<File>Scripts/Version.lua</File>
+			<File>Scripts/CoreGameplay.lua</File>
+		</AddGameplayScripts>
+	</InGameActions>
+	<Files>
+		<File>Scripts/Version.lua</File>
+		<File>Scripts/CoreGameplay.lua</File>
+	</Files>
+</Mod>
