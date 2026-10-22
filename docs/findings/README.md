@@ -19,6 +19,7 @@ These paths are from one Windows test machine. Other machines may differ.
 | Item | Path |
 | --- | --- |
 | `AppOptions.txt` | `%LOCALAPPDATA%\Firaxis Games\Sid Meier's Civilization VI\AppOptions.txt` |
+| Game logs, such as `Lua.log` | `%LOCALAPPDATA%\Firaxis Games\Sid Meier's Civilization VI\Logs\` |
 | Game install | `E:\SteamLibrary\steamapps\common\Sid Meier's Civilization VI\` |
 | Game executables | `<game>\Base\Binaries\Win64Steam\CivilizationVI.exe` and `CivilizationVI_DX12.exe` |
 | Game UI Lua | `<game>\Base\Assets\UI\` |
@@ -26,4 +27,4 @@ These paths are from one Windows test machine. Other machines may differ.
 | SDK and FireTuner | `C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization VI SDK\FireTuner\FireTuner2.exe` |
 | User mods folder | `%USERPROFILE%\OneDrive\Documents\My Games\Sid Meier's Civilization VI\Mods\` |
 
-`AppOptions.txt` is not in the Documents folder. The Documents folder holds logs, saves, and mods.
+`AppOptions.txt` and the logs are not in the Documents folder. The Documents folder holds saves and mods.
