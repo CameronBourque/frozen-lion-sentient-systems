@@ -11,9 +11,8 @@ This file lists the game calls the bridge needs, with the Lua state (gameplay or
 3. How do we move a unit, and how do we check a move before we request it?
 4. What does a failed check return: a reason, or only `false`?
 5. How do we end the turn?
-6. Which call returns the active player in single player, and which in hotseat?
-7. Can a script write a game property that saves keep, for checkpoint IDs?
-8. Can UI Lua dismiss the hotseat pass screen, so agent turns start without a click? Test in phase 2.
+6. Can a script write a game property that saves keep, for checkpoint IDs?
+7. Can UI Lua dismiss the hotseat pass screen, so agent turns start without a click? Test in phase 2.
 
 ## What we know now
 
@@ -78,7 +77,13 @@ civ6-mcp ends the turn with the same call, in [`build_end_turn`](https://github.
 
 ### Active player
 
-civ6-mcp reads the player with `Game.GetLocalPlayer()` in every file we read, and its README doesn't mention hotseat. Question 6 stays open for hotseat.
+`Game.GetLocalPlayer()` returns the human at the screen.
+
+- In single player it returned 0, the one human, in `SentientSystemsCore_UI` through the tuner. A print from the turn event showed 0 on every turn, AI turns included.
+- In hotseat with two humans it followed the human whose turn it was: 0 on player 0's turns and 1 on player 1's. It kept the last human's ID through the AI turns.
+- In hotseat, `Events.LocalPlayerChanged` fired at each handover, before the pass screen and before the next human's `PlayerTurnActivated`. Its first argument is the new local player. Its second came through as `nil`.
+
+Confirmed on Windows on 2026-10-22. The tuner is closed in hotseat, so the hotseat results come from a temporary print to `Lua.log`.
 
 ### Turn events
 
@@ -118,4 +123,4 @@ Run each step through the tuner, and record the Lua state you ran it in.
 | --- | --- | --- | --- |
 | | | | |
 
-Date checked: game files on 2026-10-16. Running game on Windows: mod metadata on 2026-10-22.
+Date checked: game files on 2026-10-16. Running game on Windows: mod metadata and the active player on 2026-10-22.

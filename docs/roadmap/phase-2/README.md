@@ -12,7 +12,7 @@ This phase adds games with a human and several agents, the cover card, and memor
 - Verify that no agent sees outside its fog of war
 - Checkpoint IDs and memory snapshots
 
-Design: [agents/slot-type.md](../../design/agents/slot-type.md), [agents/cover-and-spectator.md](../../design/agents/cover-and-spectator.md), [memory.md](../../design/memory.md#checkpoint-ids). Open questions: [game-api.md](../../findings/game-api.md#questions), questions 6 to 8.
+Design: [agents/slot-type.md](../../design/agents/slot-type.md), [agents/cover-and-spectator.md](../../design/agents/cover-and-spectator.md), [memory.md](../../design/memory.md#checkpoint-ids). Open questions: [game-api.md](../../findings/game-api.md#questions), questions 6 and 7. The active player in hotseat is answered in [game-api.md](../../findings/game-api.md#active-player).
 
 ## Steps
 

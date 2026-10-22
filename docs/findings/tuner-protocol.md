@@ -1,12 +1,14 @@
 # FireTuner protocol
 
-Status: confirmed. A Windows capture confirmed the port, the frame format, and each message type that FireTuner uses. One row from community sources is still unconfirmed on Windows.
+Status: confirmed. A Windows capture confirmed the port, the frame format, and each message type that FireTuner uses. One row from community sources is still unconfirmed on Windows, and one question about the port's listener is open.
 
 The wire format between a client and the game. How the game runs commands and sends back their output is in [tuner-commands.md](tuner-commands.md).
 
 ## Questions
 
-None are open. The unconfirmed rows below come from community sources, and nothing in the bridge depends on them yet.
+1. Why did the game stop listening on 4318, and what brings it back? See the "Listener gone" row.
+
+The unconfirmed rows below come from community sources, and nothing in the bridge depends on them yet.
 
 ## What we know now
 
@@ -19,6 +21,7 @@ Two open-source projects describe the protocol from their own use of it. [civ6-l
 | Port after a crash | After the game was ended from Task Manager and relaunched, it listened on 4318 and 4319 again under a new process ID. Steam did not need a restart. FireTuner kept retrying and reconnected by itself | Confirmed, one test | Windows, 2026-10-19 |
 | Second port | Port 4319 has no Lua states. In single player, `APP:` gets the normal reply, `LSQ:` gets an empty list, and `CMD:0:print` gets an empty tag 3 reply with no output. In hotseat, `APP:` got the normal reply, and the next request, apparently `LSQ:`, crashed the game with `EXCEPTION_ACCESS_VIOLATION` reading `0x0`. Never send requests to 4319 | Confirmed | Windows, 2026-10-22. civ6-logger ARCHITECTURE.md, "Two ports, and which Lua state to use", describes the same empty port |
 | Hotseat | The connection on 4318 drops when the game moves into the hotseat staging room. In the hotseat game, nothing listens on 4318, so no client can connect, even by hand. 4319 still listens. In single player, 4318 stays open | Confirmed | Windows, 2026-10-22 |
+| Listener gone | Once, in a single-player game that had run for about 4.5 hours through many bridge connects and loads, the game stopped listening on 4318 after the bridge disconnected. 4319 still listened, no other client held 4318, and FireTuner's connects got no answer. Two reloads of the save didn't bring it back, and a third did. The cause is unknown. See question 1 | Confirmed, seen once | `netstat` on Windows, 2026-10-22 |
 | Connections | The game accepts one client on 4318 at a time. While FireTuner was connected, 4318 was not in the listening state, and `Test-NetConnection 127.0.0.1 -Port 4318` failed. After FireTuner closed, the same test succeeded | Confirmed | Windows, 2026-10-19 |
 | Framing | A 4-byte little-endian length, a 4-byte little-endian signed tag, then the payload. The length counts payload bytes only, including the trailing null byte. Both directions use this format | Confirmed | [Frame format](#frame-format) |
 | Strings | The payload is UTF-8 strings, each ending in a null byte. A payload can hold several strings | Confirmed | [Message examples](#message-examples) |
@@ -135,4 +138,4 @@ length 189, tag 3, "ERR:Runtime Error: [string \"_cmdr = {error(\"boom\")}\"]:1:
 - **Round-trip time.** From a request to its reply took 19 to 27 ms for the handshake and for each command.
 - **Segments.** Each reply arrived in one TCP segment, the 2,358-byte state list included.
 
-Date checked: 2026-10-19.
+Date checked: 2026-10-19, and 2026-10-22 for the listener.
