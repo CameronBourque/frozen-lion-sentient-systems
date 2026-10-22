@@ -7,15 +7,15 @@
 		<CompatibleVersions>1.2,2.0</CompatibleVersions>
 	</Properties>
 	<InGameActions>
-		<AddGameplayScripts id="CoreGameplayScripts">
-			<File>Scripts/CoreGameplay.lua</File>
+		<AddGameplayScripts id="SentientSystemsCore_GameplayScripts">
+			<File>Scripts/SentientSystemsCore_Gameplay.lua</File>
 		</AddGameplayScripts>
-		<ImportFiles id="CoreSharedScripts">
+		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Version.lua</File>
 		</ImportFiles>
 	</InGameActions>
 	<Files>
 		<File>Scripts/SentientSystemsCore_Version.lua</File>
-		<File>Scripts/CoreGameplay.lua</File>
+		<File>Scripts/SentientSystemsCore_Gameplay.lua</File>
 	</Files>
 </Mod>

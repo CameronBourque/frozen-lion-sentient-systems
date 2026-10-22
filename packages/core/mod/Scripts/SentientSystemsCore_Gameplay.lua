@@ -2,4 +2,4 @@
 
 include("SentientSystemsCore_Version")
 
-print("CoreGameplay loaded, CORE_VERSION is " .. tostring(CORE_VERSION))
+print("SentientSystemsCore_Gameplay loaded, CORE_VERSION is " .. tostring(CORE_VERSION))
