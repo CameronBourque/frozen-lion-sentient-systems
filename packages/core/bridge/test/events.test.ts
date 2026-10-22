@@ -1,7 +1,7 @@
 // Tests for events.ts.
 
 import { describe, expect, test } from "vitest";
-import { KINDS, parseLine, stripState } from "../src/events.js";
+import { describeEvent, KINDS, parseLine, stripState } from "../src/events.js";
 
 describe("stripState", () => {
 	test("removes the state prefix", () => {
@@ -14,6 +14,16 @@ describe("stripState", () => {
 
 	test("removes only the first prefix", () => {
 		expect(stripState("InGame: PlotInfo: x")).toBe("PlotInfo: x");
+	});
+});
+
+describe("describeEvent", () => {
+	test("names a turn by its player ID", () => {
+		expect(describeEvent({ type: "turn", playerId: 0 })).toBe("turn 0");
+	});
+
+	test("names the core version", () => {
+		expect(describeEvent({ type: "version", version: "0.1.0" })).toBe("core version 0.1.0");
 	});
 });
 

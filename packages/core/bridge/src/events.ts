@@ -53,6 +53,16 @@ export function stripState(line: string): string {
 	return line.replace(STATE_PREFIX, "");
 }
 
+// The text the bridge logs for an event, such as "turn 0".
+export function describeEvent(event: CoreEvent): string {
+	switch (event.type) {
+		case "turn":
+			return `turn ${event.playerId}`;
+		case "version":
+			return `core version ${event.version}`;
+	}
+}
+
 // Parses a line with no state prefix.
 export function parseLine(line: string): ParseResult {
 	if (line !== TAG && !line.startsWith(`${TAG} `)) {

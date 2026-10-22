@@ -7,3 +7,8 @@ export function formatLine(time: Date, text: string): string {
 export function log(text: string): void {
 	console.log(formatLine(new Date(), text));
 }
+
+// Prints to stderr, with "warning: " after the time.
+export function warn(text: string): void {
+	console.warn(formatLine(new Date(), `warning: ${text}`));
+}

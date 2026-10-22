@@ -1,7 +1,7 @@
 // Tests for log.ts.
 
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { formatLine, log } from "../src/log.js";
+import { formatLine, log, warn } from "../src/log.js";
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -26,5 +26,16 @@ describe("log", () => {
 		log("connected");
 
 		expect(print).toHaveBeenCalledWith("2:05:09 PM  connected");
+	});
+});
+
+describe("warn", () => {
+	test("prints the line to stderr with the time and a warning label", () => {
+		const print = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		vi.useFakeTimers({ now: new Date(2026, 9, 22, 14, 5, 9) });
+		warn("STATE_READY is not a known kind");
+
+		expect(print).toHaveBeenCalledWith("2:05:09 PM  warning: STATE_READY is not a known kind");
 	});
 });
