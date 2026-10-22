@@ -15,6 +15,8 @@ The minimum viable product is the full agent loop playing a whole single-player 
 - Plain-code handling for idle units and scouts
 - Required `reason` field on every action
 - Logs with the three log levels
+- Core mod event handlers that run inside `pcall` and print a tagged `ERROR` line when they fail
+- A way for the bridge to tell when a load has finished. Two options: a short list of untagged game lines that the bridge passes through, such as `LoadScreen: OnLoadGameViewStateDone`, or another signal
 - Decision records
 - Plan and journal memory, with no snapshots yet
 - One default personality and the balanced sweat level
