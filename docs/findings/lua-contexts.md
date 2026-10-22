@@ -12,7 +12,8 @@ Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have differe
 4. Which state fires the turn-start event reliably for each human slot, including in hotseat?
 5. Does a UI state see globals from `SentientSystemsCore_Version.lua`, or does it need its own `include`?
 6. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
-7. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this, because the in-game states appear only after the click.
+7. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this if the in-game states appear only after the click. See question 8.
+8. During a load, do the in-game states appear when the loading screen shows its button, or only after the player clicks it? Two loads disagree. See [state lifecycle](#state-lifecycle).
 
 ## What we know now
 
@@ -59,7 +60,7 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 | In-game menus | Opening in-game menus, such as the tech tree and a city screen, doesn't change the state list. Each menu is one of the states that always exist | Confirmed |
 | Quit to the main menu | The tuner socket stays open. The list becomes the 32 front-end states, such as `MainMenu`, `FrontEnd`, `Lobby`, and `StagingRoom`. `Main State` stays 0 and `DebugHotloadCache` stays 1 | Confirmed |
 | A command to a state that's gone | The tag 3 reply is `ERR:Invalid Lua State`, and no output comes back | Confirmed |
-| Loading a game | The tuner doesn't answer `LSQ:` while the game loads and while the loading screen waits for the player to click its button. Then the game resets the socket, and the in-game list comes back on the next connection | Confirmed, one load |
+| Loading a game | The tuner doesn't answer `LSQ:` while the game loads. The in-game list comes back after the load, but two loads disagree on when: before or after the player clicks the loading screen's button. In the first load, the socket reset at the click. See question 8 | Open |
 | Indexes after a load | After a reload of the same save, all 122 in-game states other than `Main State` and `DebugHotloadCache` had their old indexes | Confirmed, one load |
 | `ContextPtr:GetID()` | Returns the state's name in a UI state: `InGame` in `InGame`, and `PlotInfo` in `PlotInfo`. `Main State` has no `ContextPtr` | Confirmed |
 
@@ -74,6 +75,7 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 
 3. Load the core mod and check which new states appear.
 4. Close FireTuner, and run `npm run watch-states --workspace packages/core/bridge`. Open a few in-game menus. Save, quit to the main menu, and load the save. Click the loading screen's button to start the game, then stop the script.
+5. To answer question 8, load a save and wait at the loading screen's button without clicking it. Check whether the client lists the in-game states. Do it four times: with `watch-states` and with FireTuner, each with the core mod off and on.
 
 ## Results
 
@@ -95,6 +97,10 @@ FireTuner listed 124 states in a Duel game with Gathering Storm rules, sorted by
 | 15:26:52 to 15:27:42 | Loaded the save, and waited at the loading screen's button | No reply to `LSQ:` in 5 s, six times |
 | 15:27:48 | Clicked the button | The socket reset with `ECONNRESET`. The script reconnected at once, and one more `LSQ:` got no reply |
 | 15:27:57 | Nothing | 124 states, `InGame` at 119, and every in-game state at its old index |
+
+The script's output showed up late, so the times in the table may lag the player's actions by an unknown amount.
+
+A second load on 2026-10-22, watched in FireTuner with the core mod on, disagrees with this table. FireTuner's state list showed the in-game states, `SentientSystemsCore_UI` among them, while the loading screen still showed its button. `Lua.log` shows the core mod's UI context loading before `LoadScreen: OnLoadGameViewStateDone`. Two things differ between the loads: the client, which was the script or FireTuner, and the core mod, which was off or on. `watch-states` needs FireTuner closed, because the game takes one client at a time. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now).
 
 The main menu's 32 states are `Main State`, `DebugHotloadCache`, `Options`, `CreditsScreen`, `My2K`, `LoadGameMenu` three times, `PBCNotifyRemind`, `Lobby`, `Mods`, `SaveGameMenu` twice, `MultiSelectWindow`, `CityStatePicker`, `LeaderPicker`, `HostGame`, `ConfirmKick`, `EditHotseatPlayer`, `StagingRoom`, `FrontEndPopup`, `CivRoyaleIntro`, `PiratesIntro`, `CrossPlayLogin`, `MainMenu`, `StateTransition`, `JoiningRoom`, `UserSetupWarning`, `SwitchLayoutPopup`, `Test`, `FrontEnd`, and `InvitePopup`.
 
