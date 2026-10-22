@@ -4,7 +4,9 @@
 
 export const TAG = "[SENTIENTSYSTEMS]";
 
-export type CoreEvent = { type: "turn"; playerId: number };
+export type CoreEvent =
+	| { type: "turn"; playerId: number }
+	| { type: "version"; version: string };
 
 // "untagged" is a line from the game or another mod. "invalid" is a tagged line the bridge can't
 // read, such as a kind from a newer core mod, with the reason.
@@ -21,6 +23,9 @@ interface Kind {
 }
 
 const PLAYER_ID = /^\d+$/;
+// A release version such as "0.1.0", with an optional suffix such as "-beta.1". A mod with no
+// version prints "nil".
+const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
 
 export const KINDS: Kind[] = [
 	{
@@ -29,6 +34,13 @@ export const KINDS: Kind[] = [
 		parse: (args) => args.length === 1 && PLAYER_ID.test(args[0])
 			? { type: "turn", playerId: Number(args[0]) }
 			: `AGENT_TURN needs one player ID, and got "${args.join(" ")}"`,
+	},
+	{
+		name: "CORE_VERSION",
+		example: "[SENTIENTSYSTEMS] CORE_VERSION 0.1.0",
+		parse: (args) => args.length === 1 && VERSION.test(args[0])
+			? { type: "version", version: args[0] }
+			: `CORE_VERSION needs one version, and got "${args.join(" ")}"`,
 	},
 ];
 

@@ -26,6 +26,10 @@ describe("parseLine", () => {
 		expect(parseLine("[SENTIENTSYSTEMS] AGENT_TURN 12")).toEqual({ result: "event", event: { type: "turn", playerId: 12 } });
 	});
 
+	test.each(["0.1.0", "12.0.3", "1.0.0-beta.1"])("reads the version %s", (version) => {
+		expect(parseLine(`[SENTIENTSYSTEMS] CORE_VERSION ${version}`)).toEqual({ result: "event", event: { type: "version", version } });
+	});
+
 	test.each([
 		{ name: "a game print", line: "PlotInfo::OnCitySelectionChanged" },
 		{ name: "an empty line", line: "" },
@@ -44,6 +48,9 @@ describe("parseLine", () => {
 		{ name: "a turn with nil", line: "[SENTIENTSYSTEMS] AGENT_TURN nil", reason: "AGENT_TURN needs one player ID, and got \"nil\"" },
 		{ name: "a negative player ID", line: "[SENTIENTSYSTEMS] AGENT_TURN -1", reason: "AGENT_TURN needs one player ID, and got \"-1\"" },
 		{ name: "two player IDs", line: "[SENTIENTSYSTEMS] AGENT_TURN 0 1", reason: "AGENT_TURN needs one player ID, and got \"0 1\"" },
+		{ name: "a missing version", line: "[SENTIENTSYSTEMS] CORE_VERSION nil", reason: "CORE_VERSION needs one version, and got \"nil\"" },
+		{ name: "a version with two parts", line: "[SENTIENTSYSTEMS] CORE_VERSION 0.1", reason: "CORE_VERSION needs one version, and got \"0.1\"" },
+		{ name: "two versions", line: "[SENTIENTSYSTEMS] CORE_VERSION 0.1.0 0.2.0", reason: "CORE_VERSION needs one version, and got \"0.1.0 0.2.0\"" },
 	])("reports $name as invalid", ({ line, reason }) => {
 		expect(parseLine(line)).toEqual({ result: "invalid", reason });
 	});
