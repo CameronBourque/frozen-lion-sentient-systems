@@ -9,12 +9,12 @@ afterEach(() => {
 });
 
 describe("formatLine", () => {
-	test("puts the 24-hour time in front", () => {
-		expect(formatLine(new Date(2026, 9, 22, 14, 5, 9), "connected")).toBe("14:05:09  connected");
+	test("puts the 12-hour time in front", () => {
+		expect(formatLine(new Date(2026, 9, 22, 14, 5, 9), "connected")).toBe("2:05:09 PM  connected");
 	});
 
-	test("pads the hour of a morning time", () => {
-		expect(formatLine(new Date(2026, 9, 22, 9, 0, 0), "turn 0")).toBe("09:00:00  turn 0");
+	test("marks a morning time with AM", () => {
+		expect(formatLine(new Date(2026, 9, 22, 9, 0, 0), "turn 0")).toBe("9:00:00 AM  turn 0");
 	});
 });
 
@@ -25,6 +25,6 @@ describe("log", () => {
 		vi.useFakeTimers({ now: new Date(2026, 9, 22, 14, 5, 9) });
 		log("connected");
 
-		expect(print).toHaveBeenCalledWith("14:05:09  connected");
+		expect(print).toHaveBeenCalledWith("2:05:09 PM  connected");
 	});
 });

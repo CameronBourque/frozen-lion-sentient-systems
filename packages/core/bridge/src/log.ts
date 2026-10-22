@@ -1,7 +1,7 @@
-// Prints the bridge's log lines, each with the local time in front, such as "14:05:09  connected".
+// Prints the bridge's log lines, each with the local time in front, such as "2:05:09 PM  connected".
 
 export function formatLine(time: Date, text: string): string {
-	return `${time.toLocaleTimeString("en-GB")}  ${text}`;
+	return `${time.toLocaleTimeString("en-US")}  ${text}`;
 }
 
 export function log(text: string): void {
