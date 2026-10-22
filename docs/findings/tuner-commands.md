@@ -57,6 +57,7 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
 - **Hello check.** `npm run hello` on Windows on 2026-10-21 listed 124 states and ran three commands in `InGame` through the marker wrapper. A one-line print and a command over three lines, with a `local` and a trailing `--` comment, both came back as expected. `print("before the error")` and then `error("boom")` came back as a runtime error with the print before it. The message was `[string "(function()..."]:6: boom`, then a stack trace of five calls through `error`, `pcall`, and the wrapper.
 - **Round-trip time.** From a send to its tag 3 reply took 18 to 54 ms, up to the 1,000,000-character print.
 - **Late output.** No frame arrived in the 500 ms after any tag 3 reply.
+- **Turn signal.** On 2026-10-22, three turn ends in a single-player game each logged one `turn 0` in `npm run dev`. Each line appeared at the same moment the game showed the new turn, as far as the eye could tell.
 - **Unprompted output.** One turn end on 2026-10-19 produced no frames on 4318 in the 48 seconds after the last command. One turn end during the probe's 60-second listen on 2026-10-21 produced no frames either. During the second run's listen, these actions each printed with no command running:
 
   | Action | Prints |
@@ -65,4 +66,4 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
   | Move a unit that reveals two tiles of an ocean never seen before. The prints may come from the reveal or from the mouse passing over the ocean | Four `MapLabelManager: INDIAN OCEAN` prints with screen positions, at the same moment |
   | Open, then close the full-screen map | `InGame: Request to BulkHide( true, FullscreenMap ), Show on 0 = 1`, then the same with `false` and `0` |
 
-Date checked: 2026-10-21.
+Date checked: 2026-10-21, and 2026-10-22 for the turn signal.
