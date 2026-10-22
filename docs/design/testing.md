@@ -11,7 +11,7 @@ Tests use fixed presets with a fixed map seed, so a rerun shows whether a change
 
 ## Test matrix
 
-After phase 1, a test matrix changes one setting at a time: map size, player count, ruleset, optional game modes, and single player against hotseat.
+After phase 1, a test matrix changes one setting at a time: map size, player count, ruleset, optional game modes, and game mode.
 
 ## Playtests
 

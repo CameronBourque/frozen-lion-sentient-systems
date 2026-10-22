@@ -2,7 +2,7 @@
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { parseStates, TunerClient, TunerLuaError, TunerStateError, TunerTimeoutError } from "../../src/tuner/client.js";
+import { parseStates, TunerClient, TunerLuaError, TunerMissingStateError, TunerStateError, TunerTimeoutError } from "../../src/tuner/client.js";
 import { encodeFrame, Tag } from "../../src/tuner/framing.js";
 import { errorReply, states } from "./captured.js";
 import { FakeGame } from "./fake-game.js";
@@ -82,6 +82,7 @@ describe("TunerClient", () => {
 		await connect();
 
 		await expect(client.findState("Nowhere")).rejects.toThrow("No Lua state is named Nowhere");
+		await expect(client.findState("Nowhere")).rejects.toBeInstanceOf(TunerMissingStateError);
 		await expect(client.findState("SaveGameMenu")).rejects.toThrow("2 Lua states are named SaveGameMenu");
 	});
 

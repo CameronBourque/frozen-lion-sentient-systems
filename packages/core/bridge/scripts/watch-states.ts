@@ -4,6 +4,7 @@
 // back, and whether ContextPtr:GetID() names the state. Run it with `npm run watch-states`, and
 // stop it with Ctrl+C. An argument such as `npm run watch-states -- 4400` sets another port.
 
+import { log } from "../src/log.js";
 import { type LuaState, parseStates } from "../src/tuner/client.js";
 import { DEFAULT_PORT, TunerConnection } from "../src/tuner/connection.js";
 import { type Frame, Tag } from "../src/tuner/framing.js";
@@ -23,10 +24,6 @@ let previous: LuaState[] | undefined;
 let handshaken = false;
 // True after a failed attempt is logged, so retries while the game is closed print one line.
 let refusalLogged = false;
-
-function log(text: string): void {
-	console.log(`${new Date().toLocaleTimeString("en-GB")}  ${text}`);
-}
 
 function show(frame: Frame): string {
 	const text = frame.strings.map((part) => JSON.stringify(part)).join("  ");

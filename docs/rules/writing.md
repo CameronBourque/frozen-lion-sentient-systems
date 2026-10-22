@@ -8,7 +8,7 @@ The goal is text that a tired engineer understands on the first read.
 
 - **Cut every word that does no work.** "In order to" is "to". "It is important to note that" is nothing.
 - **Use the short, everyday word.** "Use", not "utilize" or "leverage". "Help", not "facilitate". "Many", not "numerous". "If", not "in the event that".
-- **Use the real name.** Write the actual symbol, file, flag, or command, such as `CivAgents_Resync()`, not a synonym or a description of it.
+- **Use the real name.** Write the actual symbol, file, flag, or command, such as `SentientSystems_Resync()`, not a synonym or a description of it.
 - **Say what it does, not how it feels.** Name the mechanism or a number: "a failed action returns the game's reason", not "the agent stays informed". If a sentence could appear unchanged in another project's docs, it says nothing about this one. Cut it.
 - **Don't reword what didn't change.** Every rewording makes a reader check whether the meaning changed.
 - **When a rule makes a sentence worse, fix the sentence another way or leave it alone.** The rules serve the reader.

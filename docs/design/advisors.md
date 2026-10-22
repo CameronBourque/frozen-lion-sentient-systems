@@ -8,7 +8,7 @@ There is one advisor per victory condition, for example `science-advisor.md` and
 
 Advisors speak when you ask, or at key moments such as a new era or a war declaration. They do not speak every turn. Speaking less often keeps the cost down and keeps advisors from repeating minor advice.
 
-Advisors can work in online multiplayer games. They only read your own client's state, so they cannot cause a desync. Agent players can't, because their actions could (see [agents/slot-type.md](agents/slot-type.md)). [findings/multiplayer.md](../findings/multiplayer.md) tracks whether the tuner works in an online game.
+Advisors can work in online multiplayer games. They only read your own client's state, so they cannot cause a desync. Agent players can't, because their actions could. [findings/multiplayer.md](../findings/multiplayer.md) tracks whether the tuner works in an online game.
 
 Code: [packages/advisors/](../../packages/advisors/README.md).
 

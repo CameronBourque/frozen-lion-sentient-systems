@@ -38,14 +38,14 @@ Release-please runs in manifest mode. It bumps only the packages whose files a c
 
 Release-please keeps a release pull request open with the next versions and the changelogs. It rewrites that pull request only when the changelog notes change, so a change to `release-please-config.json` alone leaves the pull request as it was. To rebuild it, close the pull request, delete its branch, and run the **Release** workflow again. Merging the release pull request starts the release:
 
-1. Release-please writes each new version into its package's `package.json` and into a version constant in that package's Lua.
+1. Release-please writes each new version into its package's `package.json` and its `.modinfo`.
 2. It tags each released package and creates its GitHub release.
 3. If core changed, CI builds the bridge executable and publishes it to the core release with a checksum.
 4. CI packages the changed mods, and they go to the Workshop.
 
 The GitHub release always comes before the Workshop upload. Each Workshop version of the core mod then has a matching bridge release.
 
-The `.modinfo` file may accept only a whole number as its version. In that case, the `.modinfo` version is a counter that goes up with each release, and the mod reports the full version from the Lua constant. Official `.modinfo` files use whole numbers. See [findings/game-api.md](../findings/game-api.md#mod-metadata).
+Each `.modinfo` holds the full version twice: in the `version` attribute on `<Mod>`, and in `<Properties><Version>`. A UI script reads the second one at runtime with `Modding.GetModProperty`. Gameplay states have no `Modding`, so only a UI script can read the version. The `.modinfo` is the only place the mod's version lives. See [findings/game-api.md](../findings/game-api.md#mod-metadata).
 
 ## Runtime checks
 
@@ -60,4 +60,5 @@ At runtime, the bridge matches the core version exactly, as described in [core/b
 | Release-please opens its pull requests with a GitHub App token | A pull request opened with `GITHUB_TOKEN` starts no workflows, so the required checks would never run on the release pull request. An app token doesn't expire, unlike a personal access token |
 | Dependabot titles use `fix(deps)` for dependencies the bridge ships, `chore(deps-dev)` for development tools, and `ci` for GitHub Actions | An update to what ships releases a core PATCH. Updates to development tools and Actions change nothing that ships, so they release nothing |
 | Workflows use the `pull_request` event, not `pull_request_target` | The checks only read the pull request. `pull_request_target` gives more access than they need |
+| The `.modinfo` holds the full `MAJOR.MINOR.PATCH` version, not a whole-number counter | The game accepts a three-part version, and saves made with it reload. The mod menu and the bridge then show the release's own version |
 | Schema versions in memory, civ note, and config files | Migrations keep format changes from breaking saved games |

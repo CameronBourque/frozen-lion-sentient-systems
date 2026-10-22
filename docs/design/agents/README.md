@@ -1,6 +1,6 @@
 # Agent players mod
 
-This mod turns a human player slot into an agent. It depends on the core mod, declares that dependency in its `.modinfo` file, and reaches the game only through the core API.
+This mod turns a player slot into an agent. It depends on the core mod, declares that dependency in its `.modinfo` file, and reaches the game only through the core API.
 
 | File | Covers |
 | --- | --- |

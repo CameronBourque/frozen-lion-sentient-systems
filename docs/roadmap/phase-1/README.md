@@ -15,12 +15,15 @@ The minimum viable product is the full agent loop playing a whole single-player 
 - Plain-code handling for idle units and scouts
 - Required `reason` field on every action
 - Logs with the three log levels
+- Core mod event handlers that run inside `pcall` and print a tagged `ERROR` line when they fail
+- A way for the bridge to tell when a load has finished. Two options: a short list of untagged game lines that the bridge passes through, such as `LoadScreen: OnLoadGameViewStateDone`, or another signal
 - Decision records
 - Plan and journal memory, with no snapshots yet
 - One default personality and the balanced sweat level
 - Civilopedia `lookup` tool
 - A config file marks the agent slot. No setup screen changes yet
 - A bridge tool that starts a test preset game from the main menu
+- A script that links the core mod into the game's `Mods` folder, in place of the manual steps in the [core mod README](../../../packages/core/mod/README.md#install-for-testing)
 - Pass the smoke test preset, then the MVP gate preset
 - Measure the state size and the cost of one full game
 

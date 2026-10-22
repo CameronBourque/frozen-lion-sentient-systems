@@ -36,6 +36,11 @@ export class TunerTimeoutError extends Error {
 	override name = "TunerTimeoutError";
 }
 
+// No state has the name, such as a mod's state when the mod is off or no game is loaded.
+export class TunerMissingStateError extends Error {
+	override name = "TunerMissingStateError";
+}
+
 // The state's index changed again after the client listed the states once more.
 export class TunerStateError extends Error {
 	override name = "TunerStateError";
@@ -134,7 +139,7 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 		const matches = states.filter((state) => state.name === name);
 
 		if (matches.length === 0) {
-			throw new Error(`No Lua state is named ${name}`);
+			throw new TunerMissingStateError(`No Lua state is named ${name}`);
 		}
 
 		// SaveGameMenu is listed twice, and picking one could run Lua in the wrong state.

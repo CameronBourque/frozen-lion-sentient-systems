@@ -14,7 +14,10 @@ Close the phase in the docs and release core `0.1.0`. Part of [phase 0](README.m
 
 All of these hold, and core `0.1.0` is released:
 
-- The released executable, not `tsx`, passes the "Done when" checks of steps [8](08-receive-turn-signal.md), [9](09-resync-on-connect.md), and [10](10-gate.md).
+- The released executable, not `tsx`, passes these checks:
+  - Ending a turn in the game makes the bridge log `turn 0` within about a second. This is step 8's check, and it passed with `tsx` on 2026-10-22.
+  - Starting the bridge in the middle of your turn makes it log the core version and `turn 0`, without ending a turn. Restarting it in the same turn logs `turn 0` again. This is step 9's check, and it passed with `tsx` on 2026-10-22.
+  - The "Done when" checks of step [10](10-gate.md).
 - Each findings file has a confirmed result and a date.
 - The executable runs in Windows Sandbox.
 
