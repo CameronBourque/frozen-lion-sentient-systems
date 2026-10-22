@@ -11,6 +11,12 @@
 		<AddGameplayScripts id="SentientSystemsCore_GameplayScripts">
 			<File>Scripts/SentientSystemsCore_Gameplay.lua</File>
 		</AddGameplayScripts>
+		<AddUserInterfaces id="SentientSystemsCore_UserInterfaces">
+			<Properties>
+				<Context>InGame</Context>
+			</Properties>
+			<File>UI/SentientSystemsCore_UI.xml</File>
+		</AddUserInterfaces>
 		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Version.lua</File>
 		</ImportFiles>
@@ -18,5 +24,7 @@
 	<Files>
 		<File>Scripts/SentientSystemsCore_Version.lua</File>
 		<File>Scripts/SentientSystemsCore_Gameplay.lua</File>
+		<File>UI/SentientSystemsCore_UI.lua</File>
+		<File>UI/SentientSystemsCore_UI.xml</File>
 	</Files>
 </Mod>

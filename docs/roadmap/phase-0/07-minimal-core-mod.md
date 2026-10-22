@@ -11,7 +11,7 @@ In `packages/core/mod/`:
    - `<InGameActions>`:
      - `AddGameplayScripts`, pointing to `Scripts/SentientSystemsCore_Gameplay.lua`
      - `ImportFiles`, pointing to `Scripts/SentientSystemsCore_Version.lua`, so each script can load it with `include("SentientSystemsCore_Version")`
-     - `AddUserInterfaces` (context `InGame`), pointing to `UI/SentientSystemsCore_UI.lua` and `UI/SentientSystemsCore_UI.xml`. This gives you a UI Lua state of your own. `RequestOperation` needs that state.
+     - `AddUserInterfaces` (context `InGame`), pointing to `UI/SentientSystemsCore_UI.xml`. The game loads the `.lua` file with the same name. This gives you a UI Lua state of your own. `RequestOperation` needs that state.
    - Check the structure against an official example in the SDK `Examples\` folder, or a DLC `.modinfo` under the game's `DLC\` folder.
 2. **Turn signal.** Use the turn event that matches the state the code runs in (see [lua-contexts.md](../../findings/lua-contexts.md#turn-events-differ-by-script-type)). Call `Players[playerID]:IsHuman()`, and print `AGENT_TURN <playerID>` only for human slots. Test the signal in both the gameplay state and the UI state.
 3. **Version report.** Add a global function `SentientSystems_GetVersion()` that prints `CORE_VERSION <CORE_VERSION>`.
