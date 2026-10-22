@@ -14,10 +14,12 @@
       ]
     },
     "packages/agents": {
-      "component": "agents"
+      "component": "agents",
+      "exclude-paths": ["packages/agents/Scripts"]
     },
     "packages/advisors": {
-      "component": "advisors"
+      "component": "advisors",
+      "exclude-paths": ["packages/advisors/Scripts"]
     }
   }
 }

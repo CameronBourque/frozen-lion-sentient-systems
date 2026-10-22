@@ -34,7 +34,9 @@ Commit messages trigger the bumps. The commit format and which type bumps which 
 
 ## Release flow
 
-Release-please runs in manifest mode. It bumps only the packages whose files a commit touched. The bridge and the core mod live in one package folder, `packages/core`, so they always share one version.
+Release-please runs in manifest mode. It bumps only the packages whose files a commit touched. A commit's scope doesn't limit this, so a `feat(core)` commit that also touches `packages/agents` bumps agents too. The bridge and the core mod live in one package folder, `packages/core`, so they always share one version.
+
+`exclude-paths` in `release-please-config.json` skips a commit for a package when every file the commit touched in that package is under an excluded folder. Each path is from the repo root and names a folder, not a file. The agents and advisors entries exclude their `Scripts` folders, which held only a `Version.lua` that `feat(core): add turn signal and resync` deleted. Neither package has a release yet, so without the exclusion that commit would bump each one to `0.1.0` with nothing in it. Remove each exclusion when its package makes its first release, or sooner if the package gets a `Scripts` folder again.
 
 Release-please keeps a release pull request open with the next versions and the changelogs. It rewrites that pull request only when the changelog notes change, so a change to `release-please-config.json` alone leaves the pull request as it was. To rebuild it, close the pull request, delete its branch, and run the **Release** workflow again. Merging the release pull request starts the release:
 
@@ -57,6 +59,7 @@ At runtime, the bridge matches the core version exactly, as described in [core/b
 | --- | --- |
 | One repository. The bridge and core share a version, and feature mods have their own | The bridge must match core exactly. Feature mods change on their own schedule and declare a core range. One repository keeps cross-package changes in one pull request |
 | Conventional Commits and release-please decide bumps | Bumps and changelogs come from commits, with no manual step |
+| Agents and advisors exclude their old `Scripts` folders until their first release | A core commit deleted a file in each, and release-please would release each package with no content. The bootstrap and last-release settings are top-level only, so moving them would drop the commit from core too |
 | Release-please opens its pull requests with a GitHub App token | A pull request opened with `GITHUB_TOKEN` starts no workflows, so the required checks would never run on the release pull request. An app token doesn't expire, unlike a personal access token |
 | Dependabot titles use `fix(deps)` for dependencies the bridge ships, `chore(deps-dev)` for development tools, and `ci` for GitHub Actions | An update to what ships releases a core PATCH. Updates to development tools and Actions change nothing that ships, so they release nothing |
 | Workflows use the `pull_request` event, not `pull_request_target` | The checks only read the pull request. `pull_request_target` gives more access than they need |
