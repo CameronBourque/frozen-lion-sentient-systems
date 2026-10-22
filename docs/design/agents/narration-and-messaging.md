@@ -24,7 +24,7 @@ Messages do not bind anyone. Agreements go through the game's deal screen. Agent
 
 ## Open questions
 
-- Where do narrator text and messages show for you in hotseat? Decide in [phase 3](../../roadmap/phase-3/README.md).
+- Where do narrator text and messages show for you in a game with agents? Decide in [phase 3](../../roadmap/phase-3/README.md).
 
 ## Decisions
 

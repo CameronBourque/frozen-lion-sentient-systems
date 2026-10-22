@@ -4,7 +4,7 @@ What the project builds, why, and what comes first. For how each part works, see
 
 ## What we build
 
-We build three Civilization VI mods and one external program that let LLM agents play Civ VI as full players. The agents play against you in hotseat games, against the native AI in single-player games, or against each other while you watch.
+We build three Civilization VI mods and one external program that let LLM agents play Civ VI as full players. The agents play against the native AI in single-player games. Later phases add games against you and games where you watch agents play each other. How those games run is open. See [design/agents/slot-type.md](design/agents/slot-type.md).
 
 The native AI is predictable after a few games. Agents with personalities, memory, and the ability to talk to you make each game different. Civ VI stays the base because its mechanics are the point. Building a separate game is out of scope.
 

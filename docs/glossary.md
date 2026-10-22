@@ -7,7 +7,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Action API | The core mod's Lua functions that wrap the game's request functions. A failed action returns a reason | [in-game-lua.md](design/core/in-game-lua.md) |
 | Advisors mod | The feature mod that gives a human player read-only advisors, one per victory condition | [advisors.md](design/advisors.md) |
 | Agent | An LLM that plays Civ VI as a full player in an **Agent** slot. It is not the native AI | [knowledge-files.md](design/knowledge-files.md#file-layout) |
-| **Agent** slot | A human player slot with an `isAgent` flag. The setup screen shows it as **Agent** | [slot-type.md](design/agents/slot-type.md) |
+| **Agent** slot | A player slot that an agent plays. The setup screen shows it as **Agent**. Which engine slot type holds it is open | [slot-type.md](design/agents/slot-type.md) |
 | Agent loop | The bridge code that runs an agent's turn. It sends the model a prompt and passes the model's tool calls to the MCP server | [turn-loop.md](design/agents/turn-loop.md) |
 | Agent players mod | The feature mod that adds agents, the turn loop, spectator mode, the narrator panel, and messaging | [agents/](design/agents/README.md) |
 | Bridge | The external TypeScript program that connects to the tuner, runs the agent loop, and stores agent memory. It ships as one executable, and it is part of core | [bridge.md](design/core/bridge.md) |

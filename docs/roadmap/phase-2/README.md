@@ -1,12 +1,13 @@
-# Phase 2: Hotseat with you and several agents
+# Phase 2: You and several agents
 
-This phase adds hotseat play with a human and several agents, the cover card, and memory snapshots that survive reloads.
+This phase adds games with a human and several agents, the cover card, and memory snapshots that survive reloads.
 
-**Gate.** You play a hotseat game against two agents, with at least one reload to an earlier save.
+**Gate.** You play a game against two agents, with at least one reload to an earlier save.
 
 ## Scope
 
-- Handle the hotseat pass screen
+- Run the [computer slot test](../../design/agents/slot-type.md#computer-slot-test), and pick the game mode for you and several agents
+- Handle the hotseat pass screen, if that game mode is hotseat
 - Cover card during agent turns
 - Verify that no agent sees outside its fog of war
 - Checkpoint IDs and memory snapshots
