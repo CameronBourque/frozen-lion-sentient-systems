@@ -12,7 +12,7 @@ A directory junction links this folder into the game's user mods folder, so the 
 2. In `cmd`, from the repo root, run:
 
 	```bat
-	mklink /J "%USERPROFILE%\Documents\My Games\Sid Meier's Civilization VI\Mods\CivAgentsCore" "%CD%\packages\core\mod"
+	mklink /J "%USERPROFILE%\Documents\My Games\Sid Meier's Civilization VI\Mods\SentientSystemsCore" "%CD%\packages\core\mod"
 	```
 
 	If OneDrive backs up your Documents folder, use `%USERPROFILE%\OneDrive\Documents` in the first path.

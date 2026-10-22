@@ -10,7 +10,7 @@ Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have differe
 2. Can a UI state read data from a gameplay state, and the other way around? Through what: `ExposedMembers`, `LuaEvents`, or properties?
 3. Do the core mod's own states show in the tuner list under predictable names, and can the tuner call the mod's global functions in them?
 4. Which state fires the turn-start event reliably for each human slot, including in hotseat?
-5. Does a UI state see globals from `Version.lua`, or does it need its own `include`?
+5. Does a UI state see globals from `SentientSystemsCore_Version.lua`, or does it need its own `include`?
 6. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
 7. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this, because the in-game states appear only after the click.
 

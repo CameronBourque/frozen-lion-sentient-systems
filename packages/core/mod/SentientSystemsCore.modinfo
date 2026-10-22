@@ -11,11 +11,11 @@
 			<File>Scripts/CoreGameplay.lua</File>
 		</AddGameplayScripts>
 		<ImportFiles id="CoreSharedScripts">
-			<File>Scripts/Version.lua</File>
+			<File>Scripts/SentientSystemsCore_Version.lua</File>
 		</ImportFiles>
 	</InGameActions>
 	<Files>
-		<File>Scripts/Version.lua</File>
+		<File>Scripts/SentientSystemsCore_Version.lua</File>
 		<File>Scripts/CoreGameplay.lua</File>
 	</Files>
 </Mod>

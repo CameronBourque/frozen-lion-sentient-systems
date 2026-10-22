@@ -10,16 +10,16 @@
       "extra-files": [
         { "type": "json", "path": "bridge/package.json", "jsonpath": "$.version" },
         { "type": "json", "path": "/package-lock.json", "jsonpath": "$.packages['packages/core/bridge'].version" },
-        "mod/Scripts/Version.lua"
+        "mod/Scripts/SentientSystemsCore_Version.lua"
       ]
     },
     "packages/agents": {
       "component": "agents",
-      "extra-files": ["Scripts/Version.lua"]
+      "extra-files": ["Scripts/SentientSystemsAgents_Version.lua"]
     },
     "packages/advisors": {
       "component": "advisors",
-      "extra-files": ["Scripts/Version.lua"]
+      "extra-files": ["Scripts/SentientSystemsAdvisors_Version.lua"]
     }
   }
 }
