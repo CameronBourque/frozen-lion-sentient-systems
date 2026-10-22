@@ -1,7 +1,11 @@
 // Tests for events.ts.
 
-import { describe, expect, test } from "vitest";
-import { describeEvent, KINDS, parseLine, stripState } from "../src/events.js";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { describeEvent, KINDS, parseLine, readLine, stripState } from "../src/events.js";
+
+afterEach(() => {
+	vi.restoreAllMocks();
+});
 
 describe("stripState", () => {
 	test("removes the state prefix", () => {
@@ -74,5 +78,36 @@ describe("parseLine", () => {
 		{ name: "two state names", line: "[SENTIENTSYSTEMS] CORE_LOADED InGame PlotInfo", reason: "CORE_LOADED needs one state name, and got \"InGame PlotInfo\"" },
 	])("reports $name as invalid", ({ line, reason }) => {
 		expect(parseLine(line)).toEqual({ result: "invalid", reason });
+	});
+});
+
+describe("readLine", () => {
+	test("logs and returns the event in a line with its state prefix", () => {
+		const print = vi.spyOn(console, "log").mockImplementation(() => {});
+
+		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0")).toEqual({ type: "turn", playerId: 0 });
+		expect(print).toHaveBeenCalledWith(expect.stringMatching(/ {2}turn 0$/));
+	});
+
+	test("reads a command's line, which has no prefix", () => {
+		vi.spyOn(console, "log").mockImplementation(() => {});
+
+		expect(readLine("[SENTIENTSYSTEMS] CORE_VERSION 0.1.0")).toEqual({ type: "version", version: "0.1.0" });
+	});
+
+	test("warns about a tagged line that doesn't parse, with the whole line", () => {
+		const print = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN nil")).toBeUndefined();
+		expect(print).toHaveBeenCalledWith(expect.stringMatching(/warning: AGENT_TURN needs one player ID, and got "nil": SentientSystemsCore_UI: \[SENTIENTSYSTEMS\] AGENT_TURN nil$/));
+	});
+
+	test("ignores an untagged line", () => {
+		const logged = vi.spyOn(console, "log").mockImplementation(() => {});
+		const warned = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		expect(readLine("InGame: Loading InGame UI")).toBeUndefined();
+		expect(logged).not.toHaveBeenCalled();
+		expect(warned).not.toHaveBeenCalled();
 	});
 });

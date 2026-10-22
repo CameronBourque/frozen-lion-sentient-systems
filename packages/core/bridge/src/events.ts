@@ -2,6 +2,8 @@
 // <args>", joined with spaces, such as "[SENTIENTSYSTEMS] AGENT_TURN 0". docs/design/core/in-game-lua.md
 // has the format.
 
+import { log, warn } from "./log.js";
+
 export const TAG = "[SENTIENTSYSTEMS]";
 
 export type CoreEvent =
@@ -91,4 +93,22 @@ export function parseLine(line: string): ParseResult {
 	const parsed = kind.parse(args);
 
 	return typeof parsed === "string" ? { result: "invalid", reason: parsed } : { result: "event", event: parsed };
+}
+
+// Reads one line from the game, from an output event or from a command's result. Logs the event
+// and returns it, warns about a tagged line that doesn't parse, and ignores an untagged line.
+export function readLine(line: string): CoreEvent | undefined {
+	const parsed = parseLine(stripState(line));
+
+	if (parsed.result === "event") {
+		log(describeEvent(parsed.event));
+
+		return parsed.event;
+	}
+
+	if (parsed.result === "invalid") {
+		warn(`${parsed.reason}: ${line}`);
+	}
+
+	return undefined;
 }
