@@ -1,13 +1,18 @@
-// Starts the bridge. It connects to the game's tuner and logs each event the core mod prints, until
-// you press Ctrl+C.
+// Starts the bridge. It connects to the game's tuner, logs the core mod's version on each connect,
+// and logs each event the core mod prints, until you press Ctrl+C.
 
+import { onConnect } from "./connect.js";
 import { readLine } from "./events.js";
 import { log } from "./log.js";
 import { TunerClient } from "./tuner/client.js";
 
 const client = new TunerClient();
 
-client.on("connected", () => log("connected to the tuner"));
+client.on("connected", () => {
+	log("connected to the tuner");
+	// onConnect warns about its own failures, so nothing waits on it.
+	void onConnect(client);
+});
 client.on("disconnected", () => log("disconnected from the tuner"));
 client.on("output", (line) => readLine(line));
 process.on("SIGINT", () => {

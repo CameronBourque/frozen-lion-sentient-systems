@@ -18,7 +18,7 @@ Run each script from the repo root with `npm run <script> --workspace packages/c
 
 | Script | What it does |
 | --- | --- |
-| `dev` | Runs `src/main.ts` with `tsx`. It connects to the game's tuner, retries until the game is running, and logs each line that the core mod prints. It runs until you press Ctrl+C |
+| `dev` | Runs `src/main.ts` with `tsx`. It connects to the game's tuner, retries until the game is running, logs the core mod's version on each connect, and logs each line that the core mod prints. It runs until you press Ctrl+C |
 | `typecheck` | Type-checks `src/`, `test/`, and `scripts/` with `tsc`. It emits no files |
 | `build:exe` | Builds `dist/sentient-systems-bridge.exe` with esbuild and Node SEA. The release workflow runs it. See `scripts/build-exe.mjs` |
 | `hello` | Checks the tuner client against the running game. It prints the state list, runs three commands in `InGame`, and exits with code 1 if a result is wrong. Run it after a change to `src/tuner/` |
