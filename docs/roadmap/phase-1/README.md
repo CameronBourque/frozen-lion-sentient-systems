@@ -16,7 +16,7 @@ Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design
 | --- | --- | --- | --- |
 | 1 | Link the core mod | A script in place of the manual junction steps | Done. The step file is deleted, and the steps are in the [core mod README](../../../packages/core/mod/README.md#install-for-testing) |
 | 2 | Config file | Log level and provider keys | Done. The step file is deleted, and the file is described under **Settings** in [bridge.md](../../design/core/bridge.md) |
-| 3 | [Logs and errors](03-logs-and-errors.md) | Three log levels, a log file per game, and `ERROR` lines from the core mod | |
+| 3 | [Logs and errors](03-logs-and-errors.md) | Structured logs at five levels, a log file per game, and `ERROR` lines from the core mod | |
 | 4 | [Load signal](04-load-signal.md) | How the bridge tells a load has finished | |
 | 5 | [State: map, cities, and units](05-state-map-cities-units.md) | The serializer for one player, filtered by visibility | |
 | 6 | [State: choices, blockers, and scoreboard](06-state-choices-blockers-scoreboard.md) | Legal options with details, end-turn blockers, and victory progress | |
