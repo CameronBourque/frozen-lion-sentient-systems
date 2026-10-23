@@ -6,7 +6,7 @@ Each phase is a folder. When work on a phase starts, we break it into step files
 
 | Phase | Gate | Status |
 | --- | --- | --- |
-| [0: Prove the bridge](phase-0/README.md) | From the bridge, list your cities and move one unit | In progress |
+| [0: Prove the bridge](phase-0/README.md) | From the bridge, list your cities and move one unit | Done |
 | [1: MVP, one agent finishes a game](phase-1/README.md) | One agent plays a full single-player game against the native AI with no manual help | Not started |
 | [2: You and several agents](phase-2/README.md) | You play a game against two agents, with at least one reload to an earlier save | Not started |
 | [3: Personalities and play quality](phase-3/README.md) | Agents with different sweat levels and personalities play visibly different games | Not started |

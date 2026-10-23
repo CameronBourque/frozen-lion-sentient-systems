@@ -26,7 +26,7 @@ None open.
 2. Add one real dependency, the MCP SDK, and build again.
 3. Copy each executable to a folder outside the repo, such as `Downloads`, and run it there.
 4. Record the size and any antivirus warnings.
-5. Run the released executable in Windows Sandbox, a clean Windows with no Node. Download it inside the Sandbox, so SmartScreen sees it as a new download. Phase 0 [step 12](../roadmap/phase-0/12-close-out.md) does this.
+5. Run the released executable in Windows Sandbox, a clean Windows with no Node. Download it inside the Sandbox, so SmartScreen sees it as a new download. The `core-v0.2.0` row in [Results](#results) is this check.
 
 ## Results
 
