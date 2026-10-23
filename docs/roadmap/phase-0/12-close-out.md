@@ -17,7 +17,7 @@ All of these hold, and core `0.1.0` is released:
 - The released executable, not `tsx`, passes these checks:
   - Ending a turn in the game makes the bridge log `turn 0` within about a second. This is step 8's check, and it passed with `tsx` on 2026-10-22.
   - Starting the bridge in the middle of your turn makes it log the core version and `turn 0`, without ending a turn. Restarting it in the same turn logs `turn 0` again. This is step 9's check, and it passed with `tsx` on 2026-10-22.
-  - The "Done when" checks of step [10](10-gate.md).
+- The bridge prints your cities, and a unit visibly moves on the map. This is step 10's check, and it passed with `tsx` and `scripts/gate.ts` on 2026-10-23. The executable doesn't run it, because `build:exe` bundles only `src/main.ts`, and the action API comes in [phase 1](../phase-1/README.md).
 - Each findings file has a confirmed result and a date.
 - The executable runs in Windows Sandbox.
 

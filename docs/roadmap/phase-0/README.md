@@ -6,7 +6,7 @@ Every later phase depends on the FireTuner channel, and its protocol is undocume
 
 ## Starting point
 
-Repo setup is done, and core `0.1.0` tested the release flow. The bridge project is set up in `packages/core/bridge/`, and `build:exe` builds it into one executable. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The action API probably runs in a UI state. Phase 0 has to confirm that. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
+Repo setup is done, and core `0.1.0` tested the release flow. The bridge project is set up in `packages/core/bridge/`, and `build:exe` builds it into one executable. Local paths are in [findings/README.md](../../findings/README.md#local-paths). What the game files already show is in [findings/](../../findings/README.md). The gate confirmed that actions requested from the core mod's UI state take effect, so the action API can run there. See [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from).
 
 ## Steps
 
@@ -21,7 +21,7 @@ Repo setup is done, and core `0.1.0` tested the release flow. The bridge project
 | 7 | Minimal core mod | `.modinfo`, turn signal, version report, tag format | Done. The step file is deleted, and the results are in [lua-contexts.md](../../findings/lua-contexts.md#the-core-mods-states), [game-api.md](../../findings/game-api.md#mod-metadata), [multiplayer.md](../../findings/multiplayer.md#hotseat), and [in-game-lua.md](../../design/core/in-game-lua.md) |
 | 8 | Receive the turn signal | Parse tagged lines into events in the bridge | Done. The step file is deleted, and the results are in [tuner-commands.md](../../findings/tuner-commands.md#behavior-notes) and [bridge.md](../../design/core/bridge.md) |
 | 9 | Resync on connect | Recover the turn state after a bridge restart | Done. The step file is deleted, and the results are in [tuner-commands.md](../../findings/tuner-commands.md#behavior-notes), [game-api.md](../../findings/game-api.md#active-player), [lua-contexts.md](../../findings/lua-contexts.md#turn-events-differ-by-script-type), [tuner-protocol.md](../../findings/tuner-protocol.md#what-we-know-now), [bridge.md](../../design/core/bridge.md), and [in-game-lua.md](../../design/core/in-game-lua.md) |
-| 10 | [The gate](10-gate.md) | List cities and move a unit from the bridge | |
+| 10 | The gate | List cities and move a unit from the bridge | Done. The step file is deleted, and the results are in [game-api.md](../../findings/game-api.md#results), [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from), and [tuner-setup.md](../../findings/tuner-setup.md#results) |
 | 11 | [Online multiplayer check](11-online-multiplayer.md) | Read-only tuner test in an online game | |
 | 12 | [Close out phase 0](12-close-out.md) | Update the docs and release core `0.1.0` | |
 
@@ -34,4 +34,5 @@ PR titles follow [rules/commits.md](../../rules/commits.md).
 3. `chore(core): build the bridge executable` (step 5)
 4. `feat(core): add tuner client` (step 6). This triggers core `0.1.0`
 5. `feat(core): add turn signal and resync` (steps 7 to 9)
-6. `docs: record phase 0 results` (steps 10 to 12, with the gate script if you keep it)
+6. `chore(core): add the phase 0 gate and record its results` (step 10)
+7. `docs: record phase 0 results` (steps 11 and 12)

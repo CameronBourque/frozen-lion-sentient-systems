@@ -2,7 +2,8 @@
 // answers the state lifecycle questions in docs/findings/lua-contexts.md: whether the socket
 // survives a load, whether the list or the indexes change, what a command to a gone index gets
 // back, and whether ContextPtr:GetID() names the state. Run it with `npm run watch-states`, and
-// stop it with Ctrl+C. An argument such as `npm run watch-states -- 4400` sets another port.
+// stop it with Ctrl+C. An argument such as `npm run watch-states -- 4400` sets another port. In
+// PowerShell, write the `--` as `'--'`, as docs/rules/code.md says.
 
 import { log } from "../src/log.js";
 import { type LuaState, parseStates } from "../src/tuner/client.js";

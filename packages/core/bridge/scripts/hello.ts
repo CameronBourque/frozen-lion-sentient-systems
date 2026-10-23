@@ -1,7 +1,8 @@
 // Checks the tuner client end to end against the running game: it connects, prints the state list,
 // and runs three commands in InGame through the marker wrapper. It exits with code 1 if any result
 // differs from what it should be. Run it with `npm run hello`, with a game loaded. An argument such
-// as `npm run hello -- 4400` sets another port.
+// as `npm run hello -- 4400` sets another port. In PowerShell, write the `--` as `'--'`, as
+// docs/rules/code.md says.
 
 import { TunerClient, TunerLuaError } from "../src/tuner/client.js";
 import { DEFAULT_PORT } from "../src/tuner/connection.js";

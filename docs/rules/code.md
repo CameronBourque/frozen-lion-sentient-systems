@@ -32,6 +32,7 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/bridg
 
 - **Node 26.** `.nvmrc` and the `engines` fields set it, and the bridge executable ships with it. Node 26 is an LTS release, supported until 2029-04-30. Move the repo to the next LTS release before then, so the executable never ships a runtime without security fixes.
 - **`tsx` runs TypeScript in development.** TypeScript features that need more than removing types, such as enums, are allowed.
+- **Pass a script's arguments after `--`.** Write `npm run hello -- 4400` in docs and comments. In PowerShell, write the `--` as `'--'`: `npm run hello '--' 4400`. On Windows, `npm` in PowerShell is the script `npm.ps1`, and PowerShell drops a bare `--` before it calls a script. npm then reads the arguments as its own settings, and the script never gets them. cmd keeps the quotes, so it needs the bare `--`.
 - **`tsc` only type-checks.** `npm run typecheck` runs it with `noEmit`, as its own CI job. esbuild bundles the release, so nothing uses compiled output.
 - **TypeScript 6 loads no `@types` packages by default.** The bridge `tsconfig.json` lists `"types": ["node"]`. Add a package there when its types are needed.
 - **ES modules, with no namespaces.** Group code by file, and import what each file needs. `declare namespace` in a `.d.ts` file is still allowed, to describe a library's types.

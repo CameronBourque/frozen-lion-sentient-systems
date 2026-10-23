@@ -10,6 +10,7 @@
     "dev": "tsx src/main.ts",
     "hello": "tsx scripts/hello.ts",
     "probe": "tsx scripts/probe.ts",
+    "gate": "tsx scripts/gate.ts",
     "watch-states": "tsx scripts/watch-states.ts",
     "typecheck": "tsc",
     "build:exe": "node scripts/build-exe.mjs"
