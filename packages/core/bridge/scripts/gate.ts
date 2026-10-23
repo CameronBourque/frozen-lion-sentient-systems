@@ -4,8 +4,8 @@
 // with a game loaded and the core mod on. Options: `--unit <id>` picks the unit to move,
 // `--end-turn` ends the turn after the move and waits for the next turn signal, and `--port <port>`
 // sets another port, such as `npm run gate -- --unit 131073 --end-turn`. In PowerShell, write the
-// `--` as `'--'`, as docs/rules/code.md says. Throwaway code: phase 1 builds the real action API,
-// and this file goes when phase 0 closes.
+// `--` as `'--'`, as docs/rules/code.md says. Throwaway code: this file goes when the phase 1
+// action API does the same from the bridge executable, as docs/roadmap/phase-1/README.md says.
 
 import { once } from "node:events";
 import { parseArgs } from "node:util";

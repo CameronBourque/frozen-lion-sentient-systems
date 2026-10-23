@@ -34,4 +34,5 @@ PR titles follow [rules/commits.md](../../rules/commits.md).
 3. `chore(core): build the bridge executable` (step 5)
 4. `feat(core): add tuner client` (step 6). This triggers core `0.1.0`
 5. `feat(core): add turn signal and resync` (steps 7 to 9)
-6. `docs: record phase 0 results` (steps 10 to 12, with the gate script if you keep it)
+6. `chore(core): add the phase 0 gate and record its results` (step 10)
+7. `docs: record phase 0 results` (steps 11 and 12)

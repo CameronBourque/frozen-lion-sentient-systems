@@ -8,7 +8,7 @@ The minimum viable product is the full agent loop playing a whole single-player 
 
 - Model client behind one provider interface
 - State serializer for one player, with the scoreboard and option details, filtered by that player's visibility
-- Action API with failure reasons, for units, city production, techs, civics, policies, and end turn
+- Action API with failure reasons, for units, city production, techs, civics, policies, and end turn. When the bridge executable can list cities, move a unit, and end the turn through it, delete `packages/core/bridge/scripts/gate.ts` and the `gate` script in the bridge's `package.json`
 - End-turn blocker loop with retry, action, and time limits
 - MCP server and agent loop
 - Generated tool reference, and the workflow that updates it. See [bridge.md](../../design/core/bridge.md)
