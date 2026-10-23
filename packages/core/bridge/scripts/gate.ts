@@ -2,8 +2,10 @@
 // and moves one unit, following the method in docs/findings/game-api.md. It prints each call, the
 // Lua state it ran in, and what came back, for the results table there. Run it with `npm run gate`,
 // with a game loaded and the core mod on. Options: `--unit <id>` picks the unit to move,
-// `--end-turn` ends the turn after the move and waits for the next turn signal, and `--port <port>`
-// sets another port, such as `npm run gate -- --unit 131073 --end-turn`. In PowerShell, write the
+// `--end-turn` ends the turn after the move and waits for the next turn signal, `--read-only` prints
+// the turn, cities, and units and stops before any move, for the online test in
+// docs/findings/multiplayer.md, and `--port <port>` sets another port, such as
+// `npm run gate -- --unit 131073 --end-turn`. In PowerShell, write the
 // `--` as `'--'`, as docs/rules/code.md says. Throwaway code: this file goes when the phase 1
 // action API does the same from the bridge executable, as docs/roadmap/phase-1/README.md says.
 
@@ -60,6 +62,7 @@ const { values } = parseArgs({
 		port: { type: "string", default: String(DEFAULT_PORT) },
 		unit: { type: "string" },
 		"end-turn": { type: "boolean", default: false },
+		"read-only": { type: "boolean", default: false },
 	},
 });
 const client = new TunerClient({ port: Number(values.port) });
@@ -264,6 +267,20 @@ if (!Number.isInteger(playerId)) {
 await step("Cities", GAMEPLAY_STATE, citiesLua(playerId));
 await step("Cities", CORE_STATE, citiesLua(playerId));
 const units = await step("Units", CORE_STATE, unitsLua(playerId));
+
+// An action in an online game can cause a desync, so a read-only run stops before the checks and
+// the move, and never ends the turn.
+if (values["read-only"]) {
+	await step("Turn", CORE_STATE, "print(Game.GetCurrentGameTurn())");
+
+	if (values["end-turn"]) {
+		warn("--read-only ignores --end-turn, because ending a turn is an action");
+	}
+
+	client.close();
+	process.exit(0);
+}
+
 // The first unit with moves left, unless --unit picks one.
 const unitId = values.unit === undefined
 	? Number(fields(units.find((line) => Number(fields(line)[4]) > 0))[0])
