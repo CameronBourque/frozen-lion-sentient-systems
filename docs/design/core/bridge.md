@@ -10,8 +10,13 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 - **Tool reference.** A script generates `docs/reference/tools.md` from the MCP tool schemas. A `pull_request` workflow keeps it current in two jobs. The first job installs packages, runs the script, and uploads the file as an artifact, with no app token. The second job commits the file to the PR branch with the release app token and never runs `npm`. Dependabot PRs skip the second job, because workflows that Dependabot triggers can't read repository secrets.
 - **Model client.** It calls the configured provider through one interface, the Vercel AI SDK, so any provider works. `models.yaml` maps each provider and operation to a model. Testing fills that table.
 - **Memory store.** It reads and writes each agent's memory files and snapshots them under the current checkpoint ID. See [memory.md](../memory.md).
-- **Logs.** `src/log.ts` prints each log line with the local time in front, and prints warnings to stderr. The mod config file will set the log level: off, decisions only, or full. Full logs include every prompt and response. Each game writes its own log file.
-- **Settings.** The bridge stores the API key in its own config. The key never goes into a game setup parameter, because saves and multiplayer games share those.
+- **Logs.** `src/log.ts` prints each log line with the local time in front, and prints warnings to stderr. The config file will set the log level: off, decisions only, or full. Full logs include every prompt and response. Each game writes its own log file.
+- **Settings.** The bridge reads its settings from `sentient-systems.yaml`, next to the executable. `--config <path>` reads another file, and `npm run dev` passes `tmp/sentient-systems.yaml` at the repo root. Git ignores `tmp/`. `src/config.ts` holds the `zod` schema, and `src/load-config.ts` finds and reads the file. The file holds settings for the whole bridge:
+  - `schemaVersion`, which [versioning.md](../versioning.md#bump-rules) requires,
+  - `logLevel`, one of `off`, `decisions`, or `full`, with `decisions` as the default,
+  - `providers`, an API key for each provider, such as `anthropic: { apiKey: "..." }`.
+
+  The schema rejects unknown fields, so a misspelled field is an error instead of a silent default. If the file is missing, the bridge writes a commented example there, names its path, and exits. A bad file exits with one error per field, such as `logLevel: Invalid option`. If no provider has a key, the bridge warns and keeps running. Agent slots, personalities, and sweat levels aren't in the file, because they come from the [setup screen](../agents/slot-type.md) and save with the game. The key never goes into a game setup parameter, because saves and multiplayer games share those.
 
 TypeScript has the reference MCP SDK and compiles to a single executable, so users download one file. The agent and advisor features are modules in the same codebase, not plugins. [findings/build-tooling.md](../../findings/build-tooling.md) tracks the executable build. The TypeScript setup is in [rules/code.md](../../rules/code.md#typescript).
 
@@ -22,7 +27,12 @@ TypeScript has the reference MCP SDK and compiles to a single executable, so use
 | The bridge is one TypeScript program, with no plugin system | TypeScript has the reference MCP SDK and builds a single executable. Two consumers do not justify plugins |
 | Any LLM provider, through one interface | Users bring their own provider. Testing decides which models are good enough |
 | Resync and version check when the bridge connects | A restart can miss events, and the mod and bridge update separately |
-| Log levels set in the mod config file | Full logs can be large |
+| Log levels set in the config file | Full logs can be large |
+| The config file is YAML next to the executable, with `--config` to read another path | Users edit it by hand, and YAML allows comments that explain each field. Next to the executable, users find it without searching. `--config` keeps a developer's keys under the repo's ignored `tmp/` |
+| The `yaml` package parses the config file | It ships its own types and keeps comments when it rewrites a file, which the in-game key box needs. `js-yaml` drops comments when it writes |
+| The config file holds only settings for the whole bridge | Agent slots, personalities, and sweat levels belong to a game, so they save with it. A player ID in the config would point at the wrong player after loading another save |
+| One API key per provider in `providers` | An agent and its subagents can each use a model from a different provider |
+| A missing config file gets an example and exits, and an empty key only warns | The example shows every field. With no key, the parts that don't call a model still run |
 | Generate the tool reference from the tool schemas, and commit it | Each tool fact has one home, in the code. The model reads the same descriptions, so one text serves both. A tool change shows as a doc diff in its pull request |
 | Regenerate the tool reference in a two-job `pull_request` workflow that pushes with the release app token | PR code never runs where the token is. Pushes with an app token re-run the required checks, and the release app already has write access. Separate jobs also leave room for later jobs with other dependencies |
 | Node 26 for development, CI, and the executable | The executable ships with the Node version that builds it, so that version must be a supported LTS release. Node 26 is the LTS release with the longest support, and it builds the executable with `node --build-sea` |

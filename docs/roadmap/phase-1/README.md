@@ -15,7 +15,7 @@ Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design
 | # | Step | Covers | Status |
 | --- | --- | --- | --- |
 | 1 | Link the core mod | A script in place of the manual junction steps | Done. The step file is deleted, and the steps are in the [core mod README](../../../packages/core/mod/README.md#install-for-testing) |
-| 2 | [Config file](02-config-file.md) | Agent slot, log level, provider, and API key | |
+| 2 | [Config file](02-config-file.md) | Log level and provider keys | |
 | 3 | [Logs and errors](03-logs-and-errors.md) | Three log levels, a log file per game, and `ERROR` lines from the core mod | |
 | 4 | [Load signal](04-load-signal.md) | How the bridge tells a load has finished | |
 | 5 | [State: map, cities, and units](05-state-map-cities-units.md) | The serializer for one player, filtered by visibility | |
