@@ -11,6 +11,8 @@ export default defineConfig({
 			exclude: [
 				// Only reads files and prints. Its logic is in run.mjs, which the tests cover.
 				"scripts/check-docs/src/index.mjs",
+				// Only reads the registry and prints. Its logic is in documents.mjs and link.mjs, which the tests cover.
+				"scripts/link-mod/src/index.mjs",
 				// Only starts the bridge. Its logic goes in the other files, which the tests cover.
 				"packages/core/bridge/src/main.ts",
 			],

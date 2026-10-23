@@ -4,7 +4,7 @@ Add a script that links the core mod into the game's `Mods` folder, in place of 
 
 ## Tasks
 
-1. **Script.** Write `scripts/link-mod.mjs` at the repo root, and add a `link-mod` script to the root `package.json`. The script finds the Documents folder from the registry value `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\Personal`, so a OneDrive Documents folder works. It creates the junction with `fs.symlinkSync(target, path, "junction")`. Test the path logic with a fake registry value. Commit: `chore(core): add the mod link script`.
+1. **Script.** Write the script in `scripts/link-mod/src/`, with its tests in `scripts/link-mod/test/`, and add a `link-mod` script to the root `package.json`. The script finds the Documents folder from the registry value `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\Personal`, so a OneDrive Documents folder works. It creates the junction with `fs.symlinkSync(target, path, "junction")`. Test the path logic with a fake registry value. Commit: `chore(core): add the mod link script`.
 2. **Existing link.** When the junction exists and points at this checkout, print that and exit 0. When it points somewhere else, or a real folder is there, print the path and exit 1 without touching it. Add `--remove`, which removes only a junction. Commit: `chore(core): handle an existing mod link`.
 3. **README.** Replace the `mklink` steps in the core mod README with `npm run link-mod`. Keep the `rmdir` note for a manual removal. Commit: `docs: link the core mod with npm run link-mod`.
 
