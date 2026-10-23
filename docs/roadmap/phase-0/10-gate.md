@@ -16,4 +16,4 @@ The bridge prints your cities, and a unit visibly moves on the map. The gate has
 
 - Each call, its Lua state, and its result, in [game-api.md](../../findings/game-api.md#results).
 - Which state issued the action, in [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from). This answer decides where the action API runs.
-- If you ran the SDK check, whether the tuner works without the SDK, in [tuner-setup.md](../../findings/tuner-setup.md#results), question 1.
+- If you ran the SDK check, whether the tuner works without the SDK, in [tuner-setup.md](../../findings/tuner-setup.md#results).
