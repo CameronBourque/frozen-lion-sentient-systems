@@ -1,16 +1,15 @@
 # Lua states
 
-Status: open. The state list, the `InGame` probe, how the list changes over a session, and the core mod's own states are confirmed in a running game on Windows. The rest is partly confirmed from game files.
+Status: open. The state list, the `InGame` probe, how the list changes over a session, the core mod's own states, and a move requested from the core mod's UI state are confirmed in a running game on Windows. The rest is partly confirmed from game files.
 
 Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have different APIs. The FireTuner state list shows which states exist in a running game.
 
 ## Questions
 
-1. Which state can issue player actions through the UI's request functions?
-2. Can a UI state read data from a gameplay state, and the other way around? Through what: `ExposedMembers`, `LuaEvents`, or properties?
-3. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
-4. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this, because commands return nothing until after the click. See question 5.
-5. Why did the tuner not answer `LSQ:` before the click in one load, when FireTuner listed the in-game states before the click in another? See [state lifecycle](#state-lifecycle).
+1. Can a UI state read data from a gameplay state, and the other way around? Through what: `ExposedMembers`, `LuaEvents`, or properties?
+2. Can a mod run Lua in the front end, so that it can report when the player moves between the main menu, the setup screen, and a game?
+3. Can Lua start a loaded game from the loading screen, in place of the player's click on its button? A tool that starts test presets needs this, because commands return nothing until after the click. See question 4.
+4. Why did the tuner not answer `LSQ:` before the click in one load, when FireTuner listed the in-game states before the click in another? See [state lifecycle](#state-lifecycle).
 
 ## What we know now
 
@@ -37,7 +36,7 @@ Turns run one player at a time. An unfiltered print with the time, from `Events.
 
 The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/in-game-lua.md](../design/core/in-game-lua.md).
 
-The core mod's own UI state has `UnitManager.RequestOperation` and `UI.RequestAction`. See [the core mod's states](#the-core-mods-states). Whether an action requested there takes effect is untested. The phase 0 gate tests it.
+The core mod's own UI state has `UnitManager.RequestOperation` and `UI.RequestAction`. See [the core mod's states](#the-core-mods-states). A move requested there takes effect. The bridge sent `RequestOperation` to `SentientSystemsCore_UI`, the unit moved one tile on the map, and `GameCore_Tuner` read its new position 1 s later. Confirmed in single player on Windows on 2026-10-23. The calls are in [game-api.md](game-api.md#moving-a-unit).
 
 The game's Lua files never call `UnitManager.MoveUnit`, so don't rely on it. Checked on 2026-10-16. Gameplay scenario scripts do use `UnitManager.InitUnit` and `UnitManager.PlaceUnit`, for example in `DLC/VikingsScenario/Scripts/VikingScenario.lua`.
 
@@ -71,7 +70,7 @@ All rows were checked on Windows on 2026-10-22.
 | In-game menus | Opening in-game menus, such as the tech tree and a city screen, doesn't change the state list. Each menu is one of the states that always exist | Confirmed |
 | Quit to the main menu | The tuner socket stays open. The list becomes the 32 front-end states, such as `MainMenu`, `FrontEnd`, `Lobby`, and `StagingRoom`. `Main State` stays 0 and `DebugHotloadCache` stays 1 | Confirmed |
 | A command to a state that's gone | The tag 3 reply is `ERR:Invalid Lua State`, and no output comes back | Confirmed |
-| Loading a game | The tuner doesn't answer `LSQ:` while the game loads. `Lua.log` prints `LoadScreen: OnLoadGameViewStateDone` when the loading screen shows its button. In FireTuner, the in-game states were listed from then on, but commands to the core mod's states returned no output and no error until the player clicked the button. In one load watched with `watch-states`, `LSQ:` got no reply before the click, and the socket reset at the click. See question 5 | Confirmed, except question 5 |
+| Loading a game | The tuner doesn't answer `LSQ:` while the game loads. `Lua.log` prints `LoadScreen: OnLoadGameViewStateDone` when the loading screen shows its button. In FireTuner, the in-game states were listed from then on, but commands to the core mod's states returned no output and no error until the player clicked the button. In one load watched with `watch-states`, `LSQ:` got no reply before the click, and the socket reset at the click. See question 4 | Confirmed, except question 4 |
 | Indexes after a load | After a reload of the same save, all 122 in-game states other than `Main State` and `DebugHotloadCache` had their old indexes | Confirmed, one load |
 | Live reload | Editing the core mod's UI Lua file while a game runs rebuilds that UI context, and its load line prints again. This works in single player and in hotseat. Editing the gameplay Lua file doesn't reload it. Not measured: the delay, whether it needs `EnableTuner 1`, and what the reload resets | Confirmed, 2026-10-22 |
 | `ContextPtr:GetID()` | Returns the state's name in a UI state: `InGame` in `InGame`, and `PlotInfo` in `PlotInfo`. `Main State` has no `ContextPtr` | Confirmed |
@@ -87,7 +86,7 @@ All rows were checked on Windows on 2026-10-22.
 
 3. Load the core mod and check which new states appear.
 4. Close FireTuner, and run `npm run watch-states --workspace packages/core/bridge`. Open a few in-game menus. Save, quit to the main menu, and load the save. Click the loading screen's button to start the game, then stop the script.
-5. To answer question 5, load a save and wait at the loading screen's button without clicking it. Check whether the client lists the in-game states. Do it four times: with `watch-states` and with FireTuner, each with the core mod off and on.
+5. To answer question 4, load a save and wait at the loading screen's button without clicking it. Check whether the client lists the in-game states. Do it four times: with `watch-states` and with FireTuner, each with the core mod off and on.
 
 ## Results
 
@@ -123,4 +122,4 @@ The main menu's 32 states are `Main State`, `DebugHotloadCache`, `Options`, `Cre
 | `InGame` | `function` | `table` | `function` | `function` |
 | `SentientSystemsCore_UI` | `function` | Not checked | `function` | Not checked |
 
-Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-22.
+Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-22, and the move from the core mod's UI state on 2026-10-23.
