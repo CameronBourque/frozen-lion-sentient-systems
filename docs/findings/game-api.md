@@ -1,14 +1,13 @@
 # Game API
 
-Status: open. Listing cities and units, and moving a unit, are confirmed in a running game. The rest is partly confirmed from game files. civ6-mcp's code covers more calls, unconfirmed.
+Status: open. Listing cities and units, moving a unit, and ending the turn are confirmed in a running game. The rest is partly confirmed from game files. civ6-mcp's code covers more calls, unconfirmed.
 
 This file lists the game calls the bridge needs, with the Lua state (gameplay or UI) and where we found each call. "Confirmed in files" means the game's own Lua uses the call that way. "Tested" means we ran it from the tuner. "Used by civ6-mcp" means [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a) calls it that way at commit `dd20190`, read on 2026-10-16. That code plays live games, but we haven't run the call ourselves, so it stays unconfirmed.
 
 ## Questions
 
-1. How do we end the turn?
-2. Can a script write a game property that saves keep, for checkpoint IDs?
-3. Can UI Lua dismiss the hotseat pass screen, so agent turns start without a click? Test in phase 2.
+1. Can a script write a game property that saves keep, for checkpoint IDs?
+2. Can UI Lua dismiss the hotseat pass screen, so agent turns start without a click? Test in phase 2.
 
 ## What we know now
 
@@ -73,7 +72,9 @@ For other operations and commands, civ6-mcp reads failure reasons from the same 
 
 ### Ending the turn
 
-`UI.RequestAction(ActionTypes.ACTION_ENDTURN)` ends the turn. It's in `Base/Assets/UI/ActionPanel.lua` at line 512. The base UI calls it in five places. Confirmed in files.
+`UI.RequestAction(ActionTypes.ACTION_ENDTURN)` ends the turn. It's in `Base/Assets/UI/ActionPanel.lua` at line 512. The base UI calls it in five places. Confirmed in files. Sent from `SentientSystemsCore_UI` in single player, it ended the turn, and the next `AGENT_TURN` line came 3 s later. Confirmed on Windows on 2026-10-23.
+
+An end-turn blocker doesn't stop the request. `NotificationManager.GetFirstEndTurnBlocking(Game.GetLocalPlayer())` returned `ENDTURN_BLOCKING_RESEARCH`, the **Choose Research** prompt, before and after the turn ended. `UI.CanEndTurn()` returned `true` with the blocker in place. Confirmed on Windows on 2026-10-23. The base UI checks the blocker itself before it calls `RequestAction`. `DoEndTurn` in `ActionPanel.lua` ends the turn only when the blocker is `NO_ENDTURN_BLOCKING`. For any other blocker, it selects the next unit or opens the blocking notification. `DoEndTurn` starts at line 526. Confirmed in files.
 
 civ6-mcp ends the turn with the same call, in [`build_end_turn`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/notifications.py#L46). It never sends a second request while the first is still in progress, because a repeated request can skip turns. Instead, it waits for the turn number to change. See [`end_turn.py`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/end_turn.py#L1139). Unconfirmed, used by civ6-mcp.
 
@@ -125,7 +126,7 @@ Run each step through the tuner, and record the Lua state you ran it in.
 
 ## Results
 
-The bridge ran steps 1 to 4 in a single-player game, with one city and one unit.
+The bridge ran steps 1 to 5 in a single-player game, with one city and one unit.
 
 | Call | Lua state | Result | Date |
 | --- | --- | --- | --- |
@@ -138,5 +139,7 @@ The bridge ran steps 1 to 4 in a single-player game, with one city and one unit.
 | `GetReachableMovement` holds (43, 51) | `SentientSystemsCore_UI` | No | 2026-10-23 |
 | `CanStartOperation`, then `RequestOperation`, for (42, 50), adjacent and not reachable | `SentientSystemsCore_UI`, then `InGame` | The check passed, and the request raised no error. In `GameCore_Tuner`, `FindID` read the unit at (41, 49) with 2 moves left, 5 times over 5 s after each request | 2026-10-23 |
 | `CanStartOperation`, then `RequestOperation`, for (42, 49), adjacent and reachable | `SentientSystemsCore_UI` | The check passed. The unit moved on the map. In `GameCore_Tuner`, `FindID` read it at (42, 49) with 1 move left, 1 s after the request | 2026-10-23 |
+| `Game.GetCurrentGameTurn()`, `UI.CanEndTurn()`, and `GetFirstEndTurnBlocking` | `SentientSystemsCore_UI` | Turn 1, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
+| `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` | `SentientSystemsCore_UI` | The turn ended. `AGENT_TURN 0` came 3 s later, and the same three calls returned turn 2, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: mod metadata and the active player on 2026-10-22, and cities, units, and moves on 2026-10-23.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: mod metadata and the active player on 2026-10-22, and cities, units, moves, and the end turn on 2026-10-23.

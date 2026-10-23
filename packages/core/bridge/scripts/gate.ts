@@ -3,8 +3,9 @@
 // Lua state it ran in, and what came back, for the results table there. Run it with `npm run gate`,
 // with a game loaded and the core mod on. Options: `--unit <id>` picks the unit to move,
 // `--end-turn` ends the turn after the move and waits for the next turn signal, and `--port <port>`
-// sets another port, such as `npm run gate -- --unit 131073 --end-turn`. Throwaway code: phase 1
-// builds the real action API, and this file goes when phase 0 closes.
+// sets another port, such as `npm run gate -- --unit 131073 --end-turn`. In PowerShell, write the
+// `--` as `'--'`, as docs/rules/code.md says. Throwaway code: phase 1 builds the real action API,
+// and this file goes when phase 0 closes.
 
 import { once } from "node:events";
 import { parseArgs } from "node:util";
