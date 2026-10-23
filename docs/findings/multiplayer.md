@@ -1,15 +1,12 @@
 # Multiplayer
 
-Status: open. Hotseat is confirmed on Windows. Online games are not tested.
+Status: confirmed. Hotseat and an online game are tested on Windows. Both close the tuner port, so no client can connect.
 
 What the tuner and the core mod can do in hotseat and online games. The advisors mod needs the tuner in online games. See [design/advisors.md](../design/advisors.md). Agent players need a way to act in any game that has you and an agent in it. See [design/agents/slot-type.md](../design/agents/slot-type.md).
 
 ## Questions
 
-1. Does the game open the tuner socket during an online game?
-2. Does read-only Lua run, such as listing cities and printing the turn number?
-3. Does a read-only command cause a desync warning or other odd behavior?
-4. Do event-driven prints, such as the turn signal, arrive in an online game?
+None open.
 
 ## What we know now
 
@@ -35,7 +32,10 @@ Single player keeps one human, so it can't stand in for hotseat with the tuner o
 
 ### Online
 
-Untested. Hotseat closing 4318 suggests that online games close it too, but nobody has checked.
+| Item | Value | Status |
+| --- | --- | --- |
+| Tuner | The game closes 4318 in an online game too, as in hotseat. With the host loaded into the map, `netstat` showed nothing on 4318, and the game listened on `127.0.0.1:4319` only. The bridge and `npm run gate -- --read-only` waited for the tuner and never connected. Port 4319 is no substitute. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now) | Confirmed, 2026-10-23 |
+| Core mod | The mod runs, and `[SENTIENTSYSTEMS] AGENT_TURN 0` reached `Lua.log` once on each of turns 1 to 3. A program can read the log, but it can't send anything into the game | Confirmed, 2026-10-23 |
 
 ## Rules for the test
 
@@ -53,9 +53,9 @@ Untested. Hotseat closing 4318 suggests that online games close it too, but nobo
 
 | Question | Result | Date |
 | --- | --- | --- |
-| Socket opens | | |
-| Read-only Lua runs | | |
-| No desync | | |
-| Event prints arrive | | |
+| Socket opens | No. Nothing listened on 4318, and the bridge and the gate never connected | 2026-10-23 |
+| Read-only Lua runs | Not reachable, because the socket is closed | 2026-10-23 |
+| No desync | Not reachable, because no command could be sent. The game showed no desync message by turn 3 | 2026-10-23 |
+| Event prints arrive | Not over the tuner. The turn signal reached `Lua.log` on each turn | 2026-10-23 |
 
-Date checked: hotseat on Windows on 2026-10-22. Online: not yet.
+Date checked: hotseat on Windows on 2026-10-22. An online game hosted from Windows on 2026-10-23.

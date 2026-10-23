@@ -22,7 +22,7 @@ Repo setup is done, and core `0.1.0` tested the release flow. The bridge project
 | 8 | Receive the turn signal | Parse tagged lines into events in the bridge | Done. The step file is deleted, and the results are in [tuner-commands.md](../../findings/tuner-commands.md#behavior-notes) and [bridge.md](../../design/core/bridge.md) |
 | 9 | Resync on connect | Recover the turn state after a bridge restart | Done. The step file is deleted, and the results are in [tuner-commands.md](../../findings/tuner-commands.md#behavior-notes), [game-api.md](../../findings/game-api.md#active-player), [lua-contexts.md](../../findings/lua-contexts.md#turn-events-differ-by-script-type), [tuner-protocol.md](../../findings/tuner-protocol.md#what-we-know-now), [bridge.md](../../design/core/bridge.md), and [in-game-lua.md](../../design/core/in-game-lua.md) |
 | 10 | The gate | List cities and move a unit from the bridge | Done. The step file is deleted, and the results are in [game-api.md](../../findings/game-api.md#results), [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from), and [tuner-setup.md](../../findings/tuner-setup.md#results) |
-| 11 | [Online multiplayer check](11-online-multiplayer.md) | Read-only tuner test in an online game | |
+| 11 | Online multiplayer check | Read-only tuner test in an online game | Done. The step file is deleted, and the results are in [multiplayer.md](../../findings/multiplayer.md#online) |
 | 12 | [Close out phase 0](12-close-out.md) | Update the docs and check the core `0.2.0` executable | |
 
 ## Suggested PR breakdown
