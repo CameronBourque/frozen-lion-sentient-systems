@@ -45,16 +45,9 @@ Untested. Hotseat closing 4318 suggests that online games close it too, but nobo
 ## Method
 
 1. Set `EnableTuner 1` and host an online game.
-2. Connect FireTuner, or the bridge once it works.
-3. Run:
-
-   ```lua
-   print(Game.GetCurrentGameTurn())
-   for i, c in Players[Game.GetLocalPlayer()]:GetCities():Members() do print(c:GetName()) end
-   ```
-
-   `Game.GetCurrentGameTurn` is confirmed in the game's UI Lua. `c:GetName()` is unconfirmed.
-4. Play two or three turns and watch for desync messages.
+2. From `packages/core/bridge/`, run `npm run gate -- --read-only`. It prints the turn, your cities, and your units, and stops before any move. If it can't connect, the socket is closed, and the other questions can't be answered.
+3. Start the bridge with `npm run dev`. It logs the core version and the turn when it connects.
+4. Play two or three turns. Watch the bridge for a `turn` line each turn, and the game for desync messages.
 
 ## Results
 
