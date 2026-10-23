@@ -23,7 +23,7 @@ Repo setup is done, and core `0.1.0` tested the release flow. The bridge project
 | 9 | Resync on connect | Recover the turn state after a bridge restart | Done. The step file is deleted, and the results are in [tuner-commands.md](../../findings/tuner-commands.md#behavior-notes), [game-api.md](../../findings/game-api.md#active-player), [lua-contexts.md](../../findings/lua-contexts.md#turn-events-differ-by-script-type), [tuner-protocol.md](../../findings/tuner-protocol.md#what-we-know-now), [bridge.md](../../design/core/bridge.md), and [in-game-lua.md](../../design/core/in-game-lua.md) |
 | 10 | The gate | List cities and move a unit from the bridge | Done. The step file is deleted, and the results are in [game-api.md](../../findings/game-api.md#results), [lua-contexts.md](../../findings/lua-contexts.md#where-actions-can-come-from), and [tuner-setup.md](../../findings/tuner-setup.md#results) |
 | 11 | [Online multiplayer check](11-online-multiplayer.md) | Read-only tuner test in an online game | |
-| 12 | [Close out phase 0](12-close-out.md) | Update the docs and release core `0.1.0` | |
+| 12 | [Close out phase 0](12-close-out.md) | Update the docs and check the core `0.2.0` executable | |
 
 ## Suggested PR breakdown
 
@@ -35,4 +35,4 @@ PR titles follow [rules/commits.md](../../rules/commits.md).
 4. `feat(core): add tuner client` (step 6). This triggers core `0.1.0`
 5. `feat(core): add turn signal and resync` (steps 7 to 9)
 6. `chore(core): add the phase 0 gate and record its results` (step 10)
-7. `docs: record phase 0 results` (steps 11 and 12)
+7. `docs: record phase 0 results` (steps 11 and 12, and the gate's read-only option)
