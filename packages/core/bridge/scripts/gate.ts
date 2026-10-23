@@ -1,13 +1,15 @@
 // The phase 0 gate: it lists your cities and units from the bridge, checks a move into deep water,
 // and moves one unit, following the method in docs/findings/game-api.md. It prints each call, the
 // Lua state it ran in, and what came back, for the results table there. Run it with `npm run gate`,
-// with a game loaded and the core mod on. Options: `--unit <id>` picks the unit to move, and
-// `--port <port>` sets another port, such as `npm run gate -- --unit 131073`. Throwaway code:
-// phase 1 builds the real action API, and this file goes when phase 0 closes.
+// with a game loaded and the core mod on. Options: `--unit <id>` picks the unit to move,
+// `--end-turn` ends the turn after the move and waits for the next turn signal, and `--port <port>`
+// sets another port, such as `npm run gate -- --unit 131073 --end-turn`. Throwaway code: phase 1
+// builds the real action API, and this file goes when phase 0 closes.
 
 import { once } from "node:events";
 import { parseArgs } from "node:util";
 import { CORE_STATE } from "../src/connect.js";
+import { readLine } from "../src/events.js";
 import { log, warn } from "../src/log.js";
 import { TunerClient } from "../src/tuner/client.js";
 import { DEFAULT_PORT } from "../src/tuner/connection.js";
@@ -19,6 +21,19 @@ const FALLBACK_STATE = "InGame";
 // A move may finish after RequestOperation returns, so the position is read a few times.
 const POSITION_READS = 5;
 const POSITION_WAIT_MS = 1_000;
+// The AI turns run between the request and the next turn signal, and they get slower as a game
+// goes on.
+const NEXT_TURN_TIMEOUT_MS = 5 * 60_000;
+
+// Prints the turn number, whether the UI says the turn can end, and the first end-turn blocker by
+// name, such as ENDTURN_BLOCKING_RESEARCH. ActionPanel.lua checks the blocker before it ends a turn.
+const TURN_STATE_LUA = `
+	local blocker = NotificationManager.GetFirstEndTurnBlocking(Game.GetLocalPlayer())
+	local blockerName = tostring(blocker)
+	for name, value in pairs(EndTurnBlockingTypes) do
+		if value == blocker then blockerName = name end
+	end
+	print("turn", Game.GetCurrentGameTurn(), "can end", tostring(UI.CanEndTurn()), "blocker", blockerName)`;
 
 // The move's parameters, as MoveUnitToPlot in Base/Assets/UI/Civ6Common.lua builds them.
 const MOVE_PARAMS = `
@@ -43,6 +58,7 @@ const { values } = parseArgs({
 	options: {
 		port: { type: "string", default: String(DEFAULT_PORT) },
 		unit: { type: "string" },
+		"end-turn": { type: "boolean", default: false },
 	},
 });
 const client = new TunerClient({ port: Number(values.port) });
@@ -190,6 +206,47 @@ async function move(state: string, playerId: number, unitId: number): Promise<bo
 	return false;
 }
 
+// Ends the turn from the core mod's state, and waits for the player's next turn signal. Returns
+// whether it came.
+async function endTurn(playerId: number): Promise<boolean> {
+	await step("Turn state", CORE_STATE, TURN_STATE_LUA);
+
+	const startedAt = Date.now();
+	// Listens before the request, so a signal that comes at once isn't missed.
+	const nextTurn = new Promise<boolean>((resolve) => {
+		const timer = setTimeout(() => finish(false), NEXT_TURN_TIMEOUT_MS);
+
+		function finish(arrived: boolean): void {
+			clearTimeout(timer);
+			client.off("output", onOutput);
+			resolve(arrived);
+		}
+
+		function onOutput(line: string): void {
+			const event = readLine(line);
+
+			if (event?.type === "turn" && event.playerId === playerId) {
+				finish(true);
+			}
+		}
+
+		client.on("output", onOutput);
+	});
+
+	await step("End turn", CORE_STATE, "UI.RequestAction(ActionTypes.ACTION_ENDTURN) print(\"requested\")");
+
+	if (!await nextTurn) {
+		warn(`No turn signal for player ${playerId} in ${NEXT_TURN_TIMEOUT_MS / 60_000} min`);
+
+		return false;
+	}
+
+	log(`The next turn signal came ${Math.round((Date.now() - startedAt) / 1000)} s after the request`);
+	await step("Turn state", CORE_STATE, TURN_STATE_LUA);
+
+	return true;
+}
+
 log(`Waiting for the game's tuner on port ${values.port}...`);
 client.connect();
 await once(client, "connected");
@@ -224,6 +281,10 @@ await step("Move into deep water", CORE_STATE, negativeLua(playerId, unitId));
 if (!await move(CORE_STATE, playerId, unitId)) {
 	log(`Trying the move again from ${FALLBACK_STATE}, to tell the core mod's state apart from UI states in general`);
 	await move(FALLBACK_STATE, playerId, unitId);
+}
+
+if (values["end-turn"]) {
+	await endTurn(playerId);
 }
 
 client.close();
