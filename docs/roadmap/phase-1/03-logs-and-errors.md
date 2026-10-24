@@ -13,8 +13,7 @@ Replace the bridge's text log with structured logs at five levels, written to th
 4. **One file per game.** Name each file `logs/<timestamp>.log` in the config file's folder, such as `logs/2026-10-23-181911.log`. Commit: `feat(core): start a log file per game`.
 	- Open the first file when the bridge starts, so the startup lines are in it.
 	- Start a new file on each connect after the first. Until step 4, a new connection counts as a new game.
-5. **Lua error helper.** In `SentientSystemsCore_Tag.lua`, add a helper that takes a handler's name and function, and returns the function wrapped in `xpcall` with `debug.traceback`. Commit: `feat(core): add the core mod error helper`.
-	- If `debug` is missing, the helper uses `pcall` with no traceback.
+5. **Lua error helper.** In `SentientSystemsCore_Tag.lua`, add `SentientSystems_CatchErrors`, which takes a handler's name and function, and returns the function wrapped in `pcall`. The game's Lua puts the stack trace in the error message, and UI states have no `debug` library, so the helper doesn't use `xpcall`. Commit: `feat(core): add the core mod error helper`.
 	- On an error, the helper prints `ERROR <handler> <message>`. It escapes each backslash as `\\` and each newline as `\n`, so the tuner sends the error as one line.
 6. **Wrap the handlers.** Wrap each event handler in `SentientSystemsCore_UI.lua` with the helper. Commit: `feat(core): catch errors in core mod event handlers`.
 7. **Parse `ERROR`.** In `src/events.ts`, add the `ERROR` kind, with the handler as one word and the rest of the line as the message. Commit: `feat(core): parse ERROR lines from the core mod`.
@@ -22,13 +21,13 @@ Replace the bridge's text log with structured logs at five levels, written to th
 	- Test a message with spaces, a message with an escaped newline, and a message with a traceback.
 8. **Log `ERROR` as an error.** Have `describeEvent` return each event's level. Log `ERROR` as an error with the event `core_error` and the fields `handler`, `message`, and `traceback` when there is one. The other events stay at info. Commit: `feat(core): log ERROR lines as errors`.
 9. **Log docs.** Describe the logger, the levels, the records, and the log file in [bridge.md](../../design/core/bridge.md). Commit: `docs: describe structured logs and log files`.
-10. **`ERROR` docs.** Describe the `ERROR` line and the helper in [in-game-lua.md](../../design/core/in-game-lua.md). Record whether `debug.traceback` works in a UI state in [lua-contexts.md](../../findings/lua-contexts.md). Commit: `docs: describe ERROR lines`.
+10. **`ERROR` docs.** Describe the `ERROR` line and the helper in [in-game-lua.md](../../design/core/in-game-lua.md). Record in [lua-contexts.md](../../findings/lua-contexts.md) that the core mod's UI state runs Havok Script 2013.2.0 with no `debug` library, and that `pcall` in a UI state gets the stack trace in the error message. Commit: `docs: describe ERROR lines`.
 
 ## Done when
 
 All of these hold in a running game:
 
-- With a temporary `error("test")` in the turn handler, the bridge logs a `core_error` record with the handler's name, and the game keeps running. The record has a traceback if `debug.traceback` works in the core mod's UI state.
+- With a temporary `error("test")` in the turn handler, the bridge logs a `core_error` record with the handler's name and a traceback, and the game keeps running.
 - With `logLevel: warn`, the console and the log file hold only warnings and errors.
 - Each line on the console is also a record in the log file.
 - Each load of a save starts a new log file.
@@ -37,4 +36,4 @@ All of these hold in a running game:
 
 - The logger, the levels, and the log file, in [bridge.md](../../design/core/bridge.md).
 - The `ERROR` line and the helper, in [in-game-lua.md](../../design/core/in-game-lua.md).
-- Whether `debug.traceback` works in a UI state, in [lua-contexts.md](../../findings/lua-contexts.md).
+- The Lua version, the missing `debug` library, and the stack trace in `pcall` errors, in [lua-contexts.md](../../findings/lua-contexts.md).
