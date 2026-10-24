@@ -1,6 +1,6 @@
 # Lua states
 
-Status: open. The state list, the `InGame` probe, how the list changes over a session, the core mod's own states, and a move requested from the core mod's UI state are confirmed in a running game on Windows. The rest is partly confirmed from game files.
+Status: open. The state list, the `InGame` probe, how the list changes over a session, the core mod's own states, their Lua version and errors, and a move requested from the core mod's UI state are confirmed in a running game on Windows. The rest is partly confirmed from game files.
 
 Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have different APIs. The FireTuner state list shows which states exist in a running game.
 
@@ -60,8 +60,12 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 | Shared files | A file listed in `ImportFiles` loads into a state with `include("SentientSystemsCore_Tag")`, the file name without its extension. It worked in a gameplay state and in a UI state. `include` finds a file by name among the imported files of every enabled mod, so a generic name such as `Version` can load another mod's file | Confirmed |
 | Calls from the tuner | The tuner can call the mod's global functions, such as `SentientSystems_Print` and `SentientSystems_GetVersion`, in the mod's gameplay and UI states | Confirmed |
 | Request functions | In `SentientSystemsCore_UI`, `type(UnitManager.RequestOperation)` and `type(UI.RequestAction)` are both `function` | Confirmed |
+| Lua version | `_VERSION` in `SentientSystemsCore_UI` is `2013.2.0 r13768`, a Havok Script version | Confirmed |
+| `debug` library | `type(debug)` in `SentientSystemsCore_UI` is `nil` | Confirmed |
+| Errors in `pcall` | An error from `error("text")` or a runtime error, caught by `pcall` in `SentientSystemsCore_UI`, has a message with the error, then `stack traceback:` and one line for each call. Errors that reach the tuner have the same form. See [tuner-commands.md](tuner-commands.md#what-we-know-now). An error raised with a table, such as `error({})`, has no trace | Confirmed |
+| Paths in errors | An error in a mod file names the file by its full path, such as `C:\Users\<name>\Documents\My Games\Sid Meier's Civilization VI\Mods\SentientSystemsCore\UI\SentientSystemsCore_UI.lua:38`. The path holds the user's name | Confirmed |
 
-All rows were checked on Windows on 2026-10-22.
+The first five rows were checked on Windows on 2026-10-22, and the last four on 2026-10-23.
 
 ### State list over a session
 
@@ -87,6 +91,13 @@ All rows were checked on Windows on 2026-10-22.
 3. Load the core mod and check which new states appear.
 4. Close FireTuner, and run `npm run watch-states --workspace packages/core/bridge`. Open a few in-game menus. Save, quit to the main menu, and load the save. Click the loading screen's button to start the game, then stop the script.
 5. To answer question 4, load a save and wait at the loading screen's button without clicking it. Check whether the client lists the in-game states. Do it four times: with `watch-states` and with FireTuner, each with the core mod off and on.
+6. To check the Lua version and errors, run these in `SentientSystemsCore_UI`:
+
+   ```lua
+   print(_VERSION, type(debug))
+   SentientSystems_CatchErrors("Probe", function() error("test") end)()
+   SentientSystems_CatchErrors("Probe", function() error({}) end)()
+   ```
 
 ## Results
 
@@ -122,4 +133,4 @@ The main menu's 32 states are `Main State`, `DebugHotloadCache`, `Options`, `Cre
 | `InGame` | `function` | `table` | `function` | `function` |
 | `SentientSystemsCore_UI` | `function` | Not checked | `function` | Not checked |
 
-Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-22, and the move from the core mod's UI state on 2026-10-23.
+Date checked: game files on 2026-10-16. Running game on Windows: 2026-10-22, and the move, the Lua version, and the errors from the core mod's UI state on 2026-10-23.
