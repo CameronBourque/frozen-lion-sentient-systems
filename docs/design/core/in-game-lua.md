@@ -16,7 +16,7 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
   - the scoreboard and victory progress that a human player can see,
   - for each discrete choice, the legal options with turns to complete, boost status or the boost requirement, resource requirements, and prerequisites.
 
-  `SentientSystems_GetState(playerID)` in `Scripts/SentientSystemsCore_State.lua` returns the view as JSON, and the UI script loads it with `include`. The bridge reads it through the stash. The view so far:
+  `SentientSystems_GetState(playerID)` in `Scripts/State/SentientSystemsCore_State.lua` returns the view as JSON, and the UI script loads it with `include`. Each section of the view has its own file in `Scripts/State/`, such as `SentientSystemsCore_StateCities.lua`, which defines one global, such as `SentientSystems_GetCityStates(player)`. The state file loads each one and puts the sections together. The bridge reads it through the stash. The view so far:
 
   | Key | Holds |
   | --- | --- |
@@ -52,5 +52,6 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 | The JSON encoder sorts object keys | The same state gives the same text, so tests and logs can compare it |
 | An empty table encodes as an empty list | Lua can't tell an empty list from an empty object. Lists, such as units or promotions, are often empty, and objects rarely are |
 | Long JSON crosses in pieces of 1,000,000 bytes, one command each, from a stash | A command whose output passes about 2 MiB gets no reply and stops the connection, however many prints it makes. The stash encodes the state once. A 1 MB print arrives in about 40 ms |
+| Each state section has its own file in `Scripts/State/` | The state grows with every section, and one file would pass 1,000 lines. A file per section keeps each one and its tests small. `include` finds a file by name in any folder, so the folder only groups the files |
 | The core mod has no gameplay script until checkpoint IDs need one | Nothing else needs a gameplay state yet |
 | The load signal is two tagged lines from the loading screen's events | The bridge keeps its rule that it reads only tagged lines. `LOAD_READY` comes before the click, so the bridge can start the new game's log file there, and a later tool can press the button. `GAME_READY` reaches the bridge before the socket resets, so it needs no resync |

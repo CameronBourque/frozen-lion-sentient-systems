@@ -55,6 +55,16 @@ describe("Game.run", function()
 		assert.truthy(loaded[1]:find("Scripts/SentientSystemsCore_Common%.lua$"))
 	end)
 
+	it("finds a file in a subfolder of Scripts through the .modinfo", function()
+		local loaded = Game.new().include("SentientSystemsCore_StateCities")
+
+		assert.truthy(loaded[1]:find("Scripts/State/SentientSystemsCore_StateCities%.lua$"))
+	end)
+
+	it("returns an empty list from include for a file that ImportFiles doesn't list", function()
+		assert.same({}, Game.new().include("SentientSystemsCore_UI"))
+	end)
+
 	it("returns an empty list from include for a name with no file, as the game does", function()
 		local env = Game.new()
 

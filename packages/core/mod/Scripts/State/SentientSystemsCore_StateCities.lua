@@ -1,16 +1,13 @@
--- Builds one player's view of the game as JSON for the bridge, from that player's own data and
--- visibility, never from the screen. See docs/design/core/in-game-lua.md. Example:
--- SentientSystems_GetState(0) returns
--- '{"cities":[{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2},
+-- The cities section of the state: the player's own cities, as the city panel shows them.
+-- SentientSystemsCore_State.lua loads this file. Example: SentientSystems_GetCityStates(player)
+-- returns a list with one table for each city, which encodes as
+-- '{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2},
 -- "districts":[{"buildings":[{"pillaged":false,"type":"BUILDING_MONUMENT"},{"pillaged":false,"type":"BUILDING_PALACE"}],
 -- "complete":true,"pillaged":false,"type":"DISTRICT_CITY_CENTER","x":17,"y":14}],
 -- "growth":{"foodSurplus":3,"housing":6,"turnsUntilGrowth":2},"id":65536,
 -- "loyalty":{"max":100,"perTurn":21,"value":100},"name":"Rome","population":3,
 -- "production":{"turnsLeft":2,"type":"UNIT_SLINGER"},"x":17,"y":14,
--- "yields":{"culture":3.8,"faith":0,"food":9,"gold":8,"production":6,"science":3.5}}]}', on one line.
-
-include("SentientSystemsCore_Common")
-SentientSystems_Include("SentientSystemsCore_Json")
+-- "yields":{"culture":3.8,"faith":0,"food":9,"gold":8,"production":6,"science":3.5}}', on one line.
 
 -- Each yield in the state, and its name in YieldTypes.
 local YIELDS = {
@@ -60,8 +57,8 @@ local function GetYields(city)
 end
 
 -- Returns the food surplus per turn, the housing, and the turns until the city grows or, when it
--- starves, until it loses a citizen. The game returns -1 for each count that doesn't apply, and a city that neither
--- grows nor starves has neither count, as in GetCityData in CitySupport.lua.
+-- starves, until it loses a citizen. The game returns -1 for each count that doesn't apply, and a
+-- city that neither grows nor starves has neither count, as in GetCityData in CitySupport.lua.
 local function GetGrowth(city)
 	local growth = city:GetGrowth()
 	local result = { foodSurplus = RoundDown(growth:GetFoodSurplus()), housing = RoundDown(growth:GetHousing()) }
@@ -140,8 +137,8 @@ local function GetDistricts(city)
 	return districts
 end
 
--- Returns the player's cities, with each city's name in the game's language.
-local function GetCities(player)
+-- Returns a list of the player's cities, with each city's name in the game's language.
+function SentientSystems_GetCityStates(player)
 	local cities = {}
 
 	for _, city in player:GetCities():Members() do
@@ -161,17 +158,4 @@ local function GetCities(player)
 	end
 
 	return cities
-end
-
--- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
--- player. The bridge reads it through the stash, as
--- SentientSystems_Stash(SentientSystems_GetState(playerID)).
-function SentientSystems_GetState(playerID)
-	local player = Players[playerID]
-
-	if player == nil then
-		error("no player " .. tostring(playerID), 0)
-	end
-
-	return SentientSystems_EncodeJson({ cities = GetCities(player) })
 end

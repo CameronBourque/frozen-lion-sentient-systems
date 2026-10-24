@@ -20,6 +20,26 @@ local GLOBALS = {
 	"tostring", "type", "unpack", "xpcall", "coroutine", "math", "os",
 }
 
+-- Returns each imported file's path in the mod folder, by its name without the extension, from the
+-- ImportFiles actions in the .modinfo. The game's include finds only these files.
+local function ReadImports()
+	local file = assert(io.open(MOD_ROOT .. "SentientSystemsCore.modinfo"))
+	local text = file:read("*a")
+	local imports = {}
+
+	file:close()
+
+	for action in text:gmatch("<ImportFiles.-</ImportFiles>") do
+		for path in action:gmatch("<File>(.-)</File>") do
+			imports[path:match("([^/]+)%.lua$")] = path
+		end
+	end
+
+	return imports
+end
+
+local IMPORTS = ReadImports()
+
 local function Copy(source)
 	local copy = {}
 
@@ -31,8 +51,9 @@ local function Copy(source)
 end
 
 -- Returns a new environment. env.printed lists each line that print printed. env.include(name)
--- runs Scripts/<name>.lua in the same environment and returns a list of its path, as include does
--- for a file in ImportFiles. For a name with no file, it returns an empty list, as the game does.
+-- runs the file with that name from ImportFiles in the .modinfo, in the same environment, and
+-- returns a list of its path, as include does. For a name that ImportFiles doesn't list, it returns
+-- an empty list, as the game does.
 function Game.new()
 	local env = { printed = {} }
 
@@ -58,14 +79,12 @@ function Game.new()
 	end
 
 	function env.include(name)
-		local path = "Scripts/" .. name .. ".lua"
-		local file = io.open(MOD_ROOT .. path)
+		local path = IMPORTS[name]
 
-		if file == nil then
+		if path == nil then
 			return {}
 		end
 
-		file:close()
 		Game.run(env, path)
 
 		return { MOD_ROOT .. path }

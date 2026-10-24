@@ -15,7 +15,7 @@ local function Load(world)
 	local env = Game.new()
 
 	FakeGame.Install(env, world)
-	Game.run(env, "Scripts/SentientSystemsCore_State.lua")
+	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
 	return env
 end
@@ -35,7 +35,7 @@ local function With(city, changes)
 	return copy
 end
 
-describe("SentientSystems_GetState", function()
+describe("SentientSystems_GetCityStates", function()
 	it("lists each city's ID, name, position, and population", function()
 		local env = Load({
 			players = { [0] = { cities = { ROME, { id = 131072, name = "LOC_CITY_NAME_ANTIUM", x = 20, y = 10, population = 1 } } } },
@@ -55,12 +55,6 @@ describe("SentientSystems_GetState", function()
 		})
 
 		assert.equal("{\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}]}", env.SentientSystems_GetState(1))
-	end)
-
-	it("gives an empty list for a player with no cities", function()
-		local env = Load({ players = { [0] = {} } })
-
-		assert.equal("{\"cities\":[]}", env.SentientSystems_GetState(0))
 	end)
 
 	it("escapes a city name with quotes", function()
@@ -175,19 +169,6 @@ describe("SentientSystems_GetState", function()
 		assert.is_nil(state:find("BUILDING_GRANARY", 1, true))
 	end)
 
-	it("raises an error for an ID with no player", function()
-		local env = Load({ players = { [0] = {} } })
-
-		assert.has_error(function()
-			env.SentientSystems_GetState(5)
-		end, "no player 5")
-	end)
-
-	it("loads the JSON encoder, so the bridge can stash the state", function()
-		local env = Load({ players = { [0] = {} } })
-
-		assert.equal(1, env.SentientSystems_Stash(env.SentientSystems_GetState(0)))
-	end)
 end)
 
 -- Returns player 0's first city.

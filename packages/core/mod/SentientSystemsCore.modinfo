@@ -17,13 +17,15 @@
 		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Common.lua</File>
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
-			<File>Scripts/SentientSystemsCore_State.lua</File>
+			<File>Scripts/State/SentientSystemsCore_State.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
 		</ImportFiles>
 	</InGameActions>
 	<Files>
 		<File>Scripts/SentientSystemsCore_Common.lua</File>
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
-		<File>Scripts/SentientSystemsCore_State.lua</File>
+		<File>Scripts/State/SentientSystemsCore_State.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
 		<File>UI/SentientSystemsCore_UI.lua</File>
 		<File>UI/SentientSystemsCore_UI.xml</File>
 	</Files>
