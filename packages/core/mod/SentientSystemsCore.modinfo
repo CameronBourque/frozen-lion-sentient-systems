@@ -16,9 +16,11 @@
 		</AddUserInterfaces>
 		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Tag.lua</File>
+			<File>Scripts/SentientSystemsCore_Json.lua</File>
 		</ImportFiles>
 	</InGameActions>
 	<Files>
+		<File>Scripts/SentientSystemsCore_Json.lua</File>
 		<File>Scripts/SentientSystemsCore_Tag.lua</File>
 		<File>UI/SentientSystemsCore_UI.lua</File>
 		<File>UI/SentientSystemsCore_UI.xml</File>
