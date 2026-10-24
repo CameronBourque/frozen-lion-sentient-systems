@@ -33,7 +33,7 @@ The calls the state serializer uses to build one player's view of the game, with
 
 ### Tiles
 
-`SentientSystems_GetState(playerID)` lists each plot, from 0 to `Map.GetPlotCount() - 1`, for which `PlayersVisibility[playerID]:IsRevealed(index)` is `true`. `Map.GetPlotByIndex(index)` gives the plot, whose `GetTerrainType()` and `GetFeatureType()` are indexes in `GameInfo.Terrains` and `GameInfo.Features`. `GetFeatureType()` returns -1 for a plot with no feature, and `GameInfo.Features[-1]` is `nil`. Confirmed on Windows on 2026-10-24.
+`SentientSystems_GetState(playerID)` lists each plot, from 0 to `Map.GetPlotCount() - 1`, for which `PlayersVisibility[playerID]:IsRevealed(index)` is `true`. `Map.GetPlotByIndex(index)` gives the plot, whose `GetTerrainType()` and `GetFeatureType()` are indexes in `GameInfo.Terrains` and `GameInfo.Features`. `GetFeatureType()` returns -1 for a plot with no feature, and `GameInfo.Features[-1]` is `nil`. `GetResourceType()` works the same way with `GameInfo.Resources`, and `GameInfo.Resources[-1]` is `nil`. Confirmed on Windows on 2026-10-24.
 
 ### Tile visibility
 
@@ -45,7 +45,7 @@ The calls the state serializer uses to build one player's view of the game, with
 | `IsVisible(plotIndex)` or `IsVisible(x, y)` | `true` while one of the player's units or cities sees the tile now |
 | `GetState(plotIndex)` or `GetState(x, y)` | A `RevealedState`: `HIDDEN` is 0, `REVEALED` is 1, and `VISIBLE` is 2 |
 | `IsUnitVisible(unit)` | `true` when the player can see that unit |
-| `GetLayerValue(layer, x, y)` | A count for a `VisibilityLayerTypes` layer. `PlotToolTip.lua` shows the `TERRAIN` count as debug text only |
+| `GetLayerValue(layer, plotIndex)` | The value of one of the player's `VisibilityLayerTypes` layers on a plot. See [Visibility layers](#visibility-layers) |
 
 A tile under fog is revealed but not visible now. In the game below, no tile was visible without being revealed.
 
@@ -53,14 +53,25 @@ A tile under fog is revealed but not visible now. In the game below, no tile was
 
 A player knows a fogged tile as it is now, not as it was when the player last saw it.
 
-- No call gives a tile's last-seen contents. The 90 plot methods, such as `GetOwner`, `GetImprovementType`, `GetDistrictType`, and `GetResourceType`, take no player, so each returns the tile as it is now. `PlayersVisibility` has none either. Confirmed in `SentientSystemsCore_UI` on Windows on 2026-10-24.
+- No plot call gives a tile's last-seen contents. The 90 plot methods, such as `GetOwner`, `GetImprovementType`, `GetDistrictType`, and `GetResourceType`, take no player, so each returns the tile as it is now. `PlayersVisibility` holds the player's own record for resources, improvements, and routes only, in its layers. See [Visibility layers](#visibility-layers). Confirmed in `SentientSystemsCore_UI` on Windows on 2026-10-24.
 - The game's tooltip shows those live values for every revealed tile. `ShowPlotInfo` in `Base/Assets/UI/ToolTips/PlotToolTip.lua`, lines 690 to 738, checks only `IsRevealed(plotId)`, then reads the plot in `FetchData`, lines 633 to 685. `PlotTooltip_Expansion2.lua` adds no visibility check. Confirmed in files.
 - In the game, a fogged tile updates each turn, so a player sees a rival start a district, a wonder, or an improvement there. Confirmed by playing on Windows on 2026-10-24.
 - Map search lists every revealed tile with the same live values. `IncrementalSearch` in `Base/Assets/UI/Popups/MapSearchPanel.lua`, line 703, checks only `IsRevealed`. Confirmed in files.
 
+### Visibility layers
+
+`VisibilityLayerTypes` has `TERRAIN`, `RESOURCES`, `IMPROVEMENTS`, `ROUTES`, `STEALTH`, and `STEALTH0`. `PlayersVisibility[playerID]:GetLayerValue(layer, plotIndex)` and `PlayerVisibilityManager.GetPlayerVisibility(playerID):GetLayerValue(layer, plotIndex)` return the player's value for a layer on a plot. Confirmed on Windows on 2026-10-24.
+
+- `TERRAIN` holds a count. It was 7 on Rome's tile and 0 on fogged tiles. `PlotToolTip.lua` shows it as debug text.
+- `RESOURCES`, `IMPROVEMENTS`, and `ROUTES` hold an index in `GameInfo.Resources`, `GameInfo.Improvements`, or `GameInfo.Routes`, or -1. They hold what the player's units and cities have seen. `RESOURCES` also leaves out a resource that the player's techs don't reveal, such as coal on a tile that was visible now.
+- `STEALTH` and `STEALTH0` returned nothing on the plots checked.
+- The map draws resource icons from the `RESOURCES` layer, in `GetNonEmptyAt` in `Base/Assets/UI/WorldViewIconsManager.lua`, line 301. It hides the icon on a city or district tile. The tooltip reads the live plot instead. Confirmed in files.
+- Tiles revealed without the player seeing them, such as the tiles around a rival's city that the player hasn't visited, have empty layers. Their resources show in the tooltip but not as map icons, and their roads show in the tooltip only. Confirmed on Windows on 2026-10-24.
+- Not checked: whether a layer keeps what the player last saw on a fogged tile, or follows the tile's changes. No tile on the test save had an improvement.
+
 ### Resources
 
-The tooltip shows a resource only when `Players[playerID]:GetResources():IsResourceVisible(plot:GetResourceTypeHash())` is `true`. See `PlotToolTip.lua`, lines 314 to 316. Confirmed in files. On turn 14, `GetResourceType()` returned aluminum, oil, niter, and iron on fogged tiles where `IsResourceVisible` was `false`. Confirmed on Windows on 2026-10-24.
+The tooltip shows a resource only when `Players[playerID]:GetResources():IsResourceVisible(plot:GetResourceTypeHash())` is `true`, on any revealed tile, whatever the `RESOURCES` layer holds. See `PlotToolTip.lua`, lines 314 to 316. Confirmed in files. On turn 14, `GetResourceType()` returned aluminum, oil, niter, and iron on fogged tiles where `IsResourceVisible` was `false`. Confirmed on Windows on 2026-10-24.
 
 ### Rival cities and units
 
@@ -137,6 +148,11 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `CanStartCommand` for `PROMOTE` for each unit | `false` and no results |
 | Tiles in the state, against a loop over every plot | 161 revealed, 61 visible, and 66 with a feature in both. Rome's tile at (17,14) was `TERRAIN_PLAINS` with no feature, and visible |
 | The whole state, with one city, two units, and 161 tiles | 12,380 bytes in one piece |
+| `RESOURCES` layer against the live resource with `IsResourceVisible`, on every revealed plot | Equal on 157 plots. The layer was -1 on the 4 resource tiles around Râ-Kedet, which the tooltip showed: cattle at (29,17), maize at (31,18), incense at (29,19), and copper at (30,19). The map drew no icons there |
+| `RESOURCES` layer against the live resource without `IsResourceVisible` | Equal on 151 plots. It also differed on the 6 resources hidden by tech |
+| `ROUTES` layer against `GetRouteType()` | Equal on 160 plots. On Râ-Kedet's city tile, the layer was -1 and the live route was 0, which the tooltip showed as **Ancient Road** |
+| `IMPROVEMENTS` layer against `GetImprovementType()` | Equal on all 161 plots, all with no improvement |
+| Resources in the state, against `IsResourceVisible` on every revealed plot | 32 visible resources in both, tile for tile. The state left out the 6 hidden ones: aluminum at (8,7) and (19,15), oil at (10,7), niter at (10,9), iron at (12,9), and coal at (25,16). The state grew to 13,293 bytes |
 | The scout, after `GetExperience():ChangeExperience(15)` in `GameCore_Tuner` | 15 of 15 experience, and `CanPromote()` returned `true`. With 0 moves left, `CanStartCommand` for `PROMOTE` still returned `false` and no results |
 | The scout, after `UnitManager.RestoreMovement` in `GameCore_Tuner` gave it 3 moves | `CanStartCommand` for `PROMOTE` returned `true`, with promotion indexes 0, `PROMOTION_RANGER`, and 1, `PROMOTION_ALPINE`. The state listed both in `availablePromotions` |
 

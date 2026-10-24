@@ -1,7 +1,7 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
 -- map's plots, PlayersVisibility, UnitManager.CanStartCommand for promotions, GameInfo.Types,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
--- GameInfo.Terrains, GameInfo.Features, GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
+-- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
 -- UnitCommandResults, and Locale. It has only the calls the core mod makes. Example:
 -- local env = Game.new()
 -- FakeGame.Install(env, {
@@ -13,9 +13,10 @@
 -- 		districts = { { type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" } } } },
 -- 	} }, units = { { id = 196608, type = "UNIT_SCOUT", x = 24, y = 15, moves = 3, maxMoves = 3 } } } },
 -- 	text = { LOC_CITY_NAME_ROME = "Rome" },
--- 	plots = { { x = 17, y = 14, terrain = "TERRAIN_GRASS", feature = "FEATURE_FOREST" } },
+-- 	plots = { { x = 17, y = 14, terrain = "TERRAIN_GRASS", feature = "FEATURE_FOREST", resource = "RESOURCE_DEER" } },
 -- })
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
+-- A player's hiddenResources lists the resource types its techs don't reveal yet.
 -- env.Players[0]:GetCities():Members() then lists the one city.
 
 local FakeGame = {}
@@ -275,6 +276,11 @@ end
 
 local function Player(id, data, hashes, indexes)
 	local cities, units = {}, {}
+	local hidden = {}
+
+	for _, typeName in ipairs(data.hiddenResources or {}) do
+		hidden[hashes[typeName]] = true
+	end
 
 	for i, city in ipairs(data.cities or {}) do
 		cities[i] = City(city, hashes, indexes)
@@ -293,6 +299,13 @@ local function Player(id, data, hashes, indexes)
 		end,
 		GetUnits = function()
 			return List(units)
+		end,
+		GetResources = function()
+			return {
+				IsResourceVisible = function(_, hash)
+					return not hidden[hash]
+				end,
+			}
 		end,
 	}
 end
@@ -314,6 +327,7 @@ function FakeGame.Install(env, world)
 		UnitPromotions = {},
 		Terrains = {},
 		Features = {},
+		Resources = {},
 		Happinesses = HAPPINESSES,
 	}
 	env.UnitCommandTypes = { PROMOTE = -1259482049 }
@@ -397,11 +411,18 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- Resources are added before the players, whose hidden resources are looked up by hash.
 	for _, data in ipairs(world.plots or {}) do
 		AddRow("Terrains", "TerrainType", data.terrain)
 
 		if data.feature ~= nil then
 			AddRow("Features", "FeatureType", data.feature)
+		end
+
+		if data.resource ~= nil and hashes[data.resource] == nil then
+			AddRow("Resources", "ResourceType", data.resource)
+			count = count + 1
+			hashes[data.resource] = 2000000 + count
 		end
 
 		local index = PlotIndex(data.x, data.y)
@@ -417,9 +438,15 @@ function FakeGame.Install(env, world)
 			GetTerrainType = function()
 				return indexes[data.terrain]
 			end,
-			-- The game returns -1 for a plot with no feature.
+			-- The game returns -1 for a plot with no feature or resource.
 			GetFeatureType = function()
 				return data.feature and indexes[data.feature] or -1
+			end,
+			GetResourceType = function()
+				return data.resource and indexes[data.resource] or -1
+			end,
+			GetResourceTypeHash = function()
+				return data.resource and hashes[data.resource] or 0
 			end,
 		}
 	end

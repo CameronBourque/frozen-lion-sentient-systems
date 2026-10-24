@@ -1,11 +1,13 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- A small map: a forest on grassland hills, a plain grassland tile, and an ocean tile.
+-- A small map: a forest on grassland hills, a plain grassland tile, an ocean tile, deer, and iron.
 local PLOTS = {
 	{ x = 0, y = 0, terrain = "TERRAIN_GRASS_HILLS", feature = "FEATURE_FOREST" },
 	{ x = 1, y = 0, terrain = "TERRAIN_GRASS" },
 	{ x = 0, y = 1, terrain = "TERRAIN_OCEAN" },
+	{ x = 1, y = 1, terrain = "TERRAIN_TUNDRA", resource = "RESOURCE_DEER" },
+	{ x = 2, y = 1, terrain = "TERRAIN_PLAINS_HILLS", resource = "RESOURCE_IRON" },
 }
 
 -- Returns the tiles JSON in the state for player 0, who has revealed and sees the given plots.
@@ -36,6 +38,20 @@ describe("SentientSystems_GetTileStates", function()
 
 	it("gives an empty list when the player has revealed nothing", function()
 		assert.equal("[]", TilesFor({}))
+	end)
+
+	it("adds a resource the player can see", function()
+		local tiles = TilesFor({ revealed = { { 1, 1 } } })
+
+		assert.equal("[{\"resource\":\"RESOURCE_DEER\",\"terrain\":\"TERRAIN_TUNDRA\",\"visible\":false,\"x\":1,\"y\":1}]", tiles)
+	end)
+
+	it("leaves out a resource the player's techs don't reveal yet", function()
+		local tiles = TilesFor({ revealed = { { 1, 1 }, { 2, 1 } }, hiddenResources = { "RESOURCE_IRON" } })
+
+		assert.truthy(tiles:find("RESOURCE_DEER", 1, true))
+		assert.is_nil(tiles:find("RESOURCE_IRON", 1, true))
+		assert.truthy(tiles:find("TERRAIN_PLAINS_HILLS", 1, true))
 	end)
 
 	it("reads only the given player's visibility", function()
