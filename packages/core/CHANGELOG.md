@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.3.0...core-v0.4.0) (2026-10-24)
+
+
+### Features
+
+* **core:** add the load signal ([#29](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/29)) ([d471a2e](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/d471a2eb5ea951c8ce44cd2f5dcdcd265b07a33a))
+
 ## [0.3.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.2.0...core-v0.3.0) (2026-10-24)
 
 
