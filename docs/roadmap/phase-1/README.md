@@ -46,17 +46,18 @@ Pull requests are squash-merged, so each PR title becomes one commit on `main`. 
 | 1 | 1 | `chore(core): add the mod link script` |
 | 2 | 2 and 3 | `feat(core): add the config file and structured logs` |
 | 3 | 4 | `feat(core): add the load signal` |
-| 4 | 5 and 6 | `feat(core): add the state serializer` |
-| 5 | 7 | `feat(core): add the action API` |
-| 6 | 8 | `feat(core): add the Civilopedia lookup` |
-| 7 | 9 | `feat(core): add the MCP server` |
-| 8 | 10 | `ci: generate the tool reference` |
-| 9 | 11 | `feat(core): add the model client` |
-| 10 | 12 | `feat: add the default personality and the balanced sweat level` |
-| 11 | 13 | `feat(core): add plan and journal memory` |
-| 12 | 14 | `feat(core): add the agent loop` |
-| 13 | 15 | `feat(core): add the preset launcher` |
-| 14 | 16 | `docs: record the smoke test` |
-| 15 | 17 and 18 | `docs: record phase 1 results` |
+| 4 | 5 | `feat(core): add the state serializer` |
+| 5 | 6 | `feat(core): add choices and the scoreboard to the state` |
+| 6 | 7 | `feat(core): add the action API` |
+| 7 | 8 | `feat(core): add the Civilopedia lookup` |
+| 8 | 9 | `feat(core): add the MCP server` |
+| 9 | 10 | `ci: generate the tool reference` |
+| 10 | 11 | `feat(core): add the model client` |
+| 11 | 12 | `feat: add the default personality and the balanced sweat level` |
+| 12 | 13 | `feat(core): add plan and journal memory` |
+| 13 | 14 | `feat(core): add the agent loop` |
+| 14 | 15 | `feat(core): add the preset launcher` |
+| 15 | 16 | `docs: record the smoke test` |
+| 16 | 17 and 18 | `docs: record phase 1 results` |
 
-In steps 16 and 17, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump. PR 10 touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
+In steps 16 and 17, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump. PR 11 touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
