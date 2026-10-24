@@ -5,3 +5,4 @@ coverage/
 *.pcapng
 build/
 dist/
+tmp/

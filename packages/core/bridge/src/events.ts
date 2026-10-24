@@ -2,14 +2,16 @@
 // <args>", joined with spaces, such as "[SENTIENTSYSTEMS] AGENT_TURN 0". docs/design/core/in-game-lua.md
 // has the format.
 
-import { log, warn } from "./log.js";
+import type { LogFields, Logger, LogLevel } from "./log.js";
 
 export const TAG = "[SENTIENTSYSTEMS]";
 
 export type CoreEvent =
 	| { type: "turn"; playerId: number }
 	| { type: "version"; version: string }
-	| { type: "loaded"; context: string };
+	| { type: "loaded"; context: string }
+	// A Lua error that SentientSystems_CatchErrors caught in a core mod event handler.
+	| { type: "error"; handler: string; message: string; traceback?: string };
 
 // "untagged" is a line from the game or another mod. "invalid" is a tagged line the bridge can't
 // read, such as a kind from a newer core mod, with the reason.
@@ -31,6 +33,42 @@ const PLAYER_ID = /^\d+$/;
 const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
 // A Lua state's name, from ContextPtr:GetID(), such as "SentientSystemsCore_UI".
 const CONTEXT = /^\w+$/;
+// An event handler's name, such as "OnPlayerTurnActivated".
+const HANDLER = /^\w+$/;
+// The escapes SentientSystems_CatchErrors writes, so an error with newlines fits on one line: "\\"
+// for a backslash and "\n" for a newline.
+const ESCAPE = /\\([\\n])/g;
+// The line the game's Lua puts between an error and its stack trace.
+const TRACEBACK = "\nstack traceback:\n";
+// The game's folder, in both the My Games folder and the install folder. A Lua error's paths are cut
+// to start here, so they're shorter and don't hold the user's name.
+// The name has no regex special characters, so the pattern below uses it as it is.
+const GAME_NAME = "Sid Meier's Civilization VI";
+const GAME_FOLDER = `${GAME_NAME}\\`;
+// A path from its drive to the game's folder, such as
+// "C:\Users\me\Documents\My Games\Sid Meier's Civilization VI\". Each folder is one name and a
+// backslash, so the lazy match stops at the first game folder.
+const DRIVE = String.raw`[A-Za-z]:\\`;
+const FOLDER = String.raw`[^\\\n]*\\`;
+const GAME_PATH = new RegExp(String.raw`${DRIVE}(?:${FOLDER})*?${GAME_NAME}\\`, "g");
+
+// Reads "ERROR <handler> <message>". The message is the rest of the line, spaces and tabs included.
+function parseError(args: string[]): CoreEvent | string {
+	const [handler = "", ...words] = args;
+	const text = words.join(" ")
+		.replace(ESCAPE, (_escape, character: string) => character === "n" ? "\n" : "\\")
+		.replace(GAME_PATH, GAME_FOLDER);
+
+	if (!HANDLER.test(handler) || text === "") {
+		return `ERROR needs a handler name and a message, and got "${args.join(" ")}"`;
+	}
+
+	const split = text.indexOf(TRACEBACK);
+
+	return split === -1
+		? { type: "error", handler, message: text }
+		: { type: "error", handler, message: text.slice(0, split), traceback: text.slice(split + TRACEBACK.length) };
+}
 
 export const KINDS: Kind[] = [
 	{
@@ -54,6 +92,11 @@ export const KINDS: Kind[] = [
 			? { type: "loaded", context: args[0] }
 			: `CORE_LOADED needs one state name, and got "${args.join(" ")}"`,
 	},
+	{
+		name: "ERROR",
+		example: "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated attempt to index a nil value",
+		parse: parseError,
+	},
 ];
 
 // The name and colon the tuner puts before a state's prints, such as "SentientSystemsCore_UI: ".
@@ -65,15 +108,30 @@ export function stripState(line: string): string {
 	return line.replace(STATE_PREFIX, "");
 }
 
-// The text the bridge logs for an event, such as "turn 0".
-export function describeEvent(event: CoreEvent): string {
+// What the bridge logs for an event: its level, its event name, a message, and its fields.
+export interface EventLog {
+	level: LogLevel;
+	event: string;
+	msg: string;
+	fields: LogFields;
+}
+
+export function describeEvent(event: CoreEvent): EventLog {
 	switch (event.type) {
 		case "turn":
-			return `turn ${event.playerId}`;
+			return { level: "info", event: "turn", msg: `Player ${event.playerId}'s turn started`, fields: { playerId: event.playerId } };
 		case "version":
-			return `core version ${event.version}`;
+			return { level: "info", event: "core_version", msg: `Core mod version is ${event.version}`, fields: { version: event.version } };
 		case "loaded":
-			return `core loaded in ${event.context}`;
+			return { level: "info", event: "core_loaded", msg: `Core mod loaded in the ${event.context} state`, fields: { state: event.context } };
+		case "error":
+			return {
+				level: "error",
+				event: "core_error",
+				msg: `Lua error in ${event.handler}: ${event.message}`,
+				// A missing traceback stays out of the record.
+				fields: { handler: event.handler, message: event.message, ...(event.traceback === undefined ? {} : { traceback: event.traceback }) },
+			};
 	}
 }
 
@@ -97,17 +155,19 @@ export function parseLine(line: string): ParseResult {
 
 // Reads one line from the game, from an output event or from a command's result. Logs the event
 // and returns it, warns about a tagged line that doesn't parse, and ignores an untagged line.
-export function readLine(line: string): CoreEvent | undefined {
+export function readLine(line: string, logger: Logger): CoreEvent | undefined {
 	const parsed = parseLine(stripState(line));
 
 	if (parsed.result === "event") {
-		log(describeEvent(parsed.event));
+		const { level, event, msg, fields } = describeEvent(parsed.event);
+
+		logger.log(level, event, msg, fields);
 
 		return parsed.event;
 	}
 
 	if (parsed.result === "invalid") {
-		warn(`${parsed.reason}: ${line}`);
+		logger.warn("bad_line", `${parsed.reason}: ${line}`, { reason: parsed.reason, line });
 	}
 
 	return undefined;

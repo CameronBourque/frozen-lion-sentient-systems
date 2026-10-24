@@ -15,8 +15,8 @@ Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design
 | # | Step | Covers | Status |
 | --- | --- | --- | --- |
 | 1 | Link the core mod | A script in place of the manual junction steps | Done. The step file is deleted, and the steps are in the [core mod README](../../../packages/core/mod/README.md#install-for-testing) |
-| 2 | [Config file](02-config-file.md) | Agent slot, log level, provider, and API key | |
-| 3 | [Logs and errors](03-logs-and-errors.md) | Three log levels, a log file per game, and `ERROR` lines from the core mod | |
+| 2 | Config file | Log level and provider keys | Done. The step file is deleted, and the file is described under **Settings** in [bridge.md](../../design/core/bridge.md) |
+| 3 | Logs and errors | Structured logs at five levels, a log file per game, and `ERROR` lines from the core mod | Done. The step file is deleted. The logs are under **Logs** in [bridge.md](../../design/core/bridge.md), the `ERROR` line is under **Errors** in [in-game-lua.md](../../design/core/in-game-lua.md), and the Lua facts are in [lua-contexts.md](../../findings/lua-contexts.md#the-core-mods-states) |
 | 4 | [Load signal](04-load-signal.md) | How the bridge tells a load has finished | |
 | 5 | [State: map, cities, and units](05-state-map-cities-units.md) | The serializer for one player, filtered by visibility | |
 | 6 | [State: choices, blockers, and scoreboard](06-state-choices-blockers-scoreboard.md) | Legal options with details, end-turn blockers, and victory progress | |
@@ -44,7 +44,7 @@ Pull requests are squash-merged, so each PR title becomes one commit on `main`. 
 | PR | Steps | Title |
 | --- | --- | --- |
 | 1 | 1 | `chore(core): add the mod link script` |
-| 2 | 2 and 3 | `feat(core): add the config file and log levels` |
+| 2 | 2 and 3 | `feat(core): add the config file and structured logs` |
 | 3 | 4 | `feat(core): add the load signal` |
 | 4 | 5 and 6 | `feat(core): add the state serializer` |
 | 5 | 7 | `feat(core): add the action API` |

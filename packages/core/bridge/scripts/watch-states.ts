@@ -5,10 +5,14 @@
 // stop it with Ctrl+C. An argument such as `npm run watch-states -- 4400` sets another port. In
 // PowerShell, write the `--` as `'--'`, as docs/rules/code.md says.
 
-import { log } from "../src/log.js";
+import { Logger } from "../src/log.js";
 import { type LuaState, parseStates } from "../src/tuner/client.js";
 import { DEFAULT_PORT, TunerConnection } from "../src/tuner/connection.js";
 import { type Frame, Tag } from "../src/tuner/framing.js";
+
+// The script prints every line, under one event name.
+const logger = new Logger("debug");
+const log = (text: string): void => logger.info("watch_states", text);
 
 const POLL_MS = 5_000;
 const REPLY_TIMEOUT_MS = 5_000;

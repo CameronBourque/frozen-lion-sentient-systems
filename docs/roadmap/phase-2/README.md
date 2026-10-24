@@ -11,6 +11,7 @@ This phase adds games with a human and several agents, the cover card, and memor
 - Cover card during agent turns
 - Verify that no agent sees outside its fog of war
 - Checkpoint IDs and memory snapshots
+- A `logs` command in the bridge executable that filters a log file by level, event, and player, since several agents write to one log
 
 Design: [agents/slot-type.md](../../design/agents/slot-type.md), [agents/cover-and-spectator.md](../../design/agents/cover-and-spectator.md), [memory.md](../../design/memory.md#checkpoint-ids). Open questions: [game-api.md](../../findings/game-api.md#questions), questions 1 and 2. The active player in hotseat is answered in [game-api.md](../../findings/game-api.md#active-player).
 

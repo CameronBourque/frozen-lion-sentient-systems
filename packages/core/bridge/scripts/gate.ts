@@ -13,9 +13,14 @@ import { once } from "node:events";
 import { parseArgs } from "node:util";
 import { CORE_STATE } from "../src/connect.js";
 import { readLine } from "../src/events.js";
-import { log, warn } from "../src/log.js";
+import { Logger } from "../src/log.js";
 import { TunerClient } from "../src/tuner/client.js";
 import { DEFAULT_PORT } from "../src/tuner/connection.js";
+
+// The gate prints every line, under one event name.
+const logger = new Logger("debug");
+const log = (text: string): void => logger.info("gate", text);
+const warn = (text: string): void => logger.warn("gate", text);
 
 // The read-only gameplay state, for comparing what it sees with the UI state.
 const GAMEPLAY_STATE = "GameCore_Tuner";
@@ -227,7 +232,7 @@ async function endTurn(playerId: number): Promise<boolean> {
 		}
 
 		function onOutput(line: string): void {
-			const event = readLine(line);
+			const event = readLine(line, logger);
 
 			if (event?.type === "turn" && event.playerId === playerId) {
 				finish(true);

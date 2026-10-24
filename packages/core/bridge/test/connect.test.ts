@@ -3,6 +3,7 @@
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
 import { CORE_STATE, onConnect } from "../src/connect.js";
+import { Logger } from "../src/log.js";
 import { TunerClient } from "../src/tuner/client.js";
 import { Tag } from "../src/tuner/framing.js";
 import { FakeGame } from "./tuner/fake-game.js";
@@ -12,6 +13,7 @@ describe("onConnect", () => {
 	let client: TunerClient;
 	let logged: MockInstance<typeof console.log>;
 	let warned: MockInstance<typeof console.warn>;
+	const logger = new Logger("debug");
 
 	beforeEach(async () => {
 		game = await FakeGame.start();
@@ -48,20 +50,20 @@ describe("onConnect", () => {
 			"SentientSystems_Resync()": ["[SENTIENTSYSTEMS] AGENT_TURN 0"],
 		});
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: "SentientSystems_GetVersion()" },
 			{ stateIndex: 130, lua: "SentientSystems_Resync()" },
 		]);
-		expect(logged.mock.calls.map(([line]) => String(line).replace(/^.*? {2}/, ""))).toEqual(["core version 0.1.0", "turn 0"]);
+		expect(logged.mock.calls.map(([line]) => String(line).replace(/^.*? {2}/, ""))).toEqual(["Core mod version is 0.1.0", "Player 0's turn started"]);
 		expect(warned).not.toHaveBeenCalled();
 	});
 
 	test("logs only the version between turns, when the resync prints nothing", async () => {
 		answer({ "SentientSystems_GetVersion()": ["[SENTIENTSYSTEMS] CORE_VERSION 0.1.0"] });
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
 		expect(logged).toHaveBeenCalledOnce();
 		expect(warned).not.toHaveBeenCalled();
@@ -70,7 +72,7 @@ describe("onConnect", () => {
 	test("warns about a version line that doesn't parse", async () => {
 		answer({ "SentientSystems_GetVersion()": ["[SENTIENTSYSTEMS] CORE_VERSION nil"] });
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
 		expect(warning()).toMatch(/^CORE_VERSION needs one version/);
 	});
@@ -78,7 +80,7 @@ describe("onConnect", () => {
 	test("warns when the core mod's state isn't loaded", async () => {
 		game.states = [{ index: 0, name: "Main State" }];
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
 		expect(warning()).toMatch(/^The core mod's state SentientSystemsCore_UI isn't loaded\. Turn on Sentient Systems Core/);
 	});
@@ -86,7 +88,7 @@ describe("onConnect", () => {
 	test("warns when the game doesn't answer in time", async () => {
 		game.onCommand = () => undefined;
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
 		expect(warning()).toMatch(/^The game didn't answer the core mod check in time/);
 	});
@@ -94,7 +96,7 @@ describe("onConnect", () => {
 	test("warns with the game's error when the call fails in Lua, and skips the resync", async () => {
 		game.onCommand = () => ({ luaError: "attempt to call a nil value" });
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
 		expect(warning()).toBe("The core mod check failed in the game: attempt to call a nil value");
 		expect(game.commands.map(({ lua }) => lua)).toEqual(["SentientSystems_GetVersion()"]);
@@ -105,16 +107,16 @@ describe("onConnect", () => {
 			? { luaError: "attempt to index a nil value" }
 			: { output: ["[SENTIENTSYSTEMS] CORE_VERSION 0.1.0"] };
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
-		expect(logged).toHaveBeenCalledWith(expect.stringMatching(/ {2}core version 0\.1\.0$/));
+		expect(logged).toHaveBeenCalledWith(expect.stringMatching(/ {2}Core mod version is 0\.1\.0$/));
 		expect(warning()).toBe("The core mod check failed in the game: attempt to index a nil value");
 	});
 
 	test("warns when the game drops the connection during the call", async () => {
 		game.silentTags.add(Tag.Command);
 
-		const done = onConnect(client);
+		const done = onConnect(client, logger);
 
 		await once(game, "frame");
 		await game.dropClient();
@@ -126,7 +128,7 @@ describe("onConnect", () => {
 	test("warns about a failure that isn't an Error", async () => {
 		vi.spyOn(client, "run").mockRejectedValue("boom");
 
-		await onConnect(client);
+		await onConnect(client, logger);
 
 		expect(warning()).toBe("The core mod check failed: boom");
 	});

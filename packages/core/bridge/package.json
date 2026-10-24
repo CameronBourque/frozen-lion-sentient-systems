@@ -7,12 +7,16 @@
     "node": ">=26"
   },
   "scripts": {
-    "dev": "tsx src/main.ts",
+    "dev": "tsx src/main.ts --config ../../../tmp/sentient-systems.yaml",
     "hello": "tsx scripts/hello.ts",
     "probe": "tsx scripts/probe.ts",
     "gate": "tsx scripts/gate.ts",
     "watch-states": "tsx scripts/watch-states.ts",
     "typecheck": "tsc",
     "build:exe": "node scripts/build-exe.mjs"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
   }
 }
