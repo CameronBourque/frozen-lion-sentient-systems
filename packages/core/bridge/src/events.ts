@@ -10,6 +10,10 @@ export type CoreEvent =
 	| { type: "turn"; playerId: number }
 	| { type: "version"; version: string }
 	| { type: "loaded"; context: string }
+	// The loading screen shows its button. Commands don't run until the click.
+	| { type: "load_ready" }
+	// The loading screen's button was clicked, by the player or the game, so commands run from now on.
+	| { type: "game_ready"; turn: number }
 	// A Lua error that SentientSystems_CatchErrors caught in a core mod event handler.
 	| { type: "error"; handler: string; message: string; traceback?: string };
 
@@ -28,6 +32,8 @@ interface Kind {
 }
 
 const PLAYER_ID = /^\d+$/;
+// A game turn, from Game.GetCurrentGameTurn().
+const TURN = /^\d+$/;
 // A release version such as "0.1.0", with an optional suffix such as "-beta.1". A mod with no
 // version prints "nil".
 const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
@@ -93,6 +99,20 @@ export const KINDS: Kind[] = [
 			: `CORE_LOADED needs one state name, and got "${args.join(" ")}"`,
 	},
 	{
+		name: "LOAD_READY",
+		example: "[SENTIENTSYSTEMS] LOAD_READY",
+		parse: (args) => args.length === 0
+			? { type: "load_ready" }
+			: `LOAD_READY takes nothing after it, and got "${args.join(" ")}"`,
+	},
+	{
+		name: "GAME_READY",
+		example: "[SENTIENTSYSTEMS] GAME_READY 1",
+		parse: (args) => args.length === 1 && TURN.test(args[0])
+			? { type: "game_ready", turn: Number(args[0]) }
+			: `GAME_READY needs one turn, and got "${args.join(" ")}"`,
+	},
+	{
 		name: "ERROR",
 		example: "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated attempt to index a nil value",
 		parse: parseError,
@@ -124,6 +144,10 @@ export function describeEvent(event: CoreEvent): EventLog {
 			return { level: "info", event: "core_version", msg: `Core mod version is ${event.version}`, fields: { version: event.version } };
 		case "loaded":
 			return { level: "info", event: "core_loaded", msg: `Core mod loaded in the ${event.context} state`, fields: { state: event.context } };
+		case "load_ready":
+			return { level: "info", event: "load_ready", msg: "The game has loaded, and waits for the click on the loading screen's button", fields: {} };
+		case "game_ready":
+			return { level: "info", event: "game_ready", msg: `The game is ready on turn ${event.turn}`, fields: { turn: event.turn } };
 		case "error":
 			return {
 				level: "error",
@@ -155,10 +179,14 @@ export function parseLine(line: string): ParseResult {
 
 // Reads one line from the game, from an output event or from a command's result. Logs the event
 // and returns it, warns about a tagged line that doesn't parse, and ignores an untagged line.
-export function readLine(line: string, logger: Logger): CoreEvent | undefined {
+// onEvent runs before the event is logged, so a handler that starts a new log file puts the
+// event's own line in the new file.
+export function readLine(line: string, logger: Logger, onEvent?: (event: CoreEvent) => void): CoreEvent | undefined {
 	const parsed = parseLine(stripState(line));
 
 	if (parsed.result === "event") {
+		onEvent?.(parsed.event);
+
 		const { level, event, msg, fields } = describeEvent(parsed.event);
 
 		logger.log(level, event, msg, fields);

@@ -1,6 +1,6 @@
 // Finds and reads the config file. The bridge looks for sentient-systems.yaml next to its
 // executable, or reads the path in --config. A missing file gets a commented example, so the user
-// has something to fill in. docs/design/core/bridge.md has the design.
+// has something to fill in. docs/design/core/settings.md has the design.
 
 import fs from "node:fs";
 import path from "node:path";

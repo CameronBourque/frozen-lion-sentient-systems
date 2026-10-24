@@ -35,6 +35,14 @@ describe("describeEvent", () => {
 		expect(describeEvent({ type: "loaded", context: "SentientSystemsCore_UI" })).toEqual({ level: "info", event: "core_loaded", msg: "Core mod loaded in the SentientSystemsCore_UI state", fields: { state: "SentientSystemsCore_UI" } });
 	});
 
+	test("says the game waits for the click", () => {
+		expect(describeEvent({ type: "load_ready" })).toEqual({ level: "info", event: "load_ready", msg: "The game has loaded, and waits for the click on the loading screen's button", fields: {} });
+	});
+
+	test("names the turn a game is ready on", () => {
+		expect(describeEvent({ type: "game_ready", turn: 1 })).toEqual({ level: "info", event: "game_ready", msg: "The game is ready on turn 1", fields: { turn: 1 } });
+	});
+
 	test("names the handler and the message of an error", () => {
 		expect(describeEvent({ type: "error", handler: "OnPlayerTurnActivated", message: "boom" })).toEqual({
 			level: "error",
@@ -69,6 +77,14 @@ describe("parseLine", () => {
 
 	test("reads the state name of a load line", () => {
 		expect(parseLine("[SENTIENTSYSTEMS] CORE_LOADED SentientSystemsCore_UI")).toEqual({ result: "event", event: { type: "loaded", context: "SentientSystemsCore_UI" } });
+	});
+
+	test("reads a line for the loading screen's button", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] LOAD_READY")).toEqual({ result: "event", event: { type: "load_ready" } });
+	});
+
+	test("reads the turn of a game line", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] GAME_READY 152")).toEqual({ result: "event", event: { type: "game_ready", turn: 152 } });
 	});
 
 	test("reads an error's message with its spaces", () => {
@@ -161,6 +177,11 @@ describe("parseLine", () => {
 		{ name: "a load line with no state name", line: "[SENTIENTSYSTEMS] CORE_LOADED", reason: "CORE_LOADED needs one state name, and got \"\"" },
 		{ name: "a state name with a colon", line: "[SENTIENTSYSTEMS] CORE_LOADED InGame:", reason: "CORE_LOADED needs one state name, and got \"InGame:\"" },
 		{ name: "two state names", line: "[SENTIENTSYSTEMS] CORE_LOADED InGame PlotInfo", reason: "CORE_LOADED needs one state name, and got \"InGame PlotInfo\"" },
+		{ name: "a button line with an argument", line: "[SENTIENTSYSTEMS] LOAD_READY 1", reason: "LOAD_READY takes nothing after it, and got \"1\"" },
+		{ name: "a game line with no turn", line: "[SENTIENTSYSTEMS] GAME_READY", reason: "GAME_READY needs one turn, and got \"\"" },
+		{ name: "a game line with nil", line: "[SENTIENTSYSTEMS] GAME_READY nil", reason: "GAME_READY needs one turn, and got \"nil\"" },
+		{ name: "a negative turn", line: "[SENTIENTSYSTEMS] GAME_READY -1", reason: "GAME_READY needs one turn, and got \"-1\"" },
+		{ name: "two turns", line: "[SENTIENTSYSTEMS] GAME_READY 1 2", reason: "GAME_READY needs one turn, and got \"1 2\"" },
 		{ name: "an error with no handler", line: "[SENTIENTSYSTEMS] ERROR", reason: "ERROR needs a handler name and a message, and got \"\"" },
 		{ name: "an error with no message", line: "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated", reason: "ERROR needs a handler name and a message, and got \"OnPlayerTurnActivated\"" },
 		{ name: "an error with a bad handler name", line: "[SENTIENTSYSTEMS] ERROR On.Turn boom", reason: "ERROR needs a handler name and a message, and got \"On.Turn boom\"" },
@@ -192,6 +213,25 @@ describe("readLine", () => {
 		vi.spyOn(console, "log").mockImplementation(() => {});
 
 		expect(readLine("[SENTIENTSYSTEMS] CORE_VERSION 0.1.0", logger)).toEqual({ type: "version", version: "0.1.0" });
+	});
+
+	test("hands the event to onEvent before it logs the event", () => {
+		const order: string[] = [];
+
+		vi.spyOn(console, "log").mockImplementation(() => order.push("logged"));
+		readLine("[SENTIENTSYSTEMS] LOAD_READY", logger, (event) => order.push(event.type));
+
+		expect(order).toEqual(["load_ready", "logged"]);
+	});
+
+	test("doesn't call onEvent for a line with no event", () => {
+		const onEvent = vi.fn();
+
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		readLine("InGame: Loading InGame UI", logger, onEvent);
+		readLine("[SENTIENTSYSTEMS] GAME_READY nil", logger, onEvent);
+
+		expect(onEvent).not.toHaveBeenCalled();
 	});
 
 	test("warns about a tagged line that doesn't parse, with the whole line", () => {

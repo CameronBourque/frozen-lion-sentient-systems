@@ -10,7 +10,7 @@ Rules for code in every package. Each architecture rule links to the design deci
 - [Agent state comes from the player's visibility data, never from the screen](../design/core/in-game-lua.md#decisions).
 - [Every failed action returns a reason](../design/core/in-game-lua.md#decisions).
 - [Every action tool has a required `reason` field](../design/agents/narration-and-messaging.md#narrator-panel).
-- [The API key never goes into a game setup parameter](../design/core/bridge.md).
+- [The API key never goes into a game setup parameter](../design/core/settings.md).
 - [A file format change bumps that file's schema version and ships a migration](../design/versioning.md#bump-rules).
 
 ## Conventions
@@ -28,7 +28,7 @@ These conventions come from `scripts/check-docs/`, the first code in the repo. E
 
 ## TypeScript
 
-The bridge's TypeScript setup. Why each choice was made is in [design/core/bridge.md](../design/core/bridge.md#decisions).
+The bridge's TypeScript setup. Why each choice was made is in [design/core/toolchain.md](../design/core/toolchain.md#decisions).
 
 - **Node 26.** `.nvmrc` and the `engines` fields set it, and the bridge executable ships with it. Node 26 is an LTS release, supported until 2029-04-30. Move the repo to the next LTS release before then, so the executable never ships a runtime without security fixes.
 - **`tsx` runs TypeScript in development.** TypeScript features that need more than removing types, such as enums, are allowed.

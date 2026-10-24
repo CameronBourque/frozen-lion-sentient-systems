@@ -1,5 +1,5 @@
 // Watches the game's Lua state list while you play, and prints each change with the time. It
-// answers the state lifecycle questions in docs/findings/lua-contexts.md: whether the socket
+// answers the state lifecycle questions in docs/findings/state-list.md: whether the socket
 // survives a load, whether the list or the indexes change, what a command to a gone index gets
 // back, and whether ContextPtr:GetID() names the state. Run it with `npm run watch-states`, and
 // stop it with Ctrl+C. An argument such as `npm run watch-states -- 4400` sets another port. In
