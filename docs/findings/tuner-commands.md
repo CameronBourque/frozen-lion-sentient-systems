@@ -1,6 +1,6 @@
 # Tuner commands
 
-Status: open. The bridge's probe confirmed how commands run, what the tag 3 reply carries, how large output arrives, reply order, and unprompted output. The rule that picks how the game runs a command is still open.
+Status: open. The bridge's probe confirmed how commands run, what the tag 3 reply carries, how large output arrives, the largest print, reply order, and unprompted output. The rule that picks how the game runs a command is still open.
 
 How the game runs a `CMD:` command and sends back its output. The wire format, message types, and byte dumps are in [tuner-protocol.md](tuner-protocol.md).
 
@@ -15,6 +15,7 @@ How the game runs a `CMD:` command and sends back its output. The wire format, m
 | How commands run | `1+1` ran inside `_cmdr = {...}`, and its value came back in the tag 3 reply. `x = 5` set the global `x`, and `local a = 1` ran with no error, so both ran as plain chunks. A plain chunk's values don't come back | Confirmed | [Probe results](#probe-results) |
 | Command values | On success the tag 3 payload is the command's values joined with `, `, such as `2, two, true`, or an empty string when there are none | Confirmed | [Probe results](#probe-results) |
 | Complete output | All of a command's output arrives before its tag 3 reply. A 1,000,000-character print arrived intact as one output frame. 2,000 prints in one command arrived in order. No output arrived after any tag 3 reply | Confirmed | [Probe results](#probe-results) |
+| Print size limit | From `SentientSystemsCore_UI`, a print of 2,097,022 characters arrived intact. With the state prefix, that line is 2,097,046 characters, 106 under 2 MiB. A print 1 character longer sent no output frame and no tag 3 reply, and the connection answered no later command. The game logged no error. A new connection worked | Confirmed | [Behavior notes](#behavior-notes) |
 | Reply order | The game runs commands one at a time, in the order they arrive. Commands sent without waiting got their output and tag 3 replies back in send order, a fast command after a slow one included | Confirmed | [Probe results](#probe-results) |
 | Unprompted output | UI event handlers print with no command running, and their prints arrive on the tuner connection. Prints from three Lua states, `PlotInfo`, `MapLabelManager`, and `InGame`, arrived on the one connection, each with its state's prefix. An unprompted `InGame:` print looks the same as a command's output. A turn end printed nothing | Confirmed | [Behavior notes](#behavior-notes) |
 | Runtime errors | A runtime error's message is the error, then `stack traceback:` and one line for each call, all in one string. The chunk name is the first line of the command, such as `[string "(function()..."]`. Inside the marker wrapper, line N of the caller's Lua is line N + 4 of the command | Confirmed | [Behavior notes](#behavior-notes) |
@@ -54,6 +55,15 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
 
 ### Behavior notes
 
+- **Large prints from the core mod.** On 2026-10-23, the bridge sent `print(string.rep("a", <n>))` to `SentientSystemsCore_UI` in a single-player game, on a new connection for each size from 2,097,000 up. Each print up to the limit arrived as one line, in 29 to 73 ms from the send to the tag 3 reply:
+
+  | Characters | Result | Time |
+  | --- | --- | --- |
+  | 1,000, 100,000, and 1,000,000, three times each | Arrived whole | 29 to 46 ms, after the first command on the connection, which took 379 ms |
+  | 1,500,000 and 2,000,000 | Arrived whole | 41 and 73 ms |
+  | 2,050,000, 2,090,000, 2,096,000, 2,097,000, 2,097,010, 2,097,020, and 2,097,022 | Arrived whole | 55 to 66 ms |
+  | 2,097,023, 2,097,024, 2,097,026, 2,097,028, 2,097,030, 2,097,040, 2,097,050, 2,097,075, 2,097,090, 2,097,100, 2,097,200, 2,500,000, 3,000,000, and 4,000,000 | No reply in 10 to 60 s. A `print("pong")` sent next on the same connection got no reply either | None |
+
 - **Hello check.** `npm run hello` on Windows on 2026-10-21 listed 124 states and ran three commands in `InGame` through the marker wrapper. A one-line print and a command over three lines, with a `local` and a trailing `--` comment, both came back as expected. `print("before the error")` and then `error("boom")` came back as a runtime error with the print before it. The message was `[string "(function()..."]:6: boom`, then a stack trace of five calls through `error`, `pcall`, and the wrapper.
 - **Round-trip time.** From a send to its tag 3 reply took 18 to 54 ms, up to the 1,000,000-character print.
 - **Late output.** No frame arrived in the 500 ms after any tag 3 reply.
@@ -68,4 +78,4 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
   | Move a unit that reveals two tiles of an ocean never seen before. The prints may come from the reveal or from the mouse passing over the ocean | Four `MapLabelManager: INDIAN OCEAN` prints with screen positions, at the same moment |
   | Open, then close the full-screen map | `InGame: Request to BulkHide( true, FullscreenMap ), Show on 0 = 1`, then the same with `false` and `0` |
 
-Date checked: 2026-10-21, and 2026-10-22 for the turn signal, resync, and load line.
+Date checked: 2026-10-21, 2026-10-22 for the turn signal, resync, and load line, and 2026-10-23 for the large prints from the core mod.

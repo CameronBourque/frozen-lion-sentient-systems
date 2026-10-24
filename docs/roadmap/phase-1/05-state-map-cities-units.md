@@ -18,7 +18,7 @@ Tasks 1, 4, 5, and 6 need the game but no new mod code, so you can run them in o
    Commit: `docs: record what the game shows for fogged tiles`.
 6. **Map reveal.** Reveal the map through FireTuner. Check whether `PlayersVisibility[playerID]` returns the same values before and after the reveal. Commit: `docs: record how the FireTuner map reveal works`.
 7. **Review.** Rewrite tasks 15 and 16 and the "Done when" from what tasks 5 and 6 found. Commit: `docs: plan the tile tasks from the fog findings`.
-8. **JSON in Lua.** Add `Scripts/SentientSystemsCore_Json.lua` with a small encoder for tables, strings, numbers, and booleans. Escape each newline in a string, and add no line breaks between values, so the output is one line. Test it against tables with nested lists, quotes, and newlines. Commit: `feat(core): add a JSON encoder to the core mod`.
+8. **JSON in Lua.** Add `Scripts/SentientSystemsCore_Json.lua` with a small encoder for tables, strings, numbers, and booleans. Escape each newline in a string, and add no line breaks between values, so the output is one line. Add `SentientSystems_PrintChunks(text)`, which prints the text in pieces of 1,000,000 characters, because a longer print gets no reply. See the print size limit in [tuner-commands.md](../../findings/tuner-commands.md#what-we-know-now). Test the encoder against tables with nested lists, quotes, and newlines. Test `SentientSystems_PrintChunks` with text shorter than one piece, exactly one piece, and longer than one piece. Commit: `feat(core): add a JSON encoder to the core mod`.
 9. **Cities.** Add `SentientSystems_GetState(playerID)`, which returns JSON with each city's ID, name, position, and population. Add a fake game for the tests. Commit: `feat(core): add cities to the state`.
 10. **City production.** Add each city's current production with turns left, and its yields. Commit: `feat(core): add city production and yields to the state`.
 11. **Districts.** Add each city's districts. Commit: `feat(core): add city districts to the state`.
@@ -29,7 +29,7 @@ Tasks 1, 4, 5, and 6 need the game but no new mod code, so you can run them in o
 16. **Improvements and owners.** Add each tile's improvement and owner. Commit: `feat(core): add improvements and owners to tiles`.
 17. **Rival cities.** Add rival cities only on tiles that are visible now. Commit: `feat(core): add visible rival cities to the state`.
 18. **Rival units.** Add rival units only on tiles that are visible now. Skip units the player can't see on a visible tile, such as stealth units. Commit: `feat(core): add visible rival units to the state`.
-19. **Bridge.** Add `src/state.ts`, which sends `print(SentientSystems_GetState(<playerID>))` to `SentientSystemsCore_UI`, checks the JSON with a `zod` schema, and returns a typed state. The client splits a reply on newlines, and the encoder from task 8 escapes them, so the reply is one line. If the reply has more than one line, log a warning and return no state. Commit: `feat(core): read the state in the bridge`.
+19. **Bridge.** Add `src/state.ts`, which sends `SentientSystems_PrintChunks(SentientSystems_GetState(<playerID>))` to `SentientSystemsCore_UI`. It joins the reply's lines with no separator, checks the JSON with a `zod` schema, and returns a typed state. The encoder from task 8 escapes each newline, so the joined lines are the exact JSON. Commit: `feat(core): read the state in the bridge`.
 20. **State script.** Add `npm run state`, which prints the state and its size in bytes. Commit: `feat(core): add the state script`.
 
 ## Done when
