@@ -20,8 +20,9 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 
   | Key | Holds |
   | --- | --- |
-  | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, `population`, `growth`, `production`, and `yields` |
-| `cities[].growth` | `foodSurplus` per turn, rounded down to one decimal place, and `turnsUntilGrowth` while the city grows or `turnsUntilLoss` while it starves. A city that neither grows nor starves has neither count |
+  | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, `population`, `amenities`, `growth`, `production`, and `yields` |
+| `cities[].amenities` | `have` and `need`, whose difference the city panel shows, and `mood`, such as `HAPPINESS_CONTENT` |
+| `cities[].growth` | `foodSurplus` per turn and `housing`, each rounded down to one decimal place, and `turnsUntilGrowth` while the city grows or `turnsUntilLoss` while it starves. A city that neither grows nor starves has neither count |
 | `cities[].production` | What the city is producing: `type`, such as `UNIT_SLINGER`, and `turnsLeft`. It's left out when the city produces nothing |
 | `cities[].yields` | `food`, `production`, `gold`, `science`, `culture`, and `faith` per turn, each rounded down to one decimal place, as the city panel shows them |
 

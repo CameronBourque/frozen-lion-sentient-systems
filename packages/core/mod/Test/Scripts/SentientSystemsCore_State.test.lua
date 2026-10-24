@@ -4,8 +4,9 @@ local Game = require("Game")
 -- The yields JSON for a city with every yield at 0.
 local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\"production\":0,\"science\":0}"
 
--- The growth JSON for a city that neither grows nor starves.
-local NO_GROWTH = "\"growth\":{\"foodSurplus\":0},"
+-- The amenities and growth JSON for a content city with no amenities or housing, that neither
+-- grows nor starves.
+local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0},\"growth\":{\"foodSurplus\":0,\"housing\":0},"
 
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
@@ -98,15 +99,33 @@ describe("SentientSystems_GetState", function()
 	end)
 
 	it("adds the food surplus and the turns until the city grows", function()
-		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = 3.25, turnsUntilGrowth = 2 } }) } } } })
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = 3.25, housing = 6, turnsUntilGrowth = 2 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":3.2,\"turnsUntilGrowth\":2}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":3.2,\"housing\":6,\"turnsUntilGrowth\":2}", 1, true))
 	end)
 
 	it("adds the turns until a starving city loses a citizen", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = -2, turnsUntilStarvation = 4 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":-2,\"turnsUntilLoss\":4}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":-2,\"housing\":0,\"turnsUntilLoss\":4}", 1, true))
+	end)
+
+	it("rounds housing down to one decimal place", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { housing = 4.5 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"housing\":4.5", 1, true))
+	end)
+
+	it("adds the amenities the city has and needs, and its mood", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { amenities = 1, amenitiesNeeded = 3, happiness = 2 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":1,\"mood\":\"HAPPINESS_UNHAPPY\",\"need\":3}", 1, true))
+	end)
+
+	it("leaves out a mood that GameInfo.Happinesses doesn't have", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { happiness = 9 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":0,\"need\":0}", 1, true))
 	end)
 
 	it("raises an error for an ID with no player", function()

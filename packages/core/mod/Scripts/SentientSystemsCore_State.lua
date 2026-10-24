@@ -1,7 +1,8 @@
 -- Builds one player's view of the game as JSON for the bridge, from that player's own data and
 -- visibility, never from the screen. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetState(0) returns
--- '{"cities":[{"growth":{"foodSurplus":3,"turnsUntilGrowth":2},"id":65536,"name":"Rome","population":3,
+-- '{"cities":[{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2},
+-- "growth":{"foodSurplus":3,"housing":6,"turnsUntilGrowth":2},"id":65536,"name":"Rome","population":3,
 -- "production":{"turnsLeft":2,"type":"UNIT_SLINGER"},"x":17,"y":14,
 -- "yields":{"culture":3.8,"faith":0,"food":9,"gold":8,"production":6,"science":3.5}}]}', on one line.
 
@@ -50,12 +51,12 @@ local function GetYields(city)
 	return yields
 end
 
--- Returns the food surplus per turn, and the turns until the city grows or, when it starves, until
--- it loses a citizen. The game returns -1 for each count that doesn't apply, and a city that neither
+-- Returns the food surplus per turn, the housing, and the turns until the city grows or, when it
+-- starves, until it loses a citizen. The game returns -1 for each count that doesn't apply, and a city that neither
 -- grows nor starves has neither count, as in GetCityData in CitySupport.lua.
 local function GetGrowth(city)
 	local growth = city:GetGrowth()
-	local result = { foodSurplus = RoundDown(growth:GetFoodSurplus()) }
+	local result = { foodSurplus = RoundDown(growth:GetFoodSurplus()), housing = RoundDown(growth:GetHousing()) }
 	local turnsUntilGrowth = growth:GetTurnsUntilGrowth()
 
 	if turnsUntilGrowth ~= -1 then
@@ -71,6 +72,19 @@ local function GetGrowth(city)
 	return result
 end
 
+-- Returns the amenities the city has and needs, and its mood, such as HAPPINESS_CONTENT. The city
+-- panel shows have minus need.
+local function GetAmenities(city)
+	local growth = city:GetGrowth()
+	local mood = GameInfo.Happinesses[growth:GetHappiness()]
+
+	return {
+		have = growth:GetAmenities(),
+		need = growth:GetAmenitiesNeeded(),
+		mood = mood and mood.HappinessType,
+	}
+end
+
 -- Returns the player's cities, with each city's name in the game's language.
 local function GetCities(player)
 	local cities = {}
@@ -82,6 +96,7 @@ local function GetCities(player)
 			x = city:GetX(),
 			y = city:GetY(),
 			population = city:GetPopulation(),
+			amenities = GetAmenities(city),
 			growth = GetGrowth(city),
 			production = GetProduction(city),
 			yields = GetYields(city),

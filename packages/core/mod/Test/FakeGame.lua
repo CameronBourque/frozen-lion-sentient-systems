@@ -1,10 +1,10 @@
--- A fake of the game's Lua API for tests, with players, their cities, GameInfo.Types, YieldTypes,
--- and Locale. It has only the calls the core mod makes. Example:
+-- A fake of the game's Lua API for tests, with players, their cities, GameInfo.Types,
+-- GameInfo.Happinesses, YieldTypes, and Locale. It has only the calls the core mod makes. Example:
 -- local env = Game.new()
 -- FakeGame.Install(env, {
 -- 	players = { [0] = { cities = { {
 -- 		id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3,
--- 		growth = { foodSurplus = 3, turnsUntilGrowth = 2 },
+-- 		growth = { foodSurplus = 3, housing = 6, turnsUntilGrowth = 2, amenities = 2, amenitiesNeeded = 2, happiness = 4 },
 -- 		production = { type = "UNIT_SLINGER", turnsLeft = 2 },
 -- 		yields = { FOOD = 9, PRODUCTION = 6 },
 -- 	} } } },
@@ -24,14 +24,26 @@ local function List(items)
 	}
 end
 
+-- GameInfo.Happinesses, by index, as in the game.
+local HAPPINESSES = {
+	[0] = { HappinessType = "HAPPINESS_REVOLT" },
+	{ HappinessType = "HAPPINESS_UNREST" },
+	{ HappinessType = "HAPPINESS_UNHAPPY" },
+	{ HappinessType = "HAPPINESS_DISPLEASED" },
+	{ HappinessType = "HAPPINESS_CONTENT" },
+	{ HappinessType = "HAPPINESS_HAPPY" },
+	{ HappinessType = "HAPPINESS_ECSTATIC" },
+}
+
 -- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
 
 -- A city from data. data.production is { type, turnsLeft }, or { hash, turnsLeft } for a hash that
 -- GameInfo.Types doesn't know, or nil for nothing in production. data.yields maps a YieldTypes
--- name to its amount, and a missing yield is 0. data.growth has foodSurplus, which is 0 when missing,
--- and turnsUntilGrowth and turnsUntilStarvation, which are -1 when missing, as in the game. hashes
--- maps each production type to its hash.
+-- name to its amount, and a missing yield is 0. data.growth has foodSurplus, housing, amenities,
+-- and amenitiesNeeded, each 0 when missing, happiness, an index in GameInfo.Happinesses that is 4,
+-- content, when missing, and turnsUntilGrowth and turnsUntilStarvation, which are -1 when missing,
+-- as in the game. hashes maps each production type to its hash.
 local function City(data, hashes)
 	local production = data.production
 	local hash = production and (production.hash or hashes[production.type]) or 0
@@ -42,6 +54,18 @@ local function City(data, hashes)
 			return {
 				GetFoodSurplus = function()
 					return growth.foodSurplus or 0
+				end,
+				GetHousing = function()
+					return growth.housing or 0
+				end,
+				GetAmenities = function()
+					return growth.amenities or 0
+				end,
+				GetAmenitiesNeeded = function()
+					return growth.amenitiesNeeded or 0
+				end,
+				GetHappiness = function()
+					return growth.happiness or 4
 				end,
 				GetTurnsUntilGrowth = function()
 					return growth.turnsUntilGrowth or -1
@@ -115,7 +139,7 @@ function FakeGame.Install(env, world)
 	local hashes = {}
 	local count = 0
 
-	env.GameInfo = { Types = {} }
+	env.GameInfo = { Types = {}, Happinesses = HAPPINESSES }
 	env.YieldTypes = YIELD_TYPES
 
 	for _, data in pairs(world.players or {}) do
