@@ -1,6 +1,6 @@
 # Game state
 
-Status: open. What a player knows about each tile, the calls that give the core mod that knowledge, and what FireTuner's map reveal changes are confirmed from the game's files and in a running game. `SentientSystems_GetState` with cities is confirmed in a running game. The state calls for units are not checked yet.
+Status: open. What a player knows about each tile, the calls that give the core mod that knowledge, and what FireTuner's map reveal changes are confirmed from the game's files and in a running game. `SentientSystems_GetState` with cities and units is confirmed in a running game.
 
 The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -21,6 +21,10 @@ The calls the state serializer uses to build one player's view of the game, with
 - **Loyalty.** With the Rise and Fall expansion or Gathering Storm, `city:GetCulturalIdentity()` has `GetLoyalty()`, `GetMaxLoyalty()`, and `GetLoyaltyPerTurn()`. The city panel rounds loyalty to the nearest tenth with `Round(currentLoyalty, 1)`, in `DLC/Expansion1/UI/Additions/CityPanelCulture.lua`, lines 86 to 98. The base game has no `GetCulturalIdentity`. Confirmed in files, and the calls on Windows on 2026-10-24.
 - **Districts and buildings.** `city:GetDistricts():Members()` lists the city's districts. Each has `GetType()`, an index in `GameInfo.Districts`, `GetX()`, `GetY()`, `IsComplete()`, and `IsPillaged()`. `city:GetBuildings():GetBuildingsAtLocation(plotIndex)` lists the building indexes on a district's tile, and `HasBuilding(index)` and `IsPillaged(index)` tell whether each is built and pillaged. `GetCityData` in `CitySupport.lua`, lines 600 to 760, reads the same calls, and puts wonders in `DISTRICT_WONDER`. Confirmed in files and on Windows on 2026-10-24.
 - **Yields.** `city:GetYield(YieldTypes.FOOD)` and the same for `PRODUCTION`, `GOLD`, `SCIENCE`, `CULTURE`, and `FAITH` return each yield per turn, with all its decimals, such as 3.8984375 for culture. The city panel rounds each one down to one decimal place with `math.floor(x * 10) / 10`, in `CitySupport.lua`, lines 316 to 332, so it shows 3.8. Confirmed in files and on Windows on 2026-10-24.
+
+### Units
+
+`SentientSystems_GetState(playerID)` lists the player's units from `Players[playerID]:GetUnits():Members()`. Each unit has `GetID()`, `GetType()`, an index in `GameInfo.Units`, `GetX()`, `GetY()`, `GetMovesRemaining()`, `GetMaxMoves()`, `GetDamage()`, and `GetMaxDamage()`. The unit panel reads the same calls in `Base/Assets/UI/Panels/UnitPanel.lua`, lines 2237 to 2245, and shows health as `MaxDamage - Damage` out of `MaxDamage`, at line 1055. `UnitFlagManager.lua` makes no flag for a unit whose `IsDead()` or `IsDelayedDeath()` is `true`. Confirmed in files and on Windows on 2026-10-24.
 
 ### Tile visibility
 
@@ -119,6 +123,7 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `GetCulturalIdentity()`: `GetLoyalty()`, `GetMaxLoyalty()`, and `GetLoyaltyPerTurn()` | 100, 100, and 21. The panel showed 100 loyalty |
 | `GetDistricts():Members()` | One district, ID 65536, `DISTRICT_CITY_CENTER` at (17,14), complete and not pillaged |
 | `GetBuildingsAtLocation` on the city center | Indexes 0, `BUILDING_MONUMENT`, and 1, `BUILDING_PALACE`, both built and not pillaged |
+| `GetUnits():Members()` | `UNIT_SCOUT`, ID 196608, at (24,15), and `UNIT_WARRIOR`, ID 131073, at (7,13). Each had 0 moves left, of 3 and 2, and 0 damage of 100. Neither was dead or about to die |
 
 The map reveal, on turn 14 of the same game:
 

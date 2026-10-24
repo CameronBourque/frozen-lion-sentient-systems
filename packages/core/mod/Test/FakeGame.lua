@@ -1,6 +1,6 @@
--- A fake of the game's Lua API for tests, with players, their cities and districts, Map.GetPlot,
--- GameInfo.Types, GameInfo.Districts, GameInfo.Buildings, GameInfo.Happinesses, YieldTypes, and
--- Locale. It has only the calls the core mod makes. Example:
+-- A fake of the game's Lua API for tests, with players, their cities, districts, and units,
+-- Map.GetPlot, GameInfo.Types, GameInfo.Districts, GameInfo.Buildings, GameInfo.Units,
+-- GameInfo.Happinesses, YieldTypes, and Locale. It has only the calls the core mod makes. Example:
 -- local env = Game.new()
 -- FakeGame.Install(env, {
 -- 	players = { [0] = { cities = { {
@@ -9,7 +9,7 @@
 -- 		production = { type = "UNIT_SLINGER", turnsLeft = 2 },
 -- 		yields = { FOOD = 9, PRODUCTION = 6 },
 -- 		districts = { { type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" } } } },
--- 	} } } },
+-- 	} }, units = { { id = 196608, type = "UNIT_SCOUT", x = 24, y = 15, moves = 3, maxMoves = 3 } } } },
 -- 	text = { LOC_CITY_NAME_ROME = "Rome" },
 -- })
 -- env.Players[0]:GetCities():Members() then lists the one city.
@@ -198,11 +198,53 @@ local function City(data, hashes, indexes)
 	return city
 end
 
+-- A unit from data, with id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
+-- maxDamage, which is 100 when missing, dead, and delayedDeath. indexes maps each unit type to its
+-- GameInfo index.
+local function Unit(data, indexes)
+	return {
+		GetID = function()
+			return data.id
+		end,
+		GetType = function()
+			return indexes[data.type]
+		end,
+		GetX = function()
+			return data.x
+		end,
+		GetY = function()
+			return data.y
+		end,
+		GetMovesRemaining = function()
+			return data.moves
+		end,
+		GetMaxMoves = function()
+			return data.maxMoves
+		end,
+		GetDamage = function()
+			return data.damage or 0
+		end,
+		GetMaxDamage = function()
+			return data.maxDamage or 100
+		end,
+		IsDead = function()
+			return data.dead == true
+		end,
+		IsDelayedDeath = function()
+			return data.delayedDeath == true
+		end,
+	}
+end
+
 local function Player(id, data, hashes, indexes)
-	local cities = {}
+	local cities, units = {}, {}
 
 	for i, city in ipairs(data.cities or {}) do
 		cities[i] = City(city, hashes, indexes)
+	end
+
+	for i, unit in ipairs(data.units or {}) do
+		units[i] = Unit(unit, indexes)
 	end
 
 	return {
@@ -211,6 +253,9 @@ local function Player(id, data, hashes, indexes)
 		end,
 		GetCities = function()
 			return List(cities)
+		end,
+		GetUnits = function()
+			return List(units)
 		end,
 	}
 end
@@ -222,7 +267,7 @@ function FakeGame.Install(env, world)
 	local hashes, indexes = {}, {}
 	local count = 0
 
-	env.GameInfo = { Types = {}, Districts = {}, Buildings = {}, Happinesses = HAPPINESSES }
+	env.GameInfo = { Types = {}, Districts = {}, Buildings = {}, Units = {}, Happinesses = HAPPINESSES }
 	env.YieldTypes = YIELD_TYPES
 	env.Map = {
 		GetPlot = function(x, y)
@@ -247,6 +292,10 @@ function FakeGame.Install(env, world)
 	end
 
 	for _, data in pairs(world.players or {}) do
+		for _, unit in ipairs(data.units or {}) do
+			AddRow("Units", "UnitType", unit.type)
+		end
+
 		for _, city in ipairs(data.cities or {}) do
 			local typeName = city.production and city.production.type
 

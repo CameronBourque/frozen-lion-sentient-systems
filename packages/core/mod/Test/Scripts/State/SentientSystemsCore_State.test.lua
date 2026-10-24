@@ -12,10 +12,10 @@ local function Load(world)
 end
 
 describe("SentientSystems_GetState", function()
-	it("gives an empty list for a player with no cities", function()
+	it("gives empty lists for a player with no cities or units", function()
 		local env = Load({ players = { [0] = {} } })
 
-		assert.equal("{\"cities\":[]}", env.SentientSystems_GetState(0))
+		assert.equal("{\"cities\":[],\"units\":[]}", env.SentientSystems_GetState(0))
 	end)
 
 	it("raises an error for an ID with no player", function()
@@ -37,5 +37,6 @@ describe("SentientSystems_GetState", function()
 
 		assert.same({}, env.printed)
 		assert.is_function(env.SentientSystems_GetCityStates)
+		assert.is_function(env.SentientSystems_GetUnitStates)
 	end)
 end)

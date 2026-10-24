@@ -21,12 +21,13 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
   | Key | Holds |
   | --- | --- |
   | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, `population`, `amenities`, `districts`, `growth`, `loyalty`, `production`, and `yields` |
-| `cities[].amenities` | `have` and `need`, whose difference the city panel shows, and `mood`, such as `HAPPINESS_CONTENT` |
-| `cities[].districts` | A list of the city's districts, each with `type`, `x`, `y`, `complete`, `pillaged`, and `buildings`. `complete` is `false` for a district that is placed but not built yet. `buildings` lists the built buildings, each with `type` and `pillaged`. Wonders sit in `DISTRICT_WONDER` |
-| `cities[].growth` | `foodSurplus` per turn and `housing`, each rounded down to one decimal place, and `turnsUntilGrowth` while the city grows or `turnsUntilLoss` while it starves. A city that neither grows nor starves has neither count |
-| `cities[].loyalty` | `value`, `max`, and `perTurn`, with `value` and `perTurn` rounded to the nearest tenth, as the city panel shows them. It's left out in a game without the Rise and Fall expansion |
-| `cities[].production` | What the city is producing: `type`, such as `UNIT_SLINGER`, and `turnsLeft`. It's left out when the city produces nothing |
-| `cities[].yields` | `food`, `production`, `gold`, `science`, `culture`, and `faith` per turn, each rounded down to one decimal place, as the city panel shows them |
+  | `cities[].amenities` | `have` and `need`, whose difference the city panel shows, and `mood`, such as `HAPPINESS_CONTENT` |
+  | `cities[].districts` | A list of the city's districts, each with `type`, `x`, `y`, `complete`, `pillaged`, and `buildings`. `complete` is `false` for a district that is placed but not built yet. `buildings` lists the built buildings, each with `type` and `pillaged`. Wonders sit in `DISTRICT_WONDER` |
+  | `cities[].growth` | `foodSurplus` per turn and `housing`, each rounded down to one decimal place, and `turnsUntilGrowth` while the city grows or `turnsUntilLoss` while it starves. A city that neither grows nor starves has neither count |
+  | `cities[].loyalty` | `value`, `max`, and `perTurn`, with `value` and `perTurn` rounded to the nearest tenth, as the city panel shows them. It's left out in a game without the Rise and Fall expansion |
+  | `cities[].production` | What the city is producing: `type`, such as `UNIT_SLINGER`, and `turnsLeft`. It's left out when the city produces nothing |
+  | `cities[].yields` | `food`, `production`, `gold`, `science`, `culture`, and `faith` per turn, each rounded down to one decimal place, as the city panel shows them |
+  | `units` | A list of the player's units on the map. Each has `id`, `type`, such as `UNIT_SCOUT`, `x`, `y`, `moves` with `left` and `max`, and `health` with `value` and `max`. `health.value` is the most damage less the damage taken, as the unit panel shows it. A unit at X `-9999`, or one that is dead or about to die, is left out |
 
 - **Action API.** Each action wraps the request function the game's own UI calls, and the game checks legality. A failed action returns its reason. The reason comes from the game's check where it gives one, and from the API's own messages for common cases. The game's UI Lua files ship as plain text and show which call each screen makes. See [findings/game-api.md](../../findings/game-api.md).
 - **Checkpoint ID.** A gameplay script writes the checkpoint ID described in [memory.md](../memory.md#checkpoint-ids).
