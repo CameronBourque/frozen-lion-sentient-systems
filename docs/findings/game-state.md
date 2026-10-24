@@ -29,7 +29,7 @@ The calls the state serializer uses to build one player's view of the game, with
 ### Promotions
 
 - `unit:GetExperience()` has `GetExperiencePoints()`, `GetExperienceForNextLevel()`, `GetLevel()`, and `GetPromotions()`. `GetPromotions()` returns indexes in `GameInfo.UnitPromotions`, whose rows have `UnitPromotionType`, such as `PROMOTION_RANGER`. The unit panel reads the experience in `Base/Assets/UI/Panels/UnitPanel.lua`, lines 2262 and 2263, and `UnitPromotionPopup.lua` reads the promotions at line 85. Confirmed in files and on Windows on 2026-10-24.
-- `UnitManager.CanStartCommand(unit, UnitCommandTypes.PROMOTE, true, true)` returns `true` and a results table when the unit can promote. `results[UnitCommandResults.PROMOTIONS]` lists the indexes of the promotions it can pick. The unit panel builds its promotion list this way, in `UnitPanel.lua`, lines 435 to 446. For a unit that can't promote, it returned `false` and no results. Confirmed in files, and the `false` case on Windows on 2026-10-24.
+- `UnitManager.CanStartCommand(unit, UnitCommandTypes.PROMOTE, true, true)` returns `true` and a results table when the unit can promote. `results[UnitCommandResults.PROMOTIONS]` lists the indexes of the promotions it can pick. The unit panel builds its promotion list this way, in `UnitPanel.lua`, lines 435 to 446. It returns `false` and no results, with no failure reasons, for a unit without enough experience, and for one with enough experience but no moves left. `unit:GetExperience():CanPromote()` in `GameCore_Tuner` returns `true` once the experience is enough, with or without moves. Confirmed in files and on Windows on 2026-10-24.
 
 ### Tile visibility
 
@@ -131,6 +131,8 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `GetUnits():Members()` | `UNIT_SCOUT`, ID 196608, at (24,15), and `UNIT_WARRIOR`, ID 131073, at (7,13). Each had 0 moves left, of 3 and 2, and 0 damage of 100. Neither was dead or about to die |
 | `GetExperience()` for the scout and the warrior | Each had 0 of 15 experience points, level 1, and no promotions |
 | `CanStartCommand` for `PROMOTE` for each unit | `false` and no results |
+| The scout, after `GetExperience():ChangeExperience(15)` in `GameCore_Tuner` | 15 of 15 experience, and `CanPromote()` returned `true`. With 0 moves left, `CanStartCommand` for `PROMOTE` still returned `false` and no results |
+| The scout, after `UnitManager.RestoreMovement` in `GameCore_Tuner` gave it 3 moves | `CanStartCommand` for `PROMOTE` returned `true`, with promotion indexes 0, `PROMOTION_RANGER`, and 1, `PROMOTION_ALPINE`. The state listed both in `availablePromotions` |
 
 The map reveal, on turn 14 of the same game:
 
