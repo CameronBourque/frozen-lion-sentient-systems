@@ -1,6 +1,6 @@
 # Game state
 
-Status: open. What a player knows about each tile, the calls that give the core mod that knowledge, and what FireTuner's map reveal changes are confirmed from the game's files and in a running game. The state calls for cities and units are not checked yet.
+Status: open. What a player knows about each tile, the calls that give the core mod that knowledge, and what FireTuner's map reveal changes are confirmed from the game's files and in a running game. `SentientSystems_GetState` with cities is confirmed in a running game. The state calls for units are not checked yet.
 
 The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -9,6 +9,10 @@ The calls the state serializer uses to build one player's view of the game, with
 1. Does `PlayerManager.SetLocalObserverTo(PlayerTypes.OBSERVER)` show the whole map without changing any player's `PlayersVisibility`? Do the action API's requests still work while it's on? **Set Observer To OBSERVER** on FireTuner's **Map** panel calls it, in `<game>\Debug\Map.ltp`. Test in phase 4.
 
 ## What we know now
+
+### Cities
+
+`SentientSystems_GetState(playerID)` in `SentientSystemsCore_UI` lists the player's cities from `Players[playerID]:GetCities():Members()`. Each city has `GetID()`, `GetName()`, `GetX()`, `GetY()`, and `GetPopulation()`. `GetName()` returns a text key, such as `LOC_CITY_NAME_ROME`, and `Locale.Lookup` gives the name in the game's language, such as `Rome`. Confirmed on Windows on 2026-10-24.
 
 ### Tile visibility
 
@@ -82,6 +86,15 @@ Turn 14 details:
 | (29,17) | Fogged | A rival's tile with cattle, which `IsResourceVisible` allows. `GetUnitCount()` is 1, for a rival builder whose `IsUnitVisible` is `false` |
 | (8,7), (10,7), (10,9), (12,9), and (19,15) | Fogged | Unowned tiles with aluminum, oil, niter, or iron, which `IsResourceVisible` hides |
 | (25,14) | Visible | A rival warrior whose `IsUnitVisible` is `true` |
+
+`SentientSystems_GetState(0)`, on turn 14 of the same game, read through `SentientSystems_Stash` and `SentientSystems_PrintPiece`:
+
+| Check | Result |
+| --- | --- |
+| The state | `{"cities":[{"id":65536,"name":"Rome","population":3,"x":17,"y":14}]}`, 68 bytes in 1 piece |
+| Time for the stash and the piece | 66 ms |
+| The same city from the city calls | ID 65536, `LOC_CITY_NAME_ROME`, `Rome`, at (17,14), population 3 |
+| `SentientSystems_GetState(99)` | Raised `no player 99` |
 
 The map reveal, on turn 14 of the same game:
 

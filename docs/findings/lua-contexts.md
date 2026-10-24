@@ -65,8 +65,10 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 | `debug` library | `type(debug)` in `SentientSystemsCore_UI` is `nil` | Confirmed |
 | Errors in `pcall` | An error from `error("text")` or a runtime error, caught by `pcall` in `SentientSystemsCore_UI`, has a message with the error, then `stack traceback:` and one line for each call. Errors that reach the tuner have the same form. See [tuner-commands.md](tuner-commands.md#what-we-know-now). An error raised with a table, such as `error({})`, has no trace | Confirmed |
 | Paths in errors | An error in a mod file names the file by its full path, such as `C:\Users\<name>\Documents\My Games\Sid Meier's Civilization VI\Mods\SentientSystemsCore\UI\SentientSystemsCore_UI.lua:38`. The path holds the user's name | Confirmed |
+| `include` result | `include(name)` returns a list of the full paths of the files it loaded, such as `C:\Users\<name>\...\Mods\SentientSystemsCore\Scripts\SentientSystemsCore_Json.lua`. For a name that the game doesn't know, it returns an empty list and raises no error | Confirmed |
+| New files | The game reads each mod's `ImportFiles` list when it starts. After `Scripts/SentientSystemsCore_State.lua` was added to `ImportFiles`, `include` found no file through two save loads. After a restart, it found the file. `Modding.log` names only the component, `SentientSystemsCore_SharedScripts (ImportFiles)`, on each load | Confirmed |
 
-The first five rows were checked on Windows on 2026-10-22, and the last seven on 2026-10-23.
+The first five rows were checked on Windows on 2026-10-22, the next seven on 2026-10-23, and the last two on 2026-10-24.
 
 ## Method
 
