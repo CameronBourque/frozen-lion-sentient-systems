@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
-import { formatConsole, logFilePath, Logger, type LogLevel, makeRecord, writesLevel } from "../src/log.js";
+import { formatConsole, hideHome, logFilePath, Logger, type LogLevel, makeRecord, writesLevel } from "../src/log.js";
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -20,6 +20,51 @@ describe("makeRecord", () => {
 
 	test("has no extra fields when none are given", () => {
 		expect(Object.keys(makeRecord(new Date(), "warn", "bad_line", "x"))).toEqual(["time", "level", "event", "msg"]);
+	});
+});
+
+describe("hideHome", () => {
+	const home = String.raw`C:\Users\me`;
+	const time = new Date(Date.UTC(2026, 9, 23));
+
+	test("replaces the home folder in the message and in each string field", () => {
+		const record = makeRecord(time, "info", "config_loaded", String.raw`Read the config file C:\Users\me\tmp\a.yaml`, { path: String.raw`C:\Users\me\tmp\a.yaml`, count: 2 });
+
+		expect(hideHome(record, home)).toEqual({
+			time: "2026-10-23T00:00:00.000Z",
+			level: "info",
+			event: "config_loaded",
+			msg: String.raw`Read the config file ~\tmp\a.yaml`,
+			path: String.raw`~\tmp\a.yaml`,
+			count: 2,
+		});
+	});
+
+	test("replaces each copy in a string", () => {
+		expect(hideHome(makeRecord(time, "info", "x", String.raw`C:\Users\me\a and C:\Users\me\b`), home).msg).toBe(String.raw`~\a and ~\b`);
+	});
+
+	test("ignores case, as Windows paths do", () => {
+		expect(hideHome(makeRecord(time, "info", "x", String.raw`c:\users\ME\a`), home).msg).toBe(String.raw`~\a`);
+	});
+
+	test("matches the home folder alone and with a forward slash after it", () => {
+		expect(hideHome(makeRecord(time, "info", "x", String.raw`C:\Users\me`), home).msg).toBe("~");
+		expect(hideHome(makeRecord(time, "info", "x", "C:\\Users\\me/a"), home).msg).toBe("~/a");
+	});
+
+	test("leaves a folder whose name starts with the home folder's name", () => {
+		expect(hideHome(makeRecord(time, "info", "x", String.raw`C:\Users\me2\a`), home).msg).toBe(String.raw`C:\Users\me2\a`);
+	});
+
+	test("reads the home folder's dots as dots", () => {
+		expect(hideHome(makeRecord(time, "info", "x", String.raw`C:\Users\axb\a`), String.raw`C:\Users\a.b`).msg).toBe(String.raw`C:\Users\axb\a`);
+	});
+
+	test("leaves the record as it is when there is no home folder", () => {
+		const record = makeRecord(time, "info", "x", String.raw`C:\Users\me\a`);
+
+		expect(hideHome(record, "")).toBe(record);
 	});
 });
 
@@ -135,6 +180,22 @@ describe("Logger", () => {
 		expect(print.log).not.toHaveBeenCalled();
 	});
 
+	test("hides the home folder it was given", () => {
+		const print = spyAll();
+
+		new Logger("info", String.raw`C:\Users\me`).info("config_loaded", String.raw`Read C:\Users\me\a.yaml`);
+
+		expect(print.log).toHaveBeenCalledWith(expect.stringMatching(/ {2}Read ~\\a\.yaml$/));
+	});
+
+	test("hides the user's home folder by default", () => {
+		const print = spyAll();
+
+		new Logger().info("config_loaded", `Read ${path.join(os.homedir(), "a.yaml")}`);
+
+		expect(print.log).toHaveBeenCalledWith(expect.stringMatching(/ {2}Read ~[\\/]a\.yaml$/));
+	});
+
 	test("uses a level set after it was made", () => {
 		const print = spyAll();
 		const logger = new Logger();
@@ -153,7 +214,8 @@ describe("Logger files", () => {
 
 	beforeEach(() => {
 		folder = fs.mkdtempSync(path.join(os.tmpdir(), "sentient-systems-"));
-		logger = new Logger("debug");
+		// No home folder, so the temp folder's paths stay whole in the messages.
+		logger = new Logger("debug", "");
 		vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.spyOn(console, "error").mockImplementation(() => {});
 		warned = vi.spyOn(console, "warn").mockImplementation(() => {});

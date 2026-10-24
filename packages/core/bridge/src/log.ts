@@ -1,10 +1,11 @@
 // The bridge's structured log. Each call builds a record with the time, the level, a fixed event
 // name, a message, and any fields, such as { event: "turn", msg: "Player 0's turn started",
 // playerId: 0 }. The console prints the local time and the message, such as "2:05:09 PM  Player
-// 0's turn started". A log file gets each record as one JSON line. docs/design/core/bridge.md has
-// the design.
+// 0's turn started". A log file gets each record as one JSON line. Paths in the home folder start
+// with "~". docs/design/core/bridge.md has the design.
 
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 // From quietest to noisiest. A logger writes the records at its level and every quieter level.
@@ -41,6 +42,24 @@ export function makeRecord(time: Date, level: LogLevel, event: string, msg: stri
 	return { time: time.toISOString(), level, event, msg, ...fields };
 }
 
+// Characters a regex reads as special, so a folder name can be matched as it is.
+const REGEX_SPECIAL = /[.*+?^${}()|[\]\\]/g;
+// What ends a folder name in a path: a separator or the end of the text. Without it, the home
+// folder "C:\Users\me" would also match the start of "C:\Users\me2".
+const FOLDER_END = String.raw`(?=[\\/]|$)`;
+
+// Replaces the home folder with "~" in the message and in each string field, so a shared log
+// doesn't hold the user's name. Windows paths ignore case, so the match does too.
+export function hideHome(record: LogRecord, home: string): LogRecord {
+	if (home === "") {
+		return record;
+	}
+
+	const pattern = new RegExp(`${home.replace(REGEX_SPECIAL, String.raw`\$&`)}${FOLDER_END}`, "gi");
+
+	return Object.fromEntries(Object.entries(record).map(([key, value]) => [key, typeof value === "string" ? value.replace(pattern, "~") : value])) as LogRecord;
+}
+
 // Whether a logger at one level writes a record at another.
 export function writesLevel(loggerLevel: LogLevel, recordLevel: LogLevel): boolean {
 	return LOG_LEVELS.indexOf(recordLevel) <= LOG_LEVELS.indexOf(loggerLevel);
@@ -69,8 +88,12 @@ export class Logger {
 	// The open log file. Undefined before openFile, and after a file can't be written.
 	private file?: { path: string; fd: number };
 
-	constructor(level: LogLevel = DEFAULT_LOG_LEVEL) {
+	// The folder that hideHome replaces with "~".
+	private readonly home: string;
+
+	constructor(level: LogLevel = DEFAULT_LOG_LEVEL, home = os.homedir()) {
 		this.level = level;
+		this.home = home;
 	}
 
 	error(event: string, msg: string, fields?: LogFields): void {
@@ -131,7 +154,7 @@ export class Logger {
 			return;
 		}
 
-		const record = makeRecord(new Date(), level, event, msg, fields);
+		const record = hideHome(makeRecord(new Date(), level, event, msg, fields), this.home);
 
 		// A synchronous write, so the lines stay in order and none is lost when the bridge exits.
 		if (this.file) {
