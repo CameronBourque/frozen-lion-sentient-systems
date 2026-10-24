@@ -5,6 +5,7 @@
 import { isSea } from "node:sea";
 import { onConnect } from "./connect.js";
 import { readLine } from "./events.js";
+import { onLoadEvent } from "./game-load.js";
 import { startConfig } from "./load-config.js";
 import { logFilePath, Logger } from "./log.js";
 import { TunerClient } from "./tuner/client.js";
@@ -29,22 +30,15 @@ started.warnings.forEach((warning) => logger.warn("config_warning", warning));
 
 // Start the tuner client and handle its events.
 const client = new TunerClient();
-// A load resets the socket, so until the load signal in step 4, each connect after the first starts
-// a new game.
-let hasConnected = false;
 
 client.on("connected", () => {
-	if (hasConnected) {
-		logger.openFile(logFilePath(started.path, new Date()));
-	}
-
-	hasConnected = true;
 	logger.info("connected", "Connected to the game's tuner");
 	// onConnect warns about its own failures, so nothing waits on it.
 	void onConnect(client, logger);
 });
 client.on("disconnected", () => logger.info("disconnected", "Disconnected from the game's tuner"));
-client.on("output", (line) => readLine(line, logger));
+// Each load starts a new log file.
+client.on("output", (line) => readLine(line, logger, (event) => onLoadEvent(event, client, logger, () => logFilePath(started.path, new Date()))));
 process.on("SIGINT", () => {
 	client.close();
 	logger.closeFile();

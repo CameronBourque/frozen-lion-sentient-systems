@@ -179,10 +179,14 @@ export function parseLine(line: string): ParseResult {
 
 // Reads one line from the game, from an output event or from a command's result. Logs the event
 // and returns it, warns about a tagged line that doesn't parse, and ignores an untagged line.
-export function readLine(line: string, logger: Logger): CoreEvent | undefined {
+// onEvent runs before the event is logged, so a handler that starts a new log file puts the
+// event's own line in the new file.
+export function readLine(line: string, logger: Logger, onEvent?: (event: CoreEvent) => void): CoreEvent | undefined {
 	const parsed = parseLine(stripState(line));
 
 	if (parsed.result === "event") {
+		onEvent?.(parsed.event);
+
 		const { level, event, msg, fields } = describeEvent(parsed.event);
 
 		logger.log(level, event, msg, fields);

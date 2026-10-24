@@ -215,6 +215,25 @@ describe("readLine", () => {
 		expect(readLine("[SENTIENTSYSTEMS] CORE_VERSION 0.1.0", logger)).toEqual({ type: "version", version: "0.1.0" });
 	});
 
+	test("hands the event to onEvent before it logs the event", () => {
+		const order: string[] = [];
+
+		vi.spyOn(console, "log").mockImplementation(() => order.push("logged"));
+		readLine("[SENTIENTSYSTEMS] LOAD_READY", logger, (event) => order.push(event.type));
+
+		expect(order).toEqual(["load_ready", "logged"]);
+	});
+
+	test("doesn't call onEvent for a line with no event", () => {
+		const onEvent = vi.fn();
+
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		readLine("InGame: Loading InGame UI", logger, onEvent);
+		readLine("[SENTIENTSYSTEMS] GAME_READY nil", logger, onEvent);
+
+		expect(onEvent).not.toHaveBeenCalled();
+	});
+
 	test("warns about a tagged line that doesn't parse, with the whole line", () => {
 		const print = vi.spyOn(console, "warn").mockImplementation(() => {});
 

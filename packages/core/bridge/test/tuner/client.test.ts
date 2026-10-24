@@ -78,6 +78,18 @@ describe("TunerClient", () => {
 		expect(sent(Tag.StateList)).toBe(2);
 	});
 
+	test("lists the states again after forgetStates, on the same connection", async () => {
+		await connect();
+		await client.findState("InGame");
+
+		game.states = [{ index: 120, name: "InGame" }];
+		client.forgetStates();
+
+		expect(await client.findState("InGame")).toEqual({ index: 120, name: "InGame" });
+		expect(sent(Tag.StateList)).toBe(2);
+		expect(sent(Tag.App)).toBe(1);
+	});
+
 	test("rejects a name with no state or with more than one", async () => {
 		await connect();
 

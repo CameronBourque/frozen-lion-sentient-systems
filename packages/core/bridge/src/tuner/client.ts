@@ -132,6 +132,12 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 		return this.states;
 	}
 
+	// Drops the state list, so the next lookup lists the states again. For a load that may have
+	// changed the indexes while the connection stayed up.
+	forgetStates(): void {
+		this.states = undefined;
+	}
+
 	// Lists the states on the first lookup after each connect, because a new connection may come
 	// after a load that changed the indexes.
 	async findState(name: string): Promise<LuaState> {
