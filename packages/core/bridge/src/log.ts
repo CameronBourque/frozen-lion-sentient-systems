@@ -52,6 +52,17 @@ export function formatConsole(record: LogRecord): string {
 	return `${new Date(record.time).toLocaleTimeString("en-US")}  ${CONSOLE_LABELS[record.level]}${record.msg}`;
 }
 
+// The log file for a game that starts at a time, in a logs folder next to the config file, such as
+// "logs/2026-10-23-181911.log". The name has the local time, with no colons, which Windows doesn't
+// allow in file names.
+export function logFilePath(configPath: string, time: Date): string {
+	const pad = (value: number): string => String(value).padStart(2, "0");
+	const date = `${time.getFullYear()}-${pad(time.getMonth() + 1)}-${pad(time.getDate())}`;
+	const clock = `${pad(time.getHours())}${pad(time.getMinutes())}${pad(time.getSeconds())}`;
+
+	return path.join(path.dirname(configPath), "logs", `${date}-${clock}.log`);
+}
+
 export class Logger {
 	// Set it again once the config file loads.
 	level: LogLevel;

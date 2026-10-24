@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
-import { formatConsole, Logger, type LogLevel, makeRecord, writesLevel } from "../src/log.js";
+import { formatConsole, logFilePath, Logger, type LogLevel, makeRecord, writesLevel } from "../src/log.js";
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -60,6 +60,18 @@ describe("formatConsole", () => {
 
 	test("leaves the fields out", () => {
 		expect(formatConsole(makeRecord(time, "info", "turn", "Player 0's turn started", { playerId: 0 }))).toBe("2:05:09 PM  Player 0's turn started");
+	});
+});
+
+describe("logFilePath", () => {
+	const config = path.resolve("/games/bridge/sentient-systems.yaml");
+
+	test("names the file by the local date and time, in a logs folder next to the config file", () => {
+		expect(logFilePath(config, new Date(2026, 9, 23, 18, 19, 11))).toBe(path.resolve("/games/bridge/logs/2026-10-23-181911.log"));
+	});
+
+	test("pads each part to two digits", () => {
+		expect(logFilePath(config, new Date(2026, 0, 2, 3, 4, 5))).toBe(path.resolve("/games/bridge/logs/2026-01-02-030405.log"));
 	});
 });
 
