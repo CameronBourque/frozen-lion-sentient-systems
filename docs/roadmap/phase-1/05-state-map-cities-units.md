@@ -4,10 +4,10 @@ Build the first half of the state serializer: one player's cities, units, and th
 
 ## Tasks
 
-Tasks 1, 4, 5, and 6 need the game but no new mod code, so you can run them in one session. Each Lua task from task 8 on adds its own tests in `packages/core/mod/test/`.
+Tasks 1, 4, 5, and 6 need the game but no new mod code, so you can run them in one session. Each Lua task from task 8 on adds its own tests in `packages/core/mod/Test/`.
 
 1. **Lua dialect.** From the tuner, run these in `SentientSystemsCore_UI`, then in Lua 5.1, and record where the results differ: `tostring(3.0)`, `tostring(7 / 2)`, `tostring(2 ^ 53)`, `tostring(1 / 0)`, `string.format("%d", 3.5)`, `type(math.type)`, `type(unpack)`, `type(table.unpack)`, `type(utf8)`, and `type(table.move)`. Commit: `docs: record the core mod's Lua dialect`.
-2. **Lua tests.** Install Lua 5.1 and LuaRocks, then run `luarocks install busted`. Add `npm run test:lua`, which runs busted on `packages/core/mod/test/`. Add a test helper that loads a mod file with a fake `include`. Test `Scripts/SentientSystemsCore_Tag.lua` with it. Add a CI job that installs Lua 5.1 and runs `npm run test:lua`. Commit: `test(core): run the core mod's Lua tests with busted`.
+2. **Lua tests.** Install Lua 5.1 and LuaRocks, then run `luarocks install busted`. Add `npm run test:lua`, which runs busted on `packages/core/mod/Test/`. Add a test helper that loads a mod file with a fake `include`. Test `Scripts/SentientSystemsCore_Tag.lua` with it. Add a CI job that installs Lua 5.1 and runs `npm run test:lua`. Commit: `test(core): run the core mod's Lua tests with busted`.
 3. **Lua coverage.** Test `UI/SentientSystemsCore_UI.lua` first, because luacov counts a file that no test loads as 0%. Commit: `test(core): add tests for the core mod's UI script`. Then run `luarocks install luacov`. Make `npm run coverage` also run busted with luacov, and fail when the Lua line coverage is below 98%. Add the Lua coverage table to the CI job summary. Commit: `test(core): measure the core mod's Lua coverage`.
 4. **Large print.** Print a 1 MB string from `SentientSystemsCore_UI`, and check that the bridge reads it whole. Record the time it takes. Commit: `docs: record a large print from the core mod's UI state`.
 5. **Fogged tiles.** Find what a player knows about a tile under fog, and which calls give the core mod that knowledge.

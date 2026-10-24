@@ -9,7 +9,7 @@
 local Game = {}
 
 -- The mod folder, with a trailing slash, from this file's path.
-local MOD_ROOT = debug.getinfo(1, "S").source:match("^@(.*)test[/\\][^/\\]*$")
+local MOD_ROOT = debug.getinfo(1, "S").source:match("^@(.*)Test[/\\][^/\\]*$")
 
 -- The global functions and libraries a mod file can use. load, setfenv, and io are missing in the
 -- game. debug is missing in UI states. Functions the game has that aren't checked yet, such as

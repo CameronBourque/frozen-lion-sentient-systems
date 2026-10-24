@@ -4,6 +4,6 @@ return {
 	statsfile = "coverage/lua/luacov.stats.out",
 	reportfile = "coverage/lua/luacov.report.out",
 	include = { "^packages/core/mod/" },
-	exclude = { "^packages/core/mod/test/" },
+	exclude = { "^packages/core/mod/Test/" },
 	includeuntestedfiles = true,
 }
