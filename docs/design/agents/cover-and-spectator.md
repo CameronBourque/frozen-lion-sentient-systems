@@ -12,7 +12,7 @@ Spectator mode is a game setup option. It unlocks only when every player is an a
 
 ## Map reveal
 
-A button switches the view between the full map and the current player's real view. The reveal must change rendering only. Some reveal mods mark tiles as revealed in the player's game data. That changes gameplay, not only rendering. FireTuner's **Reveal All** is one of them: it writes the player's visibility data, and **Unreveal All** leaves every tile revealed. See [findings/game-state.md](../../findings/game-state.md#firetuners-map-reveal). The local observer view is the method to test first. See question 1 in [game-state.md](../../findings/game-state.md#questions). Test the chosen method before you use it.
+A button switches the view between the full map and the current player's real view. The reveal must change rendering only. Some reveal mods mark tiles as revealed in the player's game data. That changes gameplay, not only rendering. FireTuner's **Reveal All** is one of them: it writes the player's visibility data, and **Unreveal All** leaves every tile revealed. See [findings/game-state.md](../../findings/tile-visibility.md#firetuners-map-reveal). The local observer view is the method to test first. See question 1 in [game-state.md](../../findings/tile-visibility.md#questions). Test the chosen method before you use it.
 
 ## Decisions
 

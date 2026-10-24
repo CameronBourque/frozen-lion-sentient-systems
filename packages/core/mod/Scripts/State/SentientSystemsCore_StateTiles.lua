@@ -1,6 +1,6 @@
 -- The tiles section of the state: each tile the player has revealed, from the player's own
 -- visibility data, never from the screen. A tile under fog reads as it is now, as the game's tooltip
--- shows it. See docs/findings/game-state.md. SentientSystemsCore_State.lua loads this file.
+-- shows it. See docs/findings/tile-visibility.md. SentientSystemsCore_State.lua loads this file.
 -- Example: SentientSystems_GetTileStates(playerID) returns a list with one table for each tile,
 -- which encodes as
 -- '{"feature":"FEATURE_FOREST","resource":"RESOURCE_DEER","terrain":"TERRAIN_GRASS_HILLS","visible":true,"x":17,"y":15}'.

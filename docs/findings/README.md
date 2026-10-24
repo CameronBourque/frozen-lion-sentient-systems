@@ -10,7 +10,8 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [lua-contexts.md](lua-contexts.md) | Lua states and what each one can call |
 | [state-list.md](state-list.md) | The Lua state list, and how it changes over a session and during a load |
 | [game-api.md](game-api.md) | Game calls for cities, units, turns, and properties |
-| [game-state.md](game-state.md) | What a player knows about each tile, city, and unit, and the calls the state serializer uses |
+| [game-state.md](game-state.md) | The calls the state serializer uses for cities, units, and tiles |
+| [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |
 | [multiplayer.md](multiplayer.md) | What the tuner and the core mod can do in hotseat and online games |
 
