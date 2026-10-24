@@ -2,7 +2,7 @@
 
 Status: confirmed. The released executable runs in Windows Sandbox, a clean Windows with no Node, and passes the bridge's checks against a running game. SmartScreen blocks its first run from File Explorer after a download.
 
-The bridge ships as one executable that Node SEA builds. [design/core/bridge.md](../design/core/bridge.md#decisions) says why. The release workflow runs `npm ci` at the repo root and `npm run build:exe` in the bridge workspace on a `windows-latest` runner, then checksums and uploads every file in `dist/`. `build:exe` must therefore leave only the executable in `dist/`.
+The bridge ships as one executable that Node SEA builds. [design/core/toolchain.md](../design/core/toolchain.md#decisions) says why. The release workflow runs `npm ci` at the repo root and `npm run build:exe` in the bridge workspace on a `windows-latest` runner, then checksums and uploads every file in `dist/`. `build:exe` must therefore leave only the executable in `dist/`.
 
 ## Questions
 

@@ -26,7 +26,7 @@ The tests on 2026-10-23 found that the bridge gets both prints. The `LoadGameVie
 3. **Game line.** Print `GAME_READY <turn>` from `Events.LoadScreenClose`. Remove the probes. Commit: `feat(core): print GAME_READY when a load finishes`.
 4. **Parse the lines.** Add `LOAD_READY` and `GAME_READY <turn>` to `src/events.ts`, with their log lines. `LOAD_READY` logs that the game waits for the click. Test each line and each bad form. Commit: `feat(core): parse the load lines`.
 5. **Reset on a load.** On `LOAD_READY`, the bridge starts a new log file. A quit to the main menu doesn't disconnect, so this keeps the new game's lines out of the old game's file. On `GAME_READY`, it lists the states again. A reconnect no longer starts a new log file. Test with a fake client. Commit: `feat(core): reset the session on each load`.
-6. **Docs.** Describe both lines in [in-game-lua.md](../../design/core/in-game-lua.md) and the reset in [bridge.md](../../design/core/bridge.md). Update the stale state list row in [risks.md](../../risks.md). Commit: `docs: describe the load signal`.
+6. **Docs.** Describe both lines in [in-game-lua.md](../../design/core/in-game-lua.md), the reset in [bridge.md](../../design/core/bridge.md), and the log file in [logs.md](../../design/core/logs.md). Update the stale state list row in [risks.md](../../risks.md). Commit: `docs: describe the load signal`.
 
 ## Done when
 
@@ -37,4 +37,5 @@ Load a save, quit to the main menu, and load it again. At each loading screen, t
 - The events, their order, whether the tuner carries `LOAD_READY` before the click, and whether `GAME_READY` survives the socket reset, in [lua-contexts.md](../../findings/lua-contexts.md#state-list-over-a-session). Remove question 4.
 - The auto-click cases, in [lua-contexts.md](../../findings/lua-contexts.md#state-list-over-a-session), with a link from question 3.
 - Both lines, in [in-game-lua.md](../../design/core/in-game-lua.md), with a `## Decisions` row for tagged load lines.
-- The reset, in [bridge.md](../../design/core/bridge.md), with a `## Decisions` row for starting the log file on `LOAD_READY`.
+- The reset, in [bridge.md](../../design/core/bridge.md).
+- The log file for each load, in [logs.md](../../design/core/logs.md), with a `## Decisions` row for starting it on `LOAD_READY`.

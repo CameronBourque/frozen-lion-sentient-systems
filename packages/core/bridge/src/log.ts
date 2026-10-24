@@ -2,7 +2,7 @@
 // name, a message, and any fields, such as { event: "turn", msg: "Player 0's turn started",
 // playerId: 0 }. The console prints the local time and the message, such as "2:05:09 PM  Player
 // 0's turn started". A log file gets each record as one JSON line. Paths in the home folder start
-// with "~". docs/design/core/bridge.md has the design.
+// with "~". docs/design/core/logs.md has the design.
 
 import fs from "node:fs";
 import os from "node:os";
