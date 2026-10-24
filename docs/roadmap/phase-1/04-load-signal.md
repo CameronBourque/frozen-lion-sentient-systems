@@ -15,13 +15,13 @@ The agent loop doesn't exist yet, so this step doesn't cancel an agent turn. [St
 | `Events.LoadGameViewStateDone` | The game has loaded, and the screen shows its button. The handler prints `OnLoadGameViewStateDone` | `OnLoadGameViewStateDone`, line 457 |
 | `Events.LoadScreenClose` | The player clicked the button. `OnActivateButtonClicked` fires it | Line 50 |
 
-Some games click the button for the player, and then both events fire one after the other. See the auto-click row in [lua-contexts.md](../../findings/lua-contexts.md#state-list-over-a-session).
+Some games click the button for the player, and then both events fire one after the other. See the auto-click row in [state-list.md](../../findings/state-list.md#state-list-over-a-session).
 
 The tests on 2026-10-23 found that the bridge gets both prints. The `LoadGameViewStateDone` print arrives as the button shows, and the `LoadScreenClose` print arrives before the socket resets at the click. `Game.GetCurrentGameTurn()` works in both handlers. So `GAME_READY` needs no resync.
 
 ## Tasks
 
-1. **Find the order.** Add the temporary probes from step 7 of the [Lua state method](../../findings/lua-contexts.md#method), and run steps 5 and 7. Record which probe comes before the click, which comes after it, when commands start to answer, and whether the bridge gets the `LoadScreenClose` probe or loses it when the socket resets. This answers question 4. Don't commit the probes. Commit: `docs: record when commands work after a load`.
+1. **Find the order.** Add the temporary probes from step 4 of the [state list method](../../findings/state-list.md#method), and run steps 3 and 4. Record which probe comes before the click, which comes after it, when commands start to answer, and whether the bridge gets the `LoadScreenClose` probe or loses it when the socket resets. This answers question 4. Don't commit the probes. Commit: `docs: record when commands work after a load`.
 2. **Button line.** Print `LOAD_READY` from `Events.LoadGameViewStateDone`. Commit: `feat(core): print LOAD_READY when the loading screen shows its button`.
 3. **Game line.** Print `GAME_READY <turn>` from `Events.LoadScreenClose`. Remove the probes. Commit: `feat(core): print GAME_READY when a load finishes`.
 4. **Parse the lines.** Add `LOAD_READY` and `GAME_READY <turn>` to `src/events.ts`, with their log lines. `LOAD_READY` logs that the game waits for the click. Test each line and each bad form. Commit: `feat(core): parse the load lines`.
@@ -34,8 +34,8 @@ Load a save, quit to the main menu, and load it again. At each loading screen, t
 
 ## Record
 
-- The events, their order, whether the tuner carries `LOAD_READY` before the click, and whether `GAME_READY` survives the socket reset, in [lua-contexts.md](../../findings/lua-contexts.md#state-list-over-a-session). Remove question 4.
-- The auto-click cases, in [lua-contexts.md](../../findings/lua-contexts.md#state-list-over-a-session), with a link from question 3.
+- The events, their order, whether the tuner carries `LOAD_READY` before the click, and whether `GAME_READY` survives the socket reset, in [state-list.md](../../findings/state-list.md#state-list-over-a-session). Remove question 4.
+- The auto-click cases, in [state-list.md](../../findings/state-list.md#state-list-over-a-session), with a link from question 2.
 - Both lines, in [in-game-lua.md](../../design/core/in-game-lua.md), with a `## Decisions` row for tagged load lines.
 - The reset, in [bridge.md](../../design/core/bridge.md).
 - The log file for each load, in [logs.md](../../design/core/logs.md), with a `## Decisions` row for starting it on `LOAD_READY`.
