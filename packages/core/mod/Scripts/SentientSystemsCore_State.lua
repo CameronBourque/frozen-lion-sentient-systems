@@ -3,7 +3,8 @@
 -- SentientSystems_GetState(0) returns
 -- '{"cities":[{"id":65536,"name":"Aduatuca","population":1,"x":42,"y":49}]}'.
 
-include("SentientSystemsCore_Json")
+include("SentientSystemsCore_Common")
+SentientSystems_Include("SentientSystemsCore_Json")
 
 -- Returns the player's cities, with each city's name in the game's language.
 local function GetCities(player)

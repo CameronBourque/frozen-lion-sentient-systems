@@ -2,7 +2,7 @@
 -- Havok Script, which matches Lua 5.1.5 except for five functions it doesn't have. See
 -- docs/findings/lua-contexts.md#lua-51-comparison. Example:
 -- local env = Game.new()
--- Game.run(env, "Scripts/SentientSystemsCore_Tag.lua")
+-- Game.run(env, "Scripts/SentientSystemsCore_Common.lua")
 -- env.SentientSystems_Print("AGENT_TURN", 0)
 -- env.printed[1] is "[SENTIENTSYSTEMS] AGENT_TURN 0".
 
@@ -31,7 +31,8 @@ local function Copy(source)
 end
 
 -- Returns a new environment. env.printed lists each line that print printed. env.include(name)
--- runs Scripts/<name>.lua in the same environment, as include does for a file in ImportFiles.
+-- runs Scripts/<name>.lua in the same environment and returns a list of its path, as include does
+-- for a file in ImportFiles. For a name with no file, it returns an empty list, as the game does.
 function Game.new()
 	local env = { printed = {} }
 
@@ -57,13 +58,23 @@ function Game.new()
 	end
 
 	function env.include(name)
-		Game.run(env, "Scripts/" .. name .. ".lua")
+		local path = "Scripts/" .. name .. ".lua"
+		local file = io.open(MOD_ROOT .. path)
+
+		if file == nil then
+			return {}
+		end
+
+		file:close()
+		Game.run(env, path)
+
+		return { MOD_ROOT .. path }
 	end
 
 	return env
 end
 
--- Runs a mod file, such as "Scripts/SentientSystemsCore_Tag.lua", in env.
+-- Runs a mod file, such as "Scripts/SentientSystemsCore_Common.lua", in env.
 function Game.run(env, path)
 	local chunk = assert(loadfile(MOD_ROOT .. path))
 

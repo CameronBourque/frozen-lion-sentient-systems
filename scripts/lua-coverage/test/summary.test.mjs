@@ -7,7 +7,7 @@ import { checkCoverage, summarySection, THRESHOLD, totalCoverage } from "../src/
 function report(total, newline = "\n") {
 	return [
 		"==============================================================================",
-		"packages/core/mod/Scripts/SentientSystemsCore_Tag.lua",
+		"packages/core/mod/Scripts/SentientSystemsCore_Common.lua",
 		"==============================================================================",
 		"   1 SENTIENTSYSTEMS_TAG = \"[SENTIENTSYSTEMS]\"",
 		"",
@@ -17,7 +17,7 @@ function report(total, newline = "\n") {
 		"",
 		"File                                                  Hits Missed Coverage",
 		"--------------------------------------------------------------------------",
-		`packages\\core\\mod\\Scripts\\SentientSystemsCore_Tag.lua 11   0      ${total}%`,
+		`packages\\core\\mod\\Scripts\\SentientSystemsCore_Common.lua 11   0      ${total}%`,
 		"--------------------------------------------------------------------------",
 		`Total                                                 11   0      ${total}%`,
 		"",

@@ -42,10 +42,24 @@ describe("Game.run", function()
 	it("runs a mod file in the environment, where include loads files from Scripts", function()
 		local env = Game.new()
 
-		env.include("SentientSystemsCore_Tag")
+		env.include("SentientSystemsCore_Common")
 
 		assert.equal("[SENTIENTSYSTEMS]", env.SENTIENTSYSTEMS_TAG)
 		assert.is_nil(SENTIENTSYSTEMS_TAG)
+	end)
+
+	it("returns the path of each file include loads", function()
+		local loaded = Game.new().include("SentientSystemsCore_Common")
+
+		assert.equal(1, #loaded)
+		assert.truthy(loaded[1]:find("Scripts/SentientSystemsCore_Common%.lua$"))
+	end)
+
+	it("returns an empty list from include for a name with no file, as the game does", function()
+		local env = Game.new()
+
+		assert.same({}, env.include("SentientSystemsCore_Missing"))
+		assert.is_nil(env.SENTIENTSYSTEMS_TAG)
 	end)
 
 	it("raises an error for a file that doesn't exist", function()

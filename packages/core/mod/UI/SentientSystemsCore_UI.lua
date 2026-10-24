@@ -1,7 +1,7 @@
 -- The core mod's UI script. It runs in its own UI Lua state, where the request functions work.
 
-include("SentientSystemsCore_Tag")
-include("SentientSystemsCore_State")
+include("SentientSystemsCore_Common")
+SentientSystems_Include("SentientSystemsCore_State")
 
 -- The id attribute in SentientSystemsCore.modinfo.
 local MOD_ID = "5D4B5856-E71F-492C-A434-A0938AF49451"

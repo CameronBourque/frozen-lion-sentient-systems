@@ -4,7 +4,7 @@ local env
 
 before_each(function()
 	env = Game.new()
-	Game.run(env, "Scripts/SentientSystemsCore_Tag.lua")
+	Game.run(env, "Scripts/SentientSystemsCore_Common.lua")
 end)
 
 describe("SentientSystems_Print", function()
@@ -61,5 +61,32 @@ describe("SentientSystems_CatchErrors", function()
 		end)()
 
 		assert.same({ "[SENTIENTSYSTEMS] ERROR OnTest a table" }, env.printed)
+	end)
+end)
+
+describe("SentientSystems_Include", function()
+	it("loads the file, returns its path, and prints nothing", function()
+		local loaded = env.SentientSystems_Include("SentientSystemsCore_Json")
+
+		assert.equal(1, #loaded)
+		assert.truthy(loaded[1]:find("SentientSystemsCore_Json.lua$"))
+		assert.is_function(env.SentientSystems_EncodeJson)
+		assert.same({}, env.printed)
+	end)
+
+	it("prints an ERROR line when no file has the name", function()
+		assert.same({}, env.SentientSystems_Include("SentientSystemsCore_Missing"))
+		assert.same({
+			"[SENTIENTSYSTEMS] ERROR include found no file named SentientSystemsCore_Missing. After you add a file to the .modinfo, restart the game",
+		}, env.printed)
+	end)
+
+	it("prints an ERROR line when include returns nothing", function()
+		env.include = function() end
+
+		env.SentientSystems_Include("SentientSystemsCore_Json")
+
+		assert.equal(1, #env.printed)
+		assert.truthy(env.printed[1]:find("^%[SENTIENTSYSTEMS%] ERROR include found no file named SentientSystemsCore_Json"))
 	end)
 end)
