@@ -1,0 +1,50 @@
+local FakeGame = require("FakeGame")
+local Game = require("Game")
+
+-- A small map: a forest on grassland hills, a plain grassland tile, and an ocean tile.
+local PLOTS = {
+	{ x = 0, y = 0, terrain = "TERRAIN_GRASS_HILLS", feature = "FEATURE_FOREST" },
+	{ x = 1, y = 0, terrain = "TERRAIN_GRASS" },
+	{ x = 0, y = 1, terrain = "TERRAIN_OCEAN" },
+}
+
+-- Returns the tiles JSON in the state for player 0, who has revealed and sees the given plots.
+local function TilesFor(player)
+	local env = Game.new()
+
+	FakeGame.Install(env, { players = { [0] = player }, plots = PLOTS })
+	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
+
+	return env.SentientSystems_GetState(0):match("\"tiles\":(%b[])")
+end
+
+describe("SentientSystems_GetTileStates", function()
+	it("lists each revealed tile with its terrain and feature, and whether it is visible now", function()
+		assert.equal(
+			"[{\"feature\":\"FEATURE_FOREST\",\"terrain\":\"TERRAIN_GRASS_HILLS\",\"visible\":true,\"x\":0,\"y\":0},"
+				.. "{\"terrain\":\"TERRAIN_GRASS\",\"visible\":false,\"x\":1,\"y\":0}]",
+			TilesFor({ visible = { { 0, 0 } }, revealed = { { 1, 0 } } })
+		)
+	end)
+
+	it("leaves out a tile the player hasn't revealed", function()
+		local tiles = TilesFor({ revealed = { { 1, 0 } } })
+
+		assert.is_nil(tiles:find("TERRAIN_OCEAN", 1, true))
+		assert.is_nil(tiles:find("TERRAIN_GRASS_HILLS", 1, true))
+	end)
+
+	it("gives an empty list when the player has revealed nothing", function()
+		assert.equal("[]", TilesFor({}))
+	end)
+
+	it("reads only the given player's visibility", function()
+		local env = Game.new()
+
+		FakeGame.Install(env, { players = { [0] = {}, [1] = { visible = { { 0, 1 } } } }, plots = PLOTS })
+		Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
+
+		assert.equal("[]", env.SentientSystems_GetState(0):match("\"tiles\":(%b[])"))
+		assert.truthy(env.SentientSystems_GetState(1):find("TERRAIN_OCEAN", 1, true))
+	end)
+end)

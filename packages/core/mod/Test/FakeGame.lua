@@ -1,7 +1,8 @@
--- A fake of the game's Lua API for tests, with players, their cities, districts, and units,
--- Map.GetPlot, UnitManager.CanStartCommand for promotions, GameInfo.Types, GameInfo.Districts,
--- GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions, GameInfo.Happinesses, YieldTypes,
--- UnitCommandTypes, UnitCommandResults, and Locale. It has only the calls the core mod makes. Example:
+-- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
+-- map's plots, PlayersVisibility, UnitManager.CanStartCommand for promotions, GameInfo.Types,
+-- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
+-- GameInfo.Terrains, GameInfo.Features, GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
+-- UnitCommandResults, and Locale. It has only the calls the core mod makes. Example:
 -- local env = Game.new()
 -- FakeGame.Install(env, {
 -- 	players = { [0] = { cities = { {
@@ -12,7 +13,9 @@
 -- 		districts = { { type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" } } } },
 -- 	} }, units = { { id = 196608, type = "UNIT_SCOUT", x = 24, y = 15, moves = 3, maxMoves = 3 } } } },
 -- 	text = { LOC_CITY_NAME_ROME = "Rome" },
+-- 	plots = { { x = 17, y = 14, terrain = "TERRAIN_GRASS", feature = "FEATURE_FOREST" } },
 -- })
+-- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
 -- env.Players[0]:GetCities():Members() then lists the one city.
 
 local FakeGame = {}
@@ -300,8 +303,19 @@ end
 function FakeGame.Install(env, world)
 	local hashes, indexes = {}, {}
 	local count = 0
+	-- Each plot in world.plots by its index, and the plot count, which covers the highest row.
+	local plots, plotCount = {}, 0
 
-	env.GameInfo = { Types = {}, Districts = {}, Buildings = {}, Units = {}, UnitPromotions = {}, Happinesses = HAPPINESSES }
+	env.GameInfo = {
+		Types = {},
+		Districts = {},
+		Buildings = {},
+		Units = {},
+		UnitPromotions = {},
+		Terrains = {},
+		Features = {},
+		Happinesses = HAPPINESSES,
+	}
 	env.UnitCommandTypes = { PROMOTE = -1259482049 }
 	env.UnitCommandResults = { PROMOTIONS = 827475943 }
 	-- Only the promotion command, with results, as the units state asks for it. The game returns
@@ -327,6 +341,12 @@ function FakeGame.Install(env, world)
 					return PlotIndex(x, y)
 				end,
 			}
+		end,
+		GetPlotCount = function()
+			return plotCount
+		end,
+		GetPlotByIndex = function(index)
+			return assert(plots[index], "no fake plot " .. index)
 		end,
 	}
 
@@ -377,10 +397,59 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	for _, data in ipairs(world.plots or {}) do
+		AddRow("Terrains", "TerrainType", data.terrain)
+
+		if data.feature ~= nil then
+			AddRow("Features", "FeatureType", data.feature)
+		end
+
+		local index = PlotIndex(data.x, data.y)
+
+		plotCount = math.max(plotCount, (data.y + 1) * MAP_WIDTH)
+		plots[index] = {
+			GetX = function()
+				return data.x
+			end,
+			GetY = function()
+				return data.y
+			end,
+			GetTerrainType = function()
+				return indexes[data.terrain]
+			end,
+			-- The game returns -1 for a plot with no feature.
+			GetFeatureType = function()
+				return data.feature and indexes[data.feature] or -1
+			end,
+		}
+	end
+
 	env.Players = {}
+	env.PlayersVisibility = {}
 
 	for id, data in pairs(world.players or {}) do
 		env.Players[id] = Player(id, data, hashes, indexes)
+
+		-- Each listed plot's index: revealed, or visible, which is revealed too.
+		local revealed, visible = {}, {}
+
+		for _, position in ipairs(data.revealed or {}) do
+			revealed[PlotIndex(position[1], position[2])] = true
+		end
+
+		for _, position in ipairs(data.visible or {}) do
+			revealed[PlotIndex(position[1], position[2])] = true
+			visible[PlotIndex(position[1], position[2])] = true
+		end
+
+		env.PlayersVisibility[id] = {
+			IsRevealed = function(_, index)
+				return revealed[index] == true
+			end,
+			IsVisible = function(_, index)
+				return visible[index] == true
+			end,
+		}
 	end
 
 	local text = world.text or {}
