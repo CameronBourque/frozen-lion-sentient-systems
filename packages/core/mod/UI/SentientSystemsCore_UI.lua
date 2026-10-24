@@ -39,7 +39,7 @@ local function OnPlayerTurnActivated(playerID, isFirstTime)
 	end
 end
 
-Events.PlayerTurnActivated.Add(OnPlayerTurnActivated)
+Events.PlayerTurnActivated.Add(SentientSystems_CatchErrors("OnPlayerTurnActivated", OnPlayerTurnActivated))
 
 -- Prints the turn signal again for each agent player whose turn is active now, so a bridge that
 -- connects in the middle of a turn learns of it. Prints nothing between turns or during AI turns.
