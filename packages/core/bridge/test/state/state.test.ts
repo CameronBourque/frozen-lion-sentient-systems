@@ -1,12 +1,12 @@
-// Tests for state.ts, against the fake game.
+// Tests for state.ts, against the fake game. Each section's schema has its own tests beside this file.
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { CORE_STATE } from "../src/connect.js";
-import { readState, type State } from "../src/state.js";
-import { TunerClient } from "../src/tuner/client.js";
-import type { CommandResult } from "./tuner/fake-game.js";
-import { FakeGame } from "./tuner/fake-game.js";
+import { CORE_STATE } from "../../src/connect.js";
+import { readState, type State } from "../../src/state/state.js";
+import { TunerClient } from "../../src/tuner/client.js";
+import type { CommandResult } from "../tuner/fake-game.js";
+import { FakeGame } from "../tuner/fake-game.js";
 
 // A state with one of each thing, in the shape the core mod sends.
 const STATE: State = {
@@ -118,19 +118,6 @@ describe("readState", () => {
 		answer({ "SentientSystems_Stash(SentientSystems_GetState(3))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify(STATE)] } });
 
 		expect((await readState(client, 3)).ok).toBe(true);
-	});
-
-	test("accepts a state without the fields the core mod leaves out", async () => {
-		const bare = {
-			cities: [{ ...STATE.cities[0], loyalty: undefined, production: undefined, growth: { foodSurplus: 0, housing: 0 } }],
-			units: [{ ...STATE.units[0], experience: undefined, promotions: undefined, availablePromotions: undefined }],
-			tiles: [{ x: 0, y: 0, terrain: "TERRAIN_OCEAN", visible: false }],
-			rivals: { cities: [], units: [] },
-		};
-
-		stash([JSON.stringify(bare)]);
-
-		expect((await readState(client, 0)).ok).toBe(true);
 	});
 
 	test("drops a field that the schema doesn't know", async () => {

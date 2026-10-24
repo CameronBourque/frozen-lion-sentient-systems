@@ -1,97 +1,16 @@
 // Reads one player's state from the core mod: their cities, units, revealed tiles, and the rivals
 // they can see. The core mod builds the state as JSON and keeps it in pieces, because the tuner
 // gives no reply to a command whose output passes about 2 MiB. The bridge reads one piece per
-// command and joins them. docs/design/core/in-game-lua.md has the format.
+// command and joins them. docs/design/core/in-game-lua.md has the format. Each section's schema has
+// its own file in this folder, as each section of the core mod's Lua does.
 
 import { z } from "zod";
-import { CORE_STATE } from "./connect.js";
-import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "./tuner/client.js";
-
-const HEALTH = z.object({ value: z.number(), max: z.number() });
-
-const CITY = z.object({
-	id: z.number(),
-	name: z.string(),
-	x: z.number(),
-	y: z.number(),
-	population: z.number(),
-	amenities: z.object({ have: z.number(), need: z.number(), mood: z.string().optional() }),
-	districts: z.array(z.object({
-		type: z.string(),
-		x: z.number(),
-		y: z.number(),
-		complete: z.boolean(),
-		pillaged: z.boolean(),
-		buildings: z.array(z.object({ type: z.string(), pillaged: z.boolean() })),
-	})),
-	growth: z.object({
-		foodSurplus: z.number(),
-		housing: z.number(),
-		turnsUntilGrowth: z.number().optional(),
-		turnsUntilLoss: z.number().optional(),
-	}),
-	// Only in a game with the Rise and Fall expansion.
-	loyalty: z.object({ value: z.number(), max: z.number(), perTurn: z.number() }).optional(),
-	// Left out when the city produces nothing.
-	production: z.object({ type: z.string().optional(), turnsLeft: z.number() }).optional(),
-	yields: z.object({
-		food: z.number(),
-		production: z.number(),
-		gold: z.number(),
-		science: z.number(),
-		culture: z.number(),
-		faith: z.number(),
-	}),
-});
-
-const UNIT = z.object({
-	id: z.number(),
-	type: z.string(),
-	x: z.number(),
-	y: z.number(),
-	moves: z.object({ left: z.number(), max: z.number() }),
-	health: HEALTH,
-	// These three are left out for a unit with no experience.
-	experience: z.object({ points: z.number(), nextLevel: z.number() }).optional(),
-	promotions: z.array(z.string()).optional(),
-	availablePromotions: z.array(z.string()).optional(),
-});
-
-const TILE = z.object({
-	x: z.number(),
-	y: z.number(),
-	terrain: z.string(),
-	feature: z.string().optional(),
-	resource: z.string().optional(),
-	owner: z.number().optional(),
-	district: z.string().optional(),
-	improvement: z.string().optional(),
-	// The core mod sends these two only when they are true.
-	improvementPillaged: z.literal(true).optional(),
-	route: z.string().optional(),
-	routePillaged: z.literal(true).optional(),
-	visible: z.boolean(),
-});
-
-const RIVAL_CITY = z.object({
-	owner: z.number(),
-	id: z.number(),
-	name: z.string(),
-	x: z.number(),
-	y: z.number(),
-	population: z.number(),
-	capital: z.boolean(),
-	defense: z.object({ strength: z.number(), garrison: HEALTH, walls: HEALTH.optional() }),
-});
-
-const RIVAL_UNIT = z.object({
-	owner: z.number(),
-	id: z.number(),
-	type: z.string(),
-	x: z.number(),
-	y: z.number(),
-	health: HEALTH,
-});
+import { CORE_STATE } from "../connect.js";
+import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "../tuner/client.js";
+import { CITY } from "./cities.js";
+import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
+import { TILE } from "./tiles.js";
+import { UNIT } from "./units.js";
 
 // Not strict, so a field from a newer core mod is dropped instead of failing the whole state.
 const STATE = z.object({
