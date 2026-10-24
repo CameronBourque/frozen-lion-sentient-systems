@@ -1,41 +1,121 @@
 // Tests for log.ts.
 
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { formatLine, log, warn } from "../src/log.js";
+import { formatConsole, Logger, type LogLevel, makeRecord, writesLevel } from "../src/log.js";
 
 afterEach(() => {
 	vi.restoreAllMocks();
 	vi.useRealTimers();
 });
 
-describe("formatLine", () => {
-	test("puts the 12-hour time in front", () => {
-		expect(formatLine(new Date(2026, 9, 22, 14, 5, 9), "connected")).toBe("2:05:09 PM  connected");
+describe("makeRecord", () => {
+	test("puts the time in UTC, then the level, event, message, and fields", () => {
+		const record = makeRecord(new Date(Date.UTC(2026, 9, 23, 23, 19, 11, 42)), "info", "turn", "Player 0's turn started", { playerId: 0 });
+
+		expect(JSON.stringify(record)).toBe("{\"time\":\"2026-10-23T23:19:11.042Z\",\"level\":\"info\",\"event\":\"turn\",\"msg\":\"Player 0's turn started\",\"playerId\":0}");
+	});
+
+	test("has no extra fields when none are given", () => {
+		expect(Object.keys(makeRecord(new Date(), "warn", "bad_line", "x"))).toEqual(["time", "level", "event", "msg"]);
+	});
+});
+
+describe("writesLevel", () => {
+	test.each<{ logger: LogLevel; record: LogLevel; writes: boolean }>([
+		{ logger: "error", record: "error", writes: true },
+		{ logger: "error", record: "warn", writes: false },
+		{ logger: "warn", record: "error", writes: true },
+		{ logger: "warn", record: "info", writes: false },
+		{ logger: "info", record: "decisions", writes: false },
+		{ logger: "decisions", record: "info", writes: true },
+		{ logger: "decisions", record: "debug", writes: false },
+		{ logger: "debug", record: "debug", writes: true },
+	])("a $logger logger writes a $record record: $writes", ({ logger, record, writes }) => {
+		expect(writesLevel(logger, record)).toBe(writes);
+	});
+});
+
+describe("formatConsole", () => {
+	// A local time, so the test passes in any time zone.
+	const time = new Date(2026, 9, 22, 14, 5, 9);
+
+	test("puts the 12-hour local time in front of the message", () => {
+		expect(formatConsole(makeRecord(time, "info", "connected", "Connected to the game's tuner"))).toBe("2:05:09 PM  Connected to the game's tuner");
 	});
 
 	test("marks a morning time with AM", () => {
-		expect(formatLine(new Date(2026, 9, 22, 9, 0, 0), "turn 0")).toBe("9:00:00 AM  turn 0");
+		expect(formatConsole(makeRecord(new Date(2026, 9, 22, 9, 0, 0), "decisions", "x", "y"))).toBe("9:00:00 AM  y");
+	});
+
+	test("labels a warning", () => {
+		expect(formatConsole(makeRecord(time, "warn", "bad_line", "STATE_READY is not a known kind"))).toBe("2:05:09 PM  warning: STATE_READY is not a known kind");
+	});
+
+	test("labels an error", () => {
+		expect(formatConsole(makeRecord(time, "error", "core_error", "boom"))).toBe("2:05:09 PM  error: boom");
+	});
+
+	test("leaves the fields out", () => {
+		expect(formatConsole(makeRecord(time, "info", "turn", "Player 0's turn started", { playerId: 0 }))).toBe("2:05:09 PM  Player 0's turn started");
 	});
 });
 
-describe("log", () => {
-	test("prints the line with the current time", () => {
-		const print = vi.spyOn(console, "log").mockImplementation(() => {});
+describe("Logger", () => {
+	function spyAll() {
+		return {
+			error: vi.spyOn(console, "error").mockImplementation(() => {}),
+			warn: vi.spyOn(console, "warn").mockImplementation(() => {}),
+			log: vi.spyOn(console, "log").mockImplementation(() => {}),
+		};
+	}
+
+	test("prints errors to stderr, warnings to stderr, and the rest to stdout", () => {
+		const print = spyAll();
+		const logger = new Logger("debug");
 
 		vi.useFakeTimers({ now: new Date(2026, 9, 22, 14, 5, 9) });
-		log("connected");
+		logger.error("core_error", "boom");
+		logger.warn("bad_line", "bad");
+		logger.info("connected", "connected");
+		logger.decision("move", "moved");
+		logger.debug("prompt", "prompt");
 
-		expect(print).toHaveBeenCalledWith("2:05:09 PM  connected");
+		expect(print.error.mock.calls).toEqual([["2:05:09 PM  error: boom"]]);
+		expect(print.warn.mock.calls).toEqual([["2:05:09 PM  warning: bad"]]);
+		expect(print.log.mock.calls).toEqual([["2:05:09 PM  connected"], ["2:05:09 PM  moved"], ["2:05:09 PM  prompt"]]);
 	});
-});
 
-describe("warn", () => {
-	test("prints the line to stderr with the time and a warning label", () => {
-		const print = vi.spyOn(console, "warn").mockImplementation(() => {});
+	test("starts at the decisions level", () => {
+		const print = spyAll();
+		const logger = new Logger();
 
-		vi.useFakeTimers({ now: new Date(2026, 9, 22, 14, 5, 9) });
-		warn("STATE_READY is not a known kind");
+		logger.decision("move", "moved");
+		logger.debug("prompt", "prompt");
 
-		expect(print).toHaveBeenCalledWith("2:05:09 PM  warning: STATE_READY is not a known kind");
+		expect(logger.level).toBe("decisions");
+		expect(print.log).toHaveBeenCalledOnce();
+	});
+
+	test("at the warn level, prints only warnings and errors", () => {
+		const print = spyAll();
+		const logger = new Logger("warn");
+
+		logger.error("core_error", "boom");
+		logger.warn("bad_line", "bad");
+		logger.info("connected", "connected");
+
+		expect(print.error).toHaveBeenCalledOnce();
+		expect(print.warn).toHaveBeenCalledOnce();
+		expect(print.log).not.toHaveBeenCalled();
+	});
+
+	test("uses a level set after it was made", () => {
+		const print = spyAll();
+		const logger = new Logger();
+
+		logger.level = "error";
+		logger.info("connected", "connected");
+
+		expect(print.log).not.toHaveBeenCalled();
 	});
 });

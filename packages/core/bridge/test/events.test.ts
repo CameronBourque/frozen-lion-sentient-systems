@@ -2,6 +2,7 @@
 
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { describeEvent, KINDS, parseLine, readLine, stripState } from "../src/events.js";
+import { Logger } from "../src/log.js";
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -23,15 +24,15 @@ describe("stripState", () => {
 
 describe("describeEvent", () => {
 	test("names a turn by its player ID", () => {
-		expect(describeEvent({ type: "turn", playerId: 0 })).toBe("turn 0");
+		expect(describeEvent({ type: "turn", playerId: 0 })).toEqual({ event: "turn", msg: "Player 0's turn started", fields: { playerId: 0 } });
 	});
 
 	test("names the core version", () => {
-		expect(describeEvent({ type: "version", version: "0.1.0" })).toBe("core version 0.1.0");
+		expect(describeEvent({ type: "version", version: "0.1.0" })).toEqual({ event: "core_version", msg: "Core mod version is 0.1.0", fields: { version: "0.1.0" } });
 	});
 
 	test("names the state the core mod loaded in", () => {
-		expect(describeEvent({ type: "loaded", context: "SentientSystemsCore_UI" })).toBe("core loaded in SentientSystemsCore_UI");
+		expect(describeEvent({ type: "loaded", context: "SentientSystemsCore_UI" })).toEqual({ event: "core_loaded", msg: "Core mod loaded in the SentientSystemsCore_UI state", fields: { state: "SentientSystemsCore_UI" } });
 	});
 });
 
@@ -82,23 +83,25 @@ describe("parseLine", () => {
 });
 
 describe("readLine", () => {
+	const logger = new Logger("debug");
+
 	test("logs and returns the event in a line with its state prefix", () => {
 		const print = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0")).toEqual({ type: "turn", playerId: 0 });
-		expect(print).toHaveBeenCalledWith(expect.stringMatching(/ {2}turn 0$/));
+		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0", logger)).toEqual({ type: "turn", playerId: 0 });
+		expect(print).toHaveBeenCalledWith(expect.stringMatching(/ {2}Player 0's turn started$/));
 	});
 
 	test("reads a command's line, which has no prefix", () => {
 		vi.spyOn(console, "log").mockImplementation(() => {});
 
-		expect(readLine("[SENTIENTSYSTEMS] CORE_VERSION 0.1.0")).toEqual({ type: "version", version: "0.1.0" });
+		expect(readLine("[SENTIENTSYSTEMS] CORE_VERSION 0.1.0", logger)).toEqual({ type: "version", version: "0.1.0" });
 	});
 
 	test("warns about a tagged line that doesn't parse, with the whole line", () => {
 		const print = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN nil")).toBeUndefined();
+		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN nil", logger)).toBeUndefined();
 		expect(print).toHaveBeenCalledWith(expect.stringMatching(/warning: AGENT_TURN needs one player ID, and got "nil": SentientSystemsCore_UI: \[SENTIENTSYSTEMS\] AGENT_TURN nil$/));
 	});
 
@@ -106,7 +109,7 @@ describe("readLine", () => {
 		const logged = vi.spyOn(console, "log").mockImplementation(() => {});
 		const warned = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-		expect(readLine("InGame: Loading InGame UI")).toBeUndefined();
+		expect(readLine("InGame: Loading InGame UI", logger)).toBeUndefined();
 		expect(logged).not.toHaveBeenCalled();
 		expect(warned).not.toHaveBeenCalled();
 	});

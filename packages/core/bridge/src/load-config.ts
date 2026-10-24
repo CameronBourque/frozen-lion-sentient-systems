@@ -5,7 +5,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, LOG_LEVELS, PROVIDERS, SCHEMA_VERSION, parseConfig } from "./config.js";
+import { type Config, PROVIDERS, SCHEMA_VERSION, parseConfig } from "./config.js";
+import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
 
@@ -17,9 +18,10 @@ export const EXAMPLE_CONFIG = `# Settings for the Sentient Systems bridge. Agent
 # loads them.
 schemaVersion: ${SCHEMA_VERSION}
 
-# How much the bridge writes to its log: ${LOG_LEVELS.join(", ")}. Warnings and errors are written at
-# every level. "full" also writes each prompt and response, so its logs can be large.
-logLevel: decisions
+# How much the bridge writes to its log, from quietest to noisiest: ${LOG_LEVELS.join(", ")}. Each
+# level also writes every quieter level. "debug" also writes each prompt and response, so its logs
+# can be large.
+logLevel: ${DEFAULT_LOG_LEVEL}
 
 # An API key for each provider whose models the agents use. Fill in at least one. Delete a provider
 # you don't use.

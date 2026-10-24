@@ -4,11 +4,10 @@
 
 import { parseDocument } from "yaml";
 import { z } from "zod";
+import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 // Bump this when the format changes, and migrate older files when they load.
 export const SCHEMA_VERSION = 1;
-
-export const LOG_LEVELS = ["off", "decisions", "full"] as const;
 
 export const PROVIDERS = ["anthropic", "openai"] as const;
 
@@ -20,7 +19,7 @@ const PROVIDER = z.strictObject({
 // Strict objects, so a misspelled field, such as "loglevel", is an error and not a silent default.
 const CONFIG = z.strictObject({
 	schemaVersion: z.literal(SCHEMA_VERSION),
-	logLevel: z.enum(LOG_LEVELS).default("decisions"),
+	logLevel: z.enum(LOG_LEVELS).default(DEFAULT_LOG_LEVEL),
 	// Only the providers the user has a key for. A model from any listed provider can be used.
 	providers: z.partialRecord(z.enum(PROVIDERS), PROVIDER).default({}),
 });
@@ -32,7 +31,7 @@ export type ConfigResult =
 	| { ok: false; errors: string[] };
 
 // Parses the file's text. Each error names the field it is about, such as
-// "logLevel: Invalid option: expected one of "off"|"decisions"|"full"".
+// "logLevel: Invalid option: expected one of "error"|"warn"|"info"|"decisions"|"debug"".
 export function parseConfig(text: string): ConfigResult {
 	const document = parseDocument(text);
 

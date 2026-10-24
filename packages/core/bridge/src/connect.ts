@@ -4,27 +4,27 @@
 // the next connect tries again. docs/design/core/bridge.md has the design.
 
 import { readLine } from "./events.js";
-import { warn } from "./log.js";
+import type { Logger } from "./log.js";
 import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "./tuner/client.js";
 
 // The core mod's UI state, where its functions for the bridge live.
 export const CORE_STATE = "SentientSystemsCore_UI";
 
-export async function onConnect(client: TunerClient): Promise<void> {
+export async function onConnect(client: TunerClient, logger: Logger): Promise<void> {
 	try {
-		await callCore(client, "SentientSystems_GetVersion()");
+		await callCore(client, logger, "SentientSystems_GetVersion()");
 		// A failed version call skips this one, which would fail the same way.
-		await callCore(client, "SentientSystems_Resync()");
+		await callCore(client, logger, "SentientSystems_Resync()");
 	} catch (error) {
-		warn(explainFailure(error));
+		logger.warn("core_check_failed", explainFailure(error));
 	}
 }
 
 // Runs Lua in the core mod's state and reads each line it prints.
-async function callCore(client: TunerClient, lua: string): Promise<void> {
+async function callCore(client: TunerClient, logger: Logger, lua: string): Promise<void> {
 	const { lines } = await client.run(CORE_STATE, lua);
 
-	lines.forEach((line) => readLine(line));
+	lines.forEach((line) => readLine(line, logger));
 }
 
 // The warning for a failed call, with what the user can do about it.

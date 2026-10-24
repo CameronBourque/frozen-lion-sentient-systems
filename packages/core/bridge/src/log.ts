@@ -1,14 +1,97 @@
-// Prints the bridge's log lines, each with the local time in front, such as "2:05:09 PM  connected".
+// The bridge's structured log. Each call builds a record with the time, the level, a fixed event
+// name, a message, and any fields, such as { event: "turn", msg: "Player 0's turn started",
+// playerId: 0 }. The console prints the local time and the message, such as "2:05:09 PM  Player
+// 0's turn started". docs/design/core/bridge.md has the design.
 
-export function formatLine(time: Date, text: string): string {
-	return `${time.toLocaleTimeString("en-US")}  ${text}`;
+// From quietest to noisiest. A logger writes the records at its level and every quieter level.
+export const LOG_LEVELS = ["error", "warn", "info", "decisions", "debug"] as const;
+
+export type LogLevel = typeof LOG_LEVELS[number];
+
+export const DEFAULT_LOG_LEVEL: LogLevel = "decisions";
+
+// Extra fields for a record, such as { playerId: 0 }. They can't replace the record's own fields.
+export type LogFields = Record<string, unknown> & { time?: never; level?: never; event?: never; msg?: never };
+
+export interface LogRecord {
+	// UTC, in ISO 8601 form, such as "2026-10-23T23:19:11.042Z".
+	time: string;
+	level: LogLevel;
+	// A fixed name for each kind of line, such as "turn", so a filter doesn't match message text.
+	event: string;
+	// Reads on its own, because the console prints only the time and this.
+	msg: string;
+	[field: string]: unknown;
 }
 
-export function log(text: string): void {
-	console.log(formatLine(new Date(), text));
+// What the console puts after the time for each level.
+const CONSOLE_LABELS: Record<LogLevel, string> = {
+	error: "error: ",
+	warn: "warning: ",
+	info: "",
+	decisions: "",
+	debug: "",
+};
+
+export function makeRecord(time: Date, level: LogLevel, event: string, msg: string, fields: LogFields = {}): LogRecord {
+	return { time: time.toISOString(), level, event, msg, ...fields };
 }
 
-// Prints to stderr, with "warning: " after the time.
-export function warn(text: string): void {
-	console.warn(formatLine(new Date(), `warning: ${text}`));
+// Whether a logger at one level writes a record at another.
+export function writesLevel(loggerLevel: LogLevel, recordLevel: LogLevel): boolean {
+	return LOG_LEVELS.indexOf(recordLevel) <= LOG_LEVELS.indexOf(loggerLevel);
+}
+
+// The console line for a record, with the local 12-hour time in front, such as
+// "2:05:09 PM  warning: STATE_READY is not a known kind".
+export function formatConsole(record: LogRecord): string {
+	return `${new Date(record.time).toLocaleTimeString("en-US")}  ${CONSOLE_LABELS[record.level]}${record.msg}`;
+}
+
+export class Logger {
+	// Set it again once the config file loads.
+	level: LogLevel;
+
+	constructor(level: LogLevel = DEFAULT_LOG_LEVEL) {
+		this.level = level;
+	}
+
+	error(event: string, msg: string, fields?: LogFields): void {
+		this.write("error", event, msg, fields);
+	}
+
+	warn(event: string, msg: string, fields?: LogFields): void {
+		this.write("warn", event, msg, fields);
+	}
+
+	info(event: string, msg: string, fields?: LogFields): void {
+		this.write("info", event, msg, fields);
+	}
+
+	// An agent's choice and its reason.
+	decision(event: string, msg: string, fields?: LogFields): void {
+		this.write("decisions", event, msg, fields);
+	}
+
+	// Prompts, responses, and other detail that can make a log large.
+	debug(event: string, msg: string, fields?: LogFields): void {
+		this.write("debug", event, msg, fields);
+	}
+
+	private write(level: LogLevel, event: string, msg: string, fields?: LogFields): void {
+		if (!writesLevel(this.level, level)) {
+			return;
+		}
+
+		const line = formatConsole(makeRecord(new Date(), level, event, msg, fields));
+
+		// stderr for errors and warnings, so they show even when stdout goes elsewhere.
+		if (level === "error") {
+			console.error(line);
+		} else if (level === "warn") {
+			console.warn(line);
+		} else {
+			console.log(line);
+		}
+	}
 }

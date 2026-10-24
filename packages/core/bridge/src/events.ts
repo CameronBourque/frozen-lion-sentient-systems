@@ -2,7 +2,7 @@
 // <args>", joined with spaces, such as "[SENTIENTSYSTEMS] AGENT_TURN 0". docs/design/core/in-game-lua.md
 // has the format.
 
-import { log, warn } from "./log.js";
+import type { LogFields, Logger } from "./log.js";
 
 export const TAG = "[SENTIENTSYSTEMS]";
 
@@ -65,15 +65,21 @@ export function stripState(line: string): string {
 	return line.replace(STATE_PREFIX, "");
 }
 
-// The text the bridge logs for an event, such as "turn 0".
-export function describeEvent(event: CoreEvent): string {
+// What the bridge logs for an event: its event name, a message, and its fields.
+export interface EventLog {
+	event: string;
+	msg: string;
+	fields: LogFields;
+}
+
+export function describeEvent(event: CoreEvent): EventLog {
 	switch (event.type) {
 		case "turn":
-			return `turn ${event.playerId}`;
+			return { event: "turn", msg: `Player ${event.playerId}'s turn started`, fields: { playerId: event.playerId } };
 		case "version":
-			return `core version ${event.version}`;
+			return { event: "core_version", msg: `Core mod version is ${event.version}`, fields: { version: event.version } };
 		case "loaded":
-			return `core loaded in ${event.context}`;
+			return { event: "core_loaded", msg: `Core mod loaded in the ${event.context} state`, fields: { state: event.context } };
 	}
 }
 
@@ -97,17 +103,19 @@ export function parseLine(line: string): ParseResult {
 
 // Reads one line from the game, from an output event or from a command's result. Logs the event
 // and returns it, warns about a tagged line that doesn't parse, and ignores an untagged line.
-export function readLine(line: string): CoreEvent | undefined {
+export function readLine(line: string, logger: Logger): CoreEvent | undefined {
 	const parsed = parseLine(stripState(line));
 
 	if (parsed.result === "event") {
-		log(describeEvent(parsed.event));
+		const { event, msg, fields } = describeEvent(parsed.event);
+
+		logger.info(event, msg, fields);
 
 		return parsed.event;
 	}
 
 	if (parsed.result === "invalid") {
-		warn(`${parsed.reason}: ${line}`);
+		logger.warn("bad_line", `${parsed.reason}: ${line}`, { reason: parsed.reason, line });
 	}
 
 	return undefined;

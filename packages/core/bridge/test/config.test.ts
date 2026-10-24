@@ -18,7 +18,7 @@ describe("parseConfig", () => {
 	test("reads a full file", () => {
 		const text = [
 			"schemaVersion: 1",
-			"logLevel: full",
+			"logLevel: debug",
 			"providers:",
 			"  anthropic:",
 			"    apiKey: key-a",
@@ -30,7 +30,7 @@ describe("parseConfig", () => {
 			ok: true,
 			config: {
 				schemaVersion: 1,
-				logLevel: "full",
+				logLevel: "debug",
 				providers: { anthropic: { apiKey: "key-a" }, openai: { apiKey: "key-b" } },
 			},
 		});
@@ -58,7 +58,7 @@ describe("parseConfig", () => {
 	});
 
 	test("names schemaVersion when it is missing", () => {
-		expect(errorsFor("logLevel: full")[0]).toMatch(/^schemaVersion: /);
+		expect(errorsFor("logLevel: debug")[0]).toMatch(/^schemaVersion: /);
 	});
 
 	test("names schemaVersion when it is from another version", () => {
@@ -74,7 +74,7 @@ describe("parseConfig", () => {
 	});
 
 	test("names each misspelled field", () => {
-		expect(errorsFor("schemaVersion: 1\nloglevel: full\nprovider: x")).toEqual([
+		expect(errorsFor("schemaVersion: 1\nloglevel: debug\nprovider: x")).toEqual([
 			"loglevel: Unknown field",
 			"provider: Unknown field",
 		]);

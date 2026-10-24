@@ -62,9 +62,9 @@ describe("loadConfig", () => {
 	test("reads a valid file", () => {
 		const file = path.join(folder, CONFIG_NAME);
 
-		fs.writeFileSync(file, "schemaVersion: 1\nlogLevel: full");
+		fs.writeFileSync(file, "schemaVersion: 1\nlogLevel: debug");
 
-		expect(loadConfig(file)).toEqual({ result: "loaded", config: { schemaVersion: 1, logLevel: "full", providers: {} } });
+		expect(loadConfig(file)).toEqual({ result: "loaded", config: { schemaVersion: 1, logLevel: "debug", providers: {} } });
 	});
 
 	test("returns the errors of a bad file", () => {
@@ -148,7 +148,7 @@ describe("startConfig", () => {
 	});
 
 	test("lists each error in a bad file", () => {
-		fs.writeFileSync(path.join(folder, CONFIG_NAME), "schemaVersion: 1\nlogLevel: loud\nloglevel: full");
+		fs.writeFileSync(path.join(folder, CONFIG_NAME), "schemaVersion: 1\nlogLevel: loud\nloglevel: debug");
 
 		expect(start()).toEqual({ ok: false, error: expect.stringMatching(/has errors:\nlogLevel: .*\nloglevel: Unknown field$/) as unknown });
 	});
