@@ -9,6 +9,14 @@
 -- docs/findings/game-api.md.
 local OFF_MAP = -9999
 
+-- Returns health as the game shows it: the most damage less the damage taken, out of the most
+-- damage. The unit panel shows a unit's health this way, and the city banner a garrison's and walls'.
+-- The cities and rivals sections use it too. Example: SentientSystems_GetHealth(100, 35) returns
+-- { value = 65, max = 100 }.
+function SentientSystems_GetHealth(maxDamage, damage)
+	return { value = maxDamage - damage, max = maxDamage }
+end
+
 -- Returns whether the unit is on the map and alive. UnitFlagManager.lua skips a unit that is dead or
 -- about to die. The rivals section uses it too.
 function SentientSystems_IsUnitOnMap(unit)
@@ -53,8 +61,7 @@ local function AddPromotions(unit, state)
 	state.availablePromotions = GetAvailablePromotions(unit)
 end
 
--- Returns a list of the player's units on the map. Health is the most damage less the damage taken,
--- as the unit panel shows it.
+-- Returns a list of the player's units on the map.
 function SentientSystems_GetUnitStates(player)
 	local units = {}
 
@@ -66,7 +73,7 @@ function SentientSystems_GetUnitStates(player)
 				x = unit:GetX(),
 				y = unit:GetY(),
 				moves = { left = unit:GetMovesRemaining(), max = unit:GetMaxMoves() },
-				health = { value = unit:GetMaxDamage() - unit:GetDamage(), max = unit:GetMaxDamage() },
+				health = SentientSystems_GetHealth(unit:GetMaxDamage(), unit:GetDamage()),
 			}
 
 			AddPromotions(unit, state)

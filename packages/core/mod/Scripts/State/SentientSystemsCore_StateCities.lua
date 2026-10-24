@@ -143,15 +143,14 @@ end
 -- uses it too.
 function SentientSystems_GetCityDefense(player, city)
 	local center = player:GetDistricts():FindID(city:GetDistrictID())
-	local garrisonMax = center:GetMaxDamage(DefenseTypes.DISTRICT_GARRISON)
-	local wallsMax = center:GetMaxDamage(DefenseTypes.DISTRICT_OUTER)
+	local garrison, walls = DefenseTypes.DISTRICT_GARRISON, DefenseTypes.DISTRICT_OUTER
 	local defense = {
 		strength = math.floor(center:GetDefenseStrength() + 0.5),
-		garrison = { value = garrisonMax - center:GetDamage(DefenseTypes.DISTRICT_GARRISON), max = garrisonMax },
+		garrison = SentientSystems_GetHealth(center:GetMaxDamage(garrison), center:GetDamage(garrison)),
 	}
 
-	if wallsMax > 0 then
-		defense.walls = { value = wallsMax - center:GetDamage(DefenseTypes.DISTRICT_OUTER), max = wallsMax }
+	if center:GetMaxDamage(walls) > 0 then
+		defense.walls = SentientSystems_GetHealth(center:GetMaxDamage(walls), center:GetDamage(walls))
 	end
 
 	return defense

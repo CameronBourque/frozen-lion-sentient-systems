@@ -58,7 +58,7 @@ function SentientSystems_GetRivalUnitStates(playerID)
 						type = GameInfo.Units[unit:GetType()].UnitType,
 						x = unit:GetX(),
 						y = unit:GetY(),
-						health = { value = unit:GetMaxDamage() - unit:GetDamage(), max = unit:GetMaxDamage() },
+						health = SentientSystems_GetHealth(unit:GetMaxDamage(), unit:GetDamage()),
 					}
 				end
 			end

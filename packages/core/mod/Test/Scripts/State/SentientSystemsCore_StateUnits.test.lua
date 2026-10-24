@@ -82,3 +82,23 @@ describe("SentientSystems_GetUnitStates", function()
 		assert.truthy(state:find("UNIT_SCOUT.*UNIT_WARRIOR"))
 	end)
 end)
+
+describe("SentientSystems_GetHealth", function()
+	-- Returns an environment with the state script loaded, where the helper lives.
+	local function Load()
+		local env = Game.new()
+
+		FakeGame.Install(env, {})
+		Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
+
+		return env
+	end
+
+	it("gives the most damage less the damage taken, out of the most damage", function()
+		assert.same({ value = 65, max = 100 }, Load().SentientSystems_GetHealth(100, 35))
+	end)
+
+	it("gives full health when no damage is taken", function()
+		assert.same({ value = 200, max = 200 }, Load().SentientSystems_GetHealth(200, 0))
+	end)
+end)
