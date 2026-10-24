@@ -60,6 +60,23 @@ jobs:
           name: coverage-report
           path: coverage/
 
+  test-lua:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      # The game's Lua matches Lua 5.1.5. See docs/findings/lua-contexts.md#lua-51-comparison.
+      - uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: "5.1.5"
+      - uses: leafo/gh-actions-luarocks@v6
+      - run: luarocks install busted
+      - run: npm run test:lua
+
   actionlint:
     runs-on: ubuntu-latest
     steps:
