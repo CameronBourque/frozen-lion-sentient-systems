@@ -99,6 +99,21 @@ The first five rows were checked on Windows on 2026-10-22, and the last four on 
    SentientSystems_CatchErrors("Probe", function() error({}) end)()
    ```
 
+7. To find when the loading screen's events fire, add these temporary probes to the end of `SentientSystemsCore_UI.lua`:
+
+   ```lua
+   local function Probe(name)
+   	return SentientSystems_CatchErrors(name, function()
+   		SentientSystems_Print("PROBE", name, Game.GetCurrentGameTurn())
+   	end)
+   end
+
+   Events.LoadGameViewStateDone.Add(Probe("LoadGameViewStateDone"))
+   Events.LoadScreenClose.Add(Probe("LoadScreenClose"))
+   ```
+
+   `PROBE` isn't a kind the bridge knows, so the bridge logs each probe as a `bad_line` warning with its time. Close FireTuner, and run `npm run dev --workspace packages/core/bridge`. Load a save, wait at the button for 30 s, then click it. Check which probes the bridge logged, and when `core_version` came after the click. Compare them with `Lua.log`, which gets every print. Do it twice. Then do one load in FireTuner. Before and after the click, run `SentientSystems_Print("PING")` in `SentientSystemsCore_UI`, and note whether it prints.
+
 ## Results
 
 ### Lua state list
