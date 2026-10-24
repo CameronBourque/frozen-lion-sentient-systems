@@ -1,11 +1,13 @@
--- Encodes Lua values as JSON on one line, and prints long text in pieces the tuner can carry. The
--- bridge sends SentientSystems_PrintChunks(SentientSystems_EncodeJson(value)) and joins the lines
--- it gets back. Example: SentientSystems_EncodeJson({ cities = { { id = 65536, name = "Aduatuca" } } })
+-- Encodes Lua values as JSON on one line, and keeps long text in pieces that the bridge reads one
+-- command at a time. Example: SentientSystems_EncodeJson({ cities = { { id = 65536, name = "Aduatuca" } } })
 -- returns '{"cities":[{"id":65536,"name":"Aduatuca"}]}'.
 
--- A print longer than about 2 MiB gets no reply from the tuner, so each piece stays well under it.
--- See docs/findings/tuner-commands.md.
-local CHUNK_BYTES = 1000000
+-- A command whose output is longer than about 2 MiB gets no reply from the tuner, so each piece
+-- stays well under it. See docs/findings/tuner-commands.md.
+local PIECE_BYTES = 1000000
+
+-- The pieces from the last SentientSystems_Stash call, or nil once the bridge has read them all.
+local stash = nil
 
 -- Numbers from -2^53 to 2^53 are whole numbers that a double holds exactly.
 local MAX_EXACT = 2 ^ 53
@@ -151,14 +153,15 @@ function SentientSystems_EncodeJson(value)
 	return table.concat(parts)
 end
 
--- Prints text in pieces of at most CHUNK_BYTES bytes, and at least one piece, so the bridge can join
--- the lines it gets back. The bridge decodes each print as UTF-8 on its own, so a piece never ends
--- inside a character: the cut moves back past UTF-8 continuation bytes, 0x80 to 0xBF.
-function SentientSystems_PrintChunks(text)
+-- Returns text in pieces of at most PIECE_BYTES bytes, and at least one piece. The bridge decodes
+-- each print as UTF-8 on its own, so a piece never ends inside a character: the cut moves back past
+-- UTF-8 continuation bytes, 0x80 to 0xBF.
+local function Split(text)
+	local pieces = {}
 	local start = 1
 
 	repeat
-		local finish = math.min(start + CHUNK_BYTES - 1, #text)
+		local finish = math.min(start + PIECE_BYTES - 1, #text)
 
 		while finish < #text and finish > start do
 			local nextByte = text:byte(finish + 1)
@@ -170,7 +173,35 @@ function SentientSystems_PrintChunks(text)
 			finish = finish - 1
 		end
 
-		print(text:sub(start, finish))
+		pieces[#pieces + 1] = text:sub(start, finish)
 		start = finish + 1
 	until start > #text
+
+	return pieces
+end
+
+-- Keeps text in pieces, in place of any earlier stash, and prints and returns how many there are.
+-- The bridge then reads each piece with its own SentientSystems_PrintPiece command and joins them.
+-- Example: SentientSystems_Stash(SentientSystems_EncodeJson(value)) prints "3".
+function SentientSystems_Stash(text)
+	stash = Split(text)
+	print(#stash)
+
+	return #stash
+end
+
+-- Prints piece index of the stash, counting from 1. After the last piece, the stash is cleared.
+-- Raises an error when no stash holds that piece.
+function SentientSystems_PrintPiece(index)
+	local piece = stash and stash[index]
+
+	if piece == nil then
+		error("no stashed piece " .. tostring(index), 0)
+	end
+
+	print(piece)
+
+	if index == #stash then
+		stash = nil
+	end
 end
