@@ -4,6 +4,10 @@ The in-game half of core: turn events, the state serializer, the action API, che
 
 Design: [docs/design/core/in-game-lua.md](../../../docs/design/core/in-game-lua.md). Game API findings: [docs/findings/game-api.md](../../../docs/findings/game-api.md) and [docs/findings/lua-contexts.md](../../../docs/findings/lua-contexts.md).
 
+## Tests
+
+The Lua tests are in `test/`. From the repo root, run `npm run test:lua`. They need Lua 5.1.5 and busted. See **Lint and test** in [code.md](../../../docs/rules/code.md#lint-and-test).
+
 ## Install for testing
 
 A directory junction links this folder into the game's user mods folder, so the game loads your changes without a copy. Creating a junction doesn't need an administrator prompt. The mods folder for the test machine is in [local paths](../../../docs/findings/README.md#local-paths).
