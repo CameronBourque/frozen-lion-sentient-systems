@@ -20,8 +20,11 @@ Replace the bridge's text log with structured logs at five levels, written to th
 	- Undo the escapes, then split the text at the `stack traceback:` line into `message` and `traceback`.
 	- Test a message with spaces, a message with an escaped newline, and a message with a traceback.
 8. **Log `ERROR` as an error.** Have `describeEvent` return each event's level. Log `ERROR` as an error with the event `core_error` and the fields `handler`, `message`, and `traceback` when there is one. The other events stay at info. Commit: `feat(core): log ERROR lines as errors`.
-9. **Log docs.** Describe the logger, the levels, the records, and the log file in [bridge.md](../../design/core/bridge.md). Commit: `docs: describe structured logs and log files`.
-10. **`ERROR` docs.** Describe the `ERROR` line and the helper in [in-game-lua.md](../../design/core/in-game-lua.md). Record in [lua-contexts.md](../../findings/lua-contexts.md) that the core mod's UI state runs Havok Script 2013.2.0 with no `debug` library, and that `pcall` in a UI state gets the stack trace in the error message. Commit: `docs: describe ERROR lines`.
+9. **Root dev script.** Add a `dev` script to the root `package.json` that runs the bridge's `dev` script, so `npm run dev` works from the repo root. Commit: `chore: add a root dev script`.
+10. **Trim Lua paths.** In `src/events.ts`, cut everything before `Sid Meier's Civilization VI\` from each path in an error's message and traceback, such as `Sid Meier's Civilization VI\Mods\SentientSystemsCore\UI\SentientSystemsCore_UI.lua:38: test`. The cut covers both the `My Games` folder and the game's install folder. Commit: `feat(core): trim Lua error paths to the game folder`.
+11. **Hide the home folder.** In `src/log.ts`, replace the user's home folder with `~` in `msg` and in every string field of each record, such as `~\OneDrive\Documents\sentient-systems.yaml`. Commit: `feat(core): hide the home folder in log records`.
+12. **Log docs.** Describe the logger, the levels, the records, the home folder swap, and the log file in [bridge.md](../../design/core/bridge.md). Commit: `docs: describe structured logs and log files`.
+13. **`ERROR` docs.** Describe the `ERROR` line, the path trim, and the helper in [in-game-lua.md](../../design/core/in-game-lua.md). Record in [lua-contexts.md](../../findings/lua-contexts.md) that the core mod's UI state runs Havok Script 2013.2.0 with no `debug` library, and that `pcall` in a UI state gets the stack trace in the error message. Commit: `docs: describe ERROR lines`.
 
 ## Done when
 
@@ -31,6 +34,7 @@ All of these hold in a running game:
 - With `logLevel: warn`, the console and the log file hold only warnings and errors.
 - Each line on the console is also a record in the log file.
 - Each load of a save starts a new log file.
+- The `core_error` record's paths start at `Sid Meier's Civilization VI`, and no record holds the home folder.
 
 ## Record
 
