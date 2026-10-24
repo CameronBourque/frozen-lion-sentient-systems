@@ -11,6 +11,7 @@
   "scripts": {
     "check-docs": "node scripts/check-docs/src/index.mjs",
     "coverage": "vitest run --coverage",
+    "dev": "npm run dev --workspace packages/core/bridge",
     "link-mod": "node scripts/link-mod/src/index.mjs",
     "lint": "eslint .",
     "test": "vitest run",
