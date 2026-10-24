@@ -124,6 +124,17 @@ describe("Logger", () => {
 		expect(print.log).not.toHaveBeenCalled();
 	});
 
+	test("logs at a level given at run time", () => {
+		const print = spyAll();
+		const logger = new Logger("info");
+
+		logger.log("error", "core_error", "boom");
+		logger.log("debug", "prompt", "prompt");
+
+		expect(print.error).toHaveBeenCalledWith(expect.stringMatching(/ {2}error: boom$/));
+		expect(print.log).not.toHaveBeenCalled();
+	});
+
 	test("uses a level set after it was made", () => {
 		const print = spyAll();
 		const logger = new Logger();

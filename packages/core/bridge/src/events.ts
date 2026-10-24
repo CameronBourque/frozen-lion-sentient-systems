@@ -2,7 +2,7 @@
 // <args>", joined with spaces, such as "[SENTIENTSYSTEMS] AGENT_TURN 0". docs/design/core/in-game-lua.md
 // has the format.
 
-import type { LogFields, Logger } from "./log.js";
+import type { LogFields, Logger, LogLevel } from "./log.js";
 
 export const TAG = "[SENTIENTSYSTEMS]";
 
@@ -95,8 +95,9 @@ export function stripState(line: string): string {
 	return line.replace(STATE_PREFIX, "");
 }
 
-// What the bridge logs for an event: its event name, a message, and its fields.
+// What the bridge logs for an event: its level, its event name, a message, and its fields.
 export interface EventLog {
+	level: LogLevel;
 	event: string;
 	msg: string;
 	fields: LogFields;
@@ -105,13 +106,14 @@ export interface EventLog {
 export function describeEvent(event: CoreEvent): EventLog {
 	switch (event.type) {
 		case "turn":
-			return { event: "turn", msg: `Player ${event.playerId}'s turn started`, fields: { playerId: event.playerId } };
+			return { level: "info", event: "turn", msg: `Player ${event.playerId}'s turn started`, fields: { playerId: event.playerId } };
 		case "version":
-			return { event: "core_version", msg: `Core mod version is ${event.version}`, fields: { version: event.version } };
+			return { level: "info", event: "core_version", msg: `Core mod version is ${event.version}`, fields: { version: event.version } };
 		case "loaded":
-			return { event: "core_loaded", msg: `Core mod loaded in the ${event.context} state`, fields: { state: event.context } };
+			return { level: "info", event: "core_loaded", msg: `Core mod loaded in the ${event.context} state`, fields: { state: event.context } };
 		case "error":
 			return {
+				level: "error",
 				event: "core_error",
 				msg: `Lua error in ${event.handler}: ${event.message}`,
 				// A missing traceback stays out of the record.
@@ -144,9 +146,9 @@ export function readLine(line: string, logger: Logger): CoreEvent | undefined {
 	const parsed = parseLine(stripState(line));
 
 	if (parsed.result === "event") {
-		const { event, msg, fields } = describeEvent(parsed.event);
+		const { level, event, msg, fields } = describeEvent(parsed.event);
 
-		logger.info(event, msg, fields);
+		logger.log(level, event, msg, fields);
 
 		return parsed.event;
 	}

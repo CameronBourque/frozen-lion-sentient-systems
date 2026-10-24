@@ -74,25 +74,25 @@ export class Logger {
 	}
 
 	error(event: string, msg: string, fields?: LogFields): void {
-		this.write("error", event, msg, fields);
+		this.log("error", event, msg, fields);
 	}
 
 	warn(event: string, msg: string, fields?: LogFields): void {
-		this.write("warn", event, msg, fields);
+		this.log("warn", event, msg, fields);
 	}
 
 	info(event: string, msg: string, fields?: LogFields): void {
-		this.write("info", event, msg, fields);
+		this.log("info", event, msg, fields);
 	}
 
 	// An agent's choice and its reason.
 	decision(event: string, msg: string, fields?: LogFields): void {
-		this.write("decisions", event, msg, fields);
+		this.log("decisions", event, msg, fields);
 	}
 
 	// Prompts, responses, and other detail that can make a log large.
 	debug(event: string, msg: string, fields?: LogFields): void {
-		this.write("debug", event, msg, fields);
+		this.log("debug", event, msg, fields);
 	}
 
 	// Closes the open log file, if any, and writes the next records to this one, in a new folder if
@@ -125,7 +125,8 @@ export class Logger {
 		this.warn("log_file_failed", `Can't write the log file ${file}, so the bridge logs to the console only: ${reason}`, { path: file, reason });
 	}
 
-	private write(level: LogLevel, event: string, msg: string, fields?: LogFields): void {
+	// Writes a record at a level chosen at run time, such as an event's level from describeEvent.
+	log(level: LogLevel, event: string, msg: string, fields?: LogFields): void {
 		if (!writesLevel(this.level, level)) {
 			return;
 		}

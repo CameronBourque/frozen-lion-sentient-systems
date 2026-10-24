@@ -24,19 +24,20 @@ describe("stripState", () => {
 
 describe("describeEvent", () => {
 	test("names a turn by its player ID", () => {
-		expect(describeEvent({ type: "turn", playerId: 0 })).toEqual({ event: "turn", msg: "Player 0's turn started", fields: { playerId: 0 } });
+		expect(describeEvent({ type: "turn", playerId: 0 })).toEqual({ level: "info", event: "turn", msg: "Player 0's turn started", fields: { playerId: 0 } });
 	});
 
 	test("names the core version", () => {
-		expect(describeEvent({ type: "version", version: "0.1.0" })).toEqual({ event: "core_version", msg: "Core mod version is 0.1.0", fields: { version: "0.1.0" } });
+		expect(describeEvent({ type: "version", version: "0.1.0" })).toEqual({ level: "info", event: "core_version", msg: "Core mod version is 0.1.0", fields: { version: "0.1.0" } });
 	});
 
 	test("names the state the core mod loaded in", () => {
-		expect(describeEvent({ type: "loaded", context: "SentientSystemsCore_UI" })).toEqual({ event: "core_loaded", msg: "Core mod loaded in the SentientSystemsCore_UI state", fields: { state: "SentientSystemsCore_UI" } });
+		expect(describeEvent({ type: "loaded", context: "SentientSystemsCore_UI" })).toEqual({ level: "info", event: "core_loaded", msg: "Core mod loaded in the SentientSystemsCore_UI state", fields: { state: "SentientSystemsCore_UI" } });
 	});
 
 	test("names the handler and the message of an error", () => {
 		expect(describeEvent({ type: "error", handler: "OnPlayerTurnActivated", message: "boom" })).toEqual({
+			level: "error",
 			event: "core_error",
 			msg: "Lua error in OnPlayerTurnActivated: boom",
 			fields: { handler: "OnPlayerTurnActivated", message: "boom" },
@@ -45,6 +46,7 @@ describe("describeEvent", () => {
 
 	test("puts an error's traceback in the fields, not the message", () => {
 		expect(describeEvent({ type: "error", handler: "OnPlayerTurnActivated", message: "boom", traceback: "\t[C]: in function 'error'" })).toEqual({
+			level: "error",
 			event: "core_error",
 			msg: "Lua error in OnPlayerTurnActivated: boom",
 			fields: { handler: "OnPlayerTurnActivated", message: "boom", traceback: "\t[C]: in function 'error'" },
@@ -145,6 +147,15 @@ describe("readLine", () => {
 
 		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0", logger)).toEqual({ type: "turn", playerId: 0 });
 		expect(print).toHaveBeenCalledWith(expect.stringMatching(/ {2}Player 0's turn started$/));
+	});
+
+	test("logs an error line as an error, on stderr", () => {
+		const logged = vi.spyOn(console, "log").mockImplementation(() => {});
+		const print = vi.spyOn(console, "error").mockImplementation(() => {});
+
+		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated boom", logger)).toEqual({ type: "error", handler: "OnPlayerTurnActivated", message: "boom" });
+		expect(print).toHaveBeenCalledWith(expect.stringMatching(/ {2}error: Lua error in OnPlayerTurnActivated: boom$/));
+		expect(logged).not.toHaveBeenCalled();
 	});
 
 	test("reads a command's line, which has no prefix", () => {
