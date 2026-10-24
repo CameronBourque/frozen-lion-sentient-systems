@@ -6,7 +6,7 @@ The calls the state serializer uses to build one player's view of the game, with
 
 ## Questions
 
-None open.
+1. Does `PlayerManager.SetLocalObserverTo(PlayerTypes.OBSERVER)` show the whole map without changing any player's `PlayersVisibility`? Do the action API's requests still work while it's on? **Set Observer To OBSERVER** on FireTuner's **Map** panel calls it, in `<game>\Debug\Map.ltp`. Test in phase 4.
 
 ## What we know now
 

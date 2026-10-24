@@ -24,11 +24,11 @@ Tasks 1, 4, 5, and 6 need the game but no new mod code, so you can run them in o
 11. **Districts.** Add each city's districts. Commit: `feat(core): add city districts to the state`.
 12. **Units.** Add each unit's ID, type, position, moves left, and health. Skip units at X `-9999`, as civ6-mcp does in [game-api.md](../../findings/game-api.md#units). Commit: `feat(core): add units to the state`.
 13. **Promotions.** Add each unit's available promotions. Commit: `feat(core): add unit promotions to the state`.
-14. **Tiles.** Add each tile that `PlayersVisibility[playerID]` has revealed, with terrain, feature, and whether the tile is visible now. Never read what the screen shows. Commit: `feat(core): add revealed tiles to the state`.
-15. **Resources.** Add each tile's resource, only when the player's techs reveal it. Commit: `feat(core): add visible resources to tiles`.
-16. **Improvements and owners.** Add each tile's improvement and owner. Commit: `feat(core): add improvements and owners to tiles`.
-17. **Rival cities.** Add rival cities only on tiles that are visible now. Commit: `feat(core): add visible rival cities to the state`.
-18. **Rival units.** Add rival units only on tiles that are visible now. Skip units the player can't see on a visible tile, such as stealth units. Commit: `feat(core): add visible rival units to the state`.
+14. **Tiles.** Add each tile that `PlayersVisibility[playerID]:IsRevealed` returns `true` for, with terrain, feature, and whether `IsVisible` returns `true` now. The plot calls give a fogged tile as it is now, which is what the game's tooltip shows. See [game-state.md](../../findings/game-state.md#what-a-player-knows-about-a-tile-under-fog). Never read what the screen shows. Commit: `feat(core): add revealed tiles to the state`.
+15. **Resources.** Add each tile's resource only when `Players[playerID]:GetResources():IsResourceVisible(plot:GetResourceTypeHash())` returns `true`. See [game-state.md](../../findings/game-state.md#resources). Commit: `feat(core): add visible resources to tiles`.
+16. **Improvements and owners.** Add each revealed tile's improvement, district, and owner. Commit: `feat(core): add improvements and owners to tiles`.
+17. **Rival cities.** Add each rival city on a revealed tile, with its ID, name, owner, position, and population, as the game's city banner shows it. See [game-state.md](../../findings/game-state.md#rival-cities-and-units). Commit: `feat(core): add revealed rival cities to the state`.
+18. **Rival units.** Add each rival unit on a tile that is visible now, only when `IsUnitVisible(unit)` returns `true`. Never use `plot:GetUnitCount()`, which counts units the player can't see. Commit: `feat(core): add visible rival units to the state`.
 19. **Bridge.** Add `src/state.ts`, which sends `SentientSystems_Stash(SentientSystems_GetState(<playerID>))` to `SentientSystemsCore_UI` and reads the piece count. It sends `SentientSystems_PrintPiece(<n>)` for each piece, joins the pieces with no separator, checks the JSON with a `zod` schema, and returns a typed state. The encoder from task 8 escapes each newline, so the joined pieces are the exact JSON. Commit: `feat(core): read the state in the bridge`.
 20. **State script.** Add `npm run state`, which prints the state and its size in bytes. Commit: `feat(core): add the state script`.
 
@@ -37,8 +37,9 @@ Tasks 1, 4, 5, and 6 need the game but no new mod code, so you can run them in o
 All of these hold in a running game:
 
 - `npm run state` prints the player's cities and units with the values the game shows.
-- A tile under fog has its last-seen contents, and a tile never revealed is missing.
-- With the map revealed through FireTuner, the state is the same as without it.
+- A tile under fog has the contents that the game's tooltip shows for it, and a tile never revealed is missing.
+- A rival unit the player can't see is missing, including one on a fogged tile.
+- A resource that the player's techs don't reveal is missing.
 
 ## Record
 
