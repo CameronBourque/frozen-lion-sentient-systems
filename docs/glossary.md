@@ -22,6 +22,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | FireTuner | The SDK's debug program, `FireTuner2.exe`. The FireTuner protocol is the wire protocol it uses | [tuner-protocol.md](findings/tuner-protocol.md) |
 | Gate | The test at the end of a phase. It must pass before the next phase starts | [roadmap/](roadmap/README.md) |
 | Knowledge files | The concept guides, civ notes, personalities, sweat level files, and model table that teach agents the game | [knowledge-files.md](design/knowledge-files.md) |
+| Load signal | The two tagged lines the core mod prints during a load: `LOAD_READY` when the loading screen shows its button, and `GAME_READY <turn>` after the click | [in-game-lua.md](design/core/in-game-lua.md) |
 | Log record | One entry in the bridge's log: the time, the level, a fixed event name, a message, and any fields. A log file holds one record on each line, as JSON | [logs.md](design/core/logs.md) |
 | Lua state | One Lua environment in the running game, such as `InGame` or `GameCore_Tuner`. The tuner lists the states and runs Lua in one of them. Use "context" only for the `.modinfo` `Context` attribute | [lua-contexts.md](findings/lua-contexts.md) |
 | Marker wrapper | The Lua the tuner client puts around each command. It prints `@@ss:begin:<id>` and `@@ss:end:<id>:<result>`, so the bridge knows which output belongs to which command | [tuner-commands.md](findings/tuner-commands.md#probe-results) |
