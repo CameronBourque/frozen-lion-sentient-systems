@@ -53,6 +53,15 @@ function SentientSystems_Resync()
 	end
 end
 
+-- Prints "[SENTIENTSYSTEMS] LOAD_READY" when the loading screen shows its button. The tuner
+-- carries the line, but doesn't run commands until the click. In games that click the button for
+-- the player, such as hotseat, the click follows at once.
+local function OnLoadGameViewStateDone()
+	SentientSystems_Print("LOAD_READY")
+end
+
+Events.LoadGameViewStateDone.Add(SentientSystems_CatchErrors("OnLoadGameViewStateDone", OnLoadGameViewStateDone))
+
 -- Prints "[SENTIENTSYSTEMS] CORE_LOADED <state>" each time the script loads, including after a live
 -- reload, so the log shows where the core mod started.
 SentientSystems_Print("CORE_LOADED", ContextPtr:GetID())
