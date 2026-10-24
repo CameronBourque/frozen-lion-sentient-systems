@@ -22,6 +22,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | FireTuner | The SDK's debug program, `FireTuner2.exe`. The FireTuner protocol is the wire protocol it uses | [tuner-protocol.md](findings/tuner-protocol.md) |
 | Gate | The test at the end of a phase. It must pass before the next phase starts | [roadmap/](roadmap/README.md) |
 | Knowledge files | The concept guides, civ notes, personalities, sweat level files, and model table that teach agents the game | [knowledge-files.md](design/knowledge-files.md) |
+| Log record | One entry in the bridge's log: the time, the level, a fixed event name, a message, and any fields. A log file holds one record on each line, as JSON | [bridge.md](design/core/bridge.md) |
 | Lua state | One Lua environment in the running game, such as `InGame` or `GameCore_Tuner`. The tuner lists the states and runs Lua in one of them. Use "context" only for the `.modinfo` `Context` attribute | [lua-contexts.md](findings/lua-contexts.md) |
 | Marker wrapper | The Lua the tuner client puts around each command. It prints `@@ss:begin:<id>` and `@@ss:end:<id>:<result>`, so the bridge knows which output belongs to which command | [tuner-commands.md](findings/tuner-commands.md#probe-results) |
 | MVP | The minimum viable product: one agent finishes a full single-player game against the native AI. It is phase 1 | [phase-1/](roadmap/phase-1/README.md) |
