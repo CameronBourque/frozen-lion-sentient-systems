@@ -2,6 +2,11 @@
 // them. The core mod builds it in Scripts/State/SentientSystemsCore_StateCities.lua.
 
 import { z } from "zod";
+import { HEALTH } from "./units.js";
+
+// A city's defense, as its banner shows it. walls is left out for a city with none. The rivals
+// section uses it too.
+export const DEFENSE = z.object({ strength: z.number(), garrison: HEALTH, walls: HEALTH.optional() });
 
 export const CITY = z.object({
 	id: z.number(),
@@ -10,6 +15,7 @@ export const CITY = z.object({
 	y: z.number(),
 	population: z.number(),
 	amenities: z.object({ have: z.number(), need: z.number(), mood: z.string().optional() }),
+	defense: DEFENSE,
 	districts: z.array(z.object({
 		type: z.string(),
 		x: z.number(),

@@ -3,6 +3,7 @@
 // Scripts/State/SentientSystemsCore_StateRivals.lua.
 
 import { z } from "zod";
+import { DEFENSE } from "./cities.js";
 import { HEALTH } from "./units.js";
 
 export const RIVAL_CITY = z.object({
@@ -13,8 +14,7 @@ export const RIVAL_CITY = z.object({
 	y: z.number(),
 	population: z.number(),
 	capital: z.boolean(),
-	// walls is left out for a city with none.
-	defense: z.object({ strength: z.number(), garrison: HEALTH, walls: HEALTH.optional() }),
+	defense: DEFENSE,
 });
 
 export const RIVAL_UNIT = z.object({

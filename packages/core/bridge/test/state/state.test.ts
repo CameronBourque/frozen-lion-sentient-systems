@@ -17,6 +17,7 @@ const STATE: State = {
 		y: 14,
 		population: 3,
 		amenities: { have: 2, need: 2, mood: "HAPPINESS_CONTENT" },
+		defense: { strength: 13, garrison: { value: 200, max: 200 } },
 		districts: [{
 			type: "DISTRICT_CITY_CENTER",
 			x: 17,

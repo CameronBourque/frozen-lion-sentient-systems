@@ -4,9 +4,9 @@ local Game = require("Game")
 -- The yields JSON for a city with every yield at 0.
 local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\"production\":0,\"science\":0}"
 
--- The amenities, districts, and growth JSON for a content city with no amenities, districts, or
--- housing, that neither grows nor starves.
-local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0},"
+-- The amenities, defense, districts, and growth JSON for a content city with no amenities,
+-- districts, or housing, that neither grows nor starves, and a garrison at full health.
+local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0},\"defense\":{\"garrison\":{\"max\":200,\"value\":200},\"strength\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0},"
 
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
@@ -90,6 +90,15 @@ describe("SentientSystems_GetCityStates", function()
 
 		assert.truthy(env.SentientSystems_GetState(0):find(
 			"\"yields\":{\"culture\":3.8,\"faith\":0,\"food\":9,\"gold\":-2.6,\"production\":6,\"science\":3.5}", 1, true))
+	end)
+
+	it("adds the city's defense, as its banner shows it", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, {
+			defense = { strength = 12.6, garrison = { damage = 50, max = 200 }, walls = { damage = 10, max = 100 } },
+		}) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find(
+			"\"defense\":{\"garrison\":{\"max\":200,\"value\":150},\"strength\":13,\"walls\":{\"max\":100,\"value\":90}}", 1, true))
 	end)
 
 	it("adds the food surplus and the turns until the city grows", function()

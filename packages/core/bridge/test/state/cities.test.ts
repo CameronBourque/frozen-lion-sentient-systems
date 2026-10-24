@@ -1,7 +1,7 @@
 // Tests for cities.ts: the schema for the player's own cities.
 
 import { describe, expect, test } from "vitest";
-import { CITY } from "../../src/state/cities.js";
+import { CITY, DEFENSE } from "../../src/state/cities.js";
 
 const ROME = {
 	id: 65536,
@@ -10,6 +10,7 @@ const ROME = {
 	y: 14,
 	population: 3,
 	amenities: { have: 2, need: 2, mood: "HAPPINESS_CONTENT" },
+	defense: { strength: 13, garrison: { value: 200, max: 200 } },
 	districts: [{
 		type: "DISTRICT_CITY_CENTER",
 		x: 17,
@@ -51,9 +52,27 @@ describe("CITY", () => {
 		expect(CITY.safeParse({ ...ROME, yields: undefined }).success).toBe(false);
 	});
 
+	test("rejects a city without its defense", () => {
+		expect(CITY.safeParse({ ...ROME, defense: undefined }).success).toBe(false);
+	});
+
 	test("rejects a building without its pillaged flag", () => {
 		const city = { ...ROME, districts: [{ ...ROME.districts[0], buildings: [{ type: "BUILDING_MONUMENT" }] }] };
 
 		expect(CITY.safeParse(city).success).toBe(false);
+	});
+});
+
+describe("DEFENSE", () => {
+	test("accepts a defense with walls", () => {
+		expect(DEFENSE.safeParse({ strength: 20, garrison: { value: 150, max: 200 }, walls: { value: 90, max: 100 } }).success).toBe(true);
+	});
+
+	test("accepts a defense without walls, which the core mod leaves out", () => {
+		expect(DEFENSE.safeParse({ strength: 13, garrison: { value: 200, max: 200 } }).success).toBe(true);
+	});
+
+	test("rejects a defense without its garrison", () => {
+		expect(DEFENSE.safeParse({ strength: 13 }).success).toBe(false);
 	});
 });

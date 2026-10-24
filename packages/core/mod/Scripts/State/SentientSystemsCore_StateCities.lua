@@ -2,7 +2,7 @@
 -- SentientSystemsCore_State.lua loads this file. Example: SentientSystems_GetCityStates(player)
 -- returns a list with one table for each city, which encodes as
 -- '{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2},
--- "districts":[{"buildings":[{"pillaged":false,"type":"BUILDING_MONUMENT"},{"pillaged":false,"type":"BUILDING_PALACE"}],
+-- "defense":{"garrison":{"max":200,"value":200},"strength":13},"districts":[{"buildings":[{"pillaged":false,"type":"BUILDING_MONUMENT"},{"pillaged":false,"type":"BUILDING_PALACE"}],
 -- "complete":true,"pillaged":false,"type":"DISTRICT_CITY_CENTER","x":17,"y":14}],
 -- "growth":{"foodSurplus":3,"housing":6,"turnsUntilGrowth":2},"id":65536,
 -- "loyalty":{"max":100,"perTurn":21,"value":100},"name":"Rome","population":3,
@@ -137,6 +137,26 @@ local function GetDistricts(city)
 	return districts
 end
 
+-- Returns the defense that a city's banner shows: its strength, rounded as the banner rounds it, the
+-- garrison's health, and the walls' health. walls is left out for a city with none. The banner reads
+-- the city center district, in CityBanner:UpdateStats in CityBannerManager.lua. The rivals section
+-- uses it too.
+function SentientSystems_GetCityDefense(player, city)
+	local center = player:GetDistricts():FindID(city:GetDistrictID())
+	local garrisonMax = center:GetMaxDamage(DefenseTypes.DISTRICT_GARRISON)
+	local wallsMax = center:GetMaxDamage(DefenseTypes.DISTRICT_OUTER)
+	local defense = {
+		strength = math.floor(center:GetDefenseStrength() + 0.5),
+		garrison = { value = garrisonMax - center:GetDamage(DefenseTypes.DISTRICT_GARRISON), max = garrisonMax },
+	}
+
+	if wallsMax > 0 then
+		defense.walls = { value = wallsMax - center:GetDamage(DefenseTypes.DISTRICT_OUTER), max = wallsMax }
+	end
+
+	return defense
+end
+
 -- Returns a list of the player's cities, with each city's name in the game's language.
 function SentientSystems_GetCityStates(player)
 	local cities = {}
@@ -149,6 +169,7 @@ function SentientSystems_GetCityStates(player)
 			y = city:GetY(),
 			population = city:GetPopulation(),
 			amenities = GetAmenities(city),
+			defense = SentientSystems_GetCityDefense(player, city),
 			districts = GetDistricts(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
