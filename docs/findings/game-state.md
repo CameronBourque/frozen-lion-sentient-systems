@@ -1,6 +1,6 @@
 # Game state
 
-Status: open. `SentientSystems_GetState` with cities, units, revealed tiles, and revealed rival cities is confirmed in a running game.
+Status: open. `SentientSystems_GetState` with cities, units, revealed tiles, revealed rival cities, and visible rival units is confirmed in a running game.
 
 The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. What a player can know about each tile and the rivals on it is in [tile-visibility.md](tile-visibility.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -38,6 +38,10 @@ None open.
 ### Rival cities
 
 `PlayerManager.GetAlive()` lists every living player, and each player's cities come from `GetCities():Members()`, as for the player's own. City IDs repeat across players: Rome and Râ-Kedet both had ID 65536. `city:IsCapital()` tells whether a city is its owner's capital. The city banner reads a city's defense from its city center, `Players[owner]:GetDistricts():FindID(city:GetDistrictID())`. That district's `GetDefenseStrength()` is the banner's defense number, rounded with `math.floor(x + 0.5)`. `GetDamage` and `GetMaxDamage` with `DefenseTypes.DISTRICT_GARRISON` give the garrison's health, and with `DefenseTypes.DISTRICT_OUTER` the walls' health, whose most is 0 for a city with no walls. See `CityBanner:UpdateStats` in `DLC/Expansion1/UI/CityBanners/CityBannerManager.lua`, lines 1209 to 1260. Confirmed in files and on Windows on 2026-10-24.
+
+### Rival units
+
+Each living player's units come from `GetUnits():Members()`, with the same calls as the player's own. Unit IDs repeat across players: player 0's scout and player 1's builder both had ID 196608, and both warriors had ID 131073. A rival unit is visible to the player when `PlayersVisibility[playerID]:IsVisible(x, y)` and `IsUnitVisible(unit)` are both `true`. See [tile-visibility.md](tile-visibility.md#rival-cities-and-units). Confirmed on Windows on 2026-10-24.
 
 ## Method
 
@@ -80,6 +84,7 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | The whole state, with one city, two units, and 161 tiles | 12,380 bytes in one piece |
 | Owners, districts, improvements, and roads in the state, against a loop over every revealed plot | 17 owned tiles in both, 10 of player 0 and 7 of player 1. 2 districts and 2 roads, the city centers of Rome at (17,14) and Râ-Kedet at (30,18), each with `ROUTE_ANCIENT_ROAD`. No improvements, and nothing pillaged. The state grew to 13,589 bytes |
 | Rival cities in the state, against the calls for every city | Râ-Kedet, player 1's capital, at (30,18) on a fogged tile: population 2, defense 13, garrison 200 of 200, and no walls, as its banner showed. Rome, the player's own, was left out |
+| Rival units in the state, against the calls for every unit | Player 1's warrior at (25,14), on a visible tile with `IsUnitVisible` `true`, at full health. Player 1's builder at (29,17), on a fogged tile with `IsUnitVisible` `false`, was left out |
 | Resources in the state, against `IsResourceVisible` on every revealed plot | 32 visible resources in both, tile for tile. The state left out the 6 hidden ones: aluminum at (8,7) and (19,15), oil at (10,7), niter at (10,9), iron at (12,9), and coal at (25,16). The state grew to 13,293 bytes |
 | The scout, after `GetExperience():ChangeExperience(15)` in `GameCore_Tuner` | 15 of 15 experience, and `CanPromote()` returned `true`. With 0 moves left, `CanStartCommand` for `PROMOTE` still returned `false` and no results |
 | The scout, after `UnitManager.RestoreMovement` in `GameCore_Tuner` gave it 3 moves | `CanStartCommand` for `PROMOTE` returned `true`, with promotion indexes 0, `PROMOTION_RANGER`, and 1, `PROMOTION_ALPINE`. The state listed both in `availablePromotions` |

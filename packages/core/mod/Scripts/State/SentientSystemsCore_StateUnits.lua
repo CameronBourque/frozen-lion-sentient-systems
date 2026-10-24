@@ -10,8 +10,8 @@
 local OFF_MAP = -9999
 
 -- Returns whether the unit is on the map and alive. UnitFlagManager.lua skips a unit that is dead or
--- about to die.
-local function IsOnMap(unit)
+-- about to die. The rivals section uses it too.
+function SentientSystems_IsUnitOnMap(unit)
 	return unit:GetX() ~= OFF_MAP and not unit:IsDead() and not unit:IsDelayedDeath()
 end
 
@@ -59,7 +59,7 @@ function SentientSystems_GetUnitStates(player)
 	local units = {}
 
 	for _, unit in player:GetUnits():Members() do
-		if IsOnMap(unit) then
+		if SentientSystems_IsUnitOnMap(unit) then
 			local state = {
 				id = unit:GetID(),
 				type = GameInfo.Units[unit:GetType()].UnitType,

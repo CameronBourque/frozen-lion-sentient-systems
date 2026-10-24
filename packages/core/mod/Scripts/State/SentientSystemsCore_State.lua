@@ -2,8 +2,8 @@
 -- visibility, never from the screen. Each section of the state comes from its own file in this
 -- folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetState(0) returns
--- '{"cities":[{"id":65536,"name":"Rome",...}],"rivals":{"cities":[...]},"tiles":[...],"units":[...]}',
--- on one line.
+-- '{"cities":[{"id":65536,"name":"Rome",...}],"rivals":{"cities":[...],"units":[...]},"tiles":[...],
+-- "units":[...]}', on one line.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -26,6 +26,9 @@ function SentientSystems_GetState(playerID)
 		cities = SentientSystems_GetCityStates(player),
 		units = SentientSystems_GetUnitStates(player),
 		tiles = SentientSystems_GetTileStates(playerID),
-		rivals = { cities = SentientSystems_GetRivalCityStates(playerID) },
+		rivals = {
+			cities = SentientSystems_GetRivalCityStates(playerID),
+			units = SentientSystems_GetRivalUnitStates(playerID),
+		},
 	})
 end

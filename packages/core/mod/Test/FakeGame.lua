@@ -237,7 +237,8 @@ local function City(data, hashes, indexes)
 end
 
 -- A unit from data, with id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
--- maxDamage, which is 100 when missing, dead, delayedDeath, and experience. experience has points,
+-- maxDamage, which is 100 when missing, dead, delayedDeath, hidden, which hides it from other players'
+-- IsUnitVisible, as a stealthy unit is, and experience. experience has points,
 -- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
 -- unit has no experience. indexes maps each unit and promotion type to its GameInfo index.
 local function Unit(data, indexes)
@@ -257,6 +258,8 @@ local function Unit(data, indexes)
 	return {
 		-- The available promotions, for the fake UnitManager.CanStartCommand.
 		availablePromotions = experience and Indexes(experience.available),
+		-- Whether other players' IsUnitVisible hides the unit.
+		hidden = data.hidden == true,
 		GetExperience = function()
 			if experience == nil then
 				return nil
@@ -548,6 +551,9 @@ function FakeGame.Install(env, world)
 			end,
 			IsVisible = function(_, indexOrX, y)
 				return visible[y and PlotIndex(indexOrX, y) or indexOrX] == true
+			end,
+			IsUnitVisible = function(_, unit)
+				return not unit.hidden
 			end,
 		}
 	end
