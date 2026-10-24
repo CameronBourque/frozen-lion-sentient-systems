@@ -9,19 +9,20 @@ Replace the bridge's text log with structured logs at five levels, written to th
 	- In `src/config.ts` and the example config, set the `logLevel` options to the five levels, with `decisions` as the default. A level writes its own records and the records of every quieter level. The schema hasn't been released, so `schemaVersion` stays at 1.
 	- Create the logger in `src/main.ts`, and pass it to `src/connect.ts` and `src/events.ts`. Until the config file loads, the logger writes at the default level.
 	- Give each kind of line a fixed event name, such as `connected`, `core_version`, `core_loaded`, `turn`, and `bad_line`. Make each message read on its own, such as `Player 0's turn started` in place of `turn 0`.
-3. **Log file.** Write each record as one JSON line to `logs/<timestamp>.log` in the config file's folder, such as `logs/2026-10-23-181911.log`. Commit: `feat(core): write a log file per game`.
+3. **Log records to a file.** Add an `openFile(path)` method to `Logger` that writes each record it writes to the console as one JSON line in that file. If the file or its folder can't be written, warn on the console and keep logging to the console only. Commit: `feat(core): write log records to a file`.
+4. **One file per game.** Name each file `logs/<timestamp>.log` in the config file's folder, such as `logs/2026-10-23-181911.log`. Commit: `feat(core): start a log file per game`.
 	- Open the first file when the bridge starts, so the startup lines are in it.
 	- Start a new file on each connect after the first. Until step 4, a new connection counts as a new game.
-	- If the folder or the file can't be written, warn on the console and keep logging to the console only.
-4. **Lua error helper.** In `SentientSystemsCore_Tag.lua`, add a helper that takes a handler's name and function, and returns the function wrapped in `xpcall` with `debug.traceback`. Commit: `feat(core): catch errors in core mod event handlers`.
+5. **Lua error helper.** In `SentientSystemsCore_Tag.lua`, add a helper that takes a handler's name and function, and returns the function wrapped in `xpcall` with `debug.traceback`. Commit: `feat(core): add the core mod error helper`.
 	- If `debug` is missing, the helper uses `pcall` with no traceback.
 	- On an error, the helper prints `ERROR <handler> <message>`. It escapes each backslash as `\\` and each newline as `\n`, so the tuner sends the error as one line.
-	- Wrap each event handler in `SentientSystemsCore_UI.lua` with the helper.
-5. **`ERROR` in the bridge.** In `src/events.ts`, parse `ERROR` with the handler as one word and the rest of the line as the message. Commit: `feat(core): log ERROR lines from the core mod`.
+6. **Wrap the handlers.** Wrap each event handler in `SentientSystemsCore_UI.lua` with the helper. Commit: `feat(core): catch errors in core mod event handlers`.
+7. **Parse `ERROR`.** In `src/events.ts`, add the `ERROR` kind, with the handler as one word and the rest of the line as the message. Commit: `feat(core): parse ERROR lines from the core mod`.
 	- Undo the escapes, then split the text at the `stack traceback:` line into `message` and `traceback`.
-	- Log an error with the event `core_error` and the fields `handler`, `message`, and `traceback` when there is one.
 	- Test a message with spaces, a message with an escaped newline, and a message with a traceback.
-6. **Docs.** Describe the logger, the levels, and the log file in [bridge.md](../../design/core/bridge.md). Describe the `ERROR` line and the helper in [in-game-lua.md](../../design/core/in-game-lua.md). Commit: `docs: describe structured logs and ERROR lines`.
+8. **Log `ERROR` as an error.** Have `describeEvent` return each event's level. Log `ERROR` as an error with the event `core_error` and the fields `handler`, `message`, and `traceback` when there is one. The other events stay at info. Commit: `feat(core): log ERROR lines as errors`.
+9. **Log docs.** Describe the logger, the levels, the records, and the log file in [bridge.md](../../design/core/bridge.md). Commit: `docs: describe structured logs and log files`.
+10. **`ERROR` docs.** Describe the `ERROR` line and the helper in [in-game-lua.md](../../design/core/in-game-lua.md). Record whether `debug.traceback` works in a UI state in [lua-contexts.md](../../findings/lua-contexts.md). Commit: `docs: describe ERROR lines`.
 
 ## Done when
 
