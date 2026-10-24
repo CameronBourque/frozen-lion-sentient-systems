@@ -107,6 +107,36 @@ describe("parseLine", () => {
 		});
 	});
 
+	// A line from the game test on 2026-10-23, with its trace cut short. The core mod escaped each
+	// backslash in the paths, so String.raw keeps them as the game printed them.
+	test("cuts the paths in an error from the game down to the game's folder", () => {
+		const path = String.raw`C:\\Users\\lion1\\OneDrive\\Documents\\My Games\\Sid Meier's Civilization VI\\Mods\\SentientSystemsCore\\UI\\SentientSystemsCore_UI.lua`;
+		const line = String.raw`[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated ${path}:38: test\nstack traceback:\n${"\t"}[C]: in function 'error'\n${"\t"}${path}:38: in function 'OnPlayerTurnActivated'`;
+		const short = String.raw`Sid Meier's Civilization VI\Mods\SentientSystemsCore\UI\SentientSystemsCore_UI.lua`;
+
+		expect(parseLine(line)).toMatchObject({
+			event: { message: `${short}:38: test`, traceback: `\t[C]: in function 'error'\n\t${short}:38: in function 'OnPlayerTurnActivated'` },
+		});
+	});
+
+	test("cuts a path in the game's install folder", () => {
+		const line = String.raw`[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated C:\\Program Files (x86)\\Steam\\steamapps\\common\\Sid Meier's Civilization VI\\Base\\Assets\\UI\\InGame.lua:12: boom`;
+
+		expect(parseLine(line)).toMatchObject({ event: { message: String.raw`Sid Meier's Civilization VI\Base\Assets\UI\InGame.lua:12: boom` } });
+	});
+
+	test("cuts a path at the first game folder in it", () => {
+		const line = String.raw`[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated D:\\Sid Meier's Civilization VI\\Sid Meier's Civilization VI\\x.lua:1: boom`;
+
+		expect(parseLine(line)).toMatchObject({ event: { message: String.raw`Sid Meier's Civilization VI\Sid Meier's Civilization VI\x.lua:1: boom` } });
+	});
+
+	test("leaves a path outside the game's folder as it is", () => {
+		const line = String.raw`[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated C:\\Users\\me\\x.lua:1: boom`;
+
+		expect(parseLine(line)).toMatchObject({ event: { message: String.raw`C:\Users\me\x.lua:1: boom` } });
+	});
+
 	test.each([
 		{ name: "a game print", line: "PlotInfo::OnCitySelectionChanged" },
 		{ name: "an empty line", line: "" },

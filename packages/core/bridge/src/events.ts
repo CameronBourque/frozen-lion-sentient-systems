@@ -40,11 +40,24 @@ const HANDLER = /^\w+$/;
 const ESCAPE = /\\([\\n])/g;
 // The line the game's Lua puts between an error and its stack trace.
 const TRACEBACK = "\nstack traceback:\n";
+// The game's folder, in both the My Games folder and the install folder. A Lua error's paths are cut
+// to start here, so they're shorter and don't hold the user's name.
+// The name has no regex special characters, so the pattern below uses it as it is.
+const GAME_NAME = "Sid Meier's Civilization VI";
+const GAME_FOLDER = `${GAME_NAME}\\`;
+// A path from its drive to the game's folder, such as
+// "C:\Users\me\Documents\My Games\Sid Meier's Civilization VI\". Each folder is one name and a
+// backslash, so the lazy match stops at the first game folder.
+const DRIVE = String.raw`[A-Za-z]:\\`;
+const FOLDER = String.raw`[^\\\n]*\\`;
+const GAME_PATH = new RegExp(String.raw`${DRIVE}(?:${FOLDER})*?${GAME_NAME}\\`, "g");
 
 // Reads "ERROR <handler> <message>". The message is the rest of the line, spaces and tabs included.
 function parseError(args: string[]): CoreEvent | string {
 	const [handler = "", ...words] = args;
-	const text = words.join(" ").replace(ESCAPE, (_escape, character: string) => character === "n" ? "\n" : "\\");
+	const text = words.join(" ")
+		.replace(ESCAPE, (_escape, character: string) => character === "n" ? "\n" : "\\")
+		.replace(GAME_PATH, GAME_FOLDER);
 
 	if (!HANDLER.test(handler) || text === "") {
 		return `ERROR needs a handler name and a message, and got "${args.join(" ")}"`;
