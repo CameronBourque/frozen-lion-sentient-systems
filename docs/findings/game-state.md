@@ -1,12 +1,12 @@
 # Game state
 
-Status: open. What a player knows about each tile, and the calls that give the core mod that knowledge, are confirmed from the game's UI files and in a running game. The state calls for cities and units are not checked yet.
+Status: open. What a player knows about each tile, the calls that give the core mod that knowledge, and what FireTuner's map reveal changes are confirmed from the game's files and in a running game. The state calls for cities and units are not checked yet.
 
 The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-1. Does the FireTuner map reveal change `PlayersVisibility[playerID]`, or only what the screen draws?
+None open.
 
 ## What we know now
 
@@ -43,6 +43,16 @@ The tooltip shows a resource only when `Players[playerID]:GetResources():IsResou
 - A rival unit's flag shows only on a tile that is visible now. `Refresh` in `Base/Assets/UI/UnitFlagManager.lua`, line 1778. Map search lists a unit only when its tile is visible and `IsUnitVisible(unit)` is `true`, in `MapSearchPanel.lua`, lines 467 to 474. Confirmed in files.
 - `plot:GetUnitCount()` counts every unit on the tile, seen or not. On a fogged tile, it returned 1 for a rival builder whose `IsUnitVisible` was `false`. Confirmed on Windows on 2026-10-24.
 
+### FireTuner's map reveal
+
+FireTuner's map reveal changes the player's visibility data, not only what the screen draws. So the state after a reveal holds the whole map.
+
+- **Reveal All** on FireTuner's **Map** panel calls `PlayersVisibility[Game.GetLocalPlayer()]:ChangeVisibilityCount(iPlotIndex, 1)` for every plot. **Unreveal All** calls it with `-1`. See `<game>\Debug\Map.ltp`. Confirmed in files.
+- The panel runs in a Lua state named `TunerMapPanel`. The state appears when FireTuner opens the panel, and it stays after FireTuner closes. Confirmed on Windows on 2026-10-24.
+- `ChangeVisibilityCount` is a function in `GameCore_Tuner` and `nil` in `SentientSystemsCore_UI`. Confirmed on Windows on 2026-10-24.
+- After **Reveal All**, `GetState` returned `VISIBLE` for every tile, and `IsUnitVisible` was `true` for rival units that the player couldn't see before. Confirmed on Windows on 2026-10-24.
+- **Unreveal All** doesn't undo **Reveal All**. The visibility counts drop back, but each tile stays revealed. A tile that was hidden before stays under fog, so the player keeps the whole map, as it is now, until a save from before the reveal loads. Confirmed on Windows on 2026-10-24.
+
 ## Method
 
 1. Read `ShowPlotInfo` and `FetchData` in `<game>\Base\Assets\UI\ToolTips\PlotToolTip.lua`, and the visibility checks in `CityBannerManager.lua`, `UnitFlagManager.lua`, and `MapSearchPanel.lua`.
@@ -50,6 +60,7 @@ The tooltip shows a resource only when `Players[playerID]:GetResources():IsResou
 3. Play until some seen tiles are under fog, with a rival city among them.
 4. For each plot, from 0 to `Map.GetPlotCount() - 1`, compare `IsRevealed`, `IsVisible`, and `GetState`. For each fogged tile, print the owner, improvement, district, resource, `IsResourceVisible`, and `GetUnitCount`.
 5. For each rival city and unit on a revealed tile, print `GetState` for its tile, and `IsUnitVisible` for each unit.
+6. To check the map reveal, read **Reveal All** and **Unreveal All** in `<game>\Debug\Map.ltp`. Save `GetState` for every plot, and count the rival units with `IsUnitVisible`. Click **Reveal All** on FireTuner's **Map** panel, close FireTuner, and compare. Then run the panel's **Unreveal All** Lua in `TunerMapPanel` through the bridge, and compare again. Afterwards, load a save from before the reveal.
 
 ## Results
 
@@ -71,5 +82,13 @@ Turn 14 details:
 | (29,17) | Fogged | A rival's tile with cattle, which `IsResourceVisible` allows. `GetUnitCount()` is 1, for a rival builder whose `IsUnitVisible` is `false` |
 | (8,7), (10,7), (10,9), (12,9), and (19,15) | Fogged | Unowned tiles with aluminum, oil, niter, or iron, which `IsResourceVisible` hides |
 | (25,14) | Visible | A rival warrior whose `IsUnitVisible` is `true` |
+
+The map reveal, on turn 14 of the same game:
+
+| Check | Before | After **Reveal All** | After **Unreveal All** |
+| --- | --- | --- | --- |
+| `GetState` counts | 983 at 0, 100 at 1, and 61 at 2 | 1,144 at 2 | 1,083 at 1 and 61 at 2 |
+| Tiles that differ from before | None | 1,083 | 983, each from 0 to 1 |
+| Rival units the player can see | 1 | 2 | 1 |
 
 Date checked: game files on 2026-10-24. Running game on Windows on 2026-10-24.

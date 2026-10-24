@@ -26,7 +26,8 @@ These paths are from one Windows test machine. Other machines may differ.
 | Game executables | `<game>\Base\Binaries\Win64Steam\CivilizationVI.exe` and `CivilizationVI_DX12.exe` |
 | Game UI Lua | `<game>\Base\Assets\UI\` |
 | DLC and scenario Lua and `.modinfo` files | `<game>\DLC\` |
-| SDK and FireTuner | `C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization VI SDK\FireTuner\FireTuner2.exe` |
+| SDK and FireTuner | `E:\SteamLibrary\steamapps\common\Sid Meier's Civilization VI SDK\FireTuner\FireTuner2.exe` |
+| FireTuner panels, such as `Map.ltp` | `<game>\Debug\` |
 | User mods folder | `%USERPROFILE%\OneDrive\Documents\My Games\Sid Meier's Civilization VI\Mods\` |
 
 `AppOptions.txt` and the logs are not in the Documents folder. The Documents folder holds saves and mods.
