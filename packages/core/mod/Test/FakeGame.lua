@@ -4,6 +4,7 @@
 -- FakeGame.Install(env, {
 -- 	players = { [0] = { cities = { {
 -- 		id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3,
+-- 		growth = { foodSurplus = 3, turnsUntilGrowth = 2 },
 -- 		production = { type = "UNIT_SLINGER", turnsLeft = 2 },
 -- 		yields = { FOOD = 9, PRODUCTION = 6 },
 -- 	} } } },
@@ -28,12 +29,28 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 
 -- A city from data. data.production is { type, turnsLeft }, or { hash, turnsLeft } for a hash that
 -- GameInfo.Types doesn't know, or nil for nothing in production. data.yields maps a YieldTypes
--- name to its amount, and a missing yield is 0. hashes maps each production type to its hash.
+-- name to its amount, and a missing yield is 0. data.growth has foodSurplus, which is 0 when missing,
+-- and turnsUntilGrowth and turnsUntilStarvation, which are -1 when missing, as in the game. hashes
+-- maps each production type to its hash.
 local function City(data, hashes)
 	local production = data.production
 	local hash = production and (production.hash or hashes[production.type]) or 0
+	local growth = data.growth or {}
 
 	return {
+		GetGrowth = function()
+			return {
+				GetFoodSurplus = function()
+					return growth.foodSurplus or 0
+				end,
+				GetTurnsUntilGrowth = function()
+					return growth.turnsUntilGrowth or -1
+				end,
+				GetTurnsUntilStarvation = function()
+					return growth.turnsUntilStarvation or -1
+				end,
+			}
+		end,
 		GetBuildQueue = function()
 			return {
 				GetCurrentProductionTypeHash = function()

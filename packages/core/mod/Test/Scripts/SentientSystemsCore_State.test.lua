@@ -4,6 +4,9 @@ local Game = require("Game")
 -- The yields JSON for a city with every yield at 0.
 local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\"production\":0,\"science\":0}"
 
+-- The growth JSON for a city that neither grows nor starves.
+local NO_GROWTH = "\"growth\":{\"foodSurplus\":0},"
+
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
 -- Returns an environment with the state script loaded into a fake game built from world.
@@ -39,8 +42,8 @@ describe("SentientSystems_GetState", function()
 		})
 
 		assert.equal(
-			"{\"cities\":[{\"id\":65536,\"name\":\"Rome\",\"population\":3,\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
-				.. "{\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}]}",
+			"{\"cities\":[{" .. NO_GROWTH .. "\"id\":65536,\"name\":\"Rome\",\"population\":3,\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
+				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}]}",
 			env.SentientSystems_GetState(0)
 		)
 	end)
@@ -50,7 +53,7 @@ describe("SentientSystems_GetState", function()
 			players = { [0] = { cities = { ROME } }, [1] = { cities = { { id = 65537, name = "Uruk", x = 10, y = 10, population = 5 } } } },
 		})
 
-		assert.equal("{\"cities\":[{\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}]}", env.SentientSystems_GetState(1))
+		assert.equal("{\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}]}", env.SentientSystems_GetState(1))
 	end)
 
 	it("gives an empty list for a player with no cities", function()
@@ -92,6 +95,18 @@ describe("SentientSystems_GetState", function()
 
 		assert.truthy(env.SentientSystems_GetState(0):find(
 			"\"yields\":{\"culture\":3.8,\"faith\":0,\"food\":9,\"gold\":-2.6,\"production\":6,\"science\":3.5}", 1, true))
+	end)
+
+	it("adds the food surplus and the turns until the city grows", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = 3.25, turnsUntilGrowth = 2 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":3.2,\"turnsUntilGrowth\":2}", 1, true))
+	end)
+
+	it("adds the turns until a starving city loses a citizen", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = -2, turnsUntilStarvation = 4 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":-2,\"turnsUntilLoss\":4}", 1, true))
 	end)
 
 	it("raises an error for an ID with no player", function()
