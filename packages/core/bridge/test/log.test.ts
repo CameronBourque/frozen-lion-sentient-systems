@@ -1,6 +1,9 @@
 // Tests for log.ts.
 
-import { afterEach, describe, expect, test, vi } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
 import { formatConsole, Logger, type LogLevel, makeRecord, writesLevel } from "../src/log.js";
 
 afterEach(() => {
@@ -117,5 +120,119 @@ describe("Logger", () => {
 		logger.info("connected", "connected");
 
 		expect(print.log).not.toHaveBeenCalled();
+	});
+});
+
+describe("Logger files", () => {
+	let folder: string;
+	let logger: Logger;
+	let warned: MockInstance<typeof console.warn>;
+
+	beforeEach(() => {
+		folder = fs.mkdtempSync(path.join(os.tmpdir(), "sentient-systems-"));
+		logger = new Logger("debug");
+		vi.spyOn(console, "log").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		warned = vi.spyOn(console, "warn").mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		logger.closeFile();
+		fs.rmSync(folder, { recursive: true, force: true });
+	});
+
+	// The records in a log file, one for each line.
+	function records(file: string): unknown[] {
+		return fs.readFileSync(file, "utf8").split("\n").filter((line) => line !== "").map((line): unknown => JSON.parse(line));
+	}
+
+	test("writes each record as one JSON line", () => {
+		const file = path.join(folder, "game.log");
+
+		vi.useFakeTimers({ now: new Date(Date.UTC(2026, 9, 23, 23, 19, 11)) });
+		logger.openFile(file);
+		logger.info("turn", "Player 0's turn started", { playerId: 0 });
+		logger.warn("bad_line", "bad");
+
+		expect(records(file)).toEqual([
+			{ time: "2026-10-23T23:19:11.000Z", level: "info", event: "turn", msg: "Player 0's turn started", playerId: 0 },
+			{ time: "2026-10-23T23:19:11.000Z", level: "warn", event: "bad_line", msg: "bad" },
+		]);
+	});
+
+	test("writes only the records the level writes to the console", () => {
+		const file = path.join(folder, "game.log");
+
+		logger.level = "warn";
+		logger.openFile(file);
+		logger.info("connected", "connected");
+		logger.error("core_error", "boom");
+
+		expect(records(file)).toMatchObject([{ level: "error" }]);
+	});
+
+	test("makes the file's folder", () => {
+		const file = path.join(folder, "logs", "game.log");
+
+		logger.openFile(file);
+		logger.info("connected", "connected");
+
+		expect(records(file)).toHaveLength(1);
+	});
+
+	test("adds to a file that exists", () => {
+		const file = path.join(folder, "game.log");
+
+		fs.writeFileSync(file, "{\"msg\":\"before\"}\n");
+		logger.openFile(file);
+		logger.info("connected", "connected");
+
+		expect(records(file)).toMatchObject([{ msg: "before" }, { msg: "connected" }]);
+	});
+
+	test("writes to the new file after a second openFile", () => {
+		const first = path.join(folder, "first.log");
+		const second = path.join(folder, "second.log");
+
+		logger.openFile(first);
+		logger.info("connected", "one");
+		logger.openFile(second);
+		logger.info("connected", "two");
+
+		expect(records(first)).toMatchObject([{ msg: "one" }]);
+		expect(records(second)).toMatchObject([{ msg: "two" }]);
+	});
+
+	test("warns and keeps logging to the console when the file can't be opened", () => {
+		// A file in place of the log file's folder, so making the folder fails.
+		const file = path.join(folder, "logs", "game.log");
+
+		fs.writeFileSync(path.join(folder, "logs"), "");
+		logger.openFile(file);
+		logger.info("connected", "connected");
+
+		expect(warned).toHaveBeenCalledOnce();
+		expect(String(warned.mock.calls[0][0])).toContain(`warning: Can't write the log file ${file}, so the bridge logs to the console only: `);
+		expect(console.log).toHaveBeenCalledWith(expect.stringMatching(/ {2}connected$/));
+	});
+
+	test("warns once and stops writing the file when a write fails", () => {
+		const file = path.join(folder, "game.log");
+
+		logger.openFile(file);
+		vi.spyOn(fs, "writeSync").mockImplementationOnce(() => {
+			throw new Error("disk full");
+		});
+		logger.info("connected", "one");
+		logger.info("connected", "two");
+
+		expect(warned).toHaveBeenCalledOnce();
+		expect(String(warned.mock.calls[0][0])).toMatch(/: disk full$/);
+		expect(fs.readFileSync(file, "utf8")).toBe("");
+		expect(console.log).toHaveBeenCalledTimes(2);
+	});
+
+	test("closes with no file open", () => {
+		expect(() => logger.closeFile()).not.toThrow();
 	});
 });

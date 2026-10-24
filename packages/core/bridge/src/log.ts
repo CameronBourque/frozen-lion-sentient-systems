@@ -1,7 +1,11 @@
 // The bridge's structured log. Each call builds a record with the time, the level, a fixed event
 // name, a message, and any fields, such as { event: "turn", msg: "Player 0's turn started",
 // playerId: 0 }. The console prints the local time and the message, such as "2:05:09 PM  Player
-// 0's turn started". docs/design/core/bridge.md has the design.
+// 0's turn started". A log file gets each record as one JSON line. docs/design/core/bridge.md has
+// the design.
+
+import fs from "node:fs";
+import path from "node:path";
 
 // From quietest to noisiest. A logger writes the records at its level and every quieter level.
 export const LOG_LEVELS = ["error", "warn", "info", "decisions", "debug"] as const;
@@ -51,6 +55,8 @@ export function formatConsole(record: LogRecord): string {
 export class Logger {
 	// Set it again once the config file loads.
 	level: LogLevel;
+	// The open log file. Undefined before openFile, and after a file can't be written.
+	private file?: { path: string; fd: number };
 
 	constructor(level: LogLevel = DEFAULT_LOG_LEVEL) {
 		this.level = level;
@@ -78,12 +84,56 @@ export class Logger {
 		this.write("debug", event, msg, fields);
 	}
 
+	// Closes the open log file, if any, and writes the next records to this one, in a new folder if
+	// needed. Appends to a file that exists. If the file can't be opened, warns and logs to the
+	// console only.
+	openFile(file: string): void {
+		this.closeFile();
+
+		try {
+			fs.mkdirSync(path.dirname(file), { recursive: true });
+			this.file = { path: file, fd: fs.openSync(file, "a") };
+		} catch (error) {
+			this.fileFailed(file, error);
+		}
+	}
+
+	closeFile(): void {
+		if (this.file) {
+			fs.closeSync(this.file.fd);
+			this.file = undefined;
+		}
+	}
+
+	// Drops the file before it warns, so the warning goes to the console only.
+	private fileFailed(file: string, error: unknown): void {
+		// fs only throws Errors.
+		const reason = (error as Error).message;
+
+		this.file = undefined;
+		this.warn("log_file_failed", `Can't write the log file ${file}, so the bridge logs to the console only: ${reason}`, { path: file, reason });
+	}
+
 	private write(level: LogLevel, event: string, msg: string, fields?: LogFields): void {
 		if (!writesLevel(this.level, level)) {
 			return;
 		}
 
-		const line = formatConsole(makeRecord(new Date(), level, event, msg, fields));
+		const record = makeRecord(new Date(), level, event, msg, fields);
+
+		// A synchronous write, so the lines stay in order and none is lost when the bridge exits.
+		if (this.file) {
+			try {
+				fs.writeSync(this.file.fd, `${JSON.stringify(record)}\n`);
+			} catch (error) {
+				const { path: file, fd } = this.file;
+
+				fs.closeSync(fd);
+				this.fileFailed(file, error);
+			}
+		}
+
+		const line = formatConsole(record);
 
 		// stderr for errors and warnings, so they show even when stdout goes elsewhere.
 		if (level === "error") {
