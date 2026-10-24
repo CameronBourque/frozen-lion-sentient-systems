@@ -43,13 +43,16 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- name to its amount, and a missing yield is 0. data.growth has foodSurplus, housing, amenities,
 -- and amenitiesNeeded, each 0 when missing, happiness, an index in GameInfo.Happinesses that is 4,
 -- content, when missing, and turnsUntilGrowth and turnsUntilStarvation, which are -1 when missing,
--- as in the game. hashes maps each production type to its hash.
+-- as in the game. data.loyalty has value, max, and perTurn. Without it, the city has no
+-- GetCulturalIdentity, as in a game without the Rise and Fall expansion. hashes maps each production
+-- type to its hash.
 local function City(data, hashes)
 	local production = data.production
 	local hash = production and (production.hash or hashes[production.type]) or 0
 	local growth = data.growth or {}
+	local loyalty = data.loyalty
 
-	return {
+	local city = {
 		GetGrowth = function()
 			return {
 				GetFoodSurplus = function()
@@ -113,6 +116,24 @@ local function City(data, hashes)
 			return data.population
 		end,
 	}
+
+	if loyalty ~= nil then
+		function city.GetCulturalIdentity()
+			return {
+				GetLoyalty = function()
+					return loyalty.value
+				end,
+				GetMaxLoyalty = function()
+					return loyalty.max
+				end,
+				GetLoyaltyPerTurn = function()
+					return loyalty.perTurn
+				end,
+			}
+		end
+	end
+
+	return city
 end
 
 local function Player(id, data, hashes)

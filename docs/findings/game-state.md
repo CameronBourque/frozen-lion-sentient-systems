@@ -18,6 +18,7 @@ The calls the state serializer uses to build one player's view of the game, with
 - **A hash of 0 isn't a production.** `GameInfo` tables read a number as a row index, so with a hash of 0, `GameInfo.Buildings[0]` returned `BUILDING_MONUMENT` and `GameInfo.Types[0]` returned `TRAIT_AGENDA_ALLY_OF_ENKIDU`, the first row of each. `GetTurnsLeft(0)` returned 4. Check for 0 before any lookup. Confirmed on Windows on 2026-10-24.
 - **Growth.** `city:GetGrowth()` has `GetTurnsUntilGrowth()`, `GetTurnsUntilStarvation()`, and `GetFoodSurplus()`. Each count is -1 when it doesn't apply. `GetCityData` in `Base/Assets/UI/CitySupport.lua`, lines 474 to 486, shows the turns until growth when that count isn't -1, the turns until starvation as a loss otherwise, and 0 when both are -1. Confirmed in files and on Windows on 2026-10-24.
 - **Amenities and housing.** `city:GetGrowth()` also has `GetAmenities()`, `GetAmenitiesNeeded()`, `GetHappiness()`, and `GetHousing()`. The city panel shows amenities as have minus need, in `GetCityData` in `CitySupport.lua`, line 526, and housing from line 562. `GetHappiness()` returns an index in `GameInfo.Happinesses`, from 0, `HAPPINESS_REVOLT`, to 6, `HAPPINESS_ECSTATIC`, with 4 for `HAPPINESS_CONTENT`. Confirmed in files and on Windows on 2026-10-24.
+- **Loyalty.** With the Rise and Fall expansion or Gathering Storm, `city:GetCulturalIdentity()` has `GetLoyalty()`, `GetMaxLoyalty()`, and `GetLoyaltyPerTurn()`. The city panel rounds loyalty to the nearest tenth with `Round(currentLoyalty, 1)`, in `DLC/Expansion1/UI/Additions/CityPanelCulture.lua`, lines 86 to 98. The base game has no `GetCulturalIdentity`. Confirmed in files, and the calls on Windows on 2026-10-24.
 - **Yields.** `city:GetYield(YieldTypes.FOOD)` and the same for `PRODUCTION`, `GOLD`, `SCIENCE`, `CULTURE`, and `FAITH` return each yield per turn, with all its decimals, such as 3.8984375 for culture. The city panel rounds each one down to one decimal place with `math.floor(x * 10) / 10`, in `CitySupport.lua`, lines 316 to 332, so it shows 3.8. Confirmed in files and on Windows on 2026-10-24.
 
 ### Tile visibility
@@ -114,6 +115,7 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `GetGrowth():GetTurnsUntilGrowth()` and `GetFoodSurplus()` | 2 and 3. The panel showed 2 turns until growth |
 | `GetAmenities()`, `GetAmenitiesNeeded()`, and `GetHappiness()` | 2, 2, and 4, `HAPPINESS_CONTENT`. The panel showed 0 amenities |
 | `GetHousing()` with population 3 | 6. The panel showed housing 3/6 |
+| `GetCulturalIdentity()`: `GetLoyalty()`, `GetMaxLoyalty()`, and `GetLoyaltyPerTurn()` | 100, 100, and 21. The panel showed 100 loyalty |
 
 The map reveal, on turn 14 of the same game:
 

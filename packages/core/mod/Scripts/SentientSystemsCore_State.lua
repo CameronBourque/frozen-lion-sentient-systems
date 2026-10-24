@@ -2,7 +2,8 @@
 -- visibility, never from the screen. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetState(0) returns
 -- '{"cities":[{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2},
--- "growth":{"foodSurplus":3,"housing":6,"turnsUntilGrowth":2},"id":65536,"name":"Rome","population":3,
+-- "growth":{"foodSurplus":3,"housing":6,"turnsUntilGrowth":2},"id":65536,
+-- "loyalty":{"max":100,"perTurn":21,"value":100},"name":"Rome","population":3,
 -- "production":{"turnsLeft":2,"type":"UNIT_SLINGER"},"x":17,"y":14,
 -- "yields":{"culture":3.8,"faith":0,"food":9,"gold":8,"production":6,"science":3.5}}]}', on one line.
 
@@ -38,6 +39,11 @@ end
 -- Rounds a number down to one decimal place, as the city panel does.
 local function RoundDown(number)
 	return math.floor(number * 10) / 10
+end
+
+-- Rounds a number to the nearest tenth, as the city panel does for loyalty.
+local function RoundNearest(number)
+	return math.floor(number * 10 + 0.5) / 10
 end
 
 -- Returns each yield per turn, rounded down as the city panel shows it.
@@ -85,6 +91,23 @@ local function GetAmenities(city)
 	}
 end
 
+-- Returns the city's loyalty, its most, and its change per turn, rounded as the city panel shows
+-- them, or nil in a game without loyalty. Loyalty comes with the Rise and Fall expansion, which adds
+-- GetCulturalIdentity. See CityPanelCulture.lua in DLC/Expansion1.
+local function GetLoyalty(city)
+	if city.GetCulturalIdentity == nil then
+		return nil
+	end
+
+	local identity = city:GetCulturalIdentity()
+
+	return {
+		value = RoundNearest(identity:GetLoyalty()),
+		max = identity:GetMaxLoyalty(),
+		perTurn = RoundNearest(identity:GetLoyaltyPerTurn()),
+	}
+end
+
 -- Returns the player's cities, with each city's name in the game's language.
 local function GetCities(player)
 	local cities = {}
@@ -98,6 +121,7 @@ local function GetCities(player)
 			population = city:GetPopulation(),
 			amenities = GetAmenities(city),
 			growth = GetGrowth(city),
+			loyalty = GetLoyalty(city),
 			production = GetProduction(city),
 			yields = GetYields(city),
 		}

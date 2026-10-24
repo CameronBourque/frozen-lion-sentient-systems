@@ -128,6 +128,18 @@ describe("SentientSystems_GetState", function()
 		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":0,\"need\":0}", 1, true))
 	end)
 
+	it("adds loyalty, its most, and its change per turn, rounded to the nearest tenth", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { loyalty = { value = 87.46, max = 100, perTurn = -2.35 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"loyalty\":{\"max\":100,\"perTurn\":-2.3,\"value\":87.5}", 1, true))
+	end)
+
+	it("leaves out loyalty in a game without it", function()
+		local env = Load({ players = { [0] = { cities = { ROME } } } })
+
+		assert.is_nil(env.SentientSystems_GetState(0):find("loyalty", 1, true))
+	end)
+
 	it("raises an error for an ID with no player", function()
 		local env = Load({ players = { [0] = {} } })
 
