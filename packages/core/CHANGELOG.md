@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.2.0...core-v0.3.0) (2026-10-24)
+
+
+### Features
+
+* **core:** add the config file and structured logs ([#27](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/27)) ([6f5024b](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/6f5024b4da03689bc2f3f00e89ed8a6d31a67d5d))
+
 ## [0.2.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.1.0...core-v0.2.0) (2026-10-22)
 
 
