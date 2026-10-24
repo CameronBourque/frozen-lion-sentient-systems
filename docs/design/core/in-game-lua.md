@@ -20,7 +20,9 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 
   | Key | Holds |
   | --- | --- |
-  | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, and `population` |
+  | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, `population`, `production`, and `yields` |
+| `cities[].production` | What the city is producing: `type`, such as `UNIT_SLINGER`, and `turnsLeft`. It's left out when the city produces nothing |
+| `cities[].yields` | `food`, `production`, `gold`, `science`, `culture`, and `faith` per turn, each rounded down to one decimal place, as the city panel shows them |
 
 - **Action API.** Each action wraps the request function the game's own UI calls, and the game checks legality. A failed action returns its reason. The reason comes from the game's check where it gives one, and from the API's own messages for common cases. The game's UI Lua files ship as plain text and show which call each screen makes. See [findings/game-api.md](../../findings/game-api.md).
 - **Checkpoint ID.** A gameplay script writes the checkpoint ID described in [memory.md](../memory.md#checkpoint-ids).

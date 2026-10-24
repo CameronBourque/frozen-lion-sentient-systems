@@ -21,6 +21,6 @@ The script finds your Documents folder from the registry value `HKCU\Software\Mi
 
 Running it again is safe. If the link already points at this checkout, it says so and exits 0. If the link points at another folder, or a real folder is in its place, it prints the path, exits 1, and changes nothing.
 
-After a change, load the game again. You don't need to restart the game or turn the mod on again. This held for changes to the Lua files and to the `.modinfo` on 2026-10-22. After you add a file to the `.modinfo`, restart the game instead, because the game reads each mod's file list only when it starts. See [lua-contexts.md](../../../docs/findings/lua-contexts.md#the-core-mods-states).
+After a change, load the game again. You don't need to restart the game or turn the mod on again. This held for changes to the Lua files and to the `.modinfo` on 2026-10-22. After you add a file to the `.modinfo`, restart the game instead, because the game reads each mod's file list only when it starts. To try a change to a file in `Scripts/` without a load, send `SentientSystems_Include("<file name>")` to `SentientSystemsCore_UI` from the tuner, which reads the file from disk again. See [lua-contexts.md](../../../docs/findings/lua-contexts.md#the-core-mods-states).
 
 To remove the link, run `npm run link-mod -- --remove`. In PowerShell, write the `--` as `'--'`. It removes only a link, never a real folder. To remove it by hand, run `rmdir` on the junction in the `Mods` folder. `rmdir` without `/S` removes only the link and leaves this folder alone.

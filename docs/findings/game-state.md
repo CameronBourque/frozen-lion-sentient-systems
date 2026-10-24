@@ -14,6 +14,10 @@ The calls the state serializer uses to build one player's view of the game, with
 
 `SentientSystems_GetState(playerID)` in `SentientSystemsCore_UI` lists the player's cities from `Players[playerID]:GetCities():Members()`. Each city has `GetID()`, `GetName()`, `GetX()`, `GetY()`, and `GetPopulation()`. `GetName()` returns a text key, such as `LOC_CITY_NAME_ROME`, and `Locale.Lookup` gives the name in the game's language, such as `Rome`. Confirmed on Windows on 2026-10-24.
 
+- **Production.** `city:GetBuildQueue():GetCurrentProductionTypeHash()` returns the hash of what the city is producing, or 0 when it produces nothing. `GameInfo.Types[hash]` gives the row, with `Type`, such as `UNIT_SLINGER`, and `Kind`, such as `KIND_UNIT`. `GetTurnsLeft` takes the hash or the type name, and both return the same turns. `GetCurrentProductionInfoOfCity` in `Base/Assets/UI/CitySupport.lua`, lines 40 to 49, reads the same hash, and `GetProductionInfoOfCity` treats 0 as nothing, at lines 186 to 200. Confirmed in files and on Windows on 2026-10-24.
+- **A hash of 0 isn't a production.** `GameInfo` tables read a number as a row index, so with a hash of 0, `GameInfo.Buildings[0]` returned `BUILDING_MONUMENT` and `GameInfo.Types[0]` returned `TRAIT_AGENDA_ALLY_OF_ENKIDU`, the first row of each. `GetTurnsLeft(0)` returned 4. Check for 0 before any lookup. Confirmed on Windows on 2026-10-24.
+- **Yields.** `city:GetYield(YieldTypes.FOOD)` and the same for `PRODUCTION`, `GOLD`, `SCIENCE`, `CULTURE`, and `FAITH` return each yield per turn, with all its decimals, such as 3.8984375 for culture. The city panel rounds each one down to one decimal place with `math.floor(x * 10) / 10`, in `CitySupport.lua`, lines 316 to 332, so it shows 3.8. Confirmed in files and on Windows on 2026-10-24.
+
 ### Tile visibility
 
 `PlayersVisibility[playerID]` has five methods. Confirmed in `SentientSystemsCore_UI` on Windows on 2026-10-24.
@@ -95,6 +99,16 @@ Turn 14 details:
 | Time for the stash and the piece | 66 ms |
 | The same city from the city calls | ID 65536, `LOC_CITY_NAME_ROME`, `Rome`, at (17,14), population 3 |
 | `SentientSystems_GetState(99)` | Raised `no player 99` |
+
+Rome's production and yields on turn 14, from the calls, matched the city panel. The panel showed **Slinger** with 2 turns until completed, and +9 food, +6 production, +8 gold, +3.5 science, +3.8 culture, and 0 faith:
+
+| Call | Result |
+| --- | --- |
+| `GetCurrentProductionTypeHash()` with nothing in production | 0 |
+| `GetCurrentProductionTypeHash()` with a slinger in production | 1558890441 |
+| `GameInfo.Types[1558890441]` | `UNIT_SLINGER`, `KIND_UNIT` |
+| `GetTurnsLeft("UNIT_SLINGER")` and `GetTurnsLeft(1558890441)` | 2 and 2 |
+| `GetYield` for food, production, gold, science, culture, and faith | 9, 6, 8, 3.5, 3.8984375, and 0 |
 
 The map reveal, on turn 14 of the same game:
 
