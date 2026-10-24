@@ -4,9 +4,9 @@ local Game = require("Game")
 -- The yields JSON for a city with every yield at 0.
 local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\"production\":0,\"science\":0}"
 
--- The amenities and growth JSON for a content city with no amenities or housing, that neither
--- grows nor starves.
-local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0},\"growth\":{\"foodSurplus\":0,\"housing\":0},"
+-- The amenities, districts, and growth JSON for a content city with no amenities, districts, or
+-- housing, that neither grows nor starves.
+local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0},"
 
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
@@ -138,6 +138,41 @@ describe("SentientSystems_GetState", function()
 		local env = Load({ players = { [0] = { cities = { ROME } } } })
 
 		assert.is_nil(env.SentientSystems_GetState(0):find("loyalty", 1, true))
+	end)
+
+	it("adds each district with its position and its built buildings", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { districts = {
+			{ type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" }, { type = "BUILDING_PALACE" } } },
+			{ type = "DISTRICT_CAMPUS", x = 18, y = 14, buildings = { { type = "BUILDING_LIBRARY", pillaged = true } } },
+		} }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find(
+			"\"districts\":[{\"buildings\":[{\"pillaged\":false,\"type\":\"BUILDING_MONUMENT\"},{\"pillaged\":false,\"type\":\"BUILDING_PALACE\"}],"
+				.. "\"complete\":true,\"pillaged\":false,\"type\":\"DISTRICT_CITY_CENTER\",\"x\":17,\"y\":14},"
+				.. "{\"buildings\":[{\"pillaged\":true,\"type\":\"BUILDING_LIBRARY\"}],"
+				.. "\"complete\":true,\"pillaged\":false,\"type\":\"DISTRICT_CAMPUS\",\"x\":18,\"y\":14}]",
+			1, true))
+	end)
+
+	it("marks a district that isn't built yet, and a pillaged district", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { districts = {
+			{ type = "DISTRICT_CAMPUS", x = 18, y = 14, complete = false },
+			{ type = "DISTRICT_HOLY_SITE", x = 16, y = 14, pillaged = true },
+		} }) } } } })
+		local state = env.SentientSystems_GetState(0)
+
+		assert.truthy(state:find("\"complete\":false,\"pillaged\":false,\"type\":\"DISTRICT_CAMPUS\"", 1, true))
+		assert.truthy(state:find("\"complete\":true,\"pillaged\":true,\"type\":\"DISTRICT_HOLY_SITE\"", 1, true))
+	end)
+
+	it("leaves out a building that isn't built yet", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { districts = {
+			{ type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" }, { type = "BUILDING_GRANARY", built = false } } },
+		} }) } } } })
+		local state = env.SentientSystems_GetState(0)
+
+		assert.truthy(state:find("BUILDING_MONUMENT", 1, true))
+		assert.is_nil(state:find("BUILDING_GRANARY", 1, true))
 	end)
 
 	it("raises an error for an ID with no player", function()

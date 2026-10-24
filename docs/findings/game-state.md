@@ -19,6 +19,7 @@ The calls the state serializer uses to build one player's view of the game, with
 - **Growth.** `city:GetGrowth()` has `GetTurnsUntilGrowth()`, `GetTurnsUntilStarvation()`, and `GetFoodSurplus()`. Each count is -1 when it doesn't apply. `GetCityData` in `Base/Assets/UI/CitySupport.lua`, lines 474 to 486, shows the turns until growth when that count isn't -1, the turns until starvation as a loss otherwise, and 0 when both are -1. Confirmed in files and on Windows on 2026-10-24.
 - **Amenities and housing.** `city:GetGrowth()` also has `GetAmenities()`, `GetAmenitiesNeeded()`, `GetHappiness()`, and `GetHousing()`. The city panel shows amenities as have minus need, in `GetCityData` in `CitySupport.lua`, line 526, and housing from line 562. `GetHappiness()` returns an index in `GameInfo.Happinesses`, from 0, `HAPPINESS_REVOLT`, to 6, `HAPPINESS_ECSTATIC`, with 4 for `HAPPINESS_CONTENT`. Confirmed in files and on Windows on 2026-10-24.
 - **Loyalty.** With the Rise and Fall expansion or Gathering Storm, `city:GetCulturalIdentity()` has `GetLoyalty()`, `GetMaxLoyalty()`, and `GetLoyaltyPerTurn()`. The city panel rounds loyalty to the nearest tenth with `Round(currentLoyalty, 1)`, in `DLC/Expansion1/UI/Additions/CityPanelCulture.lua`, lines 86 to 98. The base game has no `GetCulturalIdentity`. Confirmed in files, and the calls on Windows on 2026-10-24.
+- **Districts and buildings.** `city:GetDistricts():Members()` lists the city's districts. Each has `GetType()`, an index in `GameInfo.Districts`, `GetX()`, `GetY()`, `IsComplete()`, and `IsPillaged()`. `city:GetBuildings():GetBuildingsAtLocation(plotIndex)` lists the building indexes on a district's tile, and `HasBuilding(index)` and `IsPillaged(index)` tell whether each is built and pillaged. `GetCityData` in `CitySupport.lua`, lines 600 to 760, reads the same calls, and puts wonders in `DISTRICT_WONDER`. Confirmed in files and on Windows on 2026-10-24.
 - **Yields.** `city:GetYield(YieldTypes.FOOD)` and the same for `PRODUCTION`, `GOLD`, `SCIENCE`, `CULTURE`, and `FAITH` return each yield per turn, with all its decimals, such as 3.8984375 for culture. The city panel rounds each one down to one decimal place with `math.floor(x * 10) / 10`, in `CitySupport.lua`, lines 316 to 332, so it shows 3.8. Confirmed in files and on Windows on 2026-10-24.
 
 ### Tile visibility
@@ -116,6 +117,8 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `GetAmenities()`, `GetAmenitiesNeeded()`, and `GetHappiness()` | 2, 2, and 4, `HAPPINESS_CONTENT`. The panel showed 0 amenities |
 | `GetHousing()` with population 3 | 6. The panel showed housing 3/6 |
 | `GetCulturalIdentity()`: `GetLoyalty()`, `GetMaxLoyalty()`, and `GetLoyaltyPerTurn()` | 100, 100, and 21. The panel showed 100 loyalty |
+| `GetDistricts():Members()` | One district, ID 65536, `DISTRICT_CITY_CENTER` at (17,14), complete and not pillaged |
+| `GetBuildingsAtLocation` on the city center | Indexes 0, `BUILDING_MONUMENT`, and 1, `BUILDING_PALACE`, both built and not pillaged |
 
 The map reveal, on turn 14 of the same game:
 

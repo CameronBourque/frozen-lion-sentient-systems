@@ -2,6 +2,8 @@
 -- visibility, never from the screen. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetState(0) returns
 -- '{"cities":[{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2},
+-- "districts":[{"buildings":[{"pillaged":false,"type":"BUILDING_MONUMENT"},{"pillaged":false,"type":"BUILDING_PALACE"}],
+-- "complete":true,"pillaged":false,"type":"DISTRICT_CITY_CENTER","x":17,"y":14}],
 -- "growth":{"foodSurplus":3,"housing":6,"turnsUntilGrowth":2},"id":65536,
 -- "loyalty":{"max":100,"perTurn":21,"value":100},"name":"Rome","population":3,
 -- "production":{"turnsLeft":2,"type":"UNIT_SLINGER"},"x":17,"y":14,
@@ -108,6 +110,36 @@ local function GetLoyalty(city)
 	}
 end
 
+-- Returns the city's districts, each with its built buildings. A district that is placed but not
+-- built yet has complete set to false. Wonders sit in their own DISTRICT_WONDER. GetCityData in
+-- CitySupport.lua reads the same calls.
+local function GetDistricts(city)
+	local buildings = city:GetBuildings()
+	local districts = {}
+
+	for _, district in city:GetDistricts():Members() do
+		local plotIndex = Map.GetPlot(district:GetX(), district:GetY()):GetIndex()
+		local built = {}
+
+		for _, index in ipairs(buildings:GetBuildingsAtLocation(plotIndex)) do
+			if buildings:HasBuilding(index) then
+				built[#built + 1] = { type = GameInfo.Buildings[index].BuildingType, pillaged = buildings:IsPillaged(index) }
+			end
+		end
+
+		districts[#districts + 1] = {
+			type = GameInfo.Districts[district:GetType()].DistrictType,
+			x = district:GetX(),
+			y = district:GetY(),
+			complete = district:IsComplete(),
+			pillaged = district:IsPillaged(),
+			buildings = built,
+		}
+	end
+
+	return districts
+end
+
 -- Returns the player's cities, with each city's name in the game's language.
 local function GetCities(player)
 	local cities = {}
@@ -120,6 +152,7 @@ local function GetCities(player)
 			y = city:GetY(),
 			population = city:GetPopulation(),
 			amenities = GetAmenities(city),
+			districts = GetDistricts(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
 			production = GetProduction(city),

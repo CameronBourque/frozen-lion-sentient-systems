@@ -20,8 +20,9 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 
   | Key | Holds |
   | --- | --- |
-  | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, `population`, `amenities`, `growth`, `loyalty`, `production`, and `yields` |
+  | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, `population`, `amenities`, `districts`, `growth`, `loyalty`, `production`, and `yields` |
 | `cities[].amenities` | `have` and `need`, whose difference the city panel shows, and `mood`, such as `HAPPINESS_CONTENT` |
+| `cities[].districts` | A list of the city's districts, each with `type`, `x`, `y`, `complete`, `pillaged`, and `buildings`. `complete` is `false` for a district that is placed but not built yet. `buildings` lists the built buildings, each with `type` and `pillaged`. Wonders sit in `DISTRICT_WONDER` |
 | `cities[].growth` | `foodSurplus` per turn and `housing`, each rounded down to one decimal place, and `turnsUntilGrowth` while the city grows or `turnsUntilLoss` while it starves. A city that neither grows nor starves has neither count |
 | `cities[].loyalty` | `value`, `max`, and `perTurn`, with `value` and `perTurn` rounded to the nearest tenth, as the city panel shows them. It's left out in a game without the Rise and Fall expansion |
 | `cities[].production` | What the city is producing: `type`, such as `UNIT_SLINGER`, and `turnsLeft`. It's left out when the city produces nothing |
