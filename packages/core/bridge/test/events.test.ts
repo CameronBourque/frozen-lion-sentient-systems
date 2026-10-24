@@ -34,6 +34,22 @@ describe("describeEvent", () => {
 	test("names the state the core mod loaded in", () => {
 		expect(describeEvent({ type: "loaded", context: "SentientSystemsCore_UI" })).toEqual({ event: "core_loaded", msg: "Core mod loaded in the SentientSystemsCore_UI state", fields: { state: "SentientSystemsCore_UI" } });
 	});
+
+	test("names the handler and the message of an error", () => {
+		expect(describeEvent({ type: "error", handler: "OnPlayerTurnActivated", message: "boom" })).toEqual({
+			event: "core_error",
+			msg: "Lua error in OnPlayerTurnActivated: boom",
+			fields: { handler: "OnPlayerTurnActivated", message: "boom" },
+		});
+	});
+
+	test("puts an error's traceback in the fields, not the message", () => {
+		expect(describeEvent({ type: "error", handler: "OnPlayerTurnActivated", message: "boom", traceback: "\t[C]: in function 'error'" })).toEqual({
+			event: "core_error",
+			msg: "Lua error in OnPlayerTurnActivated: boom",
+			fields: { handler: "OnPlayerTurnActivated", message: "boom", traceback: "\t[C]: in function 'error'" },
+		});
+	});
 });
 
 describe("parseLine", () => {
@@ -51,6 +67,42 @@ describe("parseLine", () => {
 
 	test("reads the state name of a load line", () => {
 		expect(parseLine("[SENTIENTSYSTEMS] CORE_LOADED SentientSystemsCore_UI")).toEqual({ result: "event", event: { type: "loaded", context: "SentientSystemsCore_UI" } });
+	});
+
+	test("reads an error's message with its spaces", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated attempt to index a nil value")).toEqual({
+			result: "event",
+			event: { type: "error", handler: "OnPlayerTurnActivated", message: "attempt to index a nil value" },
+		});
+	});
+
+	test("keeps double spaces and tabs in an error's message", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated a  b\tc")).toMatchObject({ event: { message: "a  b\tc" } });
+	});
+
+	test("turns the escapes in an error back into a newline and a backslash", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated line one\\nline two with a \\\\ backslash")).toMatchObject({
+			event: { message: "line one\nline two with a \\ backslash" },
+		});
+	});
+
+	test("leaves an unknown escape as it is", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated C:\\temp")).toMatchObject({ event: { message: "C:\\temp" } });
+	});
+
+	// A line that the core mod printed in a running game on 2026-10-23, with its trace cut short.
+	test("splits the traceback off an error from the game", () => {
+		const line = "SentientSystemsCore_UI: [SENTIENTSYSTEMS] ERROR ProbeNil [string \"(function()...\"]:5: attempt to index a nil value\\nstack traceback:\\n\t[string \"(function()...\"]:5: in function '(anonymous)'\\n\t[C]: in function 'pcall'";
+
+		expect(parseLine(stripState(line))).toEqual({
+			result: "event",
+			event: {
+				type: "error",
+				handler: "ProbeNil",
+				message: "[string \"(function()...\"]:5: attempt to index a nil value",
+				traceback: "\t[string \"(function()...\"]:5: in function '(anonymous)'\n\t[C]: in function 'pcall'",
+			},
+		});
 	});
 
 	test.each([
@@ -77,6 +129,9 @@ describe("parseLine", () => {
 		{ name: "a load line with no state name", line: "[SENTIENTSYSTEMS] CORE_LOADED", reason: "CORE_LOADED needs one state name, and got \"\"" },
 		{ name: "a state name with a colon", line: "[SENTIENTSYSTEMS] CORE_LOADED InGame:", reason: "CORE_LOADED needs one state name, and got \"InGame:\"" },
 		{ name: "two state names", line: "[SENTIENTSYSTEMS] CORE_LOADED InGame PlotInfo", reason: "CORE_LOADED needs one state name, and got \"InGame PlotInfo\"" },
+		{ name: "an error with no handler", line: "[SENTIENTSYSTEMS] ERROR", reason: "ERROR needs a handler name and a message, and got \"\"" },
+		{ name: "an error with no message", line: "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated", reason: "ERROR needs a handler name and a message, and got \"OnPlayerTurnActivated\"" },
+		{ name: "an error with a bad handler name", line: "[SENTIENTSYSTEMS] ERROR On.Turn boom", reason: "ERROR needs a handler name and a message, and got \"On.Turn boom\"" },
 	])("reports $name as invalid", ({ line, reason }) => {
 		expect(parseLine(line)).toEqual({ result: "invalid", reason });
 	});

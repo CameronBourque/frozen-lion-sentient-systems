@@ -9,7 +9,9 @@ export const TAG = "[SENTIENTSYSTEMS]";
 export type CoreEvent =
 	| { type: "turn"; playerId: number }
 	| { type: "version"; version: string }
-	| { type: "loaded"; context: string };
+	| { type: "loaded"; context: string }
+	// A Lua error that SentientSystems_CatchErrors caught in a core mod event handler.
+	| { type: "error"; handler: string; message: string; traceback?: string };
 
 // "untagged" is a line from the game or another mod. "invalid" is a tagged line the bridge can't
 // read, such as a kind from a newer core mod, with the reason.
@@ -31,6 +33,29 @@ const PLAYER_ID = /^\d+$/;
 const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
 // A Lua state's name, from ContextPtr:GetID(), such as "SentientSystemsCore_UI".
 const CONTEXT = /^\w+$/;
+// An event handler's name, such as "OnPlayerTurnActivated".
+const HANDLER = /^\w+$/;
+// The escapes SentientSystems_CatchErrors writes, so an error with newlines fits on one line: "\\"
+// for a backslash and "\n" for a newline.
+const ESCAPE = /\\([\\n])/g;
+// The line the game's Lua puts between an error and its stack trace.
+const TRACEBACK = "\nstack traceback:\n";
+
+// Reads "ERROR <handler> <message>". The message is the rest of the line, spaces and tabs included.
+function parseError(args: string[]): CoreEvent | string {
+	const [handler = "", ...words] = args;
+	const text = words.join(" ").replace(ESCAPE, (_escape, character: string) => character === "n" ? "\n" : "\\");
+
+	if (!HANDLER.test(handler) || text === "") {
+		return `ERROR needs a handler name and a message, and got "${args.join(" ")}"`;
+	}
+
+	const split = text.indexOf(TRACEBACK);
+
+	return split === -1
+		? { type: "error", handler, message: text }
+		: { type: "error", handler, message: text.slice(0, split), traceback: text.slice(split + TRACEBACK.length) };
+}
 
 export const KINDS: Kind[] = [
 	{
@@ -53,6 +78,11 @@ export const KINDS: Kind[] = [
 		parse: (args) => args.length === 1 && CONTEXT.test(args[0])
 			? { type: "loaded", context: args[0] }
 			: `CORE_LOADED needs one state name, and got "${args.join(" ")}"`,
+	},
+	{
+		name: "ERROR",
+		example: "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated attempt to index a nil value",
+		parse: parseError,
 	},
 ];
 
@@ -80,6 +110,13 @@ export function describeEvent(event: CoreEvent): EventLog {
 			return { event: "core_version", msg: `Core mod version is ${event.version}`, fields: { version: event.version } };
 		case "loaded":
 			return { event: "core_loaded", msg: `Core mod loaded in the ${event.context} state`, fields: { state: event.context } };
+		case "error":
+			return {
+				event: "core_error",
+				msg: `Lua error in ${event.handler}: ${event.message}`,
+				// A missing traceback stays out of the record.
+				fields: { handler: event.handler, message: event.message, ...(event.traceback === undefined ? {} : { traceback: event.traceback }) },
+			};
 	}
 }
 
