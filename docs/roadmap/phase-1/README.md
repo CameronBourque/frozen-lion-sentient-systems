@@ -44,7 +44,7 @@ Pull requests are squash-merged, so each PR title becomes one commit on `main`. 
 | PR | Steps | Title |
 | --- | --- | --- |
 | 1 | 1 | `chore(core): add the mod link script` |
-| 2 | 2 and 3 | `feat(core): add the config file and log levels` |
+| 2 | 2 and 3 | `feat(core): add the config file and structured logs` |
 | 3 | 4 | `feat(core): add the load signal` |
 | 4 | 5 and 6 | `feat(core): add the state serializer` |
 | 5 | 7 | `feat(core): add the action API` |
