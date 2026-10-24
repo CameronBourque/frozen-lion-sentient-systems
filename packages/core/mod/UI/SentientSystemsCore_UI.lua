@@ -62,6 +62,15 @@ end
 
 Events.LoadGameViewStateDone.Add(SentientSystems_CatchErrors("OnLoadGameViewStateDone", OnLoadGameViewStateDone))
 
+-- Prints "[SENTIENTSYSTEMS] GAME_READY <turn>" when the player clicks the loading screen's button,
+-- or the game clicks it for them. Commands work from then on. The tuner's socket resets right
+-- after the click, and the line reaches the bridge before the reset.
+local function OnLoadScreenClose()
+	SentientSystems_Print("GAME_READY", Game.GetCurrentGameTurn())
+end
+
+Events.LoadScreenClose.Add(SentientSystems_CatchErrors("OnLoadScreenClose", OnLoadScreenClose))
+
 -- Prints "[SENTIENTSYSTEMS] CORE_LOADED <state>" each time the script loads, including after a live
 -- reload, so the log shows where the core mod started.
 SentientSystems_Print("CORE_LOADED", ContextPtr:GetID())
