@@ -33,7 +33,7 @@ None open.
 
 ### Tiles
 
-`SentientSystems_GetState(playerID)` lists each plot, from 0 to `Map.GetPlotCount() - 1`, for which `PlayersVisibility[playerID]:IsRevealed(index)` is `true`. `Map.GetPlotByIndex(index)` gives the plot, whose `GetTerrainType()` and `GetFeatureType()` are indexes in `GameInfo.Terrains` and `GameInfo.Features`. `GetFeatureType()` returns -1 for a plot with no feature, and `GameInfo.Features[-1]` is `nil`. `GetResourceType()` works the same way with `GameInfo.Resources`, and `GameInfo.Resources[-1]` is `nil`. Which of these a player can know is in [tile-visibility.md](tile-visibility.md). Confirmed on Windows on 2026-10-24.
+`SentientSystems_GetState(playerID)` lists each plot, from 0 to `Map.GetPlotCount() - 1`, for which `PlayersVisibility[playerID]:IsRevealed(index)` is `true`. `Map.GetPlotByIndex(index)` gives the plot, whose `GetTerrainType()` and `GetFeatureType()` are indexes in `GameInfo.Terrains` and `GameInfo.Features`. `GetFeatureType()` returns -1 for a plot with no feature, and `GameInfo.Features[-1]` is `nil`. `GetResourceType()`, `GetDistrictType()`, `GetImprovementType()`, and `GetRouteType()` work the same way with `GameInfo.Resources`, `GameInfo.Districts`, `GameInfo.Improvements`, and `GameInfo.Routes`, and each table returns `nil` for -1. `GameInfo.Routes[0]` is `ROUTE_ANCIENT_ROAD`. `GetOwner()` returns a player ID, or -1 for no owner. `IsImprovementPillaged()` and `IsRoutePillaged()` tell whether the improvement or road is pillaged. The tooltip shows the same values, in `PlotToolTip.lua`, lines 197 to 480 and 633 to 685. Which of these a player can know is in [tile-visibility.md](tile-visibility.md). Confirmed on Windows on 2026-10-24.
 
 ## Method
 
@@ -74,6 +74,7 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `CanStartCommand` for `PROMOTE` for each unit | `false` and no results |
 | Tiles in the state, against a loop over every plot | 161 revealed, 61 visible, and 66 with a feature in both. Rome's tile at (17,14) was `TERRAIN_PLAINS` with no feature, and visible |
 | The whole state, with one city, two units, and 161 tiles | 12,380 bytes in one piece |
+| Owners, districts, improvements, and roads in the state, against a loop over every revealed plot | 17 owned tiles in both, 10 of player 0 and 7 of player 1. 2 districts and 2 roads, the city centers of Rome at (17,14) and Râ-Kedet at (30,18), each with `ROUTE_ANCIENT_ROAD`. No improvements, and nothing pillaged. The state grew to 13,589 bytes |
 | Resources in the state, against `IsResourceVisible` on every revealed plot | 32 visible resources in both, tile for tile. The state left out the 6 hidden ones: aluminum at (8,7) and (19,15), oil at (10,7), niter at (10,9), iron at (12,9), and coal at (25,16). The state grew to 13,293 bytes |
 | The scout, after `GetExperience():ChangeExperience(15)` in `GameCore_Tuner` | 15 of 15 experience, and `CanPromote()` returned `true`. With 0 moves left, `CanStartCommand` for `PROMOTE` still returned `false` and no results |
 | The scout, after `UnitManager.RestoreMovement` in `GameCore_Tuner` gave it 3 moves | `CanStartCommand` for `PROMOTE` returned `true`, with promotion indexes 0, `PROMOTION_RANGER`, and 1, `PROMOTION_ALPINE`. The state listed both in `availablePromotions` |

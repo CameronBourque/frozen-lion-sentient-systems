@@ -8,6 +8,15 @@ local PLOTS = {
 	{ x = 0, y = 1, terrain = "TERRAIN_OCEAN" },
 	{ x = 1, y = 1, terrain = "TERRAIN_TUNDRA", resource = "RESOURCE_DEER" },
 	{ x = 2, y = 1, terrain = "TERRAIN_PLAINS_HILLS", resource = "RESOURCE_IRON" },
+	{
+		x = 0, y = 2, terrain = "TERRAIN_PLAINS", owner = 1, district = "DISTRICT_CITY_CENTER",
+		route = "ROUTE_ANCIENT_ROAD",
+	},
+	{
+		x = 1, y = 2, terrain = "TERRAIN_GRASS", owner = 1, improvement = "IMPROVEMENT_FARM",
+		improvementPillaged = true, route = "ROUTE_ANCIENT_ROAD", routePillaged = true,
+	},
+	{ x = 2, y = 2, terrain = "TERRAIN_GRASS", owner = 0, improvement = "IMPROVEMENT_FARM" },
 }
 
 -- Returns the tiles JSON in the state for player 0, who has revealed and sees the given plots.
@@ -52,6 +61,28 @@ describe("SentientSystems_GetTileStates", function()
 		assert.truthy(tiles:find("RESOURCE_DEER", 1, true))
 		assert.is_nil(tiles:find("RESOURCE_IRON", 1, true))
 		assert.truthy(tiles:find("TERRAIN_PLAINS_HILLS", 1, true))
+	end)
+
+	it("adds a tile's owner, district, and road", function()
+		assert.equal(
+			"[{\"district\":\"DISTRICT_CITY_CENTER\",\"owner\":1,\"route\":\"ROUTE_ANCIENT_ROAD\",\"terrain\":\"TERRAIN_PLAINS\",\"visible\":false,\"x\":0,\"y\":2}]",
+			TilesFor({ revealed = { { 0, 2 } } })
+		)
+	end)
+
+	it("adds an improvement, and marks a pillaged improvement and road", function()
+		assert.equal(
+			"[{\"improvement\":\"IMPROVEMENT_FARM\",\"improvementPillaged\":true,\"owner\":1,\"route\":\"ROUTE_ANCIENT_ROAD\","
+				.. "\"routePillaged\":true,\"terrain\":\"TERRAIN_GRASS\",\"visible\":true,\"x\":1,\"y\":2}]",
+			TilesFor({ visible = { { 1, 2 } } })
+		)
+	end)
+
+	it("leaves out the pillaged flags when nothing is pillaged", function()
+		assert.equal(
+			"[{\"improvement\":\"IMPROVEMENT_FARM\",\"owner\":0,\"terrain\":\"TERRAIN_GRASS\",\"visible\":true,\"x\":2,\"y\":2}]",
+			TilesFor({ visible = { { 2, 2 } } })
+		)
 	end)
 
 	it("reads only the given player's visibility", function()

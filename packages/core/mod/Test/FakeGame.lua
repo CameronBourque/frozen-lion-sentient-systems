@@ -1,7 +1,8 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
 -- map's plots, PlayersVisibility, UnitManager.CanStartCommand for promotions, GameInfo.Types,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
--- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
+-- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
+-- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
 -- UnitCommandResults, and Locale. It has only the calls the core mod makes. Example:
 -- local env = Game.new()
 -- FakeGame.Install(env, {
@@ -13,7 +14,11 @@
 -- 		districts = { { type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" } } } },
 -- 	} }, units = { { id = 196608, type = "UNIT_SCOUT", x = 24, y = 15, moves = 3, maxMoves = 3 } } } },
 -- 	text = { LOC_CITY_NAME_ROME = "Rome" },
--- 	plots = { { x = 17, y = 14, terrain = "TERRAIN_GRASS", feature = "FEATURE_FOREST", resource = "RESOURCE_DEER" } },
+-- 	plots = { {
+-- 		x = 17, y = 14, terrain = "TERRAIN_GRASS", feature = "FEATURE_FOREST", resource = "RESOURCE_DEER",
+-- 		owner = 0, district = "DISTRICT_CITY_CENTER", improvement = "IMPROVEMENT_CAMP", improvementPillaged = false,
+-- 		route = "ROUTE_ANCIENT_ROAD", routePillaged = false,
+-- 	} },
 -- })
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
 -- A player's hiddenResources lists the resource types its techs don't reveal yet.
@@ -328,6 +333,8 @@ function FakeGame.Install(env, world)
 		Terrains = {},
 		Features = {},
 		Resources = {},
+		Improvements = {},
+		Routes = {},
 		Happinesses = HAPPINESSES,
 	}
 	env.UnitCommandTypes = { PROMOTE = -1259482049 }
@@ -419,6 +426,12 @@ function FakeGame.Install(env, world)
 			AddRow("Features", "FeatureType", data.feature)
 		end
 
+		for _, field in ipairs({ { "Districts", "DistrictType", data.district }, { "Improvements", "ImprovementType", data.improvement }, { "Routes", "RouteType", data.route } }) do
+			if field[3] ~= nil then
+				AddRow(field[1], field[2], field[3])
+			end
+		end
+
 		if data.resource ~= nil and hashes[data.resource] == nil then
 			AddRow("Resources", "ResourceType", data.resource)
 			count = count + 1
@@ -447,6 +460,25 @@ function FakeGame.Install(env, world)
 			end,
 			GetResourceTypeHash = function()
 				return data.resource and hashes[data.resource] or 0
+			end,
+			-- The game returns -1 for no owner, district, improvement, or route.
+			GetOwner = function()
+				return data.owner or -1
+			end,
+			GetDistrictType = function()
+				return data.district and indexes[data.district] or -1
+			end,
+			GetImprovementType = function()
+				return data.improvement and indexes[data.improvement] or -1
+			end,
+			IsImprovementPillaged = function()
+				return data.improvementPillaged == true
+			end,
+			GetRouteType = function()
+				return data.route and indexes[data.route] or -1
+			end,
+			IsRoutePillaged = function()
+				return data.routePillaged == true
 			end,
 		}
 	end
