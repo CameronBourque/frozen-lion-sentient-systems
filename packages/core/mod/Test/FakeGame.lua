@@ -1,6 +1,7 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units,
--- Map.GetPlot, GameInfo.Types, GameInfo.Districts, GameInfo.Buildings, GameInfo.Units,
--- GameInfo.Happinesses, YieldTypes, and Locale. It has only the calls the core mod makes. Example:
+-- Map.GetPlot, UnitManager.CanStartCommand for promotions, GameInfo.Types, GameInfo.Districts,
+-- GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions, GameInfo.Happinesses, YieldTypes,
+-- UnitCommandTypes, UnitCommandResults, and Locale. It has only the calls the core mod makes. Example:
 -- local env = Game.new()
 -- FakeGame.Install(env, {
 -- 	players = { [0] = { cities = { {
@@ -199,10 +200,43 @@ local function City(data, hashes, indexes)
 end
 
 -- A unit from data, with id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
--- maxDamage, which is 100 when missing, dead, and delayedDeath. indexes maps each unit type to its
--- GameInfo index.
+-- maxDamage, which is 100 when missing, dead, delayedDeath, and experience. experience has points,
+-- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
+-- unit has no experience. indexes maps each unit and promotion type to its GameInfo index.
 local function Unit(data, indexes)
+	local experience = data.experience
+
+	-- Returns the GameInfo indexes of a list of promotion types.
+	local function Indexes(types)
+		local list = {}
+
+		for i, typeName in ipairs(types or {}) do
+			list[i] = indexes[typeName]
+		end
+
+		return list
+	end
+
 	return {
+		-- The available promotions, for the fake UnitManager.CanStartCommand.
+		availablePromotions = experience and Indexes(experience.available),
+		GetExperience = function()
+			if experience == nil then
+				return nil
+			end
+
+			return {
+				GetExperiencePoints = function()
+					return experience.points
+				end,
+				GetExperienceForNextLevel = function()
+					return experience.nextLevel
+				end,
+				GetPromotions = function()
+					return Indexes(experience.promotions)
+				end,
+			}
+		end,
 		GetID = function()
 			return data.id
 		end,
@@ -267,7 +301,24 @@ function FakeGame.Install(env, world)
 	local hashes, indexes = {}, {}
 	local count = 0
 
-	env.GameInfo = { Types = {}, Districts = {}, Buildings = {}, Units = {}, Happinesses = HAPPINESSES }
+	env.GameInfo = { Types = {}, Districts = {}, Buildings = {}, Units = {}, UnitPromotions = {}, Happinesses = HAPPINESSES }
+	env.UnitCommandTypes = { PROMOTE = -1259482049 }
+	env.UnitCommandResults = { PROMOTIONS = 827475943 }
+	-- Only the promotion command, with results, as the units state asks for it. The game returns
+	-- false and no results when the unit can't promote.
+	env.UnitManager = {
+		CanStartCommand = function(unit, command, testOnly, withResults)
+			assert(command == env.UnitCommandTypes.PROMOTE and testOnly == true and withResults == true, "no fake for this command")
+
+			local available = unit.availablePromotions
+
+			if available == nil or #available == 0 then
+				return false, nil
+			end
+
+			return true, { [env.UnitCommandResults.PROMOTIONS] = available }
+		end,
+	}
 	env.YieldTypes = YIELD_TYPES
 	env.Map = {
 		GetPlot = function(x, y)
@@ -294,6 +345,14 @@ function FakeGame.Install(env, world)
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do
 			AddRow("Units", "UnitType", unit.type)
+
+			if unit.experience ~= nil then
+				for _, list in ipairs({ unit.experience.promotions or {}, unit.experience.available or {} }) do
+					for _, typeName in ipairs(list) do
+						AddRow("UnitPromotions", "UnitPromotionType", typeName)
+					end
+				end
+			end
 		end
 
 		for _, city in ipairs(data.cities or {}) do

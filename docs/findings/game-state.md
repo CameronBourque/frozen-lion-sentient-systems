@@ -26,6 +26,11 @@ The calls the state serializer uses to build one player's view of the game, with
 
 `SentientSystems_GetState(playerID)` lists the player's units from `Players[playerID]:GetUnits():Members()`. Each unit has `GetID()`, `GetType()`, an index in `GameInfo.Units`, `GetX()`, `GetY()`, `GetMovesRemaining()`, `GetMaxMoves()`, `GetDamage()`, and `GetMaxDamage()`. The unit panel reads the same calls in `Base/Assets/UI/Panels/UnitPanel.lua`, lines 2237 to 2245, and shows health as `MaxDamage - Damage` out of `MaxDamage`, at line 1055. `UnitFlagManager.lua` makes no flag for a unit whose `IsDead()` or `IsDelayedDeath()` is `true`. Confirmed in files and on Windows on 2026-10-24.
 
+### Promotions
+
+- `unit:GetExperience()` has `GetExperiencePoints()`, `GetExperienceForNextLevel()`, `GetLevel()`, and `GetPromotions()`. `GetPromotions()` returns indexes in `GameInfo.UnitPromotions`, whose rows have `UnitPromotionType`, such as `PROMOTION_RANGER`. The unit panel reads the experience in `Base/Assets/UI/Panels/UnitPanel.lua`, lines 2262 and 2263, and `UnitPromotionPopup.lua` reads the promotions at line 85. Confirmed in files and on Windows on 2026-10-24.
+- `UnitManager.CanStartCommand(unit, UnitCommandTypes.PROMOTE, true, true)` returns `true` and a results table when the unit can promote. `results[UnitCommandResults.PROMOTIONS]` lists the indexes of the promotions it can pick. The unit panel builds its promotion list this way, in `UnitPanel.lua`, lines 435 to 446. For a unit that can't promote, it returned `false` and no results. Confirmed in files, and the `false` case on Windows on 2026-10-24.
+
 ### Tile visibility
 
 `PlayersVisibility[playerID]` has five methods. Confirmed in `SentientSystemsCore_UI` on Windows on 2026-10-24.
@@ -124,6 +129,8 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `GetDistricts():Members()` | One district, ID 65536, `DISTRICT_CITY_CENTER` at (17,14), complete and not pillaged |
 | `GetBuildingsAtLocation` on the city center | Indexes 0, `BUILDING_MONUMENT`, and 1, `BUILDING_PALACE`, both built and not pillaged |
 | `GetUnits():Members()` | `UNIT_SCOUT`, ID 196608, at (24,15), and `UNIT_WARRIOR`, ID 131073, at (7,13). Each had 0 moves left, of 3 and 2, and 0 damage of 100. Neither was dead or about to die |
+| `GetExperience()` for the scout and the warrior | Each had 0 of 15 experience points, level 1, and no promotions |
+| `CanStartCommand` for `PROMOTE` for each unit | `false` and no results |
 
 The map reveal, on turn 14 of the same game:
 

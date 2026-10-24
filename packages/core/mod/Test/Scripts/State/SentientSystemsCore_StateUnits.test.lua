@@ -52,6 +52,30 @@ describe("SentientSystems_GetUnitStates", function()
 		assert.equal("{\"cities\":[],\"units\":[]}", StateWith({ With(SCOUT, { dead = true }), With(SCOUT, { id = 2, delayedDeath = true }) }))
 	end)
 
+	it("adds the unit's experience and its promotions", function()
+		local state = StateWith({ With(SCOUT, {
+			experience = { points = 20, nextLevel = 45, promotions = { "PROMOTION_RANGER" } },
+		}) })
+
+		assert.truthy(state:find("\"availablePromotions\":[],\"experience\":{\"nextLevel\":45,\"points\":20}", 1, true))
+		assert.truthy(state:find("\"promotions\":[\"PROMOTION_RANGER\"]", 1, true))
+	end)
+
+	it("adds the promotions the unit can pick now", function()
+		local state = StateWith({ With(SCOUT, {
+			experience = { points = 15, nextLevel = 15, available = { "PROMOTION_RANGER", "PROMOTION_ALPINE" } },
+		}) })
+
+		assert.truthy(state:find("\"availablePromotions\":[\"PROMOTION_RANGER\",\"PROMOTION_ALPINE\"]", 1, true))
+	end)
+
+	it("leaves out experience and promotions for a unit with no experience", function()
+		local state = StateWith({ SCOUT })
+
+		assert.is_nil(state:find("experience", 1, true))
+		assert.is_nil(state:find("romotions", 1, true))
+	end)
+
 	it("lists more than one unit, in the game's order", function()
 		local state = StateWith({ SCOUT, { id = 131073, type = "UNIT_WARRIOR", x = 7, y = 13, moves = 2, maxMoves = 2 } })
 
