@@ -44,6 +44,13 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # npm run coverage also runs the Lua tests. The game's Lua matches Lua 5.1.5. See
+      # docs/findings/lua-contexts.md#lua-51-comparison.
+      - uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: "5.1.5"
+      - uses: leafo/gh-actions-luarocks@v6
+      - run: luarocks install busted && luarocks install luacov
       - run: npm run coverage
       - name: Add the coverage report to the job summary
         if: ${{ !cancelled() && hashFiles('coverage/coverage.txt') != '' }}
@@ -53,29 +60,18 @@ jobs:
             echo '```'
             cat coverage/coverage-summary.txt coverage/coverage.txt
             echo '```'
+            if [ -f coverage/lua/summary.txt ]; then
+              echo '## Lua coverage'
+              echo '```'
+              cat coverage/lua/summary.txt
+              echo '```'
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: coverage-report
           path: coverage/
-
-  test-lua:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-      # The game's Lua matches Lua 5.1.5. See docs/findings/lua-contexts.md#lua-51-comparison.
-      - uses: leafo/gh-actions-lua@v13
-        with:
-          luaVersion: "5.1.5"
-      - uses: leafo/gh-actions-luarocks@v6
-      - run: luarocks install busted
-      - run: npm run test:lua
 
   actionlint:
     runs-on: ubuntu-latest

@@ -13,6 +13,8 @@ export default defineConfig({
 				"scripts/check-docs/src/index.mjs",
 				// Only reads the registry and prints. Its logic is in documents.mjs and link.mjs, which the tests cover.
 				"scripts/link-mod/src/index.mjs",
+				// Only runs busted and luacov and reads the report. Its logic is in summary.mjs, which the tests cover.
+				"scripts/lua-coverage/src/index.mjs",
 				// Only starts the bridge. Its logic goes in the other files, which the tests cover.
 				"packages/core/bridge/src/main.ts",
 			],

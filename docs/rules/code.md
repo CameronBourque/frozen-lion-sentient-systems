@@ -45,14 +45,14 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
 
 - `npm run lint` runs ESLint with the rules in `eslint.config.js`. It checks tabs, trailing spaces, and blank lines: one after a run of definitions, one before and after each block, and one before `return`.
 - `npm test` runs Vitest. Put code in a `src/` folder and tests in a `test/` folder beside it, in each package and script folder. `test/` mirrors `src/`, so the tests for `src/tuner/framing.ts` go in `test/tuner/framing.test.ts`. Shared test helpers go in `test/` too. Give each rule a case that it catches and a case that it lets through.
-- `npm run coverage` runs the tests and measures coverage. Statements, branches, functions, and lines must each stay at 98% or more, or the run fails. To leave a file out, add it to the coverage `exclude` list in `vitest.config.js` with a comment that gives the reason.
-- The CI `test` job runs `npm run coverage`. It puts the coverage table in the job summary and uploads the HTML report as the `coverage-report` artifact.
-- CI runs lint, typecheck, test, and test-lua as separate jobs in `.github/workflows/ci.yml`, plus an `actionlint` job that checks the workflow files. Lint and test need Node 26 or later. `.nvmrc` sets the Node version for CI.
+- `npm run coverage` runs the tests and measures coverage. Statements, branches, functions, and lines must each stay at 98% or more, or the run fails. To leave a file out, add it to the coverage `exclude` list in `vitest.config.js` with a comment that gives the reason. Then it runs `npm run coverage:lua`.
+- The CI `test` job installs Lua 5.1.5, LuaRocks, busted, and luacov, and runs `npm run coverage`. It puts the TypeScript and Lua coverage tables in the job summary and uploads the HTML report as the `coverage-report` artifact.
+- CI runs lint, typecheck, and test as separate jobs in `.github/workflows/ci.yml`, plus an `actionlint` job that checks the workflow files. Lint and test need Node 26 or later. `.nvmrc` sets the Node version for CI.
 - `npm run test:lua` runs busted on the core mod's Lua tests, with the settings in `.busted`. Lua tests go in `packages/core/mod/test/`, which mirrors the mod folder. A test file ends in `.test.lua`, so the tests for `Scripts/SentientSystemsCore_Tag.lua` go in `test/Scripts/SentientSystemsCore_Tag.test.lua`. `test/Game.lua` loads a mod file into an environment that matches the game's Lua.
+- `npm run coverage:lua` runs busted with luacov, using the settings in `.luacov`, and prints the coverage table. Lines must stay at 98% or more, or the run fails. A mod file that no test loads counts as 0%. The report is in `coverage/lua/`.
 - Lua test helpers use PascalCase, as the mod's Lua files do, but skip the `SentientSystemsCore_` prefix. The prefix keeps the game's `include` from loading another mod's file, and test files never load in the game. A test loads a helper with `require`, such as `local Game = require("Game")`.
-- The Lua tests need Lua 5.1.5, because the game's Lua matches it. See [lua-contexts.md](../findings/lua-contexts.md#lua-51-comparison). To install Lua 5.1.5, LuaRocks, and busted:
+- The Lua tests need Lua 5.1.5, because the game's Lua matches it. See [lua-contexts.md](../findings/lua-contexts.md#lua-51-comparison). To install Lua 5.1.5, LuaRocks, busted, and luacov:
   1. Run `pip install hererocks`.
   2. Run `python -m hererocks <folder> -l 5.1 -r latest`. On Windows, hererocks builds Lua with the Visual Studio C++ tools.
   3. Add `<folder>\bin` to your `PATH`.
-  4. Run `luarocks install busted`.
-- The CI `test-lua` job installs Lua 5.1.5, LuaRocks, and busted, and runs `npm run test:lua`.
+  4. Run `luarocks install busted` and `luarocks install luacov`.

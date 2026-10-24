@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "check-docs": "node scripts/check-docs/src/index.mjs",
-    "coverage": "vitest run --coverage",
+    "coverage": "vitest run --coverage && npm run coverage:lua",
+    "coverage:lua": "node scripts/lua-coverage/src/index.mjs",
     "dev": "npm run dev --workspace packages/core/bridge",
     "link-mod": "node scripts/link-mod/src/index.mjs",
     "lint": "eslint .",

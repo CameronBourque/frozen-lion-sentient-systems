@@ -1,0 +1,9 @@
+-- luacov measures the core mod's Lua coverage when busted runs with --coverage. npm run coverage:lua
+-- runs both and checks the total. includeuntestedfiles counts a mod file that no test loads as 0%.
+return {
+	statsfile = "coverage/lua/luacov.stats.out",
+	reportfile = "coverage/lua/luacov.report.out",
+	include = { "^packages/core/mod/" },
+	exclude = { "^packages/core/mod/test/" },
+	includeuntestedfiles = true,
+}
