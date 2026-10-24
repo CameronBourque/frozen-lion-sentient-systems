@@ -67,8 +67,9 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 | Paths in errors | An error in a mod file names the file by its full path, such as `C:\Users\<name>\Documents\My Games\Sid Meier's Civilization VI\Mods\SentientSystemsCore\UI\SentientSystemsCore_UI.lua:38`. The path holds the user's name | Confirmed |
 | `include` result | `include(name)` returns a list of the full paths of the files it loaded, such as `C:\Users\<name>\...\Mods\SentientSystemsCore\Scripts\SentientSystemsCore_Json.lua`. For a name that the game doesn't know, it returns an empty list and raises no error | Confirmed |
 | New files | The game reads each mod's `ImportFiles` list when it starts. After `Scripts/SentientSystemsCore_State.lua` was added to `ImportFiles`, `include` found no file through two save loads. After a restart, it found the file. `Modding.log` names only the component, `SentientSystemsCore_SharedScripts (ImportFiles)`, on each load | Confirmed |
+| Changed files | An `include` sent from the tuner reads the file from disk again. After `Scripts/SentientSystemsCore_State.lua` changed, `SentientSystems_GetState` kept the old code until `SentientSystems_Include("SentientSystemsCore_State")` ran in `SentientSystemsCore_UI`, and then returned the new fields with no save load. It works only for a file that the game already knows | Confirmed |
 
-The first five rows were checked on Windows on 2026-10-22, the next seven on 2026-10-23, and the last two on 2026-10-24.
+The first five rows were checked on Windows on 2026-10-22, the next seven on 2026-10-23, and the last three on 2026-10-24.
 
 ## Method
 
