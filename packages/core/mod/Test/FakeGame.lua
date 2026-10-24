@@ -1,5 +1,6 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
--- map's plots, PlayersVisibility, UnitManager.CanStartCommand for promotions, GameInfo.Types,
+-- map's plots, PlayersVisibility, PlayerManager.GetAlive, DefenseTypes, UnitManager.CanStartCommand
+-- for promotions, GameInfo.Types,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -21,7 +22,8 @@
 -- 	} },
 -- })
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
--- A player's hiddenResources lists the resource types its techs don't reveal yet.
+-- A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
+-- true or false, and its defense has strength, garrison, and walls, each with damage and max.
 -- env.Players[0]:GetCities():Members() then lists the one city.
 
 local FakeGame = {}
@@ -54,6 +56,9 @@ local HAPPINESSES = {
 	{ HappinessType = "HAPPINESS_HAPPY" },
 	{ HappinessType = "HAPPINESS_ECSTATIC" },
 }
+
+-- The DefenseTypes values for a district's garrison and walls.
+local DEFENSE_TYPES = { DISTRICT_GARRISON = 0, DISTRICT_OUTER = 1 }
 
 -- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
@@ -108,7 +113,30 @@ local function City(data, hashes, indexes)
 		}
 	end
 
+	local defense = data.defense or {}
+	local garrison = defense.garrison or { damage = 0, max = 200 }
+	local walls = defense.walls or { damage = 0, max = 0 }
+
 	local city = {
+		GetDistrictID = function()
+			return data.id
+		end,
+		IsCapital = function()
+			return data.capital == true
+		end,
+		-- The city center district, which the fake player's GetDistricts():FindID returns by the
+		-- city's ID.
+		center = {
+			GetDefenseStrength = function()
+				return defense.strength or 0
+			end,
+			GetDamage = function(_, defenseType)
+				return defenseType == DEFENSE_TYPES.DISTRICT_OUTER and walls.damage or garrison.damage
+			end,
+			GetMaxDamage = function(_, defenseType)
+				return defenseType == DEFENSE_TYPES.DISTRICT_OUTER and walls.max or garrison.max
+			end,
+		},
 		GetDistricts = function()
 			return List(districts)
 		end,
@@ -305,6 +333,17 @@ local function Player(id, data, hashes, indexes)
 		GetUnits = function()
 			return List(units)
 		end,
+		GetDistricts = function()
+			return {
+				FindID = function(_, districtID)
+					for _, city in ipairs(cities) do
+						if city.GetDistrictID() == districtID then
+							return city.center
+						end
+					end
+				end,
+			}
+		end,
 		GetResources = function()
 			return {
 				IsResourceVisible = function(_, hash)
@@ -355,6 +394,7 @@ function FakeGame.Install(env, world)
 		end,
 	}
 	env.YieldTypes = YIELD_TYPES
+	env.DefenseTypes = DEFENSE_TYPES
 	env.Map = {
 		GetPlot = function(x, y)
 			return {
@@ -501,15 +541,29 @@ function FakeGame.Install(env, world)
 			visible[PlotIndex(position[1], position[2])] = true
 		end
 
+		-- Each takes a plot index, or x and y, as in the game.
 		env.PlayersVisibility[id] = {
-			IsRevealed = function(_, index)
-				return revealed[index] == true
+			IsRevealed = function(_, indexOrX, y)
+				return revealed[y and PlotIndex(indexOrX, y) or indexOrX] == true
 			end,
-			IsVisible = function(_, index)
-				return visible[index] == true
+			IsVisible = function(_, indexOrX, y)
+				return visible[y and PlotIndex(indexOrX, y) or indexOrX] == true
 			end,
 		}
 	end
+
+	-- The living players, in ID order, as the game lists them.
+	env.PlayerManager = {
+		GetAlive = function()
+			local alive = {}
+
+			for id = 0, 63 do
+				alive[#alive + 1] = env.Players[id]
+			end
+
+			return alive
+		end,
+	}
 
 	local text = world.text or {}
 

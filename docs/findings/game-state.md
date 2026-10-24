@@ -1,6 +1,6 @@
 # Game state
 
-Status: open. `SentientSystems_GetState` with cities, units, and revealed tiles is confirmed in a running game.
+Status: open. `SentientSystems_GetState` with cities, units, revealed tiles, and revealed rival cities is confirmed in a running game.
 
 The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. What a player can know about each tile and the rivals on it is in [tile-visibility.md](tile-visibility.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -34,6 +34,10 @@ None open.
 ### Tiles
 
 `SentientSystems_GetState(playerID)` lists each plot, from 0 to `Map.GetPlotCount() - 1`, for which `PlayersVisibility[playerID]:IsRevealed(index)` is `true`. `Map.GetPlotByIndex(index)` gives the plot, whose `GetTerrainType()` and `GetFeatureType()` are indexes in `GameInfo.Terrains` and `GameInfo.Features`. `GetFeatureType()` returns -1 for a plot with no feature, and `GameInfo.Features[-1]` is `nil`. `GetResourceType()`, `GetDistrictType()`, `GetImprovementType()`, and `GetRouteType()` work the same way with `GameInfo.Resources`, `GameInfo.Districts`, `GameInfo.Improvements`, and `GameInfo.Routes`, and each table returns `nil` for -1. `GameInfo.Routes[0]` is `ROUTE_ANCIENT_ROAD`. `GetOwner()` returns a player ID, or -1 for no owner. `IsImprovementPillaged()` and `IsRoutePillaged()` tell whether the improvement or road is pillaged. The tooltip shows the same values, in `PlotToolTip.lua`, lines 197 to 480 and 633 to 685. Which of these a player can know is in [tile-visibility.md](tile-visibility.md). Confirmed on Windows on 2026-10-24.
+
+### Rival cities
+
+`PlayerManager.GetAlive()` lists every living player, and each player's cities come from `GetCities():Members()`, as for the player's own. City IDs repeat across players: Rome and Râ-Kedet both had ID 65536. `city:IsCapital()` tells whether a city is its owner's capital. The city banner reads a city's defense from its city center, `Players[owner]:GetDistricts():FindID(city:GetDistrictID())`. That district's `GetDefenseStrength()` is the banner's defense number, rounded with `math.floor(x + 0.5)`. `GetDamage` and `GetMaxDamage` with `DefenseTypes.DISTRICT_GARRISON` give the garrison's health, and with `DefenseTypes.DISTRICT_OUTER` the walls' health, whose most is 0 for a city with no walls. See `CityBanner:UpdateStats` in `DLC/Expansion1/UI/CityBanners/CityBannerManager.lua`, lines 1209 to 1260. Confirmed in files and on Windows on 2026-10-24.
 
 ## Method
 
@@ -75,6 +79,7 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | Tiles in the state, against a loop over every plot | 161 revealed, 61 visible, and 66 with a feature in both. Rome's tile at (17,14) was `TERRAIN_PLAINS` with no feature, and visible |
 | The whole state, with one city, two units, and 161 tiles | 12,380 bytes in one piece |
 | Owners, districts, improvements, and roads in the state, against a loop over every revealed plot | 17 owned tiles in both, 10 of player 0 and 7 of player 1. 2 districts and 2 roads, the city centers of Rome at (17,14) and Râ-Kedet at (30,18), each with `ROUTE_ANCIENT_ROAD`. No improvements, and nothing pillaged. The state grew to 13,589 bytes |
+| Rival cities in the state, against the calls for every city | Râ-Kedet, player 1's capital, at (30,18) on a fogged tile: population 2, defense 13, garrison 200 of 200, and no walls, as its banner showed. Rome, the player's own, was left out |
 | Resources in the state, against `IsResourceVisible` on every revealed plot | 32 visible resources in both, tile for tile. The state left out the 6 hidden ones: aluminum at (8,7) and (19,15), oil at (10,7), niter at (10,9), iron at (12,9), and coal at (25,16). The state grew to 13,293 bytes |
 | The scout, after `GetExperience():ChangeExperience(15)` in `GameCore_Tuner` | 15 of 15 experience, and `CanPromote()` returned `true`. With 0 moves left, `CanStartCommand` for `PROMOTE` still returned `false` and no results |
 | The scout, after `UnitManager.RestoreMovement` in `GameCore_Tuner` gave it 3 moves | `CanStartCommand` for `PROMOTE` returned `true`, with promotion indexes 0, `PROMOTION_RANGER`, and 1, `PROMOTION_ALPINE`. The state listed both in `availablePromotions` |

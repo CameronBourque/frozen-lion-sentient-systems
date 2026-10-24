@@ -19,6 +19,7 @@
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
 			<File>Scripts/State/SentientSystemsCore_State.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateUnits.lua</File>
 		</ImportFiles>
@@ -28,6 +29,7 @@
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
 		<File>Scripts/State/SentientSystemsCore_State.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateUnits.lua</File>
 		<File>UI/SentientSystemsCore_UI.lua</File>
