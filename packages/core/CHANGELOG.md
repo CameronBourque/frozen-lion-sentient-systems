@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.4.0...core-v0.5.0) (2026-10-25)
+
+
+### Features
+
+* **core:** add the state serializer ([#31](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/31)) ([0a3be3b](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/0a3be3bd7bf2c39694e0838cc838cc228f4112be))
+
 ## [0.4.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.3.0...core-v0.4.0) (2026-10-24)
 
 
