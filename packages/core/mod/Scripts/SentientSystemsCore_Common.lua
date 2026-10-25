@@ -1,4 +1,5 @@
--- Prints machine-readable lines for the bridge. Each line starts with the tag, so the bridge can
+-- Helpers that every core mod script loads first: tagged lines for the bridge, error catching for
+-- event handlers, and a checked include. Each tagged line starts with the tag, so the bridge can
 -- tell it apart from other game output. Example: SentientSystems_Print("AGENT_TURN", 0) prints
 -- "[SENTIENTSYSTEMS] AGENT_TURN 0".
 
@@ -12,6 +13,21 @@ function SentientSystems_Print(...)
 	end
 
 	print(table.concat(parts, " "))
+end
+
+-- Loads an imported file by name, as include does, and returns the paths it loaded. When no file has
+-- the name, include returns an empty list and raises no error, so this prints
+-- "[SENTIENTSYSTEMS] ERROR include <message>" for the bridge to log. The game finds a file added to
+-- the .modinfo only after a restart. See docs/findings/lua-contexts.md. Example:
+-- SentientSystems_Include("SentientSystemsCore_State")
+function SentientSystems_Include(name)
+	local loaded = include(name)
+
+	if loaded == nil or #loaded == 0 then
+		SentientSystems_Print("ERROR", "include", "found no file named " .. name .. ". After you add a file to the .modinfo, restart the game")
+	end
+
+	return loaded
 end
 
 -- Escapes text for one tagged line: each backslash as \\ and each newline as \n. The tuner sends

@@ -1,0 +1,9 @@
+-- busted runs the core mod's Lua tests. Each test file ends in .test.lua, as the TypeScript tests
+-- end in .test.ts. lpath lets a test require the helper in packages/core/mod/Test/.
+return {
+	default = {
+		ROOT = { "packages/core/mod/Test" },
+		pattern = "%.test%.lua$",
+		lpath = "packages/core/mod/Test/?.lua",
+	},
+}

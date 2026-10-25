@@ -12,6 +12,8 @@ This phase makes agents distinct and better. It adds personalities, all sweat le
 - Relationships memory and journal compaction
 - Deep strategic reviews with a stronger model
 - Fill `models.yaml` from testing
+- Citizen focus and worked tiles in the state, with an action that changes them
+- Each city's next border expansion in the state, and an action that buys a tile
 - Messaging panel and `send_message`
 - Narrator panel in the game UI
 - Run the test matrix

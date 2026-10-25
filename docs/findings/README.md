@@ -10,6 +10,8 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [lua-contexts.md](lua-contexts.md) | Lua states and what each one can call |
 | [state-list.md](state-list.md) | The Lua state list, and how it changes over a session and during a load |
 | [game-api.md](game-api.md) | Game calls for cities, units, turns, and properties |
+| [game-state.md](game-state.md) | The calls the state serializer uses for cities, units, and tiles |
+| [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |
 | [multiplayer.md](multiplayer.md) | What the tuner and the core mod can do in hotseat and online games |
 
@@ -25,7 +27,8 @@ These paths are from one Windows test machine. Other machines may differ.
 | Game executables | `<game>\Base\Binaries\Win64Steam\CivilizationVI.exe` and `CivilizationVI_DX12.exe` |
 | Game UI Lua | `<game>\Base\Assets\UI\` |
 | DLC and scenario Lua and `.modinfo` files | `<game>\DLC\` |
-| SDK and FireTuner | `C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization VI SDK\FireTuner\FireTuner2.exe` |
+| SDK and FireTuner | `E:\SteamLibrary\steamapps\common\Sid Meier's Civilization VI SDK\FireTuner\FireTuner2.exe` |
+| FireTuner panels, such as `Map.ltp` | `<game>\Debug\` |
 | User mods folder | `%USERPROFILE%\OneDrive\Documents\My Games\Sid Meier's Civilization VI\Mods\` |
 
 `AppOptions.txt` and the logs are not in the Documents folder. The Documents folder holds saves and mods.

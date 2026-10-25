@@ -10,7 +10,7 @@ Add the second half of the state: the legal options for each discrete choice, wh
 4. **Policies.** Add the current government, its slots, the slotted policies, and the unlocked policies for each slot type. Read the checks from `GovernmentScreen.lua`. Commit: `feat(core): add policy options to the state`.
 5. **Other blocker options.** For each other blocker in the list from task 1, such as a pantheon, an era dedication, or a promotion, add its legal options. Commit: `feat(core): add options for the other end-turn blockers`.
 6. **Scoreboard.** Add each met player's score, and the victory progress that `WorldRankings.lua` shows. Leave out players not met yet. Commit: `feat(core): add the scoreboard to the state`.
-7. **Bridge.** Extend the schema in `src/state.ts`. Make `npm run state` print each section's size. Commit: `feat(core): read choices and the scoreboard in the bridge`.
+7. **Bridge.** Add each section's schema in its own file in `src/state/`, as the core mod's Lua has one file for each section in `Scripts/State/`. Make `npm run state` print each section's size. Commit: `feat(core): read choices and the scoreboard in the bridge`.
 
 ## Done when
 

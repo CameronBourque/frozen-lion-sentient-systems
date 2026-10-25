@@ -18,7 +18,7 @@ Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design
 | 2 | Config file | Log level and provider keys | Done. The step file is deleted, and the file is described in [settings.md](../../design/core/settings.md) |
 | 3 | Logs and errors | Structured logs at five levels, a log file per game, and `ERROR` lines from the core mod | Done. The step file is deleted. The logs are in [logs.md](../../design/core/logs.md), the `ERROR` line is under **Errors** in [in-game-lua.md](../../design/core/in-game-lua.md), and the Lua facts are in [lua-contexts.md](../../findings/lua-contexts.md#the-core-mods-states) |
 | 4 | Load signal | How the bridge tells a load has finished | Done. The step file is deleted. The lines are under **Load signal** in [in-game-lua.md](../../design/core/in-game-lua.md), the reset is under **Load reset** in [bridge.md](../../design/core/bridge.md) and **Log files** in [logs.md](../../design/core/logs.md), and the Lua facts are in [state-list.md](../../findings/state-list.md#state-list-over-a-session) |
-| 5 | [State: map, cities, and units](05-state-map-cities-units.md) | The serializer for one player, filtered by visibility | |
+| 5 | State: map, cities, and units | The serializer for one player, filtered by visibility | Done. The step file is deleted. The state format and the stash are under **State serializer** and **Stash** in [in-game-lua.md](../../design/core/in-game-lua.md), and reading it is under **State** in [bridge.md](../../design/core/bridge.md). The state calls are in [game-state.md](../../findings/game-state.md), and what a player can know about each tile, the visibility layers, and the map reveal are in [tile-visibility.md](../../findings/tile-visibility.md). The Lua dialect is in [lua-contexts.md](../../findings/lua-contexts.md#lua-51-comparison), the output size limit is in [tuner-commands.md](../../findings/tuner-commands.md#what-we-know-now), and the Lua tests and coverage are under **Lint and test** in [code.md](../../rules/code.md#lint-and-test) |
 | 6 | [State: choices, blockers, and scoreboard](06-state-choices-blockers-scoreboard.md) | Legal options with details, end-turn blockers, and victory progress | |
 | 7 | [Action API](07-action-api.md) | Units, production, techs, civics, policies, and end turn, with failure reasons | |
 | 8 | [Civilopedia lookup](08-civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | |
@@ -46,17 +46,18 @@ Pull requests are squash-merged, so each PR title becomes one commit on `main`. 
 | 1 | 1 | `chore(core): add the mod link script` |
 | 2 | 2 and 3 | `feat(core): add the config file and structured logs` |
 | 3 | 4 | `feat(core): add the load signal` |
-| 4 | 5 and 6 | `feat(core): add the state serializer` |
-| 5 | 7 | `feat(core): add the action API` |
-| 6 | 8 | `feat(core): add the Civilopedia lookup` |
-| 7 | 9 | `feat(core): add the MCP server` |
-| 8 | 10 | `ci: generate the tool reference` |
-| 9 | 11 | `feat(core): add the model client` |
-| 10 | 12 | `feat: add the default personality and the balanced sweat level` |
-| 11 | 13 | `feat(core): add plan and journal memory` |
-| 12 | 14 | `feat(core): add the agent loop` |
-| 13 | 15 | `feat(core): add the preset launcher` |
-| 14 | 16 | `docs: record the smoke test` |
-| 15 | 17 and 18 | `docs: record phase 1 results` |
+| 4 | 5 | `feat(core): add the state serializer` |
+| 5 | 6 | `feat(core): add choices and the scoreboard to the state` |
+| 6 | 7 | `feat(core): add the action API` |
+| 7 | 8 | `feat(core): add the Civilopedia lookup` |
+| 8 | 9 | `feat(core): add the MCP server` |
+| 9 | 10 | `ci: generate the tool reference` |
+| 10 | 11 | `feat(core): add the model client` |
+| 11 | 12 | `feat: add the default personality and the balanced sweat level` |
+| 12 | 13 | `feat(core): add plan and journal memory` |
+| 13 | 14 | `feat(core): add the agent loop` |
+| 14 | 15 | `feat(core): add the preset launcher` |
+| 15 | 16 | `docs: record the smoke test` |
+| 16 | 17 and 18 | `docs: record phase 1 results` |
 
-In steps 16 and 17, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump. PR 10 touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
+In steps 16 and 17, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump. PR 11 touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
