@@ -1,12 +1,12 @@
 # Game state
 
-Status: open. `SentientSystems_GetState` with cities, units, revealed tiles, revealed rival cities, and visible rival units is confirmed in a running game. The end-turn blockers are confirmed in files.
+Status: open. `SentientSystems_GetState` with cities, units, revealed tiles, revealed rival cities, and visible rival units is confirmed in a running game. The end-turn blockers are confirmed in files and in a running game.
 
 The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. What a player can know about each tile and the rivals on it is in [tile-visibility.md](tile-visibility.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-1. Does the `EndTurnBlockingTypes` table in a running game hold values that no UI file names?
+1. Does `GetFirstEndTurnBlocking` ever return `ENDTURN_BLOCKING_CITY_RANGE_ATTACK`, `ENDTURN_BLOCKING_DISTRICT_RANGE_ATTACK`, or `ENDTURN_BLOCKING_UNIT_PROMOTION`? No UI file names them.
 
 ## What we know now
 
@@ -45,9 +45,11 @@ Each living player's units come from `GetUnits():Members()`, with the same calls
 
 ### End-turn blockers
 
-`NotificationManager.GetFirstEndTurnBlocking(playerID)` returns one value of `EndTurnBlockingTypes`. See [ending the turn](game-api.md#ending-the-turn). For `ENDTURN_BLOCKING_UNITS`, `ENDTURN_BLOCKING_STACKED_UNITS`, and `ENDTURN_BLOCKING_UNIT_NEEDS_ORDERS`, `DoEndTurn` in `Base/Assets/UI/ActionPanel.lua` calls `UI.SelectNextReadyUnit()`. For any other blocker, it finds the blocker's notification with `NotificationManager.FindEndTurnBlocking(blocker, playerID)` and activates it, and the notification's handler opens the screen. `DoEndTurn` is at lines 526 to 600. Each blocker's prompt text and notification icon are in `g_kMessageInfo` in `ActionPanel.lua`, lines 99 to 115, and in the expansions' replacements of it. The handlers are in `Base/Assets/UI/Panels/NotificationPanel.lua`, lines 200 to 221, and in its replacements. Confirmed in files.
+`NotificationManager.GetFirstEndTurnBlocking(playerID)` returns one value of `EndTurnBlockingTypes`. Each value is a hash, such as -286188551 for `ENDTURN_BLOCKING_RESEARCH`, not an index, so the name comes from a reverse lookup in the table. Confirmed on Windows on 2026-10-24. See [ending the turn](game-api.md#ending-the-turn). For `ENDTURN_BLOCKING_UNITS`, `ENDTURN_BLOCKING_STACKED_UNITS`, and `ENDTURN_BLOCKING_UNIT_NEEDS_ORDERS`, `DoEndTurn` in `Base/Assets/UI/ActionPanel.lua` calls `UI.SelectNextReadyUnit()`. For any other blocker, it finds the blocker's notification with `NotificationManager.FindEndTurnBlocking(blocker, playerID)` and activates it, and the notification's handler opens the screen. `DoEndTurn` is at lines 526 to 600. Each blocker's prompt text and notification icon are in `g_kMessageInfo` in `ActionPanel.lua`, lines 99 to 115, and in the expansions' replacements of it. The handlers are in `Base/Assets/UI/Panels/NotificationPanel.lua`, lines 200 to 221, and in its replacements. Confirmed in files.
 
-The UI files name 26 values. `NO_ENDTURN_BLOCKING` means nothing blocks. The other 25 each have a screen, listed here with the expansion each one needs. An expansion's file is in `DLC/Expansion1/UI` for Rise and Fall, and Gathering Storm has its own copy in `DLC/Expansion2/UI`. Confirmed in files:
+When nothing blocks, `DoEndTurn` still selects the next unit with moves left, and then a city that can make a ranged attack, before it ends the turn. These prompts don't stop `UI.RequestAction(ActionTypes.ACTION_ENDTURN)`. Confirmed in files.
+
+The table has 30 values in a game with Gathering Storm. `NO_ENDTURN_BLOCKING`, which is 0, means nothing blocks. The UI files name 26 others, and each has a screen, listed here with the expansion each one needs. An expansion's file is in `DLC/Expansion1/UI` for Rise and Fall, and Gathering Storm has its own copy in `DLC/Expansion2/UI`. Confirmed in files:
 
 | Blocker | Screen that resolves it | Needs |
 | --- | --- | --- |
@@ -78,11 +80,13 @@ The UI files name 26 values. `NO_ENDTURN_BLOCKING` means nothing blocks. The oth
 | `ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK` | `WorldCongressPopup.lua`, at a special session | Gathering Storm |
 | `ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION` | `WorldCongressPopup.lua`, at a regular session | Gathering Storm |
 
+No UI file names the other three values, `ENDTURN_BLOCKING_CITY_RANGE_ATTACK`, `ENDTURN_BLOCKING_DISTRICT_RANGE_ATTACK`, and `ENDTURN_BLOCKING_UNIT_PROMOTION`, so none of them has a prompt or a screen. Confirmed in files and on Windows on 2026-10-24.
+
 ## Method
 
 1. In `SentientSystemsCore_UI`, call each city, unit, and tile call for the local player, and compare the values with the city panel, the unit panel, and the tooltip.
 2. Read `SentientSystems_GetState(Game.GetLocalPlayer())` through `SentientSystems_Stash` and `SentientSystems_PrintPiece`, parse it with `JSON.parse`, and compare it with the calls.
-3. To list the values of `EndTurnBlockingTypes` in a running game, send `for k, v in pairs(EndTurnBlockingTypes) do print(k, v) end` to `SentientSystemsCore_UI`, and compare them with the table in [end-turn blockers](#end-turn-blockers).
+3. To list the values of `EndTurnBlockingTypes` in a running game, send `for k, v in pairs(EndTurnBlockingTypes) do print(v, k) end` to `SentientSystemsCore_UI`, and compare them with the table in [end-turn blockers](#end-turn-blockers).
 4. To change a file in `Scripts/` without a load, send `SentientSystems_Include("<file name>")` first. See [lua-contexts.md](lua-contexts.md#the-core-mods-states).
 
 ## Results
@@ -124,5 +128,13 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | Resources in the state, against `IsResourceVisible` on every revealed plot | 32 visible resources in both, tile for tile. The state left out the 6 hidden ones: aluminum at (8,7) and (19,15), oil at (10,7), niter at (10,9), iron at (12,9), and coal at (25,16). The state grew to 13,293 bytes |
 | The scout, after `GetExperience():ChangeExperience(15)` in `GameCore_Tuner` | 15 of 15 experience, and `CanPromote()` returned `true`. With 0 moves left, `CanStartCommand` for `PROMOTE` still returned `false` and no results |
 | The scout, after `UnitManager.RestoreMovement` in `GameCore_Tuner` gave it 3 moves | `CanStartCommand` for `PROMOTE` returned `true`, with promotion indexes 0, `PROMOTION_RANGER`, and 1, `PROMOTION_ALPINE`. The state listed both in `availablePromotions` |
+
+`EndTurnBlockingTypes` in `SentientSystemsCore_UI`, in a game with Gathering Storm:
+
+| Check | Result |
+| --- | --- |
+| Values in the table | 30. The 27 that the UI files name, and `ENDTURN_BLOCKING_CITY_RANGE_ATTACK` 103424869, `ENDTURN_BLOCKING_DISTRICT_RANGE_ATTACK` -76578136, and `ENDTURN_BLOCKING_UNIT_PROMOTION` 1706768628 |
+| `GetFirstEndTurnBlocking(Game.GetLocalPlayer())` | -286188551, `ENDTURN_BLOCKING_RESEARCH` |
+
 
 Date checked: game files on 2026-10-24. Running game on Windows on 2026-10-24.
