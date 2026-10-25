@@ -21,6 +21,7 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 
   | Key | Holds |
   | --- | --- |
+  | `blockers` | `list`, each end-turn blocker once, in the game's order, and `units`, the IDs of the player's units that need orders. Each blocker has `type`, such as `ENDTURN_BLOCKING_RESEARCH`, and `choice`, the key in the choices that resolves it, such as `techs`. The first blocker is the **Next Turn** button's prompt. The unit blockers and the values no UI file names have no `choice`. A unit needs orders when it has moves left and no standing order, such as fortify. The list comes from the units, because the game updates its unit blockers only on its own events |
   | `cities` | A list of the player's cities. Each has `id`, `name` in the game's language from `Locale.Lookup`, `x`, `y`, `population`, `amenities`, `defense`, `districts`, `growth`, `loyalty`, `production`, and `yields` |
   | `cities[].amenities` | `have` and `need`, whose difference the city panel shows, and `mood`, such as `HAPPINESS_CONTENT` |
   | `cities[].defense` | What the city's banner shows: `strength`, rounded to a whole number as the banner rounds it, `garrison` with `value` and `max`, and `walls` with `value` and `max`, left out for a city with no walls. Rival cities have the same `defense` |

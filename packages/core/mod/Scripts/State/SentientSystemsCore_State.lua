@@ -2,8 +2,8 @@
 -- visibility, never from the screen. Each section of the state comes from its own file in this
 -- folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetState(0) returns
--- '{"cities":[{"id":65536,"name":"Rome",...}],"rivals":{"cities":[...],"units":[...]},"tiles":[...],
--- "units":[...]}', on one line.
+-- '{"blockers":{"list":[...],"units":[...]},"cities":[{"id":65536,"name":"Rome",...}],
+-- "rivals":{"cities":[...],"units":[...]},"tiles":[...],"units":[...]}', on one line.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -11,6 +11,7 @@ SentientSystems_Include("SentientSystemsCore_StateCities")
 SentientSystems_Include("SentientSystemsCore_StateUnits")
 SentientSystems_Include("SentientSystemsCore_StateTiles")
 SentientSystems_Include("SentientSystemsCore_StateRivals")
+SentientSystems_Include("SentientSystemsCore_StateBlockers")
 
 -- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -23,6 +24,7 @@ function SentientSystems_GetState(playerID)
 	end
 
 	return SentientSystems_EncodeJson({
+		blockers = SentientSystems_GetBlockerState(playerID),
 		cities = SentientSystems_GetCityStates(player),
 		units = SentientSystems_GetUnitStates(player),
 		tiles = SentientSystems_GetTileStates(playerID),

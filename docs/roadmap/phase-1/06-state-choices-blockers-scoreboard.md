@@ -9,7 +9,7 @@ Each task is one commit. A task that adds a key adds its Lua, its Lua tests, its
 ### Blockers
 
 1. **List the blockers.** In `findings/game-state.md`, list every `EndTurnBlockingTypes` value. For each one, name the screen that resolves it, and whether it needs an expansion. Read them from `DoEndTurn` in `ActionPanel.lua`, and from `NotificationPanel.lua`. See [ending the turn](../../findings/game-api.md#ending-the-turn). Commit: `docs(core): list the end-turn blockers`.
-2. **Blockers in the state.** Add a `blockers` section to the state. It holds the current blocker from `NotificationManager.GetFirstEndTurnBlocking`, the choice in `choices` that resolves it, and the IDs of the units that need orders. Check it against the **Next Turn** button's prompt. Commit: `feat(core): add end-turn blockers to the state`.
+2. **Blockers in the state.** Add a `blockers` section to the state. It holds every blocker once, from `NotificationManager.GetAllEndTurnBlocking`, each with the choice in `choices` that resolves it, and the IDs of the units that need orders. Check it against the **Next Turn** button's prompt. Commit: `feat(core): add end-turn blockers to the state`.
 
 ### Choices
 

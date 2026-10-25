@@ -10,6 +10,7 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 // A state with one of each thing, in the shape the core mod sends.
 const STATE: State = {
+	blockers: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }], units: [196608] },
 	cities: [{
 		id: 65536,
 		name: "Rome",

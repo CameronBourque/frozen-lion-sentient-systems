@@ -12,10 +12,10 @@ local function Load(world)
 end
 
 describe("SentientSystems_GetState", function()
-	it("gives empty lists for a player with no cities, tiles, or units", function()
+	it("gives empty lists for a player with no blockers, cities, tiles, or units", function()
 		local env = Load({ players = { [0] = {} } })
 
-		assert.equal("{\"cities\":[],\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", env.SentientSystems_GetState(0))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", env.SentientSystems_GetState(0))
 	end)
 
 	it("raises an error for an ID with no player", function()
@@ -36,6 +36,7 @@ describe("SentientSystems_GetState", function()
 		local env = Load({ players = { [0] = {} } })
 
 		assert.same({}, env.printed)
+		assert.is_function(env.SentientSystems_GetBlockerState)
 		assert.is_function(env.SentientSystems_GetCityStates)
 		assert.is_function(env.SentientSystems_GetUnitStates)
 		assert.is_function(env.SentientSystems_GetTileStates)

@@ -1,12 +1,13 @@
-// Reads one player's state from the core mod: their cities, units, revealed tiles, and the rivals
-// they can see. The core mod builds the state as JSON and keeps it in pieces, because the tuner
-// gives no reply to a command whose output passes about 2 MiB. The bridge reads one piece per
-// command and joins them. docs/design/core/in-game-lua.md has the format. Each section's schema has
+// Reads one player's state from the core mod: what blocks their turn, their cities, units, revealed
+// tiles, and the rivals they can see. The core mod builds the state as JSON and keeps it in pieces,
+// because the tuner gives no reply to a command whose output passes about 2 MiB. The bridge reads
+// one piece per command and joins them. docs/design/core/in-game-lua.md has the format. Each section's schema has
 // its own file in this folder, as each section of the core mod's Lua does.
 
 import { z } from "zod";
 import { CORE_STATE } from "../connect.js";
 import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "../tuner/client.js";
+import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
 import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
 import { TILE } from "./tiles.js";
@@ -14,6 +15,7 @@ import { UNIT } from "./units.js";
 
 // Not strict, so a field from a newer core mod is dropped instead of failing the whole state.
 const STATE = z.object({
+	blockers: BLOCKERS,
 	cities: z.array(CITY),
 	units: z.array(UNIT),
 	tiles: z.array(TILE),

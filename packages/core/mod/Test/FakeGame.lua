@@ -1,6 +1,6 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
 -- map's plots, PlayersVisibility, PlayerManager.GetAlive, DefenseTypes, UnitManager.CanStartCommand
--- for promotions, GameInfo.Types,
+-- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, GameInfo.Types,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -22,7 +22,9 @@
 -- 	} },
 -- })
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
--- A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
+-- A player's blockers lists its end-turn blockers by name, in the game's order, such as
+-- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
+-- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
 -- true or false, and its defense has strength, garrison, and walls, each with damage and max.
 -- env.Players[0]:GetCities():Members() then lists the one city.
 
@@ -59,6 +61,17 @@ local HAPPINESSES = {
 
 -- The DefenseTypes values for a district's garrison and walls.
 local DEFENSE_TYPES = { DISTRICT_GARRISON = 0, DISTRICT_OUTER = 1 }
+
+-- Some EndTurnBlockingTypes values, with their hashes from the game.
+local END_TURN_BLOCKING_TYPES = {
+	NO_ENDTURN_BLOCKING = 0,
+	ENDTURN_BLOCKING_UNITS = 23669119,
+	ENDTURN_BLOCKING_RESEARCH = -286188551,
+	ENDTURN_BLOCKING_CIVIC = -2034242607,
+	ENDTURN_BLOCKING_PRODUCTION = -513644209,
+	ENDTURN_BLOCKING_FILL_CIVIC_SLOT = -1610199318,
+	ENDTURN_BLOCKING_UNIT_PROMOTION = 1706768628,
+}
 
 -- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
@@ -237,7 +250,7 @@ local function City(data, hashes, indexes)
 end
 
 -- A unit from data, with id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
--- maxDamage, which is 100 when missing, dead, delayedDeath, hidden, which hides it from other players'
+-- maxDamage, which is 100 when missing, dead, delayedDeath, ready, which IsReadyToSelect returns, hidden, which hides it from other players'
 -- IsUnitVisible, as a stealthy unit is, and experience. experience has points,
 -- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
 -- unit has no experience. indexes maps each unit and promotion type to its GameInfo index.
@@ -306,6 +319,9 @@ local function Unit(data, indexes)
 		end,
 		IsDelayedDeath = function()
 			return data.delayedDeath == true
+		end,
+		IsReadyToSelect = function()
+			return data.ready == true
 		end,
 	}
 end
@@ -397,6 +413,18 @@ function FakeGame.Install(env, world)
 		end,
 	}
 	env.YieldTypes = YIELD_TYPES
+	env.EndTurnBlockingTypes = END_TURN_BLOCKING_TYPES
+	env.NotificationManager = {
+		GetAllEndTurnBlocking = function(playerID)
+			local values = {}
+
+			for i, blocker in ipairs((world.players or {})[playerID].blockers or {}) do
+				values[i] = END_TURN_BLOCKING_TYPES[blocker] or blocker
+			end
+
+			return values
+		end,
+	}
 	env.DefenseTypes = DEFENSE_TYPES
 	env.Map = {
 		GetPlot = function(x, y)
