@@ -14,6 +14,7 @@
     "coverage:lua": "node scripts/lua-coverage/src/index.mjs",
     "dev": "npm run dev --workspace packages/core/bridge",
     "link-mod": "node scripts/link-mod/src/index.mjs",
+    "state": "npm run state --workspace packages/core/bridge --",
     "lint": "eslint .",
     "test": "vitest run",
     "test:lua": "busted",
