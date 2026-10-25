@@ -36,16 +36,28 @@ Each task is one commit. A task that adds a key adds its Lua, its Lua tests, its
 
 ### Other blockers
 
-17. **One task for each other blocker.** After task 1, add one task here for each blocker in the list that has no choice yet, such as a pantheon, an era dedication, or a governor appointment. Leave out each blocker whose feature isn't in the ruleset. Promotions are already in `units[].availablePromotions`.
+Each task adds the options for the blockers in [end-turn blockers](../../findings/game-state.md#end-turn-blockers) that no earlier task covers, read from the screen that the finding names. Leave out each choice whose feature isn't in the ruleset.
+
+17. **Pantheon.** Add `choices.pantheon`, for `ENDTURN_BLOCKING_PANTHEON`. Commit: `feat(core): add pantheon options`.
+18. **Religion and beliefs.** Add `choices.religion`, for `ENDTURN_BLOCKING_RELIGION` and `ENDTURN_BLOCKING_BELIEF`. Commit: `feat(core): add religion and belief options`.
+19. **Envoys.** Add `choices.envoys`, for `ENDTURN_BLOCKING_GIVE_INFLUENCE_TOKEN`. Commit: `feat(core): add envoy options`.
+20. **Great people.** Add `choices.greatPeople`, for `ENDTURN_BLOCKING_CLAIM_GREAT_PERSON`. Commit: `feat(core): add great person options`.
+21. **Captured cities.** Add `choices.capturedCities`, for `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` and `ENDTURN_BLOCKING_CONSIDER_DISLOYAL_CITY`. Commit: `feat(core): add captured city options`.
+22. **Spies.** Add `choices.spies`, for `ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE` and `ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY`. Commit: `feat(core): add spy options`.
+23. **Artifacts.** Add `choices.artifacts`, for `ENDTURN_BLOCKING_ARTIFACT`. Commit: `feat(core): add artifact options`.
+24. **Governors.** Add `choices.governors`, for the four `ENDTURN_BLOCKING_GOVERNOR_` blockers. Commit: `feat(core): add governor options`.
+25. **Era dedications.** Add `choices.dedications`, for `ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE`. Commit: `feat(core): add era dedication options`.
+26. **Emergencies.** Add `choices.emergencies`, for `ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION`. Commit: `feat(core): add emergency options`.
+27. **World Congress.** Add `choices.worldCongress`, for `ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK` and `ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION`. Commit: `feat(core): add World Congress options`.
 
 ### Scoreboard
 
-18. **Scores.** Add a `scoreboard` section to the state with each player's score, as the **Score** tab of World Rankings shows it. Commit: `feat(core): add scores to the state`.
-19. **Victory progress.** Add the progress for each victory, as World Rankings shows it. List every player in the screen's order. A met player has their ID and the values the tab and its tooltips show. An unmet player has only their place in the order, as the screen shows a `?` icon. Read the screen from `WorldRankings.lua` and `WorldRankings_Expansion2.lua`. Commit: `feat(core): add victory progress to the state`.
+28. **Scores.** Add a `scoreboard` section to the state with each player's score, as the **Score** tab of World Rankings shows it. Commit: `feat(core): add scores to the state`.
+29. **Victory progress.** Add the progress for each victory, as World Rankings shows it. List every player in the screen's order. A met player has their ID and the values the tab and its tooltips show. An unmet player has only their place in the order, as the screen shows a `?` icon. Read the screen from `WorldRankings.lua` and `WorldRankings_Expansion2.lua`. Commit: `feat(core): add victory progress to the state`.
 
 ### Sizes
 
-20. **Section sizes.** Make `npm run state` print the size of each section of the state, of the choices, and of each tree. Commit: `feat(core): print the state's section sizes`.
+30. **Section sizes.** Make `npm run state` print the size of each section of the state, of the choices, and of each tree. Commit: `feat(core): print the state's section sizes`.
 
 ## Done when
 
