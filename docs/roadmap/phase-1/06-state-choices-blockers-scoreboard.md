@@ -13,7 +13,7 @@ Each task is one commit. A task that adds a key adds its Lua, its Lua tests, its
 
 ### Choices
 
-3. **Choices call.** Add `SentientSystems_GetChoices(playerID)` in `Scripts/Choices/SentientSystemsCore_Choices.lua`, which returns `{}` for now. Each choice gets its own file in `Scripts/Choices/`, as each state section has in `Scripts/State/`. In the bridge, move the piece reading out of `src/state/state.ts` so that `readState` and a new `readChoices` in `src/choices/choices.ts` share it. Make `npm run state` print the choices after the state. Commit: `feat(core): add the choices call`.
+3. **Choices call.** Add `SentientSystems_GetChoices(playerID)` in `Scripts/Choices/SentientSystemsCore_Choices.lua`, which returns an empty table for now. Each choice gets its own file in `Scripts/Choices/`, as each state section has in `Scripts/State/`. In the bridge, move the piece reading out of `src/state/state.ts` so that `readState` and a new `readChoices` in `src/choices/choices.ts` share it. Make `npm run state` print the choices after the state. Commit: `feat(core): add the choices call`.
 4. **Units.** Add `choices.production`, with one entry for each city. Each entry lists the units the production panel shows, with cost and turns. A unit the panel greys out has the panel's reason. Read the checks from `ProductionPanel.lua`. Commit: `feat(core): add unit production options`.
 5. **Buildings.** Add the buildings to each city's entry, wonders left out, in the same form. Commit: `feat(core): add building production options`.
 6. **Districts and wonders.** Add the districts and wonders, each with the tiles where it can go. Read the placement check from `ProductionPanel.lua`. Commit: `feat(core): add district and wonder production options`.

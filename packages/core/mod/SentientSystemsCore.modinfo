@@ -17,6 +17,7 @@
 		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Common.lua</File>
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/State/SentientSystemsCore_State.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
@@ -28,6 +29,7 @@
 	<Files>
 		<File>Scripts/SentientSystemsCore_Common.lua</File>
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/State/SentientSystemsCore_State.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>

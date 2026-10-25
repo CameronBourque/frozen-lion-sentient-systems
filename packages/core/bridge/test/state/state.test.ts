@@ -148,7 +148,7 @@ describe("readState", () => {
 		const result = await readState(client, 0);
 
 		expect(result.ok).toBe(false);
-		expect(!result.ok && result.error).toMatch(/^The core mod's state isn't valid JSON: /);
+		expect(!result.ok && result.error).toMatch(/^The core mod's state JSON isn't valid: /);
 	});
 
 	test("fails with each field that doesn't match the schema", async () => {
@@ -156,13 +156,13 @@ describe("readState", () => {
 
 		const result = await readState(client, 0);
 
-		expect(!result.ok && result.error).toMatch(/^The core mod's state doesn't match the schema: cities\.0\.name: .*; tiles\.0\.terrain: .*; tiles\.0\.visible: /);
+		expect(!result.ok && result.error).toMatch(/^The core mod's state JSON doesn't match the schema: cities\.0\.name: .*; tiles\.0\.terrain: .*; tiles\.0\.visible: /);
 	});
 
 	test("fails when the state isn't an object", async () => {
 		stash(["[]"]);
 
-		expect(await readState(client, 0)).toEqual({ ok: false, error: "The core mod's state doesn't match the schema: the state: Invalid input: expected object, received array" });
+		expect(await readState(client, 0)).toEqual({ ok: false, error: "The core mod's state JSON doesn't match the schema: the state: Invalid input: expected object, received array" });
 	});
 
 	test("fails with the game's error when the core mod can't build the state", async () => {
