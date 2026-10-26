@@ -17,6 +17,7 @@ const CHOICES = {
 	production: [{ city: 65536, name: "Rome", units: [{ type: "UNIT_SCOUT", cost: 15, turns: 2 }], buildings: [], districts: [], wonders: [], projects: [] }],
 	purchases: [{ city: 65536, name: "Rome", gold: { units: [{ type: "UNIT_SCOUT", cost: 60 }], buildings: [], districts: [], tiles: [] }, faith: { units: [], buildings: [], districts: [] } }],
 	techs: [{ type: "TECH_MINING", cost: 12, turns: 1, unlocks: ["IMPROVEMENT_MINE"] }],
+	civics: [],
 };
 const JSON_TEXT = JSON.stringify(CHOICES);
 

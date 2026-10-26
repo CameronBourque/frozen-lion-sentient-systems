@@ -3,8 +3,9 @@
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
 -- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury, a
--- player's techs with the advisor's recommendations and the game's GetUnlockablesForTech,
--- GameInfo.Types, GameInfo.Yields, GameInfo.Technologies, GameInfo.Boosts,
+-- player's techs and civics with the advisor's recommendations and the game's
+-- GetUnlockablesForTech and GetUnlockablesForCivic, GameInfo.Types, GameInfo.Yields,
+-- GameInfo.Technologies, GameInfo.Civics, GameInfo.Boosts,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -28,7 +29,8 @@
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
 -- A player's techs has current, the tech in research, and options, the techs the player knows,
 -- each with type, cost, turns, progress, boost, with percent, trigger, and triggered, unlocks,
--- description, a text key, recommended, and locked, which CanResearch refuses. A player's blockers lists its end-turn
+-- description, a text key, recommended, and locked, which CanResearch refuses. A player's civics
+-- has the same, with civic types. A player's blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
@@ -642,13 +644,17 @@ end
 
 local function Player(id, data, hashes, indexes)
 	local cities, units = {}, {}
-	local techData = data.techs or {}
+	local techData, civicData = data.techs or {}, data.civics or {}
 
-	-- Each tech option by its GameInfo index.
-	local techsByIndex = {}
+	-- Each tech and civic option by its GameInfo index.
+	local techsByIndex, civicsByIndex = {}, {}
 
 	for _, tech in ipairs(techData.options or {}) do
 		techsByIndex[indexes[tech.type]] = tech
+	end
+
+	for _, civic in ipairs(civicData.options or {}) do
+		civicsByIndex[indexes[civic.type]] = civic
 	end
 
 	-- The player's store of a yield, which can afford an item in a city unless the city's purchase
@@ -705,18 +711,48 @@ local function Player(id, data, hashes, indexes)
 				end,
 			}
 		end,
+		GetCulture = function()
+			return {
+				GetProgressingCivic = function()
+					return civicData.current and indexes[civicData.current] or -1
+				end,
+				CanProgress = function(_, index)
+					return civicsByIndex[index] ~= nil and not civicsByIndex[index].locked
+				end,
+				GetCultureCost = function(_, index)
+					return civicsByIndex[index].cost
+				end,
+				GetCulturalProgress = function(_, index)
+					return civicsByIndex[index].progress or 0
+				end,
+				GetTurnsToProgressCivic = function(_, index)
+					return civicsByIndex[index].turns
+				end,
+				HasBoostBeenTriggered = function(_, index)
+					return civicsByIndex[index].boost.triggered == true
+				end,
+			}
+		end,
 		GetGrandStrategicAI = function()
+			-- Returns the recommended options, each with its hash in field.
+			local function Recommendations(options, field)
+				local recommendations = {}
+
+				for _, option in ipairs(options or {}) do
+					if option.recommended then
+						recommendations[#recommendations + 1] = { [field] = hashes[option.type] }
+					end
+				end
+
+				return recommendations
+			end
+
 			return {
 				GetTechRecommendations = function()
-					local recommendations = {}
-
-					for _, tech in ipairs(techData.options or {}) do
-						if tech.recommended then
-							recommendations[#recommendations + 1] = { TechHash = hashes[tech.type] }
-						end
-					end
-
-					return recommendations
+					return Recommendations(techData.options, "TechHash")
+				end,
+				GetCivicsRecommendations = function()
+					return Recommendations(civicData.options, "CivicHash")
 				end,
 			}
 		end,
@@ -773,6 +809,7 @@ function FakeGame.Install(env, world)
 		Districts = {},
 		Projects = {},
 		Technologies = {},
+		Civics = {},
 		Boosts = {},
 		Yields = YIELD_ROWS,
 		Buildings = {},
@@ -794,6 +831,7 @@ function FakeGame.Install(env, world)
 		Districts = "DistrictType",
 		Projects = "ProjectType",
 		Technologies = "TechnologyType",
+		Civics = "CivicType",
 		Boosts = "TechnologyType",
 	}) do
 		setmetatable(env.GameInfo[name], {
@@ -924,39 +962,49 @@ function FakeGame.Install(env, world)
 		end
 	end
 
-	-- Each tech gets a row, a hash, and a boost row when it has a boost. The game's
-	-- GetUnlockablesForTech returns what a tech unlocks as { type, name, key } rows.
-	local unlocksByTech = {}
+	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
+	-- GetUnlockablesForTech and GetUnlockablesForCivic return what one unlocks as { type, name, key }
+	-- rows.
+	local unlocksByType = {}
 
 	for _, data in pairs(world.players or {}) do
-		for _, tech in ipairs((data.techs or {}).options or {}) do
-			AddRow("Technologies", "TechnologyType", tech.type)
-			count = count + 1
-			hashes[tech.type] = hashes[tech.type] or 4000000 + count
-			env.GameInfo.Technologies[indexes[tech.type]].Hash = hashes[tech.type]
-			env.GameInfo.Technologies[indexes[tech.type]].Description = tech.description
-			unlocksByTech[tech.type] = tech.unlocks
+		for _, kind in ipairs({ { data.techs, "Technologies", "TechnologyType" }, { data.civics, "Civics", "CivicType" } }) do
+			for _, option in ipairs((kind[1] or {}).options or {}) do
+				AddRow(kind[2], kind[3], option.type)
+				count = count + 1
+				hashes[option.type] = hashes[option.type] or 4000000 + count
 
-			if tech.boost ~= nil then
-				local boosts = env.GameInfo.Boosts
+				local row = env.GameInfo[kind[2]][indexes[option.type]]
 
-				boosts[#boosts + (boosts[0] and 1 or 0)] = { TechnologyType = tech.type, Boost = tech.boost.percent, TriggerDescription = tech.boost.trigger }
+				row.Hash = hashes[option.type]
+				row.Description = option.description
+				unlocksByType[option.type] = option.unlocks
+
+				if option.boost ~= nil then
+					local boosts = env.GameInfo.Boosts
+
+					boosts[#boosts + (boosts[0] and 1 or 0)] = { [kind[3]] = option.type, Boost = option.boost.percent, TriggerDescription = option.boost.trigger }
+				end
 			end
 		end
+	end
+
+	-- Returns the unlock rows of a tech or civic type.
+	local function UnlockRows(typeName)
+		local rows = {}
+
+		for i, unlock in ipairs(unlocksByType[typeName] or {}) do
+			rows[i] = { unlock, unlock, unlock }
+		end
+
+		return rows
 	end
 
 	env.GetFilteredUnlockableItems = function()
 		return {}
 	end
-	env.GetUnlockablesForTech = function(techType)
-		local rows = {}
-
-		for i, typeName in ipairs(unlocksByTech[techType] or {}) do
-			rows[i] = { typeName, typeName, typeName }
-		end
-
-		return rows
-	end
+	env.GetUnlockablesForTech = UnlockRows
+	env.GetUnlockablesForCivic = UnlockRows
 
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do

@@ -9,13 +9,14 @@ import { readStash } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 import { PRODUCTION_CITY } from "./production.js";
 import { PURCHASE_CITY } from "./purchases.js";
-import { TECH_OPTION } from "./techs.js";
+import { RESEARCH_OPTION } from "./research.js";
 
 // Not strict, so a choice from a newer core mod is dropped instead of failing all the choices.
 const CHOICES = z.object({
 	production: z.array(PRODUCTION_CITY),
 	purchases: z.array(PURCHASE_CITY),
-	techs: z.array(TECH_OPTION),
+	techs: z.array(RESEARCH_OPTION),
+	civics: z.array(RESEARCH_OPTION),
 });
 
 export type Choices = z.infer<typeof CHOICES>;

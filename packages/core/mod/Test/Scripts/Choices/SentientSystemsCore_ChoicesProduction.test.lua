@@ -13,7 +13,7 @@ local function ProductionWith(units)
 	})
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
-	return env.SentientSystems_GetChoices(0):match("^{\"production\":(%b[])")
+	return env.SentientSystems_GetChoices(0):match("\"production\":(%b[])")
 end
 
 -- Returns a copy of unit with the fields in changes.

@@ -95,3 +95,57 @@ describe("SentientSystems_GetTechChoices", function()
 		assert.truthy(env.SentientSystems_GetChoices(0):find("\"description\":\"Allows units to embark.\"", 1, true))
 	end)
 end)
+
+describe("SentientSystems_GetCivicChoices", function()
+	local CRAFTSMANSHIP = {
+		type = "CIVIC_CRAFTSMANSHIP",
+		cost = 20,
+		turns = 1,
+		boost = { percent = 40, trigger = "Improve 3 tiles.", triggered = false },
+		unlocks = { "POLICY_ILKUM", "POLICY_AGOGE" },
+		recommended = true,
+	}
+
+	-- Returns the civic choice JSON for player 0, whose civics are given.
+	local function CivicsWith(civics)
+		local env = Game.new()
+
+		FakeGame.Install(env, { players = { [0] = { civics = civics } } })
+		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+		return env.SentientSystems_GetChoices(0):match("\"civics\":(%b[])")
+	end
+
+	it("lists each civic the player can research, in the same form as techs", function()
+		assert.equal(
+			"[{\"boost\":{\"percent\":40,\"trigger\":\"Improve 3 tiles.\",\"triggered\":false},\"cost\":20,\"recommended\":true,\"turns\":1,"
+				.. "\"type\":\"CIVIC_CRAFTSMANSHIP\",\"unlocks\":[\"POLICY_ILKUM\",\"POLICY_AGOGE\"]}]",
+			CivicsWith({ options = { CRAFTSMANSHIP } })
+		)
+	end)
+
+	it("marks the civic in research and its progress, and leaves out one the player can't research", function()
+		local civics = CivicsWith({
+			current = "CIVIC_CRAFTSMANSHIP",
+			options = { With(CRAFTSMANSHIP, { progress = 6 }), { type = "CIVIC_POLITICAL_PHILOSOPHY", cost = 110, turns = 20, locked = true } },
+		})
+
+		assert.truthy(civics:find("\"current\":true", 1, true))
+		assert.truthy(civics:find("\"progress\":6", 1, true))
+		assert.is_nil(civics:find("CIVIC_POLITICAL_PHILOSOPHY", 1, true))
+	end)
+
+	it("keeps a tech's boost apart from a civic's", function()
+		local env = Game.new()
+
+		FakeGame.Install(env, { players = { [0] = {
+			techs = { options = { { type = "TECH_SAILING", cost = 25, turns = 1, boost = { percent = 40, trigger = "Found a city on the Coast.", triggered = false } } } },
+			civics = { options = { { type = "CIVIC_CODE_OF_LAWS", cost = 20, turns = 1 } } },
+		} } })
+		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+		local civics = env.SentientSystems_GetChoices(0):match("\"civics\":(%b[])")
+
+		assert.is_nil(civics:find("boost", 1, true))
+	end)
+end)
