@@ -13,7 +13,7 @@ end
 
 describe("SentientSystems_GetChoices", function()
 	it("gives each choice for a player with no cities", function()
-		assert.equal("{\"civics\":[],\"production\":[],\"purchases\":[],\"techs\":[]}", Load({ players = { [0] = {} } }).SentientSystems_GetChoices(0))
+		assert.equal("{\"civics\":[],\"government\":{\"slots\":[]},\"production\":[],\"purchases\":[],\"techs\":[]}", Load({ players = { [0] = {} } }).SentientSystems_GetChoices(0))
 	end)
 
 	it("raises an error for an ID with no player", function()
@@ -32,6 +32,7 @@ describe("SentientSystems_GetChoices", function()
 		assert.is_function(env.SentientSystems_GetPurchaseChoices)
 		assert.is_function(env.SentientSystems_GetTechChoices)
 		assert.is_function(env.SentientSystems_GetCivicChoices)
+		assert.is_function(env.SentientSystems_GetGovernmentChoices)
 		assert.equal(1, env.SentientSystems_Stash(env.SentientSystems_GetChoices(0)))
 	end)
 end)

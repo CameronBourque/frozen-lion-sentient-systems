@@ -7,6 +7,7 @@
 import { z } from "zod";
 import { readStash } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
+import { GOVERNMENT } from "./government.js";
 import { PRODUCTION_CITY } from "./production.js";
 import { PURCHASE_CITY } from "./purchases.js";
 import { RESEARCH_OPTION } from "./research.js";
@@ -17,6 +18,7 @@ const CHOICES = z.object({
 	purchases: z.array(PURCHASE_CITY),
 	techs: z.array(RESEARCH_OPTION),
 	civics: z.array(RESEARCH_OPTION),
+	government: GOVERNMENT,
 });
 
 export type Choices = z.infer<typeof CHOICES>;

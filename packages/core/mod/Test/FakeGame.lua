@@ -6,7 +6,8 @@
 -- player's techs and civics with the advisor's recommendations and the game's
 -- GetUnlockablesForTech and GetUnlockablesForCivic, GameInfo.Types, GameInfo.Yields,
 -- GameInfo.Technologies, GameInfo.Civics, GameInfo.Boosts, GameInfo.Eras, UITree for player 0's
--- techs and civics, Game.GetPlayers, a player's diplomacy,
+-- techs and civics, Game.GetPlayers, a player's diplomacy, a player's government and policy slots
+-- with GameInfo.Governments, GameInfo.GovernmentSlots, and GameInfo.Policies,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -33,7 +34,8 @@
 -- description, a text key, recommended, locked, which CanResearch refuses, and for the tech tree,
 -- era, which is ERA_ANCIENT when missing, researched, hidden, which IsTechRevealed refuses, and
 -- prerequisites, by type. techs.turnsLeft is what GetTurnsLeft returns. A player's civics has the
--- same, with civic types. A player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
+-- same, with civic types. A player's government has type, missing for none, and slots, each with
+-- type, such as SLOT_MILITARY, and policy, missing for an empty slot. A player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
@@ -647,7 +649,7 @@ end
 
 local function Player(id, data, hashes, indexes)
 	local cities, units = {}, {}
-	local techData, civicData = data.techs or {}, data.civics or {}
+	local techData, civicData, governmentData = data.techs or {}, data.civics or {}, data.government or {}
 
 	-- Each tech and civic option by its GameInfo index.
 	local techsByIndex, civicsByIndex = {}, {}
@@ -762,6 +764,20 @@ local function Player(id, data, hashes, indexes)
 				GetTurnsLeft = function()
 					return civicData.turnsLeft or -1
 				end,
+				GetCurrentGovernment = function()
+					return governmentData.type and indexes[governmentData.type] or -1
+				end,
+				GetNumPolicySlots = function()
+					return #(governmentData.slots or {})
+				end,
+				GetSlotType = function(_, i)
+					return indexes[governmentData.slots[i + 1].type]
+				end,
+				GetSlotPolicy = function(_, i)
+					local policy = governmentData.slots[i + 1].policy
+
+					return policy and indexes[policy] or -1
+				end,
 				HasBoostBeenTriggered = function(_, index)
 					return civicsByIndex[index].boost.triggered == true
 				end,
@@ -860,6 +876,9 @@ function FakeGame.Install(env, world)
 		Improvements = {},
 		Routes = {},
 		Happinesses = HAPPINESSES,
+		Governments = {},
+		GovernmentSlots = {},
+		Policies = {},
 	}
 	-- GameInfo.Units(), GameInfo.Buildings(), GameInfo.Districts(), and GameInfo.Projects() list the
 	-- rows in index order, as the game's tables do when called, and each table finds a row by its type
@@ -998,6 +1017,23 @@ function FakeGame.Install(env, world)
 			row[column] = typeName
 			env.GameInfo[tableName][index] = row
 			indexes[typeName] = index
+		end
+	end
+
+	-- Each government, slot type, and policy gets a row.
+	for _, data in pairs(world.players or {}) do
+		local government = data.government or {}
+
+		if government.type ~= nil then
+			AddRow("Governments", "GovernmentType", government.type)
+		end
+
+		for _, slot in ipairs(government.slots or {}) do
+			AddRow("GovernmentSlots", "GovernmentSlotType", slot.type)
+
+			if slot.policy ~= nil then
+				AddRow("Policies", "PolicyType", slot.policy)
+			end
 		end
 	end
 
