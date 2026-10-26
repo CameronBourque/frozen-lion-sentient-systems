@@ -2,7 +2,8 @@
 -- map's plots, PlayersVisibility, PlayerManager.GetAlive and GetAliveMinors, PlayerConfigurations,
 -- PlayerManager.GetAliveMajorIDs, a player's influence and resources, Game.GetQuestsManager,
 -- Game.GetGreatPeople, a player's great people points, GameInfo.GreatPersonClasses,
--- GameInfo.GreatPersonIndividuals, GameCapabilities,
+-- GameInfo.GreatPersonIndividuals, GameCapabilities, a player's captured and rebelled cities,
+-- CityDestroyDirectives, CivilizationLevelTypes, CityTransferTypes, GlobalParameters,
 -- GameInfo.Leaders, GameInfo.LeaderTraits, GameInfo.Traits, GameInfo.Quests, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
@@ -70,7 +71,12 @@
 -- charges, passive and action, each with the text the timeline gives, canRecruit, passCost, there
 -- when the player can pass, gold and faith, each with cost and can, cantEarn, and claimed, true for a
 -- class whose great person is taken. A player's greatPeoplePoints maps a class type to its points
--- and perTurn. world.offCapabilities lists the great people capabilities that are off. A player's
+-- and perTurn. A player's captured and rebelled are the next city it captured and the next city that
+-- rebelled to join it, each with id, name, x, y, population, districts, originalOwner, ownerBefore,
+-- conqueredFrom, gift, true for a city given in a deal, canRaze, false for one the player can't
+-- raze, and warmonger, with keep and raze points. noRiseAndFall leaves out GetNextRebelledCity. A
+-- player's liberate lists the IDs it can liberate a city to, revived the IDs it has brought back,
+-- and freeCities is true for the Free Cities. world.offCapabilities lists the great people capabilities that are off. A player's
 -- blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
@@ -98,6 +104,55 @@ local function List(items)
 					return item
 				end
 			end
+		end,
+		GetCount = function()
+			return #items
+		end,
+	}
+end
+
+-- The game's city transfer types, of which the raze screen checks only BY_GIFT.
+local CITY_TRANSFER_TYPES = { BY_GIFT = 7 }
+
+-- A captured or rebelled city from data, with the calls the raze and disloyal city screens make.
+local function ChangedCity(data)
+	return {
+		GetID = function()
+			return data.id
+		end,
+		GetName = function()
+			return data.name
+		end,
+		GetX = function()
+			return data.x
+		end,
+		GetY = function()
+			return data.y
+		end,
+		GetPopulation = function()
+			return data.population
+		end,
+		GetDistricts = function()
+			return {
+				GetNumZonedDistrictsRequiringPopulation = function()
+					return data.districts or 0
+				end,
+			}
+		end,
+		GetOriginalOwner = function()
+			return data.originalOwner
+		end,
+		GetOwnerBeforeOccupation = function()
+			return data.ownerBefore
+		end,
+		GetJustConqueredFrom = function()
+			return data.conqueredFrom
+		end,
+		GetLastTransferType = function()
+			return data.gift and CITY_TRANSFER_TYPES.BY_GIFT or 0
+		end,
+		CanRaze = function()
+			return data.canRaze ~= false
 		end,
 	}
 end
@@ -749,8 +804,39 @@ local function Player(id, data, hashes, indexes, env)
 		GetID = function()
 			return id
 		end,
+		-- The player's cities, and the next city it captured and the next that rebelled to join it,
+		-- from data.captured and data.rebelled. Without Rise and Fall there is no
+		-- GetNextRebelledCity.
 		GetCities = function()
-			return List(cities)
+			local list = List(cities)
+
+			function list.GetNextCapturedCity()
+				return data.captured and ChangedCity(data.captured)
+			end
+
+			if not data.noRiseAndFall then
+				function list.GetNextRebelledCity()
+					return data.rebelled and ChangedCity(data.rebelled)
+				end
+			end
+
+			return list
+		end,
+		IsFreeCities = function()
+			return data.freeCities == true
+		end,
+		GetStats = function()
+			return {
+				GetHasRevivedPlayer = function(_, otherID)
+					for _, revived in ipairs(data.revived or {}) do
+						if revived == otherID then
+							return true
+						end
+					end
+
+					return false
+				end,
+			}
 		end,
 		GetTechs = function()
 			return {
@@ -793,6 +879,24 @@ local function Player(id, data, hashes, indexes, env)
 					end
 
 					return false
+				end,
+				CanLiberateCityTo = function(_, otherID)
+					for _, liberate in ipairs(data.liberate or {}) do
+						if liberate == otherID then
+							return true
+						end
+					end
+
+					return false
+				end,
+				-- The warmonger points of keeping or razing, from data.captured.warmonger.
+				ComputeCityWarmongerPoints = function(_, _, _, raze)
+					local warmonger = data.captured.warmonger or {}
+
+					return (raze and warmonger.raze or warmonger.keep) or 0
+				end,
+				GetWarmongerLevel = function(_, points)
+					return "LOC_WARMONGER_LEVEL_" .. points
 				end,
 			}
 		end,
@@ -1480,7 +1584,16 @@ function FakeGame.Install(env, world)
 				or (capability:find("^CAPABILITY_GREAT_PEOPLE_") ~= nil and not (world.offCapabilities or {})[capability])
 		end,
 	}
-	env.GlobalParameters = { GOVERNMENT_UNLOCK_WITH_FAITH = world.unlockWithFaith and 1 or 0 }
+	env.GlobalParameters = {
+		GOVERNMENT_UNLOCK_WITH_FAITH = world.unlockWithFaith and 1 or 0,
+		FAVOR_FOR_LIBERATE_PLAYER_CITY = 100,
+		FAVOR_FOR_LIBERATE_CITY_STATE = 50,
+		FAVOR_FOR_REVIVE_PLAYER = 20,
+		WARMONGER_FINAL_MAJOR_CITY_MULTIPLIER = 200,
+	}
+	env.CityDestroyDirectives = { LIBERATE_FOUNDER = 0, LIBERATE_PREVIOUS_OWNER = 1, KEEP = 2, RAZE = 3, REJECT = 4 }
+	env.CivilizationLevelTypes = { CIVILIZATION_LEVEL_FULL_CIV = 0 }
+	env.CityTransferTypes = CITY_TRANSFER_TYPES
 
 	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
 	-- GetUnlockablesForTech and GetUnlockablesForCivic return what one unlocks as { type, name, key }
@@ -1816,6 +1929,9 @@ function FakeGame.Install(env, world)
 			end,
 			GetLeaderTypeName = function()
 				return minor.leader
+			end,
+			GetCivilizationLevelTypeID = function()
+				return data.minor and 1 or 0
 			end,
 		}
 

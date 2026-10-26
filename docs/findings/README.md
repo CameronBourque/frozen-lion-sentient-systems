@@ -15,6 +15,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [game-government.md](game-government.md) | The calls the government and policy choices use, as the government screen shows them |
 | [game-religion.md](game-religion.md) | The calls the religion choices use, as the religion screens show them |
 | [game-great-people.md](game-great-people.md) | The calls the great person choice and the great people in the state use, as the Great People screen shows them |
+| [game-captured-cities.md](game-captured-cities.md) | The calls the captured city choice uses, as the raze and disloyal city screens show them |
 | [game-city-states.md](game-city-states.md) | The calls the envoy choice and the envoys and city-state details in the state use, as the City-States screen shows them |
 | [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |
