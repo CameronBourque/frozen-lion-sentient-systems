@@ -2,8 +2,8 @@
 -- call of its own, so the agent reads them only when it decides. Each choice comes from its own file
 -- in this folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetChoices(0) returns
--- '{"civics":[...],"government":{...},"policies":{...},"production":[{"city":65536,"name":"Rome",
--- "units":[...]}],"purchases":[...],"techs":[...]}', on one line.
+-- '{"civics":[...],"government":{...},"governments":{...},"policies":{...},"production":[{"city":65536,
+-- "name":"Rome","units":[...]}],"purchases":[...],"techs":[...]}', on one line.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -43,5 +43,6 @@ function SentientSystems_GetChoices(playerID)
 		civics = SentientSystems_GetCivicChoices(player),
 		government = SentientSystems_GetGovernmentChoices(player),
 		policies = SentientSystems_GetPolicyChoices(player),
+		governments = SentientSystems_GetGovernmentOptions(player),
 	})
 end

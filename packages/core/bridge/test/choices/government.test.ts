@@ -1,8 +1,8 @@
-// Tests for government.ts: the schemas for the player's government, its policy slots, and the
-// policies the player can slot.
+// Tests for government.ts: the schemas for the player's government, its policy slots, the policies
+// the player can slot, and every government.
 
 import { describe, expect, test } from "vitest";
-import { GOVERNMENT, POLICIES } from "../../src/choices/government.js";
+import { GOVERNMENT, GOVERNMENTS, POLICIES } from "../../src/choices/government.js";
 
 const CHIEFDOM = {
 	type: "GOVERNMENT_CHIEFDOM",
@@ -50,5 +50,40 @@ describe("POLICIES", () => {
 
 	test("rejects a new that isn't true", () => {
 		expect(POLICIES.safeParse({ canChange: true, options: { SLOT_MILITARY: [{ type: "POLICY_SURVEY", description: "", new: false }] } }).success).toBe(false);
+	});
+});
+
+const AUTOCRACY = {
+	type: "GOVERNMENT_AUTOCRACY",
+	locked: "CIVIC_POLITICAL_PHILOSOPHY",
+	slots: { SLOT_MILITARY: 1, SLOT_ECONOMIC: 1, SLOT_DIPLOMATIC: 1, SLOT_WILDCARD: 1 },
+	bonuses: ["+1 to all yields for each Government Plaza building.", "+10% Production toward Wonders."],
+	legacyPercent: 10,
+	influence: { perTurn: 3, threshold: 100, envoys: 1 },
+	favor: 1,
+	anarchy: 2,
+};
+
+describe("GOVERNMENTS", () => {
+	test("accepts a government with every field, and the current one with only its influence", () => {
+		const governments = {
+			canChange: false,
+			unlock: { cost: 50, yield: "YIELD_GOLD" },
+			options: [{ type: "GOVERNMENT_CHIEFDOM", current: true as const, influence: { perTurn: 1, threshold: 100, envoys: 1 } }, AUTOCRACY],
+		};
+
+		expect(GOVERNMENTS.parse(governments)).toEqual(governments);
+	});
+
+	test("accepts a locked government with no civic", () => {
+		expect(GOVERNMENTS.safeParse({ canChange: false, options: [{ ...AUTOCRACY, locked: true }] }).success).toBe(true);
+	});
+
+	test("rejects a locked that is false", () => {
+		expect(GOVERNMENTS.safeParse({ canChange: false, options: [{ ...AUTOCRACY, locked: false }] }).success).toBe(false);
+	});
+
+	test("rejects a government without its influence", () => {
+		expect(GOVERNMENTS.safeParse({ canChange: false, options: [{ type: "GOVERNMENT_CHIEFDOM" }] }).success).toBe(false);
 	});
 });

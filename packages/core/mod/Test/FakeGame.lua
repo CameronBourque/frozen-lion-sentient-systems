@@ -39,7 +39,12 @@
 -- changeMade, and unlockCost, as the game's culture calls give them. A player's policies lists the
 -- policies the player knows, each with type, slot, its slot type, description, civic, its
 -- prerequisite, and locked, obsolete, banned, and unslottable. noStrategicCommands is true while
--- the player can't act. world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
+-- the player can't act. A player's government also has unlocked, the other governments it has
+-- unlocked, anarchy, the turns by government type, canChangeAtAll, and governmentChangeMade.
+-- world.governments lists the ruleset's governments, each with type, civic, bonusType, bonuses,
+-- its two text keys, slots, counts by slot type, influence, with perTurn, threshold, and envoys,
+-- favor, and legacyPercent. world.legacyBonuses turns on the base game's legacy bonuses.
+-- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
 -- player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
 -- blockers by name, in the game's order, such as
@@ -653,7 +658,7 @@ local function Unit(data, indexes)
 	}
 end
 
-local function Player(id, data, hashes, indexes)
+local function Player(id, data, hashes, indexes, env)
 	local cities, units = {}, {}
 	local techData, civicData, governmentData = data.techs or {}, data.civics or {}, data.government or {}
 
@@ -790,6 +795,25 @@ local function Player(id, data, hashes, indexes)
 				end,
 				CivicCompletedThisTurn = function()
 					return governmentData.civicThisTurn ~= nil
+				end,
+				CanChangeGovernmentAtAll = function()
+					return governmentData.canChangeAtAll == true
+				end,
+				GovernmentChangeMade = function()
+					return governmentData.governmentChangeMade == true
+				end,
+				-- The player's current government is always unlocked.
+				IsGovernmentUnlocked = function(_, hash)
+					for _, typeName in ipairs(governmentData.unlocked or {}) do
+						if hashes[typeName] == hash then
+							return true
+						end
+					end
+
+					return governmentData.type ~= nil and hashes[governmentData.type] == hash
+				end,
+				GetAnarchyTurns = function(_, index)
+					return (governmentData.anarchy or {})[env.GameInfo.Governments[index].GovernmentType] or 0
 				end,
 				GetCivicCompletedThisTurn = function()
 					return governmentData.civicThisTurn and indexes[governmentData.civicThisTurn] or -1
@@ -935,6 +959,9 @@ function FakeGame.Install(env, world)
 		Governments = {},
 		GovernmentSlots = {},
 		Policies = {},
+		Government_SlotCounts = {},
+		GovernmentModifiers = {},
+		ModifierArguments = {},
 	}
 	-- GameInfo.Units(), GameInfo.Buildings(), GameInfo.Districts(), and GameInfo.Projects() list the
 	-- rows in index order, as the game's tables do when called, and each table finds a row by its type
@@ -948,6 +975,7 @@ function FakeGame.Install(env, world)
 		Civics = "CivicType",
 		Boosts = "TechnologyType",
 		Policies = "PolicyType",
+		Governments = "GovernmentType",
 	}) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
@@ -1094,6 +1122,61 @@ function FakeGame.Install(env, world)
 		row.PrereqCivic = row.PrereqCivic or policy.civic
 	end
 
+	-- Makes a list of rows callable, as GameInfo.Government_SlotCounts() is.
+	local function Callable(rows)
+		return setmetatable(rows, {
+			__call = function()
+				local i = 0
+
+				return function()
+					i = i + 1
+
+					return rows[i]
+				end
+			end,
+		})
+	end
+
+	-- Each government in world.governments gets its row, its slot counts, the modifier that holds
+	-- its legacy percent, and its Gathering Storm row with its favor.
+	local governmentsXP2 = Callable({})
+
+	for _, government in ipairs(world.governments or {}) do
+		AddRow("Governments", "GovernmentType", government.type)
+
+		local row = env.GameInfo.Governments[indexes[government.type]]
+		local influence = government.influence or {}
+
+		count = count + 1
+		hashes[government.type] = 4000000 + count
+		row.Hash = hashes[government.type]
+		row.PrereqCivic = government.civic
+		row.BonusType = government.bonusType or "NO_GOVERNMENTBONUS"
+		row.InherentBonusDesc = (government.bonuses or {})[1]
+		row.AccumulatedBonusShortDesc = (government.bonuses or {})[2]
+		row.InfluencePointsPerTurn = influence.perTurn or 1
+		row.InfluencePointsThreshold = influence.threshold or 100
+		row.InfluenceTokensPerThreshold = influence.envoys or 1
+
+		for slotType, slotCount in pairs(government.slots or {}) do
+			table.insert(env.GameInfo.Government_SlotCounts, { GovernmentType = government.type, GovernmentSlotType = slotType, NumSlots = slotCount })
+		end
+
+		if government.legacyPercent ~= nil then
+			local modifierID = "MODIFIER_" .. government.type
+
+			table.insert(env.GameInfo.GovernmentModifiers, { GovernmentType = government.type, ModifierId = modifierID })
+			table.insert(env.GameInfo.ModifierArguments, { ModifierId = modifierID, Name = "BonusType", Value = row.BonusType })
+			table.insert(env.GameInfo.ModifierArguments, { ModifierId = modifierID, Name = "Amount", Value = tostring(government.legacyPercent) })
+		end
+
+		table.insert(governmentsXP2, { GovernmentType = government.type, Favor = government.favor or 0 })
+	end
+
+	Callable(env.GameInfo.Government_SlotCounts)
+	Callable(env.GameInfo.GovernmentModifiers)
+	Callable(env.GameInfo.ModifierArguments)
+
 	-- Each government, slot type, policy, and civic completed this turn gets a row.
 	for _, data in pairs(world.players or {}) do
 		local government = data.government or {}
@@ -1119,8 +1202,24 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- A government only a player names gets a hash and the default influence.
+	for _, row in pairs(env.GameInfo.Governments) do
+		if row.Hash == nil then
+			count = count + 1
+			hashes[row.GovernmentType] = 4000000 + count
+			row.Hash = hashes[row.GovernmentType]
+			row.BonusType = "NO_GOVERNMENTBONUS"
+			row.InfluencePointsPerTurn, row.InfluencePointsThreshold, row.InfluenceTokensPerThreshold = 1, 100, 1
+		end
+	end
+
 	-- Gathering Storm's rows, the faith rule for paying to change policies, and the World Congress.
-	env.GameInfo.Governments_XP2 = world.expansion2 and {} or nil
+	env.GameInfo.Governments_XP2 = world.expansion2 and governmentsXP2 or nil
+	env.GameCapabilities = {
+		HasCapability = function(capability)
+			return capability == "CAPABILITY_GOVERNMENTS_LEGACY_BONUSES" and world.legacyBonuses == true
+		end,
+	}
 	env.GlobalParameters = { GOVERNMENT_UNLOCK_WITH_FAITH = world.unlockWithFaith and 1 or 0 }
 
 	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
@@ -1432,7 +1531,7 @@ function FakeGame.Install(env, world)
 	env.PlayersVisibility = {}
 
 	for id, data in pairs(world.players or {}) do
-		env.Players[id] = Player(id, data, hashes, indexes)
+		env.Players[id] = Player(id, data, hashes, indexes, env)
 
 		-- Each listed plot's index: revealed, or visible, which is revealed too.
 		local revealed, visible = {}, {}
