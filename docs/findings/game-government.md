@@ -1,12 +1,12 @@
 # Game government
 
-Status: open. The `government` and `policies` keys of `SentientSystems_GetChoices`, the player's government with its policy slots and the policies the player can slot, are confirmed in a running game.
+Status: open. The `government`, `policies`, and `governments` keys of `SentientSystems_GetChoices`, the player's government with its policy slots, the policies the player can slot, and every government, are confirmed in a running game with Gathering Storm. The legacy bonus percent is confirmed in files only.
 
 The calls the government and policy choices use, as the government screen shows them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-None open.
+1. Does `legacyPercent` read as the View Governments tab shows it, in a game without Rise and Fall or Gathering Storm? Both expansions remove `CAPABILITY_GOVERNMENTS_LEGACY_BONUSES`, so only the base game shows the percent.
 
 ## What we know now
 
@@ -18,6 +18,9 @@ None open.
 - **New.** `PopulateLivePlayerData`, lines 2257 to 2276, marks a policy as new when its `PrereqCivic` is the civic from `GetCivicCompletedThisTurn()`. Rise and Fall's replacement also marks its dark age policies at the start of a dark age, which the choices don't follow. Confirmed in files.
 - **Changing policies.** `IsAbleToChangePolicies`, lines 842 to 853, is `true` when `CivicCompletedThisTurn()` is `true` or `GetNumPolicySlotsOpen()` is above 0, `Game.IsAllowStrategicCommands(playerID)` is `true`, and `PolicyChangeMade()` is `false`. Confirmed in files and on Windows on 2026-10-26.
 - **Paying to change.** `RealizeActivePoliciesRows`, lines 1380 to 1428, shows **Unlock for 50 [ICON_GoldLarge] Gold**, from `LOC_GOVT_UNLOCK_GOLD`, when `GetCostToUnlockPolicies()` is above 0 and `PolicyChangeMade()` is `false`. It disables the button with `LOC_GOVT_NEED_GOLD` when the gold balance is below the cost, and uses faith and the `_FAITH` keys when `GlobalParameters.GOVERNMENT_UNLOCK_WITH_FAITH` isn't 0. Gathering Storm's `IsReadOnly` disables it while the World Congress is in session. The button sends `PlayerOperations.UNLOCK_POLICIES`. After it, `CivicCompletedThisTurn()` returned `true`, `GetCivicCompletedThisTurn()` -1, and the cost 0. Confirmed in files and on Windows on 2026-10-26.
+- **Governments.** `RealizeGovernmentsPage`, lines 522 to 630, draws a card for each row of `GameInfo.Governments()`, in columns by total slots. `RealizeGovernmentInstance`, lines 646 to 805, shows the slot icons from `GameInfo.Government_SlotCounts()`, and greys out a government for which `IsGovernmentUnlocked(hash)` is `false`, with its `PrereqCivic`. It shows `InherentBonusDesc` and `AccumulatedBonusShortDesc`, and hides both for a `BonusType` of `NO_GOVERNMENTBONUS`, such as Chiefdom's. The stats show `InfluenceTokensPerThreshold`, and Gathering Storm's `GetGovernmentStatsText` adds `Favor` from `GameInfo.Governments_XP2()`. The tooltip adds `InfluencePointsPerTurn` and `InfluencePointsThreshold`. Confirmed in files and on Windows on 2026-10-26.
+- **Legacy bonus.** With `CAPABILITY_GOVERNMENTS_LEGACY_BONUSES`, the card shows a percent from `GetGovernmentFlatBonusPreview`, lines 2465 to 2505: the `Amount` argument of the government's modifier in `GameInfo.GovernmentModifiers()` whose `BonusType` argument is the government's. `Expansion1_RemoveData.xml` and `Expansion2_RemoveData.xml` delete the capability, so `GameCapabilities.HasCapability` returned `false` with Gathering Storm. Confirmed in files and on Windows on 2026-10-26.
+- **Changing government.** `IsAbleToChangeGovernment`, lines 859 to 873, is `true` when `CanChangeGovernmentAtAll()` is `true`, `GovernmentChangeMade()` is `false`, `Game.IsAllowStrategicCommands(playerID)` is `true`, and the player has no government or `CivicCompletedThisTurn()` is `true`. `OnGovernmentSelected`, lines 879 to 902, warns of anarchy when `GetAnarchyTurns(index)` is above 0, and `RequestChangeGovernment(hash)` changes it. The tab shows the unlock button as the policies tab does, but only when no government change was made, more than one government is unlocked, and the player has a government. Confirmed in files and on Windows on 2026-10-26.
 
 ## Method
 
@@ -33,6 +36,7 @@ A single-player game with Gathering Storm, on Rome's save, in `SentientSystemsCo
 | --- | --- |
 | The government on Rome's save on turn 15, with Code of Laws researched that turn | Chiefdom, with slot 0 `SLOT_MILITARY` and slot 1 `SLOT_ECONOMIC`, both empty. `GetNumPolicySlotsOpen()` returned 2 and `CivicCompletedThisTurn()` `true`. Every other government was locked |
 | The same, after slotting Discipline and God King in the government screen and confirming | Slot 0 had `POLICY_DISCIPLINE` and slot 1 `POLICY_GOD_KING`, as the My Government tab showed them under **Military Policies** and **Economic Policies**. `GetNumPolicySlotsOpen()` then returned 0 and `PolicyChangeMade()` `true` |
+| Governments on turn 19, with Chiefdom and no other government unlocked | All 13 in the game's order. Chiefdom current, with no bonuses, 1 envoy per 100 influence at 1 per turn, and 0 favor. The other 12 locked, with their civics, such as `CIVIC_POLITICAL_PHILOSOPHY` for Autocracy, Oligarchy, and Classical Republic. `CanChangeGovernmentAtAll()` returned `false`, `GetAnarchyTurns` 3 for Chiefdom and 0 for the rest, and no unlock showed. The View Governments tab showed the same slot icons, bonus lines, favor, and envoys on each card. 4,761 bytes |
 | Policies on turn 19, with Craftsmanship and Foreign Trade researched and 145 gold | `canChange` `false` and an unlock for 50 gold. Agoge, Maritime Industries, and Survey under `SLOT_MILITARY`, and Caravansaries, Ilkum, and Urban Planning under `SLOT_ECONOMIC`, each with its card's text. `GetCostToUnlockPolicies()` returned 50 and `PolicyChangeMade()` `false`. The policies tab showed the same six cards and **Unlock for 50 [ICON_GoldLarge] Gold**. After clicking it, `canChange` was `true` with no unlock, the same six policies, and 95 gold, and the tab became **Change Policies**, with **Assign All Policies** in place of the button |
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.

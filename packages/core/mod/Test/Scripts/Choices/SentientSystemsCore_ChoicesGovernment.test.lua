@@ -177,6 +177,16 @@ describe("SentientSystems_GetGovernmentOptions", function()
 		assert.truthy(json:find("\"legacyPercent\":10,", 1, true))
 	end)
 
+	it("gives a legacy percent of 0 to a government whose modifiers hold none", function()
+		local env = Game.new()
+		local autocracy = { type = "GOVERNMENT_AUTOCRACY", bonusType = "GOVERNMENTBONUS_WONDER_CONSTRUCTION", bonuses = { "", "" } }
+
+		FakeGame.Install(env, { players = { [0] = {} }, governments = { autocracy }, legacyBonuses = true })
+		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+		assert.truthy(env.SentientSystems_GetChoices(0):find("\"legacyPercent\":0,", 1, true))
+	end)
+
 	it("gives the anarchy turns of another government, and leaves out the locked civic once unlocked", function()
 		local json = GovernmentsWith({ type = "GOVERNMENT_CHIEFDOM", unlocked = { "GOVERNMENT_AUTOCRACY" }, anarchy = { GOVERNMENT_CHIEFDOM = 3, GOVERNMENT_AUTOCRACY = 2 } })
 
