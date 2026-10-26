@@ -28,7 +28,8 @@
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
 -- true or false, and its defense has strength, garrison, and walls, each with damage and max. A
 -- city's options lists what its build queue offers, such as options = { units = { { type =
--- "UNIT_SETTLER", cost = 40, turns = 6 } } }.
+-- "UNIT_SETTLER", cost = 40, turns = 6 } }, buildings = { { type = "BUILDING_GRANARY", cost = 32,
+-- turns = 5 } } }.
 -- env.Players[0]:GetCities():Members() then lists the one city.
 
 local FakeGame = {}
@@ -97,8 +98,11 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- building has type, built, which is true when missing, and pillaged. data.options.units lists each
 -- unit the build queue knows, with type, cost, turns, progress, which is 0 when missing, blocked, a
 -- list of reasons the queue refuses it, hidden, which the queue refuses even when it only tests, and
--- corps and army, each with cost, turns, and blocked. hashes maps each production and unit type to
--- its hash, and indexes maps each district, building, and unit type to its GameInfo index.
+-- corps and army, each with cost, turns, and blocked. data.options.buildings lists each building the
+-- build queue knows, with type, cost, turns, progress, blocked, and hidden in the same way, and
+-- pillaged, district, its PrereqDistrict, wonder, and mustPurchase, which go in its GameInfo row.
+-- hashes maps each production, unit, and building type to its hash, and indexes maps each district,
+-- building, and unit type to its GameInfo index.
 local function City(data, hashes, indexes)
 	local production = data.production
 	local hash = production and (production.hash or hashes[production.type]) or 0
@@ -139,12 +143,18 @@ local function City(data, hashes, indexes)
 		}
 	end
 
-	-- Each unit option by its hash and by its index.
+	-- Each unit and building option by its hash and by its index.
 	local unitsByHash, unitsByIndex = {}, {}
+	local buildingsByHash, buildingsByIndex = {}, {}
 
 	for _, unit in ipairs((data.options or {}).units or {}) do
 		unitsByHash[hashes[unit.type]] = unit
 		unitsByIndex[indexes[unit.type]] = unit
+	end
+
+	for _, building in ipairs((data.options or {}).buildings or {}) do
+		buildingsByHash[hashes[building.type]] = building
+		buildingsByIndex[indexes[building.type]] = building
 	end
 
 	-- Returns the unit option, or its corps or army, for a formation.
@@ -193,8 +203,11 @@ local function City(data, hashes, indexes)
 				HasBuilding = function(_, index)
 					return buildings[index].built ~= false
 				end,
-				IsPillaged = function(_, index)
-					return buildings[index].pillaged == true
+				-- The game takes an index or a hash. A building option is found by its hash.
+				IsPillaged = function(_, indexOrHash)
+					local building = buildingsByHash[indexOrHash] or buildings[indexOrHash]
+
+					return building ~= nil and building.pillaged == true
 				end,
 			}
 		end,
@@ -236,14 +249,29 @@ local function City(data, hashes, indexes)
 						return Formation(unit, formation).turns
 					end
 
+					if buildingsByHash[typeOrHash] ~= nil then
+						return buildingsByHash[typeOrHash].turns
+					end
+
 					assert(production and (typeOrHash == hash or typeOrHash == production.type), "no production " .. tostring(typeOrHash))
 
 					return production.turnsLeft
 				end,
-				-- With testOnly, whether the queue knows the unit. Without it, whether the city can
-				-- produce it now, and the results: the reasons it can't, and whether a corps or an army
-				-- can be trained.
+				-- With testOnly, whether the queue knows the unit or building. Without it, whether the
+				-- city can produce it now, and the results: the reasons it can't, and for a unit, whether
+				-- a corps or an army can be trained. params is a building's hash, or a table that names a
+				-- unit and its formation, as in the game.
 				CanProduce = function(_, params, testOnly, withResults)
+					if type(params) == "number" then
+						local building = buildingsByHash[params]
+
+						if testOnly then
+							return building ~= nil and not building.hidden
+						end
+
+						return building.blocked == nil, { [CITY_COMMAND_RESULTS.FAILURE_REASONS] = building.blocked }
+					end
+
 					local unit = unitsByHash[params.UnitType]
 
 					if testOnly then
@@ -271,6 +299,12 @@ local function City(data, hashes, indexes)
 				end,
 				GetUnitArmyCost = function(_, index)
 					return unitsByIndex[index].army.cost
+				end,
+				GetBuildingCost = function(_, index)
+					return buildingsByIndex[index].cost
+				end,
+				GetBuildingProgress = function(_, index)
+					return buildingsByIndex[index].progress or 0
 				end,
 			}
 		end,
@@ -465,18 +499,21 @@ function FakeGame.Install(env, world)
 		Routes = {},
 		Happinesses = HAPPINESSES,
 	}
-	-- GameInfo.Units() lists the rows in index order, as the game's tables do when called.
-	setmetatable(env.GameInfo.Units, {
-		__call = function(units)
-			local index = -1
+	-- GameInfo.Units() and GameInfo.Buildings() list the rows in index order, as the game's tables do
+	-- when called.
+	for _, name in ipairs({ "Units", "Buildings" }) do
+		setmetatable(env.GameInfo[name], {
+			__call = function(rows)
+				local index = -1
 
-			return function()
-				index = index + 1
+				return function()
+					index = index + 1
 
-				return units[index]
-			end
-		end,
-	})
+					return rows[index]
+				end
+			end,
+		})
+	end
 	env.MilitaryFormationTypes = MILITARY_FORMATION_TYPES
 	env.CityCommandResults = CITY_COMMAND_RESULTS
 	env.CityOperationResults = CITY_OPERATION_RESULTS
@@ -566,13 +603,23 @@ function FakeGame.Install(env, world)
 				row.MustPurchase = unit.mustPurchase == true
 			end
 
-			if typeName ~= nil and hashes[typeName] == nil then
+			for _, building in ipairs((city.options or {}).buildings or {}) do
+				AddRow("Buildings", "BuildingType", building.type)
+
+				local row = env.GameInfo.Buildings[indexes[building.type]]
+
 				count = count + 1
+				hashes[building.type] = hashes[building.type] or 3000000 + count
+				row.Hash = hashes[building.type]
+				row.MustPurchase = building.mustPurchase == true
+				row.IsWonder = building.wonder == true
+				row.PrereqDistrict = building.district
+			end
 
-				local hash = 1000000 + count
-
-				hashes[typeName] = hash
-				env.GameInfo.Types[hash] = { Type = typeName }
+			if typeName ~= nil then
+				count = count + 1
+				hashes[typeName] = hashes[typeName] or 1000000 + count
+				env.GameInfo.Types[hashes[typeName]] = { Type = typeName }
 			end
 
 			for _, district in ipairs(city.districts or {}) do

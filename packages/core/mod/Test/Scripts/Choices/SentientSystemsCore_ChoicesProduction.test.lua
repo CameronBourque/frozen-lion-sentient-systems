@@ -31,16 +31,16 @@ local function With(unit, changes)
 	return copy
 end
 
-describe("SentientSystems_GetProductionChoices", function()
+describe("SentientSystems_GetProductionChoices for units", function()
 	it("lists each city by ID and name, with each unit's type, cost, and turns", function()
 		assert.equal(
-			"[{\"city\":65536,\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"},{\"cost\":15,\"turns\":2,\"type\":\"UNIT_SCOUT\"}]}]",
+			"[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"},{\"cost\":15,\"turns\":2,\"type\":\"UNIT_SCOUT\"}]}]",
 			ProductionWith({ SETTLER, { type = "UNIT_SCOUT", cost = 15, turns = 2 } })
 		)
 	end)
 
 	it("gives an empty list for a city with nothing to produce", function()
-		assert.equal("[{\"city\":65536,\"name\":\"Rome\",\"units\":[]}]", ProductionWith({}))
+		assert.equal("[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[]}]", ProductionWith({}))
 	end)
 
 	it("adds the progress once there is some", function()
@@ -50,7 +50,7 @@ describe("SentientSystems_GetProductionChoices", function()
 
 	it("gives the game's reasons for a unit the panel greys out", function()
 		assert.equal(
-			"[{\"city\":65536,\"name\":\"Rome\",\"units\":[{\"blocked\":[\"This city needs at least 2 [ICON_Citizen] Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}]}]",
+			"[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[{\"blocked\":[\"This city needs at least 2 [ICON_Citizen] Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}]}]",
 			ProductionWith({ With(SETTLER, { blocked = { "This city needs at least 2 [ICON_Citizen] Population." } }) })
 		)
 	end)
@@ -61,7 +61,7 @@ describe("SentientSystems_GetProductionChoices", function()
 
 	it("leaves out a unit the panel hides, and one that must be bought", function()
 		assert.equal(
-			"[{\"city\":65536,\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}]}]",
+			"[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}]}]",
 			ProductionWith({ SETTLER, { type = "UNIT_SPEARMAN", cost = 25, turns = 3, hidden = true }, { type = "UNIT_MISSIONARY", cost = 100, turns = 9, mustPurchase = true } })
 		)
 	end)
@@ -88,5 +88,67 @@ describe("SentientSystems_GetProductionChoices", function()
 		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
 		assert.truthy(env.SentientSystems_GetChoices(0):find("\"name\":\"Rome\".*\"turns\":6.*\"name\":\"Antium\".*\"turns\":20"))
+	end)
+end)
+
+local GRANARY = { type = "BUILDING_GRANARY", district = "DISTRICT_CITY_CENTER", cost = 32, turns = 5 }
+
+-- Returns the buildings in the production choice JSON for player 0, whose one city, Rome, has the
+-- given building options and production.
+local function BuildingsWith(buildings, production)
+	local env = Game.new()
+
+	FakeGame.Install(env, { players = { [0] = { cities = { {
+		id = 65536, name = "Rome", x = 17, y = 14, population = 3, production = production, options = { buildings = buildings },
+	} } } } })
+	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+	return env.SentientSystems_GetChoices(0):match("\"buildings\":(%b[])")
+end
+
+describe("SentientSystems_GetProductionChoices for buildings", function()
+	it("lists each building's type, district, cost, and turns", function()
+		assert.equal(
+			"[{\"cost\":32,\"district\":\"DISTRICT_CITY_CENTER\",\"turns\":5,\"type\":\"BUILDING_GRANARY\"},"
+				.. "{\"cost\":40,\"district\":\"DISTRICT_CITY_CENTER\",\"turns\":6,\"type\":\"BUILDING_WALLS\"}]",
+			BuildingsWith({ GRANARY, With(GRANARY, { type = "BUILDING_WALLS", cost = 40, turns = 6 }) })
+		)
+	end)
+
+	it("gives an empty list for a city with no buildings to produce", function()
+		assert.equal("[]", BuildingsWith({}))
+	end)
+
+	it("adds the progress once there is some, and the game's reasons for a greyed-out building", function()
+		local buildings = BuildingsWith({ With(GRANARY, { progress = 8, blocked = { "Needs a river." } }) })
+
+		assert.truthy(buildings:find("\"blocked\":[\"Needs a river.\"]", 1, true))
+		assert.truthy(buildings:find("\"progress\":8", 1, true))
+	end)
+
+	it("leaves out a wonder, a hidden building, and the building in production", function()
+		assert.equal(
+			"[{\"cost\":40,\"district\":\"DISTRICT_CITY_CENTER\",\"turns\":6,\"type\":\"BUILDING_WALLS\"}]",
+			BuildingsWith({
+				GRANARY,
+				With(GRANARY, { type = "BUILDING_WALLS", cost = 40, turns = 6 }),
+				{ type = "BUILDING_PYRAMIDS", cost = 110, turns = 18, wonder = true },
+				With(GRANARY, { type = "BUILDING_WATER_MILL", hidden = true }),
+			}, { type = "BUILDING_GRANARY", turnsLeft = 5 })
+		)
+	end)
+
+	it("leaves out a building whose district is in production", function()
+		assert.equal("[]", BuildingsWith({ With(GRANARY, { type = "BUILDING_LIBRARY", district = "DISTRICT_CAMPUS" }) }, { type = "DISTRICT_CAMPUS", turnsLeft = 4 }))
+	end)
+
+	it("lists a building that must be bought only when it is pillaged, to repair it", function()
+		local shrine = With(GRANARY, { type = "BUILDING_SHRINE", district = "DISTRICT_HOLY_SITE", mustPurchase = true })
+
+		assert.equal("[]", BuildingsWith({ shrine }))
+		assert.equal(
+			"[{\"cost\":32,\"district\":\"DISTRICT_HOLY_SITE\",\"repair\":true,\"turns\":5,\"type\":\"BUILDING_SHRINE\"}]",
+			BuildingsWith({ With(shrine, { pillaged = true }) })
+		)
 	end)
 end)

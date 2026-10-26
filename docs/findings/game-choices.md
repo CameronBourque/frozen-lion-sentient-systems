@@ -1,12 +1,13 @@
 # Game choices
 
-Status: open. `SentientSystems_GetChoices` with the units each city can train is confirmed in a running game. Corps and armies are confirmed in files only.
+Status: open. `SentientSystems_GetChoices` with the units and buildings each city can produce is confirmed in a running game. Corps and armies are confirmed in files only.
 
 The calls the choices use to list the legal options for each of one player's discrete choices, as the game's own screens list them. The end-turn blockers that the choices resolve are in [game-state.md](game-state.md#end-turn-blockers). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
 1. Does a unit's corps and army option read as the production panel shows it, once the Nationalism and Mobilization civics allow one?
+2. Does the panel grey out a wonder that `CanProduce` refuses with `No suitable location to construct this.`? Rome's panel showed the Pyramids and the Great Bath in the same style as the buildings, so the alternative tiles may have allowed them.
 
 ## What we know now
 
@@ -18,14 +19,28 @@ The calls the choices use to list the legal options for each of one player's dis
 - **Greyed out.** A listed unit is greyed out when `buildQueue:CanProduce(params, false, true)` returns `false`. Its second value is a results table, and `results[CityCommandResults.FAILURE_REASONS]` lists the reasons. `ComposeFailureReasonStrings`, lines 1574 to 1588, passes each through `Locale.Lookup`. Each reason arrives as text in the game's language, not as a text key, so `Locale.Lookup` returns it unchanged. A reason keeps the game's icon markup, such as `[ICON_Citizen]`. Confirmed in files and on Windows on 2026-10-26.
 - **Cost, progress, and turns.** `buildQueue:GetUnitCost(row.Index)`, `GetUnitProgress(row.Index)`, and `GetTurnsLeft(row.Hash)`. The panel shows progress only when it is above 0, in `ComposeProductionCostString`, lines 1589 to 1600. Turns change with the city's production, and Rome's settler went from 6 turns to 9 when the city dropped from 3 population to 1. Confirmed in files and on Windows on 2026-10-26.
 - **Corps and armies.** When `results[CityOperationResults.CAN_TRAIN_CORPS]` is set, the panel also offers a corps. It checks `CanProduce` again with `MilitaryFormationTypes.CORPS_MILITARY_FORMATION`, and reads `GetUnitCorpsCost(row.Index)` and `GetTurnsLeft(row.Hash, MilitaryFormationTypes.CORPS_MILITARY_FORMATION)`. `CAN_TRAIN_ARMY` works the same way with `ARMY_MILITARY_FORMATION` and `GetUnitArmyCost`. Confirmed in files.
+### Buildings
+
+`GetData` in `ProductionPanel.lua`, lines 2020 to 2081, builds the panel's building list from `GameInfo.Buildings()`, after the districts. For each row, with the city's `GetBuildQueue()` and `GetBuildings()`:
+
+- **Listed.** The panel lists a building when `buildQueue:CanProduce(row.Hash, true)` returns `true`, the building isn't in production, and `row.MustPurchase` is false or `cityBuildings:IsPillaged(row.Hash)` is `true`. It leaves out a building whose `row.PrereqDistrict` is the type in production, as when the district is being repaired. `CanProduce` takes the building's hash, where a unit takes a table. Confirmed in files and on Windows on 2026-10-26.
+- **Greyed out.** A listed building is greyed out when `buildQueue:CanProduce(row.Hash, false, true)` returns `false`, with the reasons in `results[CityCommandResults.FAILURE_REASONS]`, as for units. Confirmed in files.
+- **Cost, progress, turns, and repair.** `buildQueue:GetBuildingCost(row.Index)`, `GetBuildingProgress(row.Index)`, and `GetTurnsLeft(row.Hash)`. A building for which `IsPillaged(row.Hash)` is `true` is listed as a repair. Confirmed in files and on Windows on 2026-10-26.
+- **Districts.** `PopulateDistrictsWithNestedBuildings`, lines 1029 to 1035, draws each building under the entry for its `row.PrereqDistrict`. The granary and the walls have `DISTRICT_CITY_CENTER`. Confirmed in files and on Windows on 2026-10-26.
+- **Wonders.** A wonder's row has `IsWonder` set to `true`, and no `PrereqDistrict`. When `CanProduce` fails for a wonder only with `results[CityOperationResults.NO_SUITABLE_LOCATION]`, the panel looks for another tile with `GetCityRelatedPlotIndexesWondersAlternative` before it greys the wonder out. With Masonry and Pottery, the Pyramids and the Great Bath failed with `No suitable location to construct this.`. Confirmed in files and on Windows on 2026-10-26.
+- **Turns that never end.** The panel shows `999+` and `TXT_HUD_CITY_WILL_NOT_COMPLETE` when `GetTurnsLeft` returns -1, in `PopulateDistrictsWithNestedBuildings`, lines 961 to 964. Confirmed in files.
+
+### Other modes
+
 - **Heroes and Legends.** The game mode replaces the panel with `DLC/Babylon/UI/Replacements/ProductionPanel_Babylon_Heroes.lua`. The choices don't follow that file. Confirmed in files.
 
 ## Method
 
-1. In `SentientSystemsCore_UI`, loop over `GameInfo.Units()` for each city with the checks above, and compare the list with the production panel.
-2. To see a greyed-out unit, in `GameCore_Tuner`, send `Players[0]:GetCities():FindID(<cityID>):ChangePopulation(-2)` to a city with 3 population, so the settler needs more population. Send `ChangePopulation(2)` afterwards.
-3. To test a choices file that the `.modinfo` doesn't list yet, without a restart, send the file's code without its comments and `include` lines to `SentientSystemsCore_UI`, then the choices file's code the same way.
-4. Read `SentientSystems_GetChoices(Game.GetLocalPlayer())` with `npm run state`, which prints it after the state.
+1. In `SentientSystemsCore_UI`, loop over `GameInfo.Units()` and `GameInfo.Buildings()` for each city with the checks above, and compare the lists with the production panel.
+2. To unlock buildings in an early game, in `GameCore_Tuner`, send `Players[0]:GetTechs():SetTech(GameInfo.Technologies["TECH_POTTERY"].Index, true)`, and the same for `TECH_MASONRY`. Reload the save afterwards to undo it.
+3. To see a greyed-out unit, in `GameCore_Tuner`, send `Players[0]:GetCities():FindID(<cityID>):ChangePopulation(-2)` to a city with 3 population, so the settler needs more population. Send `ChangePopulation(2)` afterwards.
+4. To test a choices file that the `.modinfo` doesn't list yet, without a restart, send the file's code without its comments and `include` lines to `SentientSystemsCore_UI`, then the choices file's code the same way.
+5. Read `SentientSystems_GetChoices(Game.GetLocalPlayer())` with `npm run state`, which prints it after the state.
 
 ## Results
 
@@ -38,5 +53,8 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 | The settler with Rome at 1 population | Listed, and greyed out with one reason, `This city needs at least 2 [ICON_Citizen] Population.`, as a string. `Locale.Lookup` returned the same text |
 | `SentientSystems_GetChoices` with the production choice, through `npm run state` | The five units, 273 bytes |
 | The same with Rome at 1 population | The settler with `blocked` and that reason, and 9 turns. The other units took 1 more turn each |
+| Buildings the panel's checks list for Rome, after `SetTech` for Pottery and Masonry | Granary, 32 cost and 5 turns, and walls, 40 and 6, both in `DISTRICT_CITY_CENTER`. Neither greyed out nor pillaged. The Pyramids, 110 and 18, and the Great Bath, 90 and 14, were wonders, greyed out with `No suitable location to construct this.` |
+| `SentientSystems_GetChoices` with buildings, through `npm run state` | The granary and the walls, and the battering ram that Masonry adds to the units. 499 bytes |
+| Rome's production panel against the choices | The same buildings and units with the same turns: walls 6 and granary 5 under **City Center**, and settler 6, builder 4, scout 2, warrior 3, slinger 2, and battering ram 5. The panel sorts the walls before the granary, and the choices keep the game's order. The panel doesn't show cost |
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.

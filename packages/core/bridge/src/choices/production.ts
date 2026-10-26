@@ -23,8 +23,23 @@ const UNIT_OPTION = z.object({
 	army: FORMATION.optional(),
 });
 
+// A building, wonders left out.
+const BUILDING_OPTION = z.object({
+	type: z.string(),
+	// The district the panel lists the building under, such as DISTRICT_CITY_CENTER. Left out for a
+	// building without one.
+	district: z.string().optional(),
+	cost: z.number(),
+	turns: z.number(),
+	progress: z.number().optional(),
+	blocked: BLOCKED,
+	// True when the building is pillaged and producing it repairs it. Left out otherwise.
+	repair: z.literal(true).optional(),
+});
+
 export const PRODUCTION_CITY = z.object({
 	city: z.number(),
 	name: z.string(),
 	units: z.array(UNIT_OPTION),
+	buildings: z.array(BUILDING_OPTION),
 });
