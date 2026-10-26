@@ -47,10 +47,12 @@
 -- world.beliefs lists the ruleset's beliefs, each with type, class, BELIEF_CLASS_PANTHEON when
 -- missing, description, and taken, true when a player's pantheon or religion holds it. A player's
 -- pantheon is its belief type, and canCreatePantheon is true when it can found one. A player's
--- religion is the religion it founded, with type, name, beliefs, by type, holyCity, a city ID, and
--- earned, and prophet is true when it has a Great Prophet. A city's religions lists the religions
+-- religion is the religion it founded, with type, name, beliefs, by type, and holyCity, a city ID,
+-- beliefsEarned the beliefs it has earned, and prophet is true when it has a Great Prophet. A city's religions lists the religions
 -- in it, each with type and followers, and majority is its majority religion's type.
--- world.pantheonFaith is the faith the next pantheon needs, 25 when missing.
+-- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
+-- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
+-- when a religion has too many of its class. world.rename turns on CAPABILITY_RENAME.
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
 -- player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
@@ -933,8 +935,8 @@ local function Player(id, data, hashes, indexes, env)
 				return data.canCreatePantheon == true
 			end
 
-			-- The religion the player founded, from data.religion, with type, holyCity, a city ID,
-			-- and earned, the beliefs earned, which is the count of its beliefs when missing.
+			-- The religion the player founded, from data.religion, with type and holyCity, a city ID.
+			-- The beliefs earned come from data.beliefsEarned, the count of its beliefs when missing.
 			local founded = data.religion or {}
 
 			function religion.GetReligionTypeCreated()
@@ -946,7 +948,7 @@ local function Player(id, data, hashes, indexes, env)
 			end
 
 			function religion.GetNumBeliefsEarned()
-				return founded.earned or #(founded.beliefs or {})
+				return data.beliefsEarned or #(founded.beliefs or {})
 			end
 
 			function religion.HasReligiousFoundingUnit()
@@ -1033,6 +1035,7 @@ function FakeGame.Install(env, world)
 		Policies = "PolicyType",
 		Governments = "GovernmentType",
 		Beliefs = "BeliefType",
+		Religions = "ReligionType",
 	}) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
@@ -1194,6 +1197,18 @@ function FakeGame.Install(env, world)
 		row.BeliefClassType = belief.class or "BELIEF_CLASS_PANTHEON"
 		row.Description = belief.description
 		row.taken = belief.taken
+		row.tooMany = belief.tooMany
+	end
+
+	-- Each religion in world.religions gets a row.
+	for _, religion in ipairs(world.religions or {}) do
+		AddRow("Religions", "ReligionType", religion.type)
+
+		local row = env.GameInfo.Religions[indexes[religion.type]]
+
+		row.Pantheon = religion.pantheon == true
+		row.RequiresCustomName = religion.customName == true
+		row.founded = religion.founded
 	end
 
 	-- Each religion that a player founded or a city holds gets a row, with its name, and each of a
@@ -1314,7 +1329,8 @@ function FakeGame.Install(env, world)
 	env.GameInfo.Governments_XP2 = world.expansion2 and governmentsXP2 or nil
 	env.GameCapabilities = {
 		HasCapability = function(capability)
-			return capability == "CAPABILITY_GOVERNMENTS_LEGACY_BONUSES" and world.legacyBonuses == true
+			return (capability == "CAPABILITY_GOVERNMENTS_LEGACY_BONUSES" and world.legacyBonuses == true)
+				or (capability == "CAPABILITY_RENAME" and world.rename == true)
 		end,
 	}
 	env.GlobalParameters = { GOVERNMENT_UNLOCK_WITH_FAITH = world.unlockWithFaith and 1 or 0 }
@@ -1670,6 +1686,12 @@ function FakeGame.Install(env, world)
 		return {
 			IsInSomePantheon = IsTaken,
 			IsInSomeReligion = IsTaken,
+			IsTooManyForReligion = function(_, index)
+				return env.GameInfo.Beliefs[index].tooMany == true
+			end,
+			HasBeenFounded = function(_, index)
+				return env.GameInfo.Religions[index].founded == true
+			end,
 			GetMinimumFaithNextPantheon = function()
 				return world.pantheonFaith or 25
 			end,

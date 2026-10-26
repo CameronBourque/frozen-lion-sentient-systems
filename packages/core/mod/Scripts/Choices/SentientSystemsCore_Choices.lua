@@ -47,5 +47,6 @@ function SentientSystems_GetChoices(playerID)
 		policies = SentientSystems_GetPolicyChoices(player),
 		governments = SentientSystems_GetGovernmentOptions(player),
 		pantheon = SentientSystems_GetPantheonChoices(player),
+		religion = SentientSystems_GetReligionChoices(player),
 	})
 end

@@ -29,9 +29,9 @@ describe("SentientSystems_GetReligionState", function()
 	end)
 
 	it("leaves out the prophet once the player has earned a belief", function()
-		local religion = { type = "RELIGION_BUDDHISM", name = "Buddhism", earned = 1, holyCity = 65536 }
+		local religion = { type = "RELIGION_BUDDHISM", name = "Buddhism", holyCity = 65536 }
 
-		assert.falsy(ReligionWith({ [0] = { pantheon = "BELIEF_GOD_OF_THE_SEA", religion = religion, cities = { City(65536) } } }):find("prophet", 1, true))
+		assert.falsy(ReligionWith({ [0] = { pantheon = "BELIEF_GOD_OF_THE_SEA", religion = religion, beliefsEarned = 1, cities = { City(65536) } } }):find("prophet", 1, true))
 	end)
 
 	it("gives the founded religion with its beliefs, holy city, majority, and the cities that follow it", function()
