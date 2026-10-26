@@ -35,7 +35,13 @@
 -- era, which is ERA_ANCIENT when missing, researched, hidden, which IsTechRevealed refuses, and
 -- prerequisites, by type. techs.turnsLeft is what GetTurnsLeft returns. A player's civics has the
 -- same, with civic types. A player's government has type, missing for none, and slots, each with
--- type, such as SLOT_MILITARY, and policy, missing for an empty slot. A player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
+-- type, such as SLOT_MILITARY, and policy, missing for an empty slot, and civicThisTurn, slotsOpen,
+-- changeMade, and unlockCost, as the game's culture calls give them. A player's policies lists the
+-- policies the player knows, each with type, slot, its slot type, description, civic, its
+-- prerequisite, and locked, obsolete, banned, and unslottable. noStrategicCommands is true while
+-- the player can't act. world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
+-- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
+-- player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
@@ -651,8 +657,12 @@ local function Player(id, data, hashes, indexes)
 	local cities, units = {}, {}
 	local techData, civicData, governmentData = data.techs or {}, data.civics or {}, data.government or {}
 
-	-- Each tech and civic option by its GameInfo index.
-	local techsByIndex, civicsByIndex = {}, {}
+	-- Each tech and civic option by its GameInfo index, and each policy by its hash.
+	local techsByIndex, civicsByIndex, policiesByHash = {}, {}, {}
+
+	for _, policy in ipairs(data.policies or {}) do
+		policiesByHash[hashes[policy.type]] = policy
+	end
 
 	for _, tech in ipairs(techData.options or {}) do
 		techsByIndex[indexes[tech.type]] = tech
@@ -778,6 +788,45 @@ local function Player(id, data, hashes, indexes)
 
 					return policy and indexes[policy] or -1
 				end,
+				CivicCompletedThisTurn = function()
+					return governmentData.civicThisTurn ~= nil
+				end,
+				GetCivicCompletedThisTurn = function()
+					return governmentData.civicThisTurn and indexes[governmentData.civicThisTurn] or -1
+				end,
+				GetNumPolicySlotsOpen = function()
+					return governmentData.slotsOpen or 0
+				end,
+				PolicyChangeMade = function()
+					return governmentData.changeMade == true
+				end,
+				GetCostToUnlockPolicies = function()
+					return governmentData.unlockCost or 0
+				end,
+				IsPolicyUnlocked = function(_, hash)
+					return policiesByHash[hash] ~= nil and policiesByHash[hash].locked ~= true
+				end,
+				IsPolicyObsolete = function(_, hash)
+					return policiesByHash[hash] ~= nil and policiesByHash[hash].obsolete == true
+				end,
+				IsPolicyBanned = function(_, hash)
+					return policiesByHash[hash] ~= nil and policiesByHash[hash].banned == true
+				end,
+				-- In Gathering Storm, a locked policy can't be slotted either.
+				CanPolicyBeSlotted = function(_, hash)
+					local policy = policiesByHash[hash]
+
+					return policy ~= nil and policy.locked ~= true and policy.unslottable ~= true
+				end,
+				IsPolicyActive = function(_, hash)
+					for _, slot in ipairs(governmentData.slots or {}) do
+						if slot.policy ~= nil and hashes[slot.policy] == hash then
+							return true
+						end
+					end
+
+					return false
+				end,
 				HasBoostBeenTriggered = function(_, index)
 					return civicsByIndex[index].boost.triggered == true
 				end,
@@ -819,7 +868,14 @@ local function Player(id, data, hashes, indexes)
 			return treasury
 		end,
 		GetReligion = function()
-			return Store(YIELD_ROWS.YIELD_FAITH.Index)
+			local religion = Store(YIELD_ROWS.YIELD_FAITH.Index)
+
+			-- The player's faith, from data.faith, which is 0 when missing.
+			function religion.GetFaithBalance()
+				return data.faith or 0
+			end
+
+			return religion
 		end,
 		GetUnits = function()
 			return List(units)
@@ -891,6 +947,7 @@ function FakeGame.Install(env, world)
 		Technologies = "TechnologyType",
 		Civics = "CivicType",
 		Boosts = "TechnologyType",
+		Policies = "PolicyType",
 	}) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
@@ -1020,7 +1077,24 @@ function FakeGame.Install(env, world)
 		end
 	end
 
-	-- Each government, slot type, and policy gets a row.
+	-- Adds a policy's row with a hash. A policy in a slot alone has only its type.
+	local function AddPolicy(policy)
+		AddRow("Policies", "PolicyType", policy.type)
+
+		local row = env.GameInfo.Policies[indexes[policy.type]]
+
+		if hashes[policy.type] == nil then
+			count = count + 1
+			hashes[policy.type] = 4000000 + count
+		end
+
+		row.Hash = hashes[policy.type]
+		row.GovernmentSlotType = row.GovernmentSlotType or policy.slot
+		row.Description = row.Description or policy.description
+		row.PrereqCivic = row.PrereqCivic or policy.civic
+	end
+
+	-- Each government, slot type, policy, and civic completed this turn gets a row.
 	for _, data in pairs(world.players or {}) do
 		local government = data.government or {}
 
@@ -1028,14 +1102,26 @@ function FakeGame.Install(env, world)
 			AddRow("Governments", "GovernmentType", government.type)
 		end
 
+		if government.civicThisTurn ~= nil then
+			AddRow("Civics", "CivicType", government.civicThisTurn)
+		end
+
 		for _, slot in ipairs(government.slots or {}) do
 			AddRow("GovernmentSlots", "GovernmentSlotType", slot.type)
 
 			if slot.policy ~= nil then
-				AddRow("Policies", "PolicyType", slot.policy)
+				AddPolicy({ type = slot.policy })
 			end
 		end
+
+		for _, policy in ipairs(data.policies or {}) do
+			AddPolicy(policy)
+		end
 	end
+
+	-- Gathering Storm's rows, the faith rule for paying to change policies, and the World Congress.
+	env.GameInfo.Governments_XP2 = world.expansion2 and {} or nil
+	env.GlobalParameters = { GOVERNMENT_UNLOCK_WITH_FAITH = world.unlockWithFaith and 1 or 0 }
 
 	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
 	-- GetUnlockablesForTech and GetUnlockablesForCivic return what one unlocks as { type, name, key }
@@ -1376,6 +1462,16 @@ function FakeGame.Install(env, world)
 
 	-- The major players, in ID order, as Game.GetPlayers({ Major = true }) lists them.
 	env.Game = env.Game or {}
+	env.Game.IsAllowStrategicCommands = function(playerID)
+		return (world.players or {})[playerID].noStrategicCommands ~= true
+	end
+	env.Game.GetWorldCongress = function()
+		return {
+			IsInSession = function()
+				return world.congressInSession == true
+			end,
+		}
+	end
 	env.Game.GetPlayers = function(filter)
 		assert(filter.Major == true, "no fake for this filter")
 

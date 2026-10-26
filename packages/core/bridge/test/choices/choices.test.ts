@@ -19,6 +19,7 @@ const CHOICES = {
 	techs: [{ type: "TECH_MINING", cost: 12, turns: 1, unlocks: ["IMPROVEMENT_MINE"] }],
 	civics: [],
 	government: { type: "GOVERNMENT_CHIEFDOM", slots: [{ slot: 0, type: "SLOT_MILITARY" }] },
+	policies: { canChange: true, options: { SLOT_MILITARY: [{ type: "POLICY_SURVEY", description: "Double experience for recon units." }] } },
 };
 const JSON_TEXT = JSON.stringify(CHOICES);
 
