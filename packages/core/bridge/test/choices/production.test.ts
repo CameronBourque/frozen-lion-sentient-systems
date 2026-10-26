@@ -17,6 +17,7 @@ const ROME = {
 	],
 	districts: [{ type: "DISTRICT_CAMPUS", cost: 29, turns: 6, progress: 4 }],
 	wonders: [{ type: "BUILDING_PYRAMIDS", cost: 110, turns: 18, blocked: ["Another city is building it."] }],
+	projects: [{ type: "PROJECT_ENHANCE_DISTRICT_CAMPUS", cost: 14, turns: 3, progress: 6, repeatable: true as const }],
 };
 
 describe("PRODUCTION_CITY", () => {
@@ -25,11 +26,19 @@ describe("PRODUCTION_CITY", () => {
 	});
 
 	test("accepts a city with nothing to produce", () => {
-		expect(PRODUCTION_CITY.safeParse({ ...ROME, units: [], buildings: [], districts: [], wonders: [] }).success).toBe(true);
+		expect(PRODUCTION_CITY.safeParse({ ...ROME, units: [], buildings: [], districts: [], wonders: [], projects: [] }).success).toBe(true);
 	});
 
 	test("rejects a city without its buildings", () => {
 		expect(PRODUCTION_CITY.safeParse({ ...ROME, buildings: undefined }).success).toBe(false);
+	});
+
+	test("rejects a city without its projects", () => {
+		expect(PRODUCTION_CITY.safeParse({ ...ROME, projects: undefined }).success).toBe(false);
+	});
+
+	test("rejects a project whose repeatable isn't true", () => {
+		expect(PRODUCTION_CITY.safeParse({ ...ROME, projects: [{ ...ROME.projects[0], repeatable: false }] }).success).toBe(false);
 	});
 
 	test("rejects a district without turns", () => {

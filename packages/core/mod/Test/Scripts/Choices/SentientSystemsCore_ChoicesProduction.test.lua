@@ -34,13 +34,13 @@ end
 describe("SentientSystems_GetProductionChoices for units", function()
 	it("lists each city by ID and name, with each unit's type, cost, and turns", function()
 		assert.equal(
-			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"},{\"cost\":15,\"turns\":2,\"type\":\"UNIT_SCOUT\"}],\"wonders\":[]}]",
+			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"projects\":[],\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"},{\"cost\":15,\"turns\":2,\"type\":\"UNIT_SCOUT\"}],\"wonders\":[]}]",
 			ProductionWith({ SETTLER, { type = "UNIT_SCOUT", cost = 15, turns = 2 } })
 		)
 	end)
 
 	it("gives an empty list for a city with nothing to produce", function()
-		assert.equal("[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[],\"wonders\":[]}]", ProductionWith({}))
+		assert.equal("[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"projects\":[],\"units\":[],\"wonders\":[]}]", ProductionWith({}))
 	end)
 
 	it("adds the progress once there is some", function()
@@ -50,7 +50,7 @@ describe("SentientSystems_GetProductionChoices for units", function()
 
 	it("gives the game's reasons for a unit the panel greys out", function()
 		assert.equal(
-			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[{\"blocked\":[\"This city needs at least 2 [ICON_Citizen] Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
+			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"projects\":[],\"units\":[{\"blocked\":[\"This city needs at least 2 [ICON_Citizen] Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
 			ProductionWith({ With(SETTLER, { blocked = { "This city needs at least 2 [ICON_Citizen] Population." } }) })
 		)
 	end)
@@ -61,7 +61,7 @@ describe("SentientSystems_GetProductionChoices for units", function()
 
 	it("leaves out a unit the panel hides, and one that must be bought", function()
 		assert.equal(
-			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
+			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"projects\":[],\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
 			ProductionWith({ SETTLER, { type = "UNIT_SPEARMAN", cost = 25, turns = 3, hidden = true }, { type = "UNIT_MISSIONARY", cost = 100, turns = 9, mustPurchase = true } })
 		)
 	end)
@@ -258,5 +258,28 @@ describe("SentientSystems_GetProductionChoices for wonders", function()
 
 		assert.truthy(ChoiceWith("wonders", { buildings = { noTile } }):find("\"blocked\":[\"No suitable location to construct this.\"]", 1, true))
 		assert.truthy(ChoiceWith("wonders", { buildings = { otherReason } }):find("\"blocked\":[\"Another city is building it.\"]", 1, true))
+	end)
+end)
+
+describe("SentientSystems_GetProductionChoices for projects", function()
+	local GRANTS = { type = "PROJECT_ENHANCE_DISTRICT_CAMPUS", cost = 14, turns = 3 }
+
+	it("lists each project's type, cost, and turns, and whether it is repeatable", function()
+		assert.equal(
+			"[{\"cost\":14,\"repeatable\":true,\"turns\":3,\"type\":\"PROJECT_ENHANCE_DISTRICT_CAMPUS\"},"
+				.. "{\"cost\":1000,\"turns\":50,\"type\":\"PROJECT_LAUNCH_EARTH_SATELLITE\"}]",
+			ChoiceWith("projects", { projects = { GRANTS, { type = "PROJECT_LAUNCH_EARTH_SATELLITE", cost = 1000, turns = 50, maxPlayerInstances = 1 } } })
+		)
+	end)
+
+	it("adds the progress once there is some, and the game's reasons for a greyed-out project", function()
+		local projects = ChoiceWith("projects", { projects = { With(GRANTS, { progress = 6, blocked = { "Needs a campus." } }) } })
+
+		assert.truthy(projects:find("\"blocked\":[\"Needs a campus.\"]", 1, true))
+		assert.truthy(projects:find("\"progress\":6", 1, true))
+	end)
+
+	it("leaves out a project the panel hides", function()
+		assert.equal("[]", ChoiceWith("projects", { projects = { With(GRANTS, { hidden = true }) } }))
 	end)
 end)

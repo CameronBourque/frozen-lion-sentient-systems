@@ -1,6 +1,6 @@
 # Game choices
 
-Status: open. `SentientSystems_GetChoices` with the units, buildings, districts, and wonders each city can produce, and their tiles, is confirmed in a running game. Corps and armies are confirmed in files only.
+Status: open. `SentientSystems_GetChoices` with the units, buildings, districts, wonders, and projects each city can produce, and the tiles from `SentientSystems_GetPlacement`, are confirmed in a running game. Corps and armies are confirmed in files only.
 
 The calls the choices use to list the legal options for each of one player's discrete choices, as the game's own screens list them. The end-turn blockers that the choices resolve are in [game-state.md](game-state.md#end-turn-blockers). See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -38,6 +38,10 @@ The calls the choices use to list the legal options for each of one player's dis
 - **Greyed out.** The panel starts from `buildQueue:CanProduce(row.Hash, false, true)`, then checks the tiles from `GetCityRelatedPlotIndexesDistrictsAlternative`. With no tile, it greys the district out unless the city has placed it already, and greys a placed one out when a reason is the text of `LOC_DISTRICT_REPAIR_LOCATION_FLOODED`. With a tile, it doesn't grey the district out when every reason equals `LOC_DISTRICT_ZONE_NO_SUITABLE_LOCATION`. That check compares the reasons with the text key, not its text. Confirmed in files.
 - **Cost, progress, turns, and repair.** `buildQueue:GetDistrictCost(row.Index)`, `GetDistrictProgress(row.Index)`, and `GetTurnsLeft(row.DistrictType)`, which takes the type name. A district for which `cityDistricts:IsPillaged(row.Index)` is `true` is a repair. Confirmed in files and on Windows on 2026-10-26.
 
+### Projects
+
+`GetData` in `ProductionPanel.lua`, lines 2208 to 2239, builds the panel's project list from `GameInfo.Projects()`. The panel lists a project when `buildQueue:CanProduce(row.Hash, true)` returns `true`, and greys it out when `CanProduce(row.Hash, false, true)` returns `false`, with the reasons in `results[CityCommandResults.FAILURE_REASONS]`. It reads `GetProjectCost(row.Index)`, `GetProjectProgress(row.Index)`, and `GetTurnsLeft(row.ProjectType)`, and marks a project repeatable when `row.MaxPlayerInstances` isn't 1. It lists the project in production too. Campus Research Grants, `PROJECT_ENHANCE_DISTRICT_CAMPUS`, had no `MaxPlayerInstances`. Confirmed in files and on Windows on 2026-10-26.
+
 ### Placement tiles
 
 `Base/Assets/UI/AdjacencyBonusSupport.lua` finds the tiles where a district or a wonder can go. The expansions don't replace it. Confirmed in files.
@@ -55,7 +59,7 @@ The calls the choices use to list the legal options for each of one player's dis
 ## Method
 
 1. In `SentientSystemsCore_UI`, loop over `GameInfo.Units()` and `GameInfo.Buildings()` for each city with the checks above, and compare the lists with the production panel.
-2. To unlock buildings and districts in an early game, in `GameCore_Tuner`, send `Players[0]:GetTechs():SetTech(GameInfo.Technologies["TECH_POTTERY"].Index, true)`, and the same for `TECH_MASONRY`, `TECH_WRITING`, and `TECH_ASTROLOGY`. Reload the save afterwards to undo it.
+2. To unlock buildings and districts in an early game, in `GameCore_Tuner`, send `Players[0]:GetTechs():SetTech(GameInfo.Technologies["TECH_POTTERY"].Index, true)`, and the same for `TECH_MASONRY`, `TECH_WRITING`, and `TECH_ASTROLOGY`. To add a district without producing it, in `GameCore_Tuner`, send `WorldBuilder.CityManager():CreateDistrict(city, GameInfo.Districts["DISTRICT_CAMPUS"].Index, 100, Map.GetPlot(x, y):GetIndex())`, as `DLC/BlackDeathScenario` does. Reload the save afterwards to undo it.
 3. To see a greyed-out unit, in `GameCore_Tuner`, send `Players[0]:GetCities():FindID(<cityID>):ChangePopulation(-2)` to a city with 3 population, so the settler needs more population. Send `ChangePopulation(2)` afterwards.
 4. To test a choices file that the `.modinfo` doesn't list yet, without a restart, send the file's code without its comments and `include` lines to `SentientSystemsCore_UI`, then the choices file's code the same way. Windows limits a command line to 8,191 characters, so pass long code to the sending script in a file.
 5. Read `SentientSystems_GetChoices(Game.GetLocalPlayer())` with `npm run state`, which prints it after the state.
@@ -78,6 +82,7 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 | `SentientSystems_GetChoices` with districts and wonders | 1,692 bytes |
 | `SentientSystems_GetPlacement` through `readPlacement`, for Rome | The campus had the same 3 tiles and 8 tiles to buy, with the same bonuses, 335 bytes. The Pyramids had no tile and 1 tile to buy, (17,17), 46 bytes. The granary raised `BUILDING_GRANARY isn't a district or a wonder`, and city 7 raised `no city 7 for player 0` |
 | `SentientSystems_GetChoices` without the tiles | 830 bytes, down from 1,692 |
+| Projects with a campus that `CreateDistrict` added at (17,13) | Campus Research Grants, 14 cost and 3 turns, repeatable. The campus was left out of the districts as built, the library joined the buildings at 7 turns, and the holy site was greyed out with `Requires [ICON_Citizen] Population of 4 or greater.`. 1,074 bytes |
 | Rome's production panel with districts and wonders | The holy site and the campus at 6 turns, after **City Center** with a checkmark, and the Great Bath and Stonehenge at 14 and the Pyramids and Etemenanki at 18, none greyed out, as in the choices |
 | Rome's production panel against the choices | The same buildings and units with the same turns: walls 6 and granary 5 under **City Center**, and settler 6, builder 4, scout 2, warrior 3, slinger 2, and battering ram 5. The panel sorts the walls before the granary, and the choices keep the game's order. The panel doesn't show cost |
 

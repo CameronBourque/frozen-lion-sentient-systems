@@ -120,7 +120,9 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- progress, blocked, hidden, reasons, which the queue returns when it allows the district, tiles,
 -- the tiles where it can go, and purchaseTiles, the tiles to buy where it can go, each with x, y,
 -- and adjacency, a bonus by YieldTypes name. onePerCity, true when missing, and internalOnly go in
--- its GameInfo row. data.options.purchasable lists more tiles
+-- its GameInfo row. data.options.projects lists each project the build queue knows, with type,
+-- cost, turns, progress, blocked, and hidden, and maxPlayerInstances, which goes in its GameInfo
+-- row. data.options.purchasable lists more tiles
 -- to buy, by x and y. hashes maps each production, unit, building, and district type to its hash,
 -- and indexes maps each district, building, and unit type to its GameInfo index. ownerID is the
 -- player's ID.
@@ -181,8 +183,15 @@ local function City(data, hashes, indexes, ownerID)
 		buildingsByIndex[indexes[building.type]] = building
 	end
 
-	-- Each district option by its hash, its index, and its type.
+	-- Each district and project option by its hash, its index, and its type.
 	local districtsByHash, districtsByIndex, districtsByType = {}, {}, {}
+	local projectsByHash, projectsByIndex, projectsByType = {}, {}, {}
+
+	for _, project in ipairs((data.options or {}).projects or {}) do
+		projectsByHash[hashes[project.type]] = project
+		projectsByIndex[indexes[project.type]] = project
+		projectsByType[project.type] = project
+	end
 
 	for _, district in ipairs((data.options or {}).districts or {}) do
 		districtsByHash[hashes[district.type]] = district
@@ -360,6 +369,10 @@ local function City(data, hashes, indexes, ownerID)
 						return districtsByType[typeOrHash].turns
 					end
 
+					if projectsByType[typeOrHash] ~= nil then
+						return projectsByType[typeOrHash].turns
+					end
+
 					assert(production and (typeOrHash == hash or typeOrHash == production.type), "no production " .. tostring(typeOrHash))
 
 					return production.turnsLeft
@@ -370,7 +383,7 @@ local function City(data, hashes, indexes, ownerID)
 				-- unit and its formation, as in the game.
 				CanProduce = function(_, params, testOnly, withResults)
 					if type(params) == "number" then
-						local option = buildingsByHash[params] or districtsByHash[params]
+						local option = buildingsByHash[params] or districtsByHash[params] or projectsByHash[params]
 
 						if testOnly then
 							return option ~= nil and not option.hidden
@@ -422,6 +435,12 @@ local function City(data, hashes, indexes, ownerID)
 				-- 0 for a district the queue doesn't know, such as a built city center.
 				GetDistrictProgress = function(_, index)
 					return (districtsByIndex[index] or {}).progress or 0
+				end,
+				GetProjectCost = function(_, index)
+					return projectsByIndex[index].cost
+				end,
+				GetProjectProgress = function(_, index)
+					return projectsByIndex[index].progress or 0
 				end,
 			}
 		end,
@@ -606,6 +625,7 @@ function FakeGame.Install(env, world)
 	env.GameInfo = {
 		Types = {},
 		Districts = {},
+		Projects = {},
 		Buildings = {},
 		Units = {},
 		UnitPromotions = {},
@@ -616,10 +636,10 @@ function FakeGame.Install(env, world)
 		Routes = {},
 		Happinesses = HAPPINESSES,
 	}
-	-- GameInfo.Units(), GameInfo.Buildings(), and GameInfo.Districts() list the rows in index order, as
-	-- the game's tables do when called, and each table finds a row by its type name, as in
-	-- GameInfo.Districts["DISTRICT_CAMPUS"].
-	for name, column in pairs({ Units = "UnitType", Buildings = "BuildingType", Districts = "DistrictType" }) do
+	-- GameInfo.Units(), GameInfo.Buildings(), GameInfo.Districts(), and GameInfo.Projects() list the
+	-- rows in index order, as the game's tables do when called, and each table finds a row by its type
+	-- name, as in GameInfo.Districts["DISTRICT_CAMPUS"].
+	for name, column in pairs({ Units = "UnitType", Buildings = "BuildingType", Districts = "DistrictType", Projects = "ProjectType" }) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
 				if type(key) == "string" then
@@ -774,6 +794,17 @@ function FakeGame.Install(env, world)
 				row.Hash = hashes[district.type]
 				row.OnePerCity = district.onePerCity ~= false
 				row.InternalOnly = district.internalOnly == true
+			end
+
+			for _, project in ipairs((city.options or {}).projects or {}) do
+				AddRow("Projects", "ProjectType", project.type)
+
+				local row = env.GameInfo.Projects[indexes[project.type]]
+
+				count = count + 1
+				hashes[project.type] = hashes[project.type] or 3000000 + count
+				row.Hash = hashes[project.type]
+				row.MaxPlayerInstances = project.maxPlayerInstances
 			end
 
 			if typeName ~= nil then

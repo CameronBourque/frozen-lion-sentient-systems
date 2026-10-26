@@ -3,7 +3,7 @@
 -- SentientSystems_GetProductionChoices(player) returns a list with one table for each city, which
 -- encodes as '{"buildings":[{"cost":32,"district":"DISTRICT_CITY_CENTER","turns":5,
 -- "type":"BUILDING_GRANARY"}],"city":65536,"name":"Rome","units":[{"cost":40,"turns":6,
--- "type":"UNIT_SETTLER"}],...}', on one line, with districts and wonders too. The checks follow
+-- "type":"UNIT_SETTLER"}],...}', on one line, with districts, wonders, and projects too. The checks follow
 -- GetData in ProductionPanel.lua. The checks count the tiles from SentientSystemsCore_Placement.lua,
 -- and the bridge reads the tiles themselves with SentientSystems_GetPlacement.
 
@@ -22,8 +22,8 @@ local function FailureReasons(results)
 end
 
 -- Sets option.blocked to the game's reasons when the city can't produce what params names now, as
--- the panel greys it out. params is a building's hash, or a table that names a unit and its
--- formation. Returns the CanProduce results.
+-- the panel greys it out. params is a building's, district's, or project's hash, or a table that
+-- names a unit and its formation. Returns the CanProduce results.
 local function CheckBlocked(buildQueue, params, option)
 	local canProduce, results = buildQueue:CanProduce(params, false, true)
 
@@ -243,6 +243,35 @@ local function GetBuildingAndWonderOptions(city, purchasable)
 	return buildings, wonders
 end
 
+-- Returns the projects the city's production panel lists. The panel lists a project that
+-- CanProduce allows when it only tests, and greys out one that CanProduce refuses with results. A
+-- project is repeatable when its MaxPlayerInstances isn't 1. See GetData in ProductionPanel.lua,
+-- lines 2208 to 2239.
+local function GetProjectOptions(city)
+	local buildQueue = city:GetBuildQueue()
+	local projects = {}
+
+	for row in GameInfo.Projects() do
+		if buildQueue:CanProduce(row.Hash, true) then
+			local option = { type = row.ProjectType, cost = buildQueue:GetProjectCost(row.Index), turns = buildQueue:GetTurnsLeft(row.ProjectType) }
+			local progress = buildQueue:GetProjectProgress(row.Index)
+
+			if progress > 0 then
+				option.progress = progress
+			end
+
+			if row.MaxPlayerInstances ~= 1 then
+				option.repeatable = true
+			end
+
+			CheckBlocked(buildQueue, row.Hash, option)
+			projects[#projects + 1] = option
+		end
+	end
+
+	return projects
+end
+
 -- Returns a list with what each of the player's cities can produce, in the game's order of cities.
 function SentientSystems_GetProductionChoices(player)
 	local production = {}
@@ -258,6 +287,7 @@ function SentientSystems_GetProductionChoices(player)
 			buildings = buildings,
 			districts = GetDistrictOptions(city, purchasable),
 			wonders = wonders,
+			projects = GetProjectOptions(city),
 		}
 	end
 

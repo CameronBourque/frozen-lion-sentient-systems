@@ -47,6 +47,16 @@ const PLACED_OPTION = z.object({
 	repair: z.literal(true).optional(),
 });
 
+const PROJECT_OPTION = z.object({
+	type: z.string(),
+	cost: z.number(),
+	turns: z.number(),
+	progress: z.number().optional(),
+	blocked: BLOCKED,
+	// True when the project can be produced more than once. Left out otherwise.
+	repeatable: z.literal(true).optional(),
+});
+
 export const PRODUCTION_CITY = z.object({
 	city: z.number(),
 	name: z.string(),
@@ -55,4 +65,5 @@ export const PRODUCTION_CITY = z.object({
 	// Districts the panel shows as built are left out.
 	districts: z.array(PLACED_OPTION),
 	wonders: z.array(PLACED_OPTION),
+	projects: z.array(PROJECT_OPTION),
 });
