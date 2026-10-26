@@ -40,16 +40,10 @@ function SentientSystems_GetGovernmentChoices(player)
 	}
 end
 
--- Gathering Storm replaces the screen with GovernmentScreen_Expansion2.lua, which reads its
--- government rows from Governments_XP2.
-local function HasExpansion2()
-	return GameInfo.Governments_XP2 ~= nil
-end
-
 -- Returns whether the policy catalog shows a policy, active or not. See IsPolicyAvailable in
 -- GovernmentScreen.lua, lines 2224 to 2229, and its replacement in GovernmentScreen_Expansion2.lua.
 local function IsPolicyAvailable(culture, hash)
-	if HasExpansion2() then
+	if SentientSystems_HasExpansion2() then
 		return not culture:IsPolicyBanned(hash) and culture:CanPolicyBeSlotted(hash) and not culture:IsPolicyObsolete(hash)
 	end
 
@@ -106,7 +100,7 @@ local function GetUnlock(player, culture, hidden)
 
 	if balance < cost then
 		unlock.blocked = { Locale.Lookup(byFaith and "LOC_GOVT_NEED_FAITH" or "LOC_GOVT_NEED_GOLD", cost) }
-	elseif HasExpansion2() and Game.GetWorldCongress():IsInSession() then
+	elseif SentientSystems_HasExpansion2() and Game.GetWorldCongress():IsInSession() then
 		unlock.blocked = {}
 	end
 
@@ -175,7 +169,7 @@ end
 -- Returns a government's diplomatic favor per turn, from Gathering Storm's Governments_XP2, or nil
 -- without it. See GetGovernmentStatsText in GovernmentScreen_Expansion2.lua.
 local function GetFavor(governmentType)
-	if not HasExpansion2() then
+	if not SentientSystems_HasExpansion2() then
 		return nil
 	end
 

@@ -30,6 +30,12 @@ function SentientSystems_Include(name)
 	return loaded
 end
 
+-- Returns whether Gathering Storm is on. Its screens, such as GovernmentScreen_Expansion2.lua, read
+-- rows from Governments_XP2, which only the expansion adds.
+function SentientSystems_HasExpansion2()
+	return GameInfo.Governments_XP2 ~= nil
+end
+
 -- Escapes text for one tagged line: each backslash as \\ and each newline as \n. The tuner sends
 -- each line of a print as its own line, and only the first one has the state's name in front.
 local function EscapeLine(text)

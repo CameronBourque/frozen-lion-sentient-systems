@@ -1,6 +1,8 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
 -- map's plots, PlayersVisibility, PlayerManager.GetAlive and GetAliveMinors, PlayerConfigurations,
 -- PlayerManager.GetAliveMajorIDs, a player's influence and resources, Game.GetQuestsManager,
+-- Game.GetGreatPeople, a player's great people points, GameInfo.GreatPersonClasses,
+-- GameInfo.GreatPersonIndividuals, GameCapabilities,
 -- GameInfo.Leaders, GameInfo.LeaderTraits, GameInfo.Traits, GameInfo.Quests, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
@@ -64,7 +66,12 @@
 -- cantReceive, true for the Free Cities, and traits, the text keys of its suzerain bonus, resources,
 -- each with type, amount, exported, and perTurn, quests by player ID, each with type, name,
 -- description, and reward, and uniqueDisabled, true when Gathering Storm turns off its suzerain
--- bonus. A player's blockers lists its end-turn
+-- bonus. world.greatPeople lists the great people on offer, each with class, type, name, era, cost,
+-- charges, passive and action, each with the text the timeline gives, canRecruit, passCost, there
+-- when the player can pass, gold and faith, each with cost and can, cantEarn, and claimed, true for a
+-- class whose great person is taken. A player's greatPeoplePoints maps a class type to its points
+-- and perTurn. world.offCapabilities lists the great people capabilities that are off. A player's
+-- blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
@@ -927,6 +934,22 @@ local function Player(id, data, hashes, indexes, env)
 
 			return treasury
 		end,
+		-- The player's points toward each class of great person, from data.greatPeoplePoints by class
+		-- type, each with points and perTurn.
+		GetGreatPeoplePoints = function()
+			local function Points(classIndex)
+				return (data.greatPeoplePoints or {})[env.GameInfo.GreatPersonClasses[classIndex].GreatPersonClassType] or {}
+			end
+
+			return {
+				GetPointsTotal = function(_, classIndex)
+					return Points(classIndex).points or 0
+				end,
+				GetPointsPerTurn = function(_, classIndex)
+					return Points(classIndex).perTurn or 0
+				end,
+			}
+		end,
 		-- The player's influence, from data.influence, and for a city-state, from data.minor.
 		GetInfluence = function()
 			local influence = data.influence or {}
@@ -1123,6 +1146,8 @@ function FakeGame.Install(env, world)
 		LeaderTraits = {},
 		Traits = {},
 		Quests = {},
+		GreatPersonClasses = {},
+		GreatPersonIndividuals = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -1342,6 +1367,18 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- Each great person on offer gets rows for its class, era, and individual.
+	for _, person in ipairs(world.greatPeople or {}) do
+		AddRow("GreatPersonClasses", "GreatPersonClassType", person.class)
+		AddRow("Eras", "EraType", person.era)
+		AddRow("GreatPersonIndividuals", "GreatPersonIndividualType", person.type)
+
+		local row = env.GameInfo.GreatPersonIndividuals[indexes[person.type]]
+
+		row.Name = person.name or person.type
+		row.ActionCharges = person.charges or 0
+	end
+
 	-- Makes a list of rows callable, as GameInfo.Government_SlotCounts() is.
 	local function Callable(rows)
 		return setmetatable(rows, {
@@ -1440,6 +1477,7 @@ function FakeGame.Install(env, world)
 		HasCapability = function(capability)
 			return (capability == "CAPABILITY_GOVERNMENTS_LEGACY_BONUSES" and world.legacyBonuses == true)
 				or (capability == "CAPABILITY_RENAME" and world.rename == true)
+				or (capability:find("^CAPABILITY_GREAT_PEOPLE_") ~= nil and not (world.offCapabilities or {})[capability])
 		end,
 	}
 	env.GlobalParameters = { GOVERNMENT_UNLOCK_WITH_FAITH = world.unlockWithFaith and 1 or 0 }
@@ -1864,6 +1902,60 @@ function FakeGame.Install(env, world)
 			end,
 		}
 	end
+	-- The great people on offer, from world.greatPeople, by the GameInfo index of each individual.
+	env.Game.GetGreatPeople = function()
+		local byIndex = {}
+
+		for _, person in ipairs(world.greatPeople or {}) do
+			byIndex[indexes[person.type]] = person
+		end
+
+		local function Patronage(index, yield)
+			return byIndex[index][yield == YIELD_TYPES.GOLD and "gold" or "faith"] or {}
+		end
+
+		return {
+			GetTimeline = function()
+				local timeline = {}
+
+				for i, person in ipairs(world.greatPeople or {}) do
+					local passive, action = person.passive or {}, person.action or {}
+
+					timeline[i] = {
+						Individual = (not person.claimed) and indexes[person.type] or nil,
+						Class = indexes[person.class],
+						Era = indexes[person.era],
+						Cost = person.cost,
+						PassiveNameText = passive.name,
+						PassiveEffectText = passive.effect,
+						ActionNameText = action.name,
+						ActionUsageText = action.usage,
+						ActionEffectText = action.effect,
+					}
+				end
+
+				return timeline
+			end,
+			CanRecruitPerson = function(_, _, index)
+				return byIndex[index].canRecruit == true
+			end,
+			CanRejectPerson = function(_, _, index)
+				return byIndex[index].passCost ~= nil
+			end,
+			GetRejectCost = function(_, _, index)
+				return byIndex[index].passCost
+			end,
+			CanPatronizePerson = function(_, _, index, yield)
+				return Patronage(index, yield).can == true
+			end,
+			GetPatronizeCost = function(_, _, index, yield)
+				return Patronage(index, yield).cost or 2147483647
+			end,
+			GetEarnConditionsText = function(_, _, index)
+				return byIndex[index].cantEarn or ""
+			end,
+		}
+	end
 	-- The quests from data.minor.quests, by the player they are for.
 	env.Game.GetQuestsManager = function()
 		local function Find(playerID, cityStateID, index)
@@ -1904,7 +1996,9 @@ function FakeGame.Install(env, world)
 		local players = {}
 
 		for id = 0, 63 do
-			players[#players + 1] = env.Players[id]
+			if env.Players[id] ~= nil and world.players[id].minor == nil then
+				players[#players + 1] = env.Players[id]
+			end
 		end
 
 		return players

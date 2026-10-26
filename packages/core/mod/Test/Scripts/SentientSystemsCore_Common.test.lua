@@ -64,6 +64,16 @@ describe("SentientSystems_CatchErrors", function()
 	end)
 end)
 
+describe("SentientSystems_HasExpansion2", function()
+	it("is true only when the game has Gathering Storm's government rows", function()
+		env.GameInfo = {}
+		assert.is_false(env.SentientSystems_HasExpansion2())
+
+		env.GameInfo.Governments_XP2 = {}
+		assert.is_true(env.SentientSystems_HasExpansion2())
+	end)
+end)
+
 describe("SentientSystems_Include", function()
 	it("loads the file, returns its path, and prints nothing", function()
 		local loaded = env.SentientSystems_Include("SentientSystemsCore_Json")
