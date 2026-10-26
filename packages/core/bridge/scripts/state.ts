@@ -1,12 +1,13 @@
-// Prints one player's state, choices, and tech tree from the running game, as the agent will see
-// them, and their sizes in bytes. Run it with `npm run state`, with a game loaded. It reads the local
-// player's. An argument such as `npm run state -- 1` reads another player's. In PowerShell, write the
-// `--` as `'--'`, as docs/rules/code.md says. It exits with code 1 if any of them can't be read.
+// Prints one player's state, choices, tech tree, and civic tree from the running game, as the agent
+// will see them, and their sizes in bytes. Run it with `npm run state`, with a game loaded. It reads
+// the local player's. An argument such as `npm run state -- 1` reads another player's. In
+// PowerShell, write the `--` as `'--'`, as docs/rules/code.md says. It exits with code 1 if any of
+// them can't be read.
 
 import { readChoices } from "../src/choices/choices.js";
 import { CORE_STATE } from "../src/connect.js";
 import { readState } from "../src/state/state.js";
-import { readTechTree } from "../src/trees/trees.js";
+import { readCivicTree, readTechTree } from "../src/trees/trees.js";
 import { TunerClient } from "../src/tuner/client.js";
 
 const client = new TunerClient({});
@@ -27,7 +28,7 @@ async function pickPlayer(): Promise<{ playerID: number } | { error: string }> {
 	}
 }
 
-// Reads the state, the choices, and the tech tree, and prints each with its size, or its error.
+// Reads the state, the choices, and the trees, and prints each with its size, or its error.
 async function main(): Promise<void> {
 	const player = await pickPlayer();
 
@@ -59,14 +60,16 @@ async function main(): Promise<void> {
 		process.exitCode = 1;
 	}
 
-	const techTree = await readTechTree(client, playerID);
+	for (const [name, read] of [["tech tree", readTechTree], ["civic tree", readCivicTree]] as const) {
+		const tree = await read(client, playerID);
 
-	if (techTree.ok) {
-		console.log(JSON.stringify(techTree.tree, null, 2));
-		console.error(`Player ${playerID}'s tech tree is ${techTree.bytes} bytes.`);
-	} else {
-		console.error(techTree.error);
-		process.exitCode = 1;
+		if (tree.ok) {
+			console.log(JSON.stringify(tree.tree, null, 2));
+			console.error(`Player ${playerID}'s ${name} is ${tree.bytes} bytes.`);
+		} else {
+			console.error(tree.error);
+			process.exitCode = 1;
+		}
 	}
 }
 

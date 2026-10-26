@@ -4,7 +4,7 @@
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { CORE_STATE } from "../../src/connect.js";
-import { readTechTree } from "../../src/trees/trees.js";
+import { readCivicTree, readTechTree } from "../../src/trees/trees.js";
 import { TunerClient } from "../../src/tuner/client.js";
 import type { CommandResult } from "../tuner/fake-game.js";
 import { FakeGame } from "../tuner/fake-game.js";
@@ -33,7 +33,7 @@ const TREE = {
 };
 const JSON_TEXT = JSON.stringify(TREE);
 
-describe("readTechTree", () => {
+describe("readTechTree and readCivicTree", () => {
 	let game: FakeGame;
 	let client: TunerClient;
 
@@ -88,5 +88,17 @@ describe("readTechTree", () => {
 		answer({ [STASH]: { luaError: "no player 0" } });
 
 		expect(await readTechTree(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the tech tree: no player 0" });
+	});
+
+	test("reads the civic tree with its own call", async () => {
+		answer({ "SentientSystems_Stash(SentientSystems_GetCivicTree(0))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON_TEXT] } });
+
+		expect(await readCivicTree(client, 0)).toEqual({ ok: true, tree: TREE, bytes: Buffer.byteLength(JSON_TEXT) });
+	});
+
+	test("names the civic tree in the game's error", async () => {
+		answer({ "SentientSystems_Stash(SentientSystems_GetCivicTree(0))": { luaError: "no player 0" } });
+
+		expect(await readCivicTree(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the civic tree: no player 0" });
 	});
 });

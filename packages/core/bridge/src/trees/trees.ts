@@ -1,5 +1,5 @@
-// Reads one player's tech tree from the core mod, as the tech tree screen shows it, so the agent can
-// plan a route through the tree. The core mod builds it as JSON in a call of its own, in
+// Reads one player's tech tree or civic tree from the core mod, as the tree screen shows it, so the
+// agent can plan a route through the tree. The core mod builds it as JSON in a call of its own, in
 // Scripts/Trees/SentientSystemsCore_Trees.lua, and the bridge reads it through the stash, in
 // stash.ts. docs/design/core/in-game-lua.md has the format.
 
@@ -51,6 +51,13 @@ export type TreeResult =
 // what went wrong, instead of an exception.
 export async function readTechTree(client: TunerClient, playerID: number): Promise<TreeResult> {
 	const result = await readStash(client, `SentientSystems_GetTechTree(${playerID})`, TREE, "tech tree");
+
+	return result.ok ? { ok: true, tree: result.value, bytes: result.bytes } : result;
+}
+
+// Reads the civic tree of the player with ID playerID, in the same form as the tech tree.
+export async function readCivicTree(client: TunerClient, playerID: number): Promise<TreeResult> {
+	const result = await readStash(client, `SentientSystems_GetCivicTree(${playerID})`, TREE, "civic tree");
 
 	return result.ok ? { ok: true, tree: result.value, bytes: result.bytes } : result;
 }

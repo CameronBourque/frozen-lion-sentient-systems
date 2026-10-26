@@ -6,7 +6,7 @@
 -- player's techs and civics with the advisor's recommendations and the game's
 -- GetUnlockablesForTech and GetUnlockablesForCivic, GameInfo.Types, GameInfo.Yields,
 -- GameInfo.Technologies, GameInfo.Civics, GameInfo.Boosts, GameInfo.Eras, UITree for player 0's
--- techs, Game.GetPlayers, a player's diplomacy,
+-- techs and civics, Game.GetPlayers, a player's diplomacy,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -753,6 +753,15 @@ local function Player(id, data, hashes, indexes)
 				GetTurnsToProgressCivic = function(_, index)
 					return civicsByIndex[index].turns
 				end,
+				HasCivic = function(_, index)
+					return civicsByIndex[index] ~= nil and civicsByIndex[index].researched == true
+				end,
+				IsCivicRevealed = function(_, index)
+					return civicsByIndex[index] ~= nil and civicsByIndex[index].hidden ~= true
+				end,
+				GetTurnsLeft = function()
+					return civicData.turnsLeft or -1
+				end,
 				HasBoostBeenTriggered = function(_, index)
 					return civicsByIndex[index].boost.triggered == true
 				end,
@@ -1037,16 +1046,25 @@ function FakeGame.Install(env, world)
 	env.GetUnlockablesForTech = UnlockRows
 	env.GetUnlockablesForCivic = UnlockRows
 
-	-- The tech tree's nodes are player 0's techs, in order, with their prerequisites.
+	-- Returns the nodes of a tree from player 0's techs or civics, in order, with their type in
+	-- nameField, Name for a tech and CivicName for a civic, and their prerequisites in field.
+	local function TreeNodes(key, nameField, field)
+		local nodes = {}
+		local options = (((world.players or {})[0] or {})[key] or {}).options or {}
+
+		for i, option in ipairs(options) do
+			nodes[i] = { [nameField] = option.type, [field] = option.prerequisites or {} }
+		end
+
+		return nodes
+	end
+
 	env.UITree = {
 		GetAvailableTechs = function()
-			local nodes = {}
-
-			for i, tech in ipairs(((world.players or {})[0] or {}).techs and world.players[0].techs.options or {}) do
-				nodes[i] = { Name = tech.type, PrereqTechTypes = tech.prerequisites or {} }
-			end
-
-			return nodes
+			return TreeNodes("techs", "Name", "PrereqTechTypes")
+		end,
+		GetAvailableCivics = function()
+			return TreeNodes("civics", "CivicName", "PrereqCivicTypes")
 		end,
 	}
 

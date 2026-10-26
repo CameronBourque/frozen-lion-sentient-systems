@@ -119,3 +119,39 @@ describe("SentientSystems_GetTechTree", function()
 		assert.equal(1, env.SentientSystems_Stash(env.SentientSystems_GetTechTree(0)))
 	end)
 end)
+
+describe("SentientSystems_GetCivicTree", function()
+	local CODE_OF_LAWS = { type = "CIVIC_CODE_OF_LAWS", cost = 20, turns = 3, researched = true, locked = true, unlocks = { "POLICY_DISCIPLINE" } }
+	local CRAFTSMANSHIP = { type = "CIVIC_CRAFTSMANSHIP", cost = 40, turns = 6, prerequisites = { "CIVIC_CODE_OF_LAWS" } }
+
+	it("lists every civic in the same form as the tech tree", function()
+		local env = Load({ players = { [0] = { civics = { options = { CODE_OF_LAWS, CRAFTSMANSHIP } } } } })
+
+		assert.equal(
+			"{\"nodes\":[{\"cost\":20,\"era\":\"ERA_ANCIENT\",\"prerequisites\":[],\"status\":\"researched\",\"type\":\"CIVIC_CODE_OF_LAWS\",\"unlocks\":[\"POLICY_DISCIPLINE\"]},"
+				.. "{\"cost\":40,\"era\":\"ERA_ANCIENT\",\"prerequisites\":[\"CIVIC_CODE_OF_LAWS\"],\"status\":\"ready\",\"turns\":6,\"type\":\"CIVIC_CRAFTSMANSHIP\",\"unlocks\":[]}],"
+				.. "\"players\":[{\"era\":\"ERA_ANCIENT\",\"player\":0,\"researched\":1}]}",
+			env.SentientSystems_GetCivicTree(0)
+		)
+	end)
+
+	it("gives the civic in research the turns from GetTurnsLeft, and numbers unrevealed civics", function()
+		local env = Load({ players = { [0] = { civics = {
+			current = "CIVIC_CRAFTSMANSHIP",
+			turnsLeft = 2,
+			options = { CODE_OF_LAWS, CRAFTSMANSHIP, { type = "CIVIC_EARLY_EMPIRE", cost = 70, turns = 9, hidden = true, locked = true, prerequisites = { "CIVIC_CRAFTSMANSHIP" } } },
+		} } } })
+		local tree = env.SentientSystems_GetCivicTree(0)
+
+		assert.truthy(tree:find("\"status\":\"current\",\"turns\":2,", 1, true))
+		assert.truthy(tree:find("{\"era\":\"ERA_ANCIENT\",\"prerequisites\":[\"CIVIC_CRAFTSMANSHIP\"],\"status\":\"blocked\",\"turns\":9,\"type\":\"?1\"}", 1, true))
+	end)
+
+	it("raises an error for an ID with no player", function()
+		local env = Load({ players = { [0] = {} } })
+
+		assert.has_error(function()
+			env.SentientSystems_GetCivicTree(5)
+		end, "no player 5")
+	end)
+end)

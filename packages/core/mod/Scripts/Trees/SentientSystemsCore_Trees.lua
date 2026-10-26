@@ -1,21 +1,45 @@
--- Builds one player's tech tree as JSON for the bridge, in a call of its own, as the tech tree screen
--- shows it, so the agent can plan a route through the tree. It reads the tree from the running game,
+-- Builds one player's tech tree or civic tree as JSON for the bridge, in a call of its own, as the
+-- tree screen shows it, so the agent can plan a route through the tree. It reads the tree from the running game,
 -- because the Tech and Civic Shuffle mode changes it. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetTechTree(0) returns '{"nodes":[{"cost":25,"era":"ERA_ANCIENT",
 -- "prerequisites":[],"status":"ready","type":"TECH_MINING",...}],"players":[{"player":0,...}]}', on
--- one line. The checks follow GetCurrentData and PopulateNode in TechTree.lua.
+-- one line. SentientSystems_GetCivicTree(0) returns the civic tree in the same form. The checks
+-- follow GetCurrentData and PopulateNode in TechTree.lua and CivicsTree.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_ChoicesResearch")
 
--- The game's calls for the tech tree. The tree screen lists the nodes from UITree, with the
--- prerequisites the running game has. See PopulateItemData in TechTree.lua, lines 1374 to 1447.
+-- Returns the number of rows that the player has, and the latest era of those rows, or nil when the
+-- player has none. has(store, index) checks a row in the player's store.
+local function Researched(rows, store, has)
+	local count, highest = 0, nil
+
+	for row in rows() do
+		if has(store, row.Index) then
+			count = count + 1
+
+			if highest == nil or GameInfo.Eras[row.EraType].ChronologyIndex > GameInfo.Eras[highest].ChronologyIndex then
+				highest = row.EraType
+			end
+		end
+	end
+
+	return count, highest
+end
+
+-- The game's calls for the tech tree and the civic tree. Each screen lists the nodes from UITree,
+-- with the prerequisites the running game has. See PopulateItemData in TechTree.lua, lines 1374 to
+-- 1447, and in CivicsTree.lua, lines 1566 to 1645. Without the Tech and Civic Shuffle mode, a store
+-- may have no IsTechRevealed or IsCivicRevealed, and every node is revealed. See GetCurrentData in
+-- TechTree.lua, lines 1244 to 1252, and in CivicsTree.lua, lines 1418 to 1428.
 local TREES = {
 	tech = {
 		nodes = function()
 			return UITree.GetAvailableTechs()
 		end,
+		-- The field of a node that holds its type.
+		name = "Name",
 		prerequisites = "PrereqTechTypes",
 		row = function(name)
 			return GameInfo.Technologies[name]
@@ -23,40 +47,38 @@ local TREES = {
 		has = function(store, index)
 			return store:HasTech(index)
 		end,
-		-- Without the Tech and Civic Shuffle mode, a store may have no IsTechRevealed, and every
-		-- node is revealed. See GetCurrentData in TechTree.lua, lines 1244 to 1252.
 		revealed = function(store, index)
 			return store.IsTechRevealed == nil or store:IsTechRevealed(index)
 		end,
-		count = function(player)
-			local count = 0
-			local store = player:GetTechs()
-
-			for row in GameInfo.Technologies() do
-				if store:HasTech(row.Index) then
-					count = count + 1
-				end
-			end
-
-			return count
+		researched = function(player, has)
+			return Researched(GameInfo.Technologies, player:GetTechs(), has)
 		end,
-		highestEra = function(player)
-			local store = player:GetTechs()
-			local highest
-
-			for row in GameInfo.Technologies() do
-				if store:HasTech(row.Index) and (highest == nil or GameInfo.Eras[row.EraType].ChronologyIndex > GameInfo.Eras[highest].ChronologyIndex) then
-					highest = row.EraType
-				end
-			end
-
-			return highest
+	},
+	civic = {
+		nodes = function()
+			return UITree.GetAvailableCivics()
+		end,
+		-- A civic node holds its index in CivicType, and its type in CivicName. See PopulateItemData
+		-- in CivicsTree.lua, line 1584.
+		name = "CivicName",
+		prerequisites = "PrereqCivicTypes",
+		row = function(name)
+			return GameInfo.Civics[name]
+		end,
+		has = function(store, index)
+			return store:HasCivic(index)
+		end,
+		revealed = function(store, index)
+			return store.IsCivicRevealed == nil or store:IsCivicRevealed(index)
+		end,
+		researched = function(player, has)
+			return Researched(GameInfo.Civics, player:GetCulture(), has)
 		end,
 	},
 }
 
 -- Returns a node's status, as the tree screen colors it: researched, current, ready, or blocked.
--- See GetCurrentData in TechTree.lua, lines 1099 to 1109.
+-- See GetCurrentData in TechTree.lua, lines 1099 to 1109, and in CivicsTree.lua, lines 1272 to 1284.
 local function Status(tree, reader, row)
 	if tree.has(reader.store, row.Index) then
 		return "researched"
@@ -77,11 +99,11 @@ local function NodeNames(tree, reader, nodes)
 	local hidden = 0
 
 	for _, node in ipairs(nodes) do
-		if tree.revealed(reader.store, tree.row(node.Name).Index) then
-			names[node.Name] = node.Name
+		if tree.revealed(reader.store, tree.row(node[tree.name]).Index) then
+			names[node[tree.name]] = node[tree.name]
 		else
 			hidden = hidden + 1
-			names[node.Name] = "?" .. hidden
+			names[node[tree.name]] = "?" .. hidden
 		end
 	end
 
@@ -91,16 +113,17 @@ end
 -- Returns a node as the tree screen shows it. A revealed node has what the chooser shows, except
 -- that the screen shows no boost or progress for a researched node, and turns only while they are
 -- above 0. An unrevealed node shows no name, cost, boost, or unlocks. The node in research shows the
--- turns from GetTurnsLeft. See PopulateNode in TechTree.lua, lines 778 to 967.
+-- turns from GetTurnsLeft. See PopulateNode in TechTree.lua, lines 778 to 967, and in CivicsTree.lua,
+-- lines 889 to 1081.
 local function Node(tree, reader, node, names)
-	local row = tree.row(node.Name)
+	local row = tree.row(node[tree.name])
 	local status = Status(tree, reader, row)
 	local entry
 
-	if names[node.Name] == node.Name then
+	if names[node[tree.name]] == node[tree.name] then
 		entry = reader.Option(row)
 	else
-		entry = { type = names[node.Name], turns = reader.kind.turns(reader.store, row.Index) }
+		entry = { type = names[node[tree.name]], turns = reader.kind.turns(reader.store, row.Index) }
 
 		local progress = reader.kind.progress(reader.store, row.Index)
 
@@ -135,7 +158,7 @@ end
 -- Returns the player and each player they have met, with the number of nodes they have researched,
 -- and the latest era they have researched in, as the timeline at the bottom of the screen marks it.
 -- The era is left out for a player who has researched nothing. See GetCurrentData in TechTree.lua,
--- lines 1143 to 1177.
+-- lines 1143 to 1177, and in CivicsTree.lua, lines 1317 to 1352.
 local function PlayerProgress(tree, player)
 	local players = {}
 	local diplomacy = player:GetDiplomacy()
@@ -144,7 +167,9 @@ local function PlayerProgress(tree, player)
 		local id = other:GetID()
 
 		if id == player:GetID() or diplomacy:HasMet(id) then
-			players[#players + 1] = { player = id, researched = tree.count(other), era = tree.highestEra(other) }
+			local researched, era = tree.researched(other, tree.has)
+
+			players[#players + 1] = { player = id, researched = researched, era = era }
 		end
 	end
 
@@ -177,4 +202,10 @@ end
 -- SentientSystems_Stash(SentientSystems_GetTechTree(playerID)).
 function SentientSystems_GetTechTree(playerID)
 	return GetTree("tech", playerID)
+end
+
+-- Returns the civic tree of the player with ID playerID as JSON, in the same form as the tech tree.
+-- Raises an error for an ID with no player.
+function SentientSystems_GetCivicTree(playerID)
+	return GetTree("civic", playerID)
 end
