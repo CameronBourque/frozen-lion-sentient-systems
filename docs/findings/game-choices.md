@@ -2,7 +2,7 @@
 
 Status: open. `SentientSystems_GetChoices` with the units, buildings, districts, wonders, and projects each city can produce, the units, buildings, and tiles each city can buy with gold, the techs and civics the player can research, the tiles from `SentientSystems_GetPlacement`, and the tech and civic trees from `SentientSystems_GetTechTree` and `SentientSystems_GetCivicTree`, the tech tree also with the Tech and Civic Shuffle mode, are confirmed in a running game. Faith purchases are confirmed in a running game. District purchases are confirmed in files only. Corps and armies are confirmed in files only.
 
-The calls the choices use to list the legal options for each of one player's discrete choices, as the game's own screens list them. The government and policy choices are in [game-government.md](game-government.md). The end-turn blockers that the choices resolve are in [game-state.md](game-state.md#end-turn-blockers). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the choices use to list the legal options for each of one player's discrete choices, as the game's own screens list them. The government and policy choices are in [game-government.md](game-government.md), and the religion choices in [game-religion.md](game-religion.md). The end-turn blockers that the choices resolve are in [game-state.md](game-state.md#end-turn-blockers). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 

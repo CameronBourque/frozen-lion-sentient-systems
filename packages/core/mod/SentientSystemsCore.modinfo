@@ -22,6 +22,7 @@
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
 			<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 			<File>Scripts/Trees/SentientSystemsCore_Trees.lua</File>
 			<File>Scripts/State/SentientSystemsCore_State.lua</File>
@@ -40,6 +41,7 @@
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
 		<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 		<File>Scripts/Trees/SentientSystemsCore_Trees.lua</File>
 		<File>Scripts/State/SentientSystemsCore_State.lua</File>

@@ -44,6 +44,9 @@
 -- world.governments lists the ruleset's governments, each with type, civic, bonusType, bonuses,
 -- its two text keys, slots, counts by slot type, influence, with perTurn, threshold, and envoys,
 -- favor, and legacyPercent. world.legacyBonuses turns on the base game's legacy bonuses.
+-- world.beliefs lists the ruleset's beliefs, each with type, class, BELIEF_CLASS_PANTHEON when
+-- missing, description, and taken, true when a player's pantheon or religion holds it. A player's
+-- pantheon is its belief type, and canCreatePantheon is true when it can found one.
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
 -- player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
@@ -899,6 +902,15 @@ local function Player(id, data, hashes, indexes, env)
 				return data.faith or 0
 			end
 
+			-- The index of the player's pantheon belief, from data.pantheon, or -1 for none.
+			function religion.GetPantheon()
+				return data.pantheon and indexes[data.pantheon] or -1
+			end
+
+			function religion.CanCreatePantheon()
+				return data.canCreatePantheon == true
+			end
+
 			return religion
 		end,
 		GetUnits = function()
@@ -959,6 +971,7 @@ function FakeGame.Install(env, world)
 		Governments = {},
 		GovernmentSlots = {},
 		Policies = {},
+		Beliefs = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -976,6 +989,7 @@ function FakeGame.Install(env, world)
 		Boosts = "TechnologyType",
 		Policies = "PolicyType",
 		Governments = "GovernmentType",
+		Beliefs = "BeliefType",
 	}) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
@@ -1120,6 +1134,17 @@ function FakeGame.Install(env, world)
 		row.GovernmentSlotType = row.GovernmentSlotType or policy.slot
 		row.Description = row.Description or policy.description
 		row.PrereqCivic = row.PrereqCivic or policy.civic
+	end
+
+	-- Each belief in world.beliefs gets a row.
+	for _, belief in ipairs(world.beliefs or {}) do
+		AddRow("Beliefs", "BeliefType", belief.type)
+
+		local row = env.GameInfo.Beliefs[indexes[belief.type]]
+
+		row.BeliefClassType = belief.class or "BELIEF_CLASS_PANTHEON"
+		row.Description = belief.description
+		row.taken = belief.taken
 	end
 
 	-- Makes a list of rows callable, as GameInfo.Government_SlotCounts() is.
@@ -1563,6 +1588,14 @@ function FakeGame.Install(env, world)
 	env.Game = env.Game or {}
 	env.Game.IsAllowStrategicCommands = function(playerID)
 		return (world.players or {})[playerID].noStrategicCommands ~= true
+	end
+	-- Whether any player's pantheon or religion holds a belief, from each belief's taken.
+	env.Game.GetReligion = function()
+		local function IsTaken(_, index)
+			return env.GameInfo.Beliefs[index].taken == true
+		end
+
+		return { IsInSomePantheon = IsTaken, IsInSomeReligion = IsTaken }
 	end
 	env.Game.GetWorldCongress = function()
 		return {

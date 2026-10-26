@@ -13,6 +13,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [game-state.md](game-state.md) | The calls the state serializer uses for cities, units, tiles, and end-turn blockers |
 | [game-choices.md](game-choices.md) | The calls the choices use to list each choice's legal options, as the game's screens list them |
 | [game-government.md](game-government.md) | The calls the government and policy choices use, as the government screen shows them |
+| [game-religion.md](game-religion.md) | The calls the religion choices use, as the religion screens show them |
 | [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |
 | [multiplayer.md](multiplayer.md) | What the tuner and the core mod can do in hotseat and online games |
