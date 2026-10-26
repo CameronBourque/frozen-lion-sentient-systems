@@ -6,7 +6,7 @@ The calls the envoy choice and the envoys section of the state use, as the City-
 
 ## Questions
 
-1. Does the screen's suzerain bonus list the same resources as the state, such as Samarkand's silk?
+None open.
 
 ## What we know now
 
@@ -51,7 +51,7 @@ A single-player game with Gathering Storm, on turn 1 of a save with 18 city-stat
 | The state and choices through the bridge's readers | Both parsed, with the same values |
 | The details on the same turn | Bonuses for the trade, militaristic, and cultural kinds. Each city-state's own suzerain bonus, such as Samarkand's Trading Dome, none disabled, and no resources. Quests: Samarkand, recruit a Great General. Cahokia, train a Spearman. Granada, build an Encampment. Caguana, none, at war. Influenced By: Samarkand, the Cree with 3, then the player with 2. Cahokia, an unmet player with 3, then the player with 1. Granada, the player with 4. Caguana, none. 3,966 bytes for the section |
 | The city-state screens on turn 2 | Each city-state's bonuses at 1, 3, and 6 envoys and its unique bonus, such as Granada's Alcázar, with the same text as the state. Influenced By: Samarkand, Poundmaker with 3 and Ambiorix (You) with 2. Cahokia, Unmet Player with 3 and the player with 1. Granada, the player with 4. Caguana, none. Quests: Recruit a Great General, Train a Spearman, and Construct an Encampment, each for 1 envoy, and none for Caguana. Each suzerain bonus ended with **(None currently available)** for resources |
-| The resources on turn 3, after improved silk next to Samarkand | Samarkand with `[{"amount":1,"type":"RESOURCE_SILK"}]`, and no other city-state with resources. Iron on Cahokia's city center, with no mine, didn't count |
+| The resources on turn 3, after improved silk next to Samarkand | Samarkand with `[{"amount":1,"type":"RESOURCE_SILK"}]`, and no other city-state with resources. Iron on Cahokia's city center, with no mine, didn't count. Samarkand's suzerain bonus on the screen ended with **1 Silk** |
 | The City-States screen after the war | **Send envoys (4)** and 1 envoy at 50 influence points. Samarkand with 2 envoys, suzerain Poundmaker, 4 to be suzerain. Cahokia with 1, suzerain Unmet Player, 4. Granada with 4, suzerain You, 4. Caguana with 0, suzerain None, 3, and a war icon. The same as the state |
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.
