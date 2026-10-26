@@ -32,7 +32,7 @@ end
 describe("SentientSystems_GetPurchaseChoices", function()
 	it("lists each city with the units, buildings, and districts it can buy with gold, and their costs", function()
 		assert.equal(
-			"[{\"city\":65536,\"faith\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"gold\":{\"buildings\":[{\"cost\":130,\"type\":\"BUILDING_GRANARY\"}],\"districts\":[{\"cost\":195,\"type\":\"DISTRICT_CAMPUS\"}],"
+			"[{\"city\":65536,\"faith\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"gold\":{\"buildings\":[{\"cost\":130,\"type\":\"BUILDING_GRANARY\"}],\"districts\":[{\"cost\":195,\"type\":\"DISTRICT_CAMPUS\"}],\"tiles\":[],"
 				.. "\"units\":[{\"cost\":100,\"type\":\"UNIT_BUILDER\"}]},\"name\":\"Rome\"}]",
 			PurchasesWith({ YIELD_GOLD = {
 				units = { BUILDER },
@@ -43,7 +43,7 @@ describe("SentientSystems_GetPurchaseChoices", function()
 	end)
 
 	it("gives empty lists for a city that can buy nothing", function()
-		assert.equal("[{\"city\":65536,\"faith\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"gold\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"name\":\"Rome\"}]", PurchasesWith({}))
+		assert.equal("[{\"city\":65536,\"faith\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"gold\":{\"buildings\":[],\"districts\":[],\"tiles\":[],\"units\":[]},\"name\":\"Rome\"}]", PurchasesWith({}))
 	end)
 
 	it("adds the panel's text when the player can't afford an item", function()
@@ -83,7 +83,7 @@ describe("SentientSystems_GetPurchaseChoices", function()
 
 		assert.equal(
 			"[{\"city\":65536,\"faith\":{\"buildings\":[{\"cost\":120,\"type\":\"BUILDING_TEMPLE\"}],\"districts\":[],\"units\":[{\"cost\":100,\"type\":\"UNIT_MISSIONARY\"}]},"
-				.. "\"gold\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"name\":\"Rome\"}]",
+				.. "\"gold\":{\"buildings\":[],\"districts\":[],\"tiles\":[],\"units\":[]},\"name\":\"Rome\"}]",
 			purchases
 		)
 	end)
@@ -101,5 +101,38 @@ describe("SentientSystems_GetPurchaseChoices", function()
 		local purchases = PurchasesWith({ YIELD_FAITH = { units = { { type = "UNIT_MISSIONARY", cost = 100, cantAfford = true } } } })
 
 		assert.truthy(purchases:find("\"blocked\":[\"LOC_BUILDING_INSUFFICIENT_FAITH\"]", 1, true))
+	end)
+
+	it("lists the tiles the city can buy with gold, with each cost", function()
+		local env = Game.new()
+
+		FakeGame.Install(env, { players = { [0] = {
+			gold = 107,
+			cities = { { id = 65536, name = "Rome", x = 17, y = 14, population = 3, options = { purchasable = {
+				{ x = 19, y = 14, cost = 30 },
+				{ x = 16, y = 12, cost = 45 },
+			} } } },
+		} } })
+		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+		assert.truthy(env.SentientSystems_GetChoices(0):find("\"tiles\":[{\"cost\":45,\"x\":16,\"y\":12},{\"cost\":30,\"x\":19,\"y\":14}]", 1, true))
+	end)
+
+	it("gives the lens's tooltip, with the whole gold still needed, for a tile that costs more than the player's gold", function()
+		local env = Game.new()
+
+		FakeGame.Install(env, { players = { [0] = {
+			gold = 40.5,
+			cities = { { id = 65536, name = "Rome", x = 17, y = 14, population = 3, options = { purchasable = {
+				{ x = 19, y = 14, cost = 30 },
+				{ x = 16, y = 12, cost = 45 },
+			} } } },
+		} } })
+		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+		local choices = env.SentientSystems_GetChoices(0)
+
+		assert.truthy(choices:find("{\"blocked\":[\"LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE(5)\"],\"cost\":45,\"x\":16,\"y\":12}", 1, true))
+		assert.truthy(choices:find("{\"cost\":30,\"x\":19,\"y\":14}", 1, true))
 	end)
 end)

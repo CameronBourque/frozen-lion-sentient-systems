@@ -4,6 +4,9 @@
 -- encodes as '{"city":65536,"faith":{...},"gold":{"buildings":[...],"districts":[],"units":[{"cost":100,
 -- "type":"UNIT_BUILDER"}]},"name":"Rome"}', on one line, with faith in the same form as gold. The checks follow ComposeUnitForPurchase,
 -- ComposeBldgForPurchase, and ComposeDistrictForPurchase in ProductionPanel.lua, lines 1632 to 1827.
+-- The tiles to buy with gold follow ShowPurchases in PlotInfo.lua.
+
+SentientSystems_Include("SentientSystemsCore_Placement")
 
 -- Each yield the city can buy with: its key in a city's purchases, its name in GameInfo.Yields, the
 -- player's store of it, the text key the panel adds when the player can't afford an item, and
@@ -137,8 +140,34 @@ local function GetPurchases(city, purchase, rows, param, column, tries)
 	return options
 end
 
+-- The text key of the tooltip on a tile the player can't afford, which takes the gold still needed.
+local NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
+
+-- Returns the tiles the city can buy with gold, in plot index order, each with x, y, and cost. A
+-- tile that costs more than the player's gold has blocked, with the text of the tooltip the purchase
+-- lens shows on it, as its button is disabled. See ShowPurchases in PlotInfo.lua, lines 282 to 326.
+local function GetTilePurchases(city)
+	local gold = Players[city:GetOwner()]:GetTreasury():GetGoldBalance()
+	local cityGold = city:GetGold()
+	local tiles = {}
+
+	for _, plotIndex in ipairs(SentientSystems_GetPurchasablePlots(city)) do
+		local plot = Map.GetPlotByIndex(plotIndex)
+		local cost = cityGold:GetPlotPurchaseCost(plotIndex)
+		local tile = { x = plot:GetX(), y = plot:GetY(), cost = cost }
+
+		if cost > gold then
+			tile.blocked = { Locale.Lookup(NEED_MORE_GOLD_KEY, cost - math.floor(gold)) }
+		end
+
+		tiles[#tiles + 1] = tile
+	end
+
+	return tiles
+end
+
 -- Returns a list with what each of the player's cities can buy, by yield, in the game's order of
--- cities.
+-- cities. The tiles to buy are under gold, the only yield that buys them.
 function SentientSystems_GetPurchaseChoices(player)
 	local purchases = {}
 
@@ -157,6 +186,7 @@ function SentientSystems_GetPurchaseChoices(player)
 			}
 		end
 
+		entry.gold.tiles = GetTilePurchases(city)
 		purchases[#purchases + 1] = entry
 	end
 

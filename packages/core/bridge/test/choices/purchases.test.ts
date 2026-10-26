@@ -14,6 +14,7 @@ const ROME = {
 		],
 		buildings: [{ type: "BUILDING_GRANARY", cost: 130 }],
 		districts: [{ type: "DISTRICT_CAMPUS", cost: 195 }],
+		tiles: [{ x: 19, y: 14, cost: 30 }, { x: 17, y: 11, cost: 45, blocked: ["You need 12 more [ICON_Gold] in order to purchase this plot."] }],
 	},
 	faith: {
 		units: [{ type: "UNIT_MISSIONARY", cost: 100, blocked: ["Not enough [ICON_Faith] Faith accumulated to purchase this."] }],
@@ -30,11 +31,19 @@ describe("PURCHASE_CITY", () => {
 	test("accepts a city that can buy nothing", () => {
 		const nothing = { units: [], buildings: [], districts: [] };
 
-		expect(PURCHASE_CITY.safeParse({ ...ROME, gold: nothing, faith: nothing }).success).toBe(true);
+		expect(PURCHASE_CITY.safeParse({ ...ROME, gold: { ...nothing, tiles: [] }, faith: nothing }).success).toBe(true);
 	});
 
 	test("rejects a city without its gold purchases", () => {
 		expect(PURCHASE_CITY.safeParse({ ...ROME, gold: undefined }).success).toBe(false);
+	});
+
+	test("rejects gold purchases without their tiles", () => {
+		expect(PURCHASE_CITY.safeParse({ ...ROME, gold: { ...ROME.gold, tiles: undefined } }).success).toBe(false);
+	});
+
+	test("rejects a tile without its cost", () => {
+		expect(PURCHASE_CITY.safeParse({ ...ROME, gold: { ...ROME.gold, tiles: [{ x: 19, y: 14 }] } }).success).toBe(false);
 	});
 
 	test("rejects a city without its faith purchases", () => {

@@ -29,9 +29,14 @@ const YIELD_PURCHASES = z.object({
 	districts: z.array(TYPED_PURCHASE),
 });
 
+// A tile the city can buy with gold. blocked holds the purchase lens's tooltip when the player
+// can't afford it.
+const TILE_PURCHASE = PURCHASE.extend({ x: z.number(), y: z.number() });
+
 export const PURCHASE_CITY = z.object({
 	city: z.number(),
 	name: z.string(),
-	gold: YIELD_PURCHASES,
+	// Only gold buys tiles.
+	gold: YIELD_PURCHASES.extend({ tiles: z.array(TILE_PURCHASE) }),
 	faith: YIELD_PURCHASES,
 });

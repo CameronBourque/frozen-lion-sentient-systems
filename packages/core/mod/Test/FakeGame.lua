@@ -142,7 +142,7 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- its GameInfo row. data.options.projects lists each project the build queue knows, with type,
 -- cost, turns, progress, blocked, and hidden, and maxPlayerInstances, which goes in its GameInfo
 -- row. data.options.purchasable lists more tiles
--- to buy, by x and y. data.purchases maps a yield name, such as YIELD_GOLD, to the units,
+-- to buy, by x and y, each with cost, its gold cost. data.purchases maps a yield name, such as YIELD_GOLD, to the units,
 -- buildings, and districts the city can buy with it. Each has type, cost, blocked, hidden, which the
 -- check refuses even when it only tests, and cantAfford, and a unit has corps and army, each with
 -- cost, blocked, and cantAfford. A faith purchase has faithEnabled when the game marks it for
@@ -330,6 +330,16 @@ local function City(data, hashes, indexes, ownerID)
 			return {
 				GetPurchaseCost = function(_, yieldIndex, hash, formation)
 					return PurchaseOption(yieldIndex, hash, formation).cost
+				end,
+				-- The cost of a tile to buy, from its tile in data.options.purchasable, or 0.
+				GetPlotPurchaseCost = function(_, plotIndex)
+					for _, tile in ipairs((data.options or {}).purchasable or {}) do
+						if PlotIndex(tile.x, tile.y) == plotIndex then
+							return tile.cost or 0
+						end
+					end
+
+					return 0
 				end,
 				-- Whether the city can buy a unit or a building with faith that the game marks for
 				-- another yield. The option is under YIELD_FAITH with faithEnabled.
@@ -664,7 +674,14 @@ local function Player(id, data, hashes, indexes)
 		-- The player's gold and faith. Each can afford an item unless its purchase option for that
 		-- yield has cantAfford.
 		GetTreasury = function()
-			return Store(YIELD_ROWS.YIELD_GOLD.Index)
+			local treasury = Store(YIELD_ROWS.YIELD_GOLD.Index)
+
+			-- The player's gold, from data.gold, which is 0 when missing.
+			function treasury.GetGoldBalance()
+				return data.gold or 0
+			end
+
+			return treasury
 		end,
 		GetReligion = function()
 			return Store(YIELD_ROWS.YIELD_FAITH.Index)
@@ -1135,8 +1152,20 @@ function FakeGame.Install(env, world)
 	local text = world.text or {}
 
 	env.Locale = {
-		Lookup = function(key)
-			return text[key] or key
+		-- With arguments, the text is followed by them in parentheses, such as "KEY(5)", so a test
+		-- can check them.
+		Lookup = function(key, ...)
+			local arguments = { ... }
+
+			if #arguments == 0 then
+				return text[key] or key
+			end
+
+			for i, argument in ipairs(arguments) do
+				arguments[i] = tostring(argument)
+			end
+
+			return (text[key] or key) .. "(" .. table.concat(arguments, ",") .. ")"
 		end,
 	}
 end
