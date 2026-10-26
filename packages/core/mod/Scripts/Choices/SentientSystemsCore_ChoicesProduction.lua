@@ -4,7 +4,9 @@
 -- encodes as '{"buildings":[{"cost":32,"district":"DISTRICT_CITY_CENTER","turns":5,
 -- "type":"BUILDING_GRANARY"}],"city":65536,"name":"Rome","units":[{"cost":40,"turns":6,
 -- "type":"UNIT_SETTLER"}],...}', on one line, with districts and wonders too. The checks follow
--- GetData in ProductionPanel.lua.
+-- GetData in ProductionPanel.lua. The tiles come from SentientSystemsCore_Placement.lua.
+
+SentientSystems_Include("SentientSystemsCore_Placement")
 
 -- Returns the game's reasons from a CanProduce result, as text. The game gives each reason as text
 -- already, and the panel passes it through Locale.Lookup, as this does.
@@ -86,90 +88,12 @@ local function CurrentProduction(buildQueue)
 	return hash, row and row.Type
 end
 
--- Each yield, by its key in an adjacency bonus, and its name in YieldTypes. The keys are the same as
--- those of a city's yields in the state.
-local YIELDS = {
-	culture = "CULTURE",
-	faith = "FAITH",
-	food = "FOOD",
-	gold = "GOLD",
-	production = "PRODUCTION",
-	science = "SCIENCE",
-}
-
 -- The failure reason that the panel ignores for a district when it has a tile to place it on, and
 -- the key of the one that greys out a district to repair whose tile is flooded. The panel compares
 -- the reasons with the first key itself and with the second one's text, in GetData in
 -- ProductionPanel.lua, lines 1950 and 1934.
 local NO_SUITABLE_LOCATION_KEY = "LOC_DISTRICT_ZONE_NO_SUITABLE_LOCATION"
 local FLOODED_KEY = "LOC_DISTRICT_REPAIR_LOCATION_FLOODED"
-
--- Returns the tile at a plot index, with x and y. With a district's index, it adds the district's
--- adjacency bonus on the tile, by yield, when there is one, as the placement view shows it.
-local function Tile(city, plotIndex, districtIndex)
-	local plot = Map.GetPlotByIndex(plotIndex)
-	local tile = { x = plot:GetX(), y = plot:GetY() }
-
-	if districtIndex ~= nil then
-		local adjacency = {}
-
-		for key, name in pairs(YIELDS) do
-			local bonus = plot:GetAdjacencyYield(city:GetOwner(), city:GetID(), districtIndex, YieldTypes[name])
-
-			if bonus > 0 then
-				adjacency[key] = bonus
-			end
-		end
-
-		if next(adjacency) ~= nil then
-			tile.adjacency = adjacency
-		end
-	end
-
-	return tile
-end
-
--- Returns the plot indexes of the tiles the city could buy, in index order. The panel asks for them
--- with the interface mode's plot purchase parameter, in AdjacencyBonusSupport.lua, lines 309 to 311.
-local function PurchasablePlots(city)
-	local params = {}
-	local plots = {}
-
-	params[CityCommandTypes.PARAM_PLOT_PURCHASE] = UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE)
-
-	for _, plotIndex in pairs(CityManager.GetCommandTargets(city, CityCommandTypes.PURCHASE, params)[CityCommandResults.PLOTS] or {}) do
-		plots[#plots + 1] = plotIndex
-	end
-
-	table.sort(plots)
-
-	return plots
-end
-
--- Returns the tiles the city owns where a district or a wonder can go now, and the tiles it could
--- buy where it could go. param is the operation parameter that names it, and canHave(plot) checks a
--- tile the city could buy. districtIndex is nil for a wonder. See
--- GetCityRelatedPlotIndexesDistrictsAlternative and GetCityRelatedPlotIndexesWondersAlternative in
--- AdjacencyBonusSupport.lua. The panel shows a district's tile to buy only when it gives an
--- adjacency bonus, and this lists every one.
-local function PlacementTiles(city, purchasable, param, hash, canHave, districtIndex)
-	local params = {}
-	local tiles, purchaseTiles = {}, {}
-
-	params[param] = hash
-
-	for _, plotIndex in ipairs(CityManager.GetOperationTargets(city, CityOperationTypes.BUILD, params)[CityOperationResults.PLOTS] or {}) do
-		tiles[#tiles + 1] = Tile(city, plotIndex, districtIndex)
-	end
-
-	for _, plotIndex in ipairs(purchasable) do
-		if canHave(Map.GetPlotByIndex(plotIndex)) then
-			purchaseTiles[#purchaseTiles + 1] = Tile(city, plotIndex, districtIndex)
-		end
-	end
-
-	return tiles, purchaseTiles
-end
 
 -- Returns whether a list of failure reasons holds the reason.
 local function HasReason(reasons, reason)
@@ -235,9 +159,7 @@ local function GetDistrictOptions(city, purchasable)
 			local option = { type = row.DistrictType, cost = buildQueue:GetDistrictCost(row.Index), turns = buildQueue:GetTurnsLeft(row.DistrictType) }
 			local blocked = not canProduce
 
-			option.tiles, option.purchaseTiles = PlacementTiles(city, purchasable, CityOperationTypes.PARAM_DISTRICT_TYPE, row.Hash, function(plot)
-				return plot:CanHaveDistrict(row.Index, city:GetOwner(), city:GetID())
-			end, row.Index)
+			option.tiles, option.purchaseTiles = SentientSystems_GetDistrictTiles(city, purchasable, row)
 
 			if #option.tiles + #option.purchaseTiles == 0 then
 				blocked = blocked or not HasPlaced(city, row.Index) or HasReason(reasons, Locale.Lookup(FLOODED_KEY))
@@ -302,9 +224,7 @@ local function GetBuildingAndWonderOptions(city, purchasable)
 			if row.IsWonder then
 				local canProduce, results = buildQueue:CanProduce(row.Hash, false, true)
 
-				option.tiles, option.purchaseTiles = PlacementTiles(city, purchasable, CityOperationTypes.PARAM_BUILDING_TYPE, row.Hash, function(plot)
-					return plot:CanHaveWonder(row.Index, city:GetOwner(), city:GetID())
-				end)
+				option.tiles, option.purchaseTiles = SentientSystems_GetWonderTiles(city, purchasable, row)
 
 				local noLocation = results ~= nil and results[CityOperationResults.NO_SUITABLE_LOCATION] == true
 
@@ -329,7 +249,7 @@ function SentientSystems_GetProductionChoices(player)
 	local production = {}
 
 	for _, city in player:GetCities():Members() do
-		local purchasable = PurchasablePlots(city)
+		local purchasable = SentientSystems_GetPurchasablePlots(city)
 		local buildings, wonders = GetBuildingAndWonderOptions(city, purchasable)
 
 		production[#production + 1] = {
