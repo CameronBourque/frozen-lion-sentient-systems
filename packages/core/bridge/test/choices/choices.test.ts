@@ -11,6 +11,10 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetChoices(0))";
 
+// Choices with one city that can train one unit, in the shape the core mod sends.
+const CHOICES = { production: [{ city: 65536, name: "Rome", units: [{ type: "UNIT_SCOUT", cost: 15, turns: 2 }] }] };
+const JSON_TEXT = JSON.stringify(CHOICES);
+
 describe("readChoices", () => {
 	let game: FakeGame;
 	let client: TunerClient;
@@ -40,29 +44,31 @@ describe("readChoices", () => {
 	}
 
 	test("reads the choices through the stash from the core mod's state", async () => {
-		stash("{}");
+		stash(JSON_TEXT);
 
-		expect(await readChoices(client, 0)).toEqual({ ok: true, choices: {}, bytes: 2 });
+		expect(await readChoices(client, 0)).toEqual({ ok: true, choices: CHOICES, bytes: Buffer.byteLength(JSON_TEXT) });
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },
 		]);
 	});
 
-	test("reads an empty list as no choices, as the core mod encodes an empty table", async () => {
-		stash("[]");
+	test("drops a choice that the schema doesn't know", async () => {
+		stash(JSON.stringify({ ...CHOICES, pantheon: [] }));
 
-		expect(await readChoices(client, 0)).toEqual({ ok: true, choices: {}, bytes: 2 });
+		const result = await readChoices(client, 0);
+
+		expect(result.ok && "pantheon" in result.choices).toBe(false);
 	});
 
 	test("asks for the given player's choices", async () => {
-		answer({ "SentientSystems_Stash(SentientSystems_GetChoices(3))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["[]"] } });
+		answer({ "SentientSystems_Stash(SentientSystems_GetChoices(3))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON_TEXT] } });
 
 		expect((await readChoices(client, 3)).ok).toBe(true);
 	});
 
-	test("fails when the choices are a list with items", async () => {
-		stash("[1]");
+	test("fails when the choices are a list", async () => {
+		stash("[]");
 
 		expect(await readChoices(client, 0)).toEqual({ ok: false, error: "The core mod's choices JSON doesn't match the schema: the choices: Invalid input: expected object, received array" });
 	});

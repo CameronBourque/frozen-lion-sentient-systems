@@ -65,6 +65,6 @@ In a running game, each option list matches the game's own screen, a greyed-out 
 
 ## Record
 
-- Each call and each blocker, in `findings/game-state.md`. If the file passes 150 lines, move the choices and the trees into a new finding, `findings/game-choices.md`.
+- Each call for the state and each blocker, in [game-state.md](../../findings/game-state.md), and each call for the choices and the trees, in [game-choices.md](../../findings/game-choices.md).
 - The choices, the trees, the blockers, and the scoreboard, in [in-game-lua.md](../../design/core/in-game-lua.md).
 - The section sizes for one early turn, in [testing.md](../../design/testing.md#state-size).

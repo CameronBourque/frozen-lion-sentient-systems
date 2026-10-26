@@ -1,17 +1,18 @@
 // Reads one player's choices from the core mod: the legal options for each discrete choice. The
 // core mod builds them as JSON in a call of its own, so the agent reads them only when it decides,
 // and the bridge reads them through the stash, in stash.ts. docs/design/core/in-game-lua.md has the
-// format. Each choice's schema will have its own file in this folder, as each choice of the core
-// mod's Lua does.
+// format. Each choice's schema has its own file in this folder, as each choice of the core mod's
+// Lua does.
 
 import { z } from "zod";
 import { readStash } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
+import { PRODUCTION_CITY } from "./production.js";
 
-// Not strict, so a choice from a newer core mod is dropped instead of failing all the choices. The
-// core mod's JSON encoder encodes an empty table as an empty list, so an empty list reads as no
-// choices.
-const CHOICES = z.preprocess((value) => (Array.isArray(value) && value.length === 0 ? {} : value), z.object({}));
+// Not strict, so a choice from a newer core mod is dropped instead of failing all the choices.
+const CHOICES = z.object({
+	production: z.array(PRODUCTION_CITY),
+});
 
 export type Choices = z.infer<typeof CHOICES>;
 

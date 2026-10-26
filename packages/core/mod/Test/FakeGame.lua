@@ -1,6 +1,7 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
 -- map's plots, PlayersVisibility, PlayerManager.GetAlive, DefenseTypes, UnitManager.CanStartCommand
--- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, GameInfo.Types,
+-- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
+-- units with MilitaryFormationTypes, CityCommandResults, and CityOperationResults, GameInfo.Types,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -25,7 +26,9 @@
 -- A player's blockers lists its end-turn blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
--- true or false, and its defense has strength, garrison, and walls, each with damage and max.
+-- true or false, and its defense has strength, garrison, and walls, each with damage and max. A
+-- city's options lists what its build queue offers, such as options = { units = { { type =
+-- "UNIT_SETTLER", cost = 40, turns = 6 } } }.
 -- env.Players[0]:GetCities():Members() then lists the one city.
 
 local FakeGame = {}
@@ -73,6 +76,13 @@ local END_TURN_BLOCKING_TYPES = {
 	ENDTURN_BLOCKING_UNIT_PROMOTION = 1706768628,
 }
 
+-- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
+local MILITARY_FORMATION_TYPES = { STANDARD_MILITARY_FORMATION = 0, CORPS_MILITARY_FORMATION = 1, ARMY_MILITARY_FORMATION = 2 }
+
+-- The result keys of a CanProduce check. FAILURE_REASONS has the game's number.
+local CITY_COMMAND_RESULTS = { FAILURE_REASONS = -2028665063 }
+local CITY_OPERATION_RESULTS = { CAN_TRAIN_CORPS = 1001, CAN_TRAIN_ARMY = 1002 }
+
 -- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
 
@@ -84,8 +94,11 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- as in the game. data.loyalty has value, max, and perTurn. Without it, the city has no
 -- GetCulturalIdentity, as in a game without the Rise and Fall expansion. data.districts lists each
 -- district with type, x, y, complete, which is true when missing, pillaged, and buildings. Each
--- building has type, built, which is true when missing, and pillaged. hashes maps each production
--- type to its hash, and indexes maps each district and building type to its GameInfo index.
+-- building has type, built, which is true when missing, and pillaged. data.options.units lists each
+-- unit the build queue knows, with type, cost, turns, progress, which is 0 when missing, blocked, a
+-- list of reasons the queue refuses it, hidden, which the queue refuses even when it only tests, and
+-- corps and army, each with cost, turns, and blocked. hashes maps each production and unit type to
+-- its hash, and indexes maps each district, building, and unit type to its GameInfo index.
 local function City(data, hashes, indexes)
 	local production = data.production
 	local hash = production and (production.hash or hashes[production.type]) or 0
@@ -124,6 +137,25 @@ local function City(data, hashes, indexes)
 				return district.pillaged == true
 			end,
 		}
+	end
+
+	-- Each unit option by its hash and by its index.
+	local unitsByHash, unitsByIndex = {}, {}
+
+	for _, unit in ipairs((data.options or {}).units or {}) do
+		unitsByHash[hashes[unit.type]] = unit
+		unitsByIndex[indexes[unit.type]] = unit
+	end
+
+	-- Returns the unit option, or its corps or army, for a formation.
+	local function Formation(unit, formation)
+		if formation == MILITARY_FORMATION_TYPES.CORPS_MILITARY_FORMATION then
+			return unit.corps
+		elseif formation == MILITARY_FORMATION_TYPES.ARMY_MILITARY_FORMATION then
+			return unit.army
+		end
+
+		return unit
 	end
 
 	local defense = data.defense or {}
@@ -196,11 +228,49 @@ local function City(data, hashes, indexes)
 				GetCurrentProductionTypeHash = function()
 					return hash
 				end,
-				-- The game takes a hash or a type name.
-				GetTurnsLeft = function(_, typeOrHash)
+				-- The game takes a hash or a type name, and a formation for a unit.
+				GetTurnsLeft = function(_, typeOrHash, formation)
+					local unit = unitsByHash[typeOrHash]
+
+					if unit ~= nil then
+						return Formation(unit, formation).turns
+					end
+
 					assert(production and (typeOrHash == hash or typeOrHash == production.type), "no production " .. tostring(typeOrHash))
 
 					return production.turnsLeft
+				end,
+				-- With testOnly, whether the queue knows the unit. Without it, whether the city can
+				-- produce it now, and the results: the reasons it can't, and whether a corps or an army
+				-- can be trained.
+				CanProduce = function(_, params, testOnly, withResults)
+					local unit = unitsByHash[params.UnitType]
+
+					if testOnly then
+						return unit ~= nil and not unit.hidden
+					end
+
+					assert(withResults == true, "no fake without results")
+
+					local option = Formation(unit, params.MilitaryFormationType)
+
+					return option.blocked == nil, {
+						[CITY_COMMAND_RESULTS.FAILURE_REASONS] = option.blocked,
+						[CITY_OPERATION_RESULTS.CAN_TRAIN_CORPS] = unit.corps ~= nil or nil,
+						[CITY_OPERATION_RESULTS.CAN_TRAIN_ARMY] = unit.army ~= nil or nil,
+					}
+				end,
+				GetUnitCost = function(_, index)
+					return unitsByIndex[index].cost
+				end,
+				GetUnitProgress = function(_, index)
+					return unitsByIndex[index].progress or 0
+				end,
+				GetUnitCorpsCost = function(_, index)
+					return unitsByIndex[index].corps.cost
+				end,
+				GetUnitArmyCost = function(_, index)
+					return unitsByIndex[index].army.cost
 				end,
 			}
 		end,
@@ -395,6 +465,21 @@ function FakeGame.Install(env, world)
 		Routes = {},
 		Happinesses = HAPPINESSES,
 	}
+	-- GameInfo.Units() lists the rows in index order, as the game's tables do when called.
+	setmetatable(env.GameInfo.Units, {
+		__call = function(units)
+			local index = -1
+
+			return function()
+				index = index + 1
+
+				return units[index]
+			end
+		end,
+	})
+	env.MilitaryFormationTypes = MILITARY_FORMATION_TYPES
+	env.CityCommandResults = CITY_COMMAND_RESULTS
+	env.CityOperationResults = CITY_OPERATION_RESULTS
 	env.UnitCommandTypes = { PROMOTE = -1259482049 }
 	env.UnitCommandResults = { PROMOTIONS = 827475943 }
 	-- Only the promotion command, with results, as the units state asks for it. The game returns
@@ -469,6 +554,17 @@ function FakeGame.Install(env, world)
 
 		for _, city in ipairs(data.cities or {}) do
 			local typeName = city.production and city.production.type
+
+			for _, unit in ipairs((city.options or {}).units or {}) do
+				AddRow("Units", "UnitType", unit.type)
+
+				local row = env.GameInfo.Units[indexes[unit.type]]
+
+				count = count + 1
+				hashes[unit.type] = hashes[unit.type] or 3000000 + count
+				row.Hash = hashes[unit.type]
+				row.MustPurchase = unit.mustPurchase == true
+			end
 
 			if typeName ~= nil and hashes[typeName] == nil then
 				count = count + 1

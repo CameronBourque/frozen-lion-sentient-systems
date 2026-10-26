@@ -145,7 +145,6 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | `GetAllEndTurnBlocking` on turn 14 | Research, civic, production, and fill civic slot, each once |
 | `SentientSystems_GetBlockerState`, after a tech was picked, with the scout's moves restored | `{"list":[{"choice":"civics","type":"ENDTURN_BLOCKING_CIVIC"},{"choice":"production","type":"ENDTURN_BLOCKING_PRODUCTION"},{"choice":"government","type":"ENDTURN_BLOCKING_FILL_CIVIC_SLOT"}],"units":[196608]}`. `GetFirstEndTurnBlocking` returned `ENDTURN_BLOCKING_CIVIC`, and the **Next Turn** button showed **Choose Civic** |
 | `npm run state` after a restart and a reload of the same save, with both units out of moves | Research, civic, production, and fill civic slot, with `techs`, `civics`, `production`, and `government`, and no units. The state was 14,137 bytes |
-| `npm run state` with `SentientSystems_GetChoices` sent to the game before a restart | The state, then `{}` for the choices, 2 bytes. `npm run state -- 99` printed `The core mod failed to build the state: no player 99`, then the same for the choices |
 
 
 Date checked: game files on 2026-10-24. Running game on Windows on 2026-10-24.

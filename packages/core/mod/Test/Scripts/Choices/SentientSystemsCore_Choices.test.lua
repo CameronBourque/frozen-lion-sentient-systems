@@ -12,8 +12,8 @@ local function Load(world)
 end
 
 describe("SentientSystems_GetChoices", function()
-	it("gives an empty list while no choice has a file", function()
-		assert.equal("[]", Load({ players = { [0] = {} } }).SentientSystems_GetChoices(0))
+	it("gives each choice for a player with no cities", function()
+		assert.equal("{\"production\":[]}", Load({ players = { [0] = {} } }).SentientSystems_GetChoices(0))
 	end)
 
 	it("raises an error for an ID with no player", function()
@@ -24,10 +24,11 @@ describe("SentientSystems_GetChoices", function()
 		end, "no player 5")
 	end)
 
-	it("loads the JSON encoder without an ERROR line, so the bridge can stash the choices", function()
+	it("loads the JSON encoder and each choice without an ERROR line, so the bridge can stash the choices", function()
 		local env = Load({ players = { [0] = {} } })
 
 		assert.same({}, env.printed)
+		assert.is_function(env.SentientSystems_GetProductionChoices)
 		assert.equal(1, env.SentientSystems_Stash(env.SentientSystems_GetChoices(0)))
 	end)
 end)
