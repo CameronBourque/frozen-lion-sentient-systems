@@ -143,8 +143,8 @@ Rome's production and yields on turn 14, from the calls, matched the city panel.
 | Values in the table | 30. The 27 that the UI files name, and `ENDTURN_BLOCKING_CITY_RANGE_ATTACK` 103424869, `ENDTURN_BLOCKING_DISTRICT_RANGE_ATTACK` -76578136, and `ENDTURN_BLOCKING_UNIT_PROMOTION` 1706768628 |
 | `GetFirstEndTurnBlocking(Game.GetLocalPlayer())` | -286188551, `ENDTURN_BLOCKING_RESEARCH` |
 | `GetAllEndTurnBlocking` on turn 14 | Research, civic, production, and fill civic slot, each once |
-| `SentientSystems_GetBlockerState`, after a tech was picked, with the scout's moves restored | `{"list":[{"choice":"civics","type":"ENDTURN_BLOCKING_CIVIC"},{"choice":"production","type":"ENDTURN_BLOCKING_PRODUCTION"},{"choice":"government","type":"ENDTURN_BLOCKING_FILL_CIVIC_SLOT"}],"units":[196608]}`. `GetFirstEndTurnBlocking` returned `ENDTURN_BLOCKING_CIVIC`, and the **Next Turn** button showed **Choose Civic** |
-| `npm run state` after a restart and a reload of the same save, with both units out of moves | Research, civic, production, and fill civic slot, with `techs`, `civics`, `production`, and `government`, and no units. The state was 14,137 bytes |
+| `SentientSystems_GetBlockerState`, after a tech was picked, with the scout's moves restored | `{"list":[{"choice":"civics","type":"ENDTURN_BLOCKING_CIVIC"},{"choice":"production","type":"ENDTURN_BLOCKING_PRODUCTION"},{"choice":"policies","type":"ENDTURN_BLOCKING_FILL_CIVIC_SLOT"}],"units":[196608]}`. `GetFirstEndTurnBlocking` returned `ENDTURN_BLOCKING_CIVIC`, and the **Next Turn** button showed **Choose Civic** |
+| `npm run state` after a restart and a reload of the same save, with both units out of moves | Research, civic, production, and fill civic slot, with `techs`, `civics`, `production`, and `policies`, and no units. The state was 14,137 bytes. On turn 15 of a reload, with 100 faith from the tuner on turn 14, `SentientSystems_GetBlockerState` added the pantheon blocker, with `pantheon` |
 
 
-Date checked: game files on 2026-10-24. Running game on Windows on 2026-10-24.
+Date checked: game files on 2026-10-24. Running game on Windows on 2026-10-24, and the choices for the blockers on 2026-10-26.

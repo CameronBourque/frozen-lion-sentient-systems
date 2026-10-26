@@ -19,7 +19,7 @@ describe("SentientSystems_GetBlockerState", function()
 	it("lists each blocker by name in the game's order, with the choice that resolves it", function()
 		assert.equal(
 			"{\"list\":[{\"choice\":\"techs\",\"type\":\"ENDTURN_BLOCKING_RESEARCH\"},{\"choice\":\"civics\",\"type\":\"ENDTURN_BLOCKING_CIVIC\"},"
-				.. "{\"choice\":\"production\",\"type\":\"ENDTURN_BLOCKING_PRODUCTION\"},{\"choice\":\"government\",\"type\":\"ENDTURN_BLOCKING_FILL_CIVIC_SLOT\"}],\"units\":[]}",
+				.. "{\"choice\":\"production\",\"type\":\"ENDTURN_BLOCKING_PRODUCTION\"},{\"choice\":\"policies\",\"type\":\"ENDTURN_BLOCKING_FILL_CIVIC_SLOT\"}],\"units\":[]}",
 			BlockersOf({ blockers = {
 				"ENDTURN_BLOCKING_RESEARCH",
 				"ENDTURN_BLOCKING_CIVIC",
