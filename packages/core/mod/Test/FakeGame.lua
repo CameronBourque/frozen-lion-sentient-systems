@@ -5,7 +5,8 @@
 -- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury, a
 -- player's techs and civics with the advisor's recommendations and the game's
 -- GetUnlockablesForTech and GetUnlockablesForCivic, GameInfo.Types, GameInfo.Yields,
--- GameInfo.Technologies, GameInfo.Civics, GameInfo.Boosts,
+-- GameInfo.Technologies, GameInfo.Civics, GameInfo.Boosts, GameInfo.Eras, UITree for player 0's
+-- techs, Game.GetPlayers, a player's diplomacy,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -29,8 +30,10 @@
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
 -- A player's techs has current, the tech in research, and options, the techs the player knows,
 -- each with type, cost, turns, progress, boost, with percent, trigger, and triggered, unlocks,
--- description, a text key, recommended, and locked, which CanResearch refuses. A player's civics
--- has the same, with civic types. A player's blockers lists its end-turn
+-- description, a text key, recommended, locked, which CanResearch refuses, and for the tech tree,
+-- era, which is ERA_ANCIENT when missing, researched, hidden, which IsTechRevealed refuses, and
+-- prerequisites, by type. techs.turnsLeft is what GetTurnsLeft returns. A player's civics has the
+-- same, with civic types. A player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
@@ -709,6 +712,28 @@ local function Player(id, data, hashes, indexes)
 				HasBoostBeenTriggered = function(_, index)
 					return techsByIndex[index].boost.triggered == true
 				end,
+				HasTech = function(_, index)
+					return techsByIndex[index] ~= nil and techsByIndex[index].researched == true
+				end,
+				IsTechRevealed = function(_, index)
+					return techsByIndex[index] ~= nil and techsByIndex[index].hidden ~= true
+				end,
+				GetTurnsLeft = function()
+					return techData.turnsLeft or -1
+				end,
+			}
+		end,
+		GetDiplomacy = function()
+			return {
+				HasMet = function(_, otherID)
+					for _, met in ipairs(data.met or {}) do
+						if met == otherID then
+							return true
+						end
+					end
+
+					return false
+				end,
 			}
 		end,
 		GetCulture = function()
@@ -811,6 +836,11 @@ function FakeGame.Install(env, world)
 		Technologies = {},
 		Civics = {},
 		Boosts = {},
+		Eras = {
+			ERA_ANCIENT = { ChronologyIndex = 1 },
+			ERA_CLASSICAL = { ChronologyIndex = 2 },
+			ERA_MEDIEVAL = { ChronologyIndex = 3 },
+		},
 		Yields = YIELD_ROWS,
 		Buildings = {},
 		Units = {},
@@ -978,6 +1008,7 @@ function FakeGame.Install(env, world)
 
 				row.Hash = hashes[option.type]
 				row.Description = option.description
+				row.EraType = option.era or "ERA_ANCIENT"
 				unlocksByType[option.type] = option.unlocks
 
 				if option.boost ~= nil then
@@ -1005,6 +1036,19 @@ function FakeGame.Install(env, world)
 	end
 	env.GetUnlockablesForTech = UnlockRows
 	env.GetUnlockablesForCivic = UnlockRows
+
+	-- The tech tree's nodes are player 0's techs, in order, with their prerequisites.
+	env.UITree = {
+		GetAvailableTechs = function()
+			local nodes = {}
+
+			for i, tech in ipairs(((world.players or {})[0] or {}).techs and world.players[0].techs.options or {}) do
+				nodes[i] = { Name = tech.type, PrereqTechTypes = tech.prerequisites or {} }
+			end
+
+			return nodes
+		end,
+	}
 
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do
@@ -1274,6 +1318,20 @@ function FakeGame.Install(env, world)
 				return not unit.hidden
 			end,
 		}
+	end
+
+	-- The major players, in ID order, as Game.GetPlayers({ Major = true }) lists them.
+	env.Game = env.Game or {}
+	env.Game.GetPlayers = function(filter)
+		assert(filter.Major == true, "no fake for this filter")
+
+		local players = {}
+
+		for id = 0, 63 do
+			players[#players + 1] = env.Players[id]
+		end
+
+		return players
 	end
 
 	-- The living players, in ID order, as the game lists them.

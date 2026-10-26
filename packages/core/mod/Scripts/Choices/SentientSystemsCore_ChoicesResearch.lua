@@ -137,45 +137,62 @@ local function UnlocksReader(kind, playerID)
 	end
 end
 
+-- Returns a reader of the player's techs or civics, by kind, "tech" or "civic". reader.store is the
+-- player's store, reader.current the index of the one in research, or -1, and reader.Option(row)
+-- returns a row's type, cost, turns, progress, boost, unlocks, description, and recommended, as the
+-- choosers show them. The tech and civic trees use it too.
+function SentientSystems_GetResearchReader(kindName, player)
+	local kind = KINDS[kindName]
+	local store = kind.store(player)
+	local recommended = Recommended(kind, player)
+	local unlocksOf = UnlocksReader(kind, player:GetID())
+	local reader = { kind = kind, store = store, current = kind.current(store) }
+
+	function reader.Option(row)
+		local option = {
+			type = row[kind.typeColumn],
+			cost = kind.cost(store, row.Index),
+			turns = kind.turns(store, row.Index),
+			boost = Boost(kind, store, row),
+			unlocks = unlocksOf(row),
+		}
+		local progress = kind.progress(store, row.Index)
+
+		if progress > 0 then
+			option.progress = progress
+		end
+
+		-- The choosers draw the description as one more unlock icon, a star, with the text as its
+		-- tooltip. See PopulateUnlockablesForTech and PopulateUnlockablesForCivic in
+		-- TechAndCivicSupport.lua, lines 391 to 412 and 310 to 331. The civics chooser leaves out the
+		-- star for some civics, which show an icon for an envoy or a governor title in its place.
+		if row.Description ~= nil then
+			option.description = Locale.Lookup(row.Description)
+		end
+
+		if recommended[row.Hash] then
+			option.recommended = true
+		end
+
+		return option
+	end
+
+	return reader
+end
+
 -- Returns a list of the techs or civics the player can research now, and the one in research, in
 -- the game's order. See GetData in ResearchChooser.lua, lines 66 to 96, and in CivicsChooser.lua,
 -- lines 63 to 93.
-local function GetResearchChoices(kind, player)
-	local store = kind.store(player)
-	local current = kind.current(store)
-	local recommended = Recommended(kind, player)
-	local unlocksOf = UnlocksReader(kind, player:GetID())
+local function GetResearchChoices(kindName, player)
+	local reader = SentientSystems_GetResearchReader(kindName, player)
 	local options = {}
 
-	for row in kind.rows() do
-		if row.Index == current or kind.canProgress(store, row.Index) then
-			local option = {
-				type = row[kind.typeColumn],
-				cost = kind.cost(store, row.Index),
-				turns = kind.turns(store, row.Index),
-				boost = Boost(kind, store, row),
-				unlocks = unlocksOf(row),
-			}
-			local progress = kind.progress(store, row.Index)
+	for row in reader.kind.rows() do
+		if row.Index == reader.current or reader.kind.canProgress(reader.store, row.Index) then
+			local option = reader.Option(row)
 
-			if progress > 0 then
-				option.progress = progress
-			end
-
-			-- The choosers draw the description as one more unlock icon, a star, with the text as its
-			-- tooltip. See PopulateUnlockablesForTech and PopulateUnlockablesForCivic in
-			-- TechAndCivicSupport.lua, lines 391 to 412 and 310 to 331. The civics chooser leaves out the
-			-- star for some civics, which show an icon for an envoy or a governor title in its place.
-			if row.Description ~= nil then
-				option.description = Locale.Lookup(row.Description)
-			end
-
-			if row.Index == current then
+			if row.Index == reader.current then
 				option.current = true
-			end
-
-			if recommended[row.Hash] then
-				option.recommended = true
 			end
 
 			options[#options + 1] = option
@@ -187,10 +204,10 @@ end
 
 -- Returns a list of the techs the player can research now, and the tech in research.
 function SentientSystems_GetTechChoices(player)
-	return GetResearchChoices(KINDS.tech, player)
+	return GetResearchChoices("tech", player)
 end
 
 -- Returns a list of the civics the player can research now, and the civic in research.
 function SentientSystems_GetCivicChoices(player)
-	return GetResearchChoices(KINDS.civic, player)
+	return GetResearchChoices("civic", player)
 end
