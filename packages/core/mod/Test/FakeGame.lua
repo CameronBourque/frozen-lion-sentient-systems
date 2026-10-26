@@ -1,5 +1,6 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
--- map's plots, PlayersVisibility, PlayerManager.GetAlive, DefenseTypes, UnitManager.CanStartCommand
+-- map's plots, PlayersVisibility, PlayerManager.GetAlive and GetAliveMinors, PlayerConfigurations,
+-- a player's influence, GameInfo.Leaders, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
 -- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury, a
@@ -55,7 +56,11 @@
 -- when a religion has too many of its class. world.rename turns on CAPABILITY_RENAME.
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
--- player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
+-- player's met lists the IDs of the players it has met, and atWar the IDs of the players it is at
+-- war with. A player's influence has tokens, canGive, false to refuse envoys, points, perTurn,
+-- threshold, and envoys, the envoys each threshold gives. A city-state's minor has name, leader,
+-- inherit, the leader it inherits from, envoys, the count by player ID, suzerain, a player ID, and
+-- cantReceive, true for the Free Cities. A player's blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
@@ -918,6 +923,63 @@ local function Player(id, data, hashes, indexes, env)
 
 			return treasury
 		end,
+		-- The player's influence, from data.influence, and for a city-state, from data.minor.
+		GetInfluence = function()
+			local influence = data.influence or {}
+			local minor = data.minor or {}
+
+			return {
+				GetTokensToGive = function()
+					return influence.tokens or 0
+				end,
+				CanGiveInfluence = function()
+					return influence.canGive ~= false
+				end,
+				GetPointsEarned = function()
+					return influence.points or 0
+				end,
+				GetPointsPerTurn = function()
+					return influence.perTurn or 0
+				end,
+				GetPointsThreshold = function()
+					return influence.threshold or 50
+				end,
+				GetTokensPerThreshold = function()
+					return influence.envoys or 1
+				end,
+				-- A city-state that can receive envoys, which the player has met and isn't at war
+				-- with.
+				CanGiveTokensToPlayer = function(_, otherID)
+					local other = env.Players[otherID]
+
+					for _, enemy in ipairs(data.atWar or {}) do
+						if enemy == otherID then
+							return false
+						end
+					end
+
+					return other:GetInfluence():CanReceiveInfluence() and env.Players[id]:GetDiplomacy():HasMet(otherID)
+				end,
+				CanReceiveInfluence = function()
+					return data.minor ~= nil and minor.cantReceive ~= true
+				end,
+				GetTokensReceived = function(_, playerID)
+					return (minor.envoys or {})[playerID] or 0
+				end,
+				GetMostTokensReceived = function()
+					local most = 0
+
+					for _, envoys in pairs(minor.envoys or {}) do
+						most = math.max(most, envoys)
+					end
+
+					return most
+				end,
+				GetSuzerain = function()
+					return minor.suzerain or -1
+				end,
+			}
+		end,
 		GetReligion = function()
 			local religion = Store(YIELD_ROWS.YIELD_FAITH.Index)
 
@@ -1017,6 +1079,7 @@ function FakeGame.Install(env, world)
 		Policies = {},
 		Beliefs = {},
 		Religions = {},
+		Leaders = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -1642,9 +1705,26 @@ function FakeGame.Install(env, world)
 
 	env.Players = {}
 	env.PlayersVisibility = {}
+	env.PlayerConfigurations = {}
 
 	for id, data in pairs(world.players or {}) do
 		env.Players[id] = Player(id, data, hashes, indexes, env)
+
+		-- A city-state's name and leader, and its leader's row, with the leader it inherits from.
+		local minor = data.minor or {}
+
+		env.PlayerConfigurations[id] = {
+			GetCivilizationShortDescription = function()
+				return minor.name
+			end,
+			GetLeaderTypeName = function()
+				return minor.leader
+			end,
+		}
+
+		if minor.leader ~= nil then
+			env.GameInfo.Leaders[minor.leader] = { LeaderType = minor.leader, InheritFrom = minor.inherit }
+		end
 
 		-- Each listed plot's index: revealed, or visible, which is revealed too.
 		local revealed, visible = {}, {}
@@ -1747,6 +1827,18 @@ function FakeGame.Install(env, world)
 			end
 
 			return alive
+		end,
+		-- The living city-states and Free Cities, the players with data.minor, in ID order.
+		GetAliveMinors = function()
+			local minors = {}
+
+			for id = 0, 63 do
+				if env.Players[id] ~= nil and world.players[id].minor ~= nil then
+					minors[#minors + 1] = env.Players[id]
+				end
+			end
+
+			return minors
 		end,
 	}
 

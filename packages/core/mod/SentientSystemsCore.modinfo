@@ -23,11 +23,13 @@
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua</File>
 			<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 			<File>Scripts/Trees/SentientSystemsCore_Trees.lua</File>
 			<File>Scripts/State/SentientSystemsCore_State.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
@@ -43,11 +45,13 @@
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua</File>
 		<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 		<File>Scripts/Trees/SentientSystemsCore_Trees.lua</File>
 		<File>Scripts/State/SentientSystemsCore_State.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>

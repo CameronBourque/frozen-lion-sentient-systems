@@ -7,6 +7,7 @@
 import { z } from "zod";
 import { readStash } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
+import { ENVOY_CHOICE } from "./envoys.js";
 import { GOVERNMENT, GOVERNMENTS, POLICIES } from "./government.js";
 import { PRODUCTION_CITY } from "./production.js";
 import { PURCHASE_CITY } from "./purchases.js";
@@ -24,6 +25,7 @@ const CHOICES = z.object({
 	governments: GOVERNMENTS,
 	pantheon: PANTHEON,
 	religion: RELIGION_CHOICE,
+	envoys: ENVOY_CHOICE,
 });
 
 export type Choices = z.infer<typeof CHOICES>;

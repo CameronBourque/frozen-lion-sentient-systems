@@ -48,6 +48,7 @@ const STATE: State = {
 		{ x: 29, y: 17, terrain: "TERRAIN_GRASS", resource: "RESOURCE_CATTLE", owner: 1, visible: false },
 	],
 	religion: { pantheon: "BELIEF_GOD_OF_THE_SEA", prophet: false },
+	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 50, envoys: 1 }, cityStates: [] },
 	rivals: {
 		cities: [{
 			owner: 1,

@@ -15,7 +15,7 @@ describe("SentientSystems_GetState", function()
 	it("gives empty lists for a player with no blockers, cities, tiles, or units", function()
 		local env = Load({ players = { [0] = {} } })
 
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", env.SentientSystems_GetState(0))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", env.SentientSystems_GetState(0))
 	end)
 
 	it("raises an error for an ID with no player", function()
