@@ -2,7 +2,8 @@
 -- call of its own, so the agent reads them only when it decides. Each choice comes from its own file
 -- in this folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetChoices(0) returns
--- '{"production":[{"city":65536,"name":"Rome","units":[...]}],"purchases":[...]}', on one line.
+-- '{"production":[{"city":65536,"name":"Rome","units":[...]}],"purchases":[...],"techs":[...]}', on
+-- one line.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -22,6 +23,7 @@ end
 
 SentientSystems_Include("SentientSystemsCore_ChoicesProduction")
 SentientSystems_Include("SentientSystemsCore_ChoicesPurchases")
+SentientSystems_Include("SentientSystemsCore_ChoicesTechs")
 
 -- Returns the choices of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -36,5 +38,6 @@ function SentientSystems_GetChoices(playerID)
 	return SentientSystems_EncodeJson({
 		production = SentientSystems_GetProductionChoices(player),
 		purchases = SentientSystems_GetPurchaseChoices(player),
+		techs = SentientSystems_GetTechChoices(player),
 	})
 end

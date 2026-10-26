@@ -2,8 +2,9 @@
 -- map's plots, PlayersVisibility, PlayerManager.GetAlive, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
--- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury,
--- GameInfo.Types, GameInfo.Yields,
+-- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury, a
+-- player's techs with the advisor's recommendations and the game's GetUnlockablesForTech,
+-- GameInfo.Types, GameInfo.Yields, GameInfo.Technologies, GameInfo.Boosts,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -25,7 +26,10 @@
 -- 	} },
 -- })
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
--- A player's blockers lists its end-turn blockers by name, in the game's order, such as
+-- A player's techs has current, the tech in research, and options, the techs the player knows,
+-- each with type, cost, turns, progress, boost, with percent, trigger, and triggered, unlocks,
+-- description, a text key, recommended, and locked, which CanResearch refuses. A player's blockers lists its end-turn
+-- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
 -- true or false, and its defense has strength, garrison, and walls, each with damage and max. A
@@ -638,6 +642,14 @@ end
 
 local function Player(id, data, hashes, indexes)
 	local cities, units = {}, {}
+	local techData = data.techs or {}
+
+	-- Each tech option by its GameInfo index.
+	local techsByIndex = {}
+
+	for _, tech in ipairs(techData.options or {}) do
+		techsByIndex[indexes[tech.type]] = tech
+	end
 
 	-- The player's store of a yield, which can afford an item in a city unless the city's purchase
 	-- option for it has cantAfford.
@@ -670,6 +682,43 @@ local function Player(id, data, hashes, indexes)
 		end,
 		GetCities = function()
 			return List(cities)
+		end,
+		GetTechs = function()
+			return {
+				GetResearchingTech = function()
+					return techData.current and indexes[techData.current] or -1
+				end,
+				CanResearch = function(_, index)
+					return techsByIndex[index] ~= nil and not techsByIndex[index].locked
+				end,
+				GetResearchCost = function(_, index)
+					return techsByIndex[index].cost
+				end,
+				GetResearchProgress = function(_, index)
+					return techsByIndex[index].progress or 0
+				end,
+				GetTurnsToResearch = function(_, index)
+					return techsByIndex[index].turns
+				end,
+				HasBoostBeenTriggered = function(_, index)
+					return techsByIndex[index].boost.triggered == true
+				end,
+			}
+		end,
+		GetGrandStrategicAI = function()
+			return {
+				GetTechRecommendations = function()
+					local recommendations = {}
+
+					for _, tech in ipairs(techData.options or {}) do
+						if tech.recommended then
+							recommendations[#recommendations + 1] = { TechHash = hashes[tech.type] }
+						end
+					end
+
+					return recommendations
+				end,
+			}
 		end,
 		-- The player's gold and faith. Each can afford an item unless its purchase option for that
 		-- yield has cantAfford.
@@ -723,6 +772,8 @@ function FakeGame.Install(env, world)
 		Types = {},
 		Districts = {},
 		Projects = {},
+		Technologies = {},
+		Boosts = {},
 		Yields = YIELD_ROWS,
 		Buildings = {},
 		Units = {},
@@ -737,7 +788,14 @@ function FakeGame.Install(env, world)
 	-- GameInfo.Units(), GameInfo.Buildings(), GameInfo.Districts(), and GameInfo.Projects() list the
 	-- rows in index order, as the game's tables do when called, and each table finds a row by its type
 	-- name, as in GameInfo.Districts["DISTRICT_CAMPUS"].
-	for name, column in pairs({ Units = "UnitType", Buildings = "BuildingType", Districts = "DistrictType", Projects = "ProjectType" }) do
+	for name, column in pairs({
+		Units = "UnitType",
+		Buildings = "BuildingType",
+		Districts = "DistrictType",
+		Projects = "ProjectType",
+		Technologies = "TechnologyType",
+		Boosts = "TechnologyType",
+	}) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
 				if type(key) == "string" then
@@ -864,6 +922,40 @@ function FakeGame.Install(env, world)
 			env.GameInfo[tableName][index] = row
 			indexes[typeName] = index
 		end
+	end
+
+	-- Each tech gets a row, a hash, and a boost row when it has a boost. The game's
+	-- GetUnlockablesForTech returns what a tech unlocks as { type, name, key } rows.
+	local unlocksByTech = {}
+
+	for _, data in pairs(world.players or {}) do
+		for _, tech in ipairs((data.techs or {}).options or {}) do
+			AddRow("Technologies", "TechnologyType", tech.type)
+			count = count + 1
+			hashes[tech.type] = hashes[tech.type] or 4000000 + count
+			env.GameInfo.Technologies[indexes[tech.type]].Hash = hashes[tech.type]
+			env.GameInfo.Technologies[indexes[tech.type]].Description = tech.description
+			unlocksByTech[tech.type] = tech.unlocks
+
+			if tech.boost ~= nil then
+				local boosts = env.GameInfo.Boosts
+
+				boosts[#boosts + (boosts[0] and 1 or 0)] = { TechnologyType = tech.type, Boost = tech.boost.percent, TriggerDescription = tech.boost.trigger }
+			end
+		end
+	end
+
+	env.GetFilteredUnlockableItems = function()
+		return {}
+	end
+	env.GetUnlockablesForTech = function(techType)
+		local rows = {}
+
+		for i, typeName in ipairs(unlocksByTech[techType] or {}) do
+			rows[i] = { typeName, typeName, typeName }
+		end
+
+		return rows
 	end
 
 	for _, data in pairs(world.players or {}) do

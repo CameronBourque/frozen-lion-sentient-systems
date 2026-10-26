@@ -20,6 +20,7 @@
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesTechs.lua</File>
 			<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 			<File>Scripts/State/SentientSystemsCore_State.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
@@ -35,6 +36,7 @@
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesTechs.lua</File>
 		<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 		<File>Scripts/State/SentientSystemsCore_State.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>

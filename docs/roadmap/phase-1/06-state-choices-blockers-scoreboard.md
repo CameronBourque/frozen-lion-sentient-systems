@@ -26,9 +26,9 @@ Each task is one commit. A task that adds a key adds its Lua, its Lua tests, its
 
 ### Research
 
-13. **Techs.** Add `choices.techs`, the techs that can be researched now. Each has turns, the boost status or what the boost needs, and its direct prerequisites. Read the checks from `ResearchChooser.lua`. Commit: `feat(core): add tech options`.
+13. **Techs.** Add `choices.techs`, the techs that can be researched now. Each has turns, the boost status or what the boost needs, what it unlocks, and whether the game's advisor recommends it. Read the checks from `ResearchChooser.lua`. Commit: `feat(core): add tech options`.
 14. **Civics.** Add `choices.civics` in the same form, from `CivicsChooser.lua`. Commit: `feat(core): add civic options`.
-15. **Tech tree.** Add `SentientSystems_GetTechTree(playerID)` and its reader in the bridge. It lists every node the tech tree screen shows, with type, era, cost, prerequisites, status, and boost. Build it from the running game, not from static data. For the Tech and Civic Shuffle mode, in `DLC/TreeRandomizer`, a node the screen shows as a `?` box is a placeholder with only its era. Read the screen from `TechTree.lua` and its replacements in `DLC/Expansion1` and `DLC/Expansion2`. Commit: `feat(core): add the tech tree`.
+15. **Tech tree.** Add `SentientSystems_GetTechTree(playerID)` and its reader in the bridge. It lists every node the tech tree screen shows, with type, era, cost, prerequisites, status, and boost. Build it from the running game, not from static data. For the Tech and Civic Shuffle mode, in `DLC/TreeRandomizer`, a node the screen shows as a `?` box is a placeholder with only its era. Add each met player's number of techs and place on the timeline at the bottom of the screen. Read the screen from `TechTree.lua` and its replacements in `DLC/Expansion1` and `DLC/Expansion2`. Commit: `feat(core): add the tech tree`.
 16. **Civic tree.** Add `SentientSystems_GetCivicTree(playerID)` in the same form, from `CivicsTree.lua`. Commit: `feat(core): add the civic tree`.
 
 ### Policies
