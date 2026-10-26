@@ -7,11 +7,16 @@ local function CityState(name, inherit, envoys, suzerain)
 	return { minor = { name = "LOC_CIVILIZATION_" .. name .. "_NAME", leader = "LEADER_MINOR_CIV_" .. name, inherit = inherit, envoys = envoys, suzerain = suzerain } }
 end
 
--- Returns the envoys section JSON for player 0, in a world with the players given.
-local function EnvoysWith(players)
+-- Returns the envoys section JSON for player 0, in a world with the players given, and with
+-- Gathering Storm when expansion2 is true.
+local function EnvoysWith(players, expansion2)
 	local env = Game.new()
 
-	FakeGame.Install(env, { players = players, text = { LOC_CIVILIZATION_SAMARKAND_NAME = "Samarkand" } })
+	FakeGame.Install(env, {
+		players = players,
+		expansion2 = expansion2,
+		text = { LOC_CIVILIZATION_SAMARKAND_NAME = "Samarkand", LOC_MINOR_CIV_TRADE_TRAIT_SMALL_INFLUENCE_BONUS = "+2 [ICON_Gold] Gold" },
+	})
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
 	return env.SentientSystems_GetState(0):match("\"envoys\":(%b{})")
@@ -35,10 +40,9 @@ describe("SentientSystems_GetEnvoyState", function()
 		}
 
 		assert.equal(
-			"{\"cityStates\":[{\"envoys\":2,\"name\":\"Samarkand\",\"player\":12,\"suzerain\":1,\"suzerainNeeds\":4,\"type\":\"TRADE\"},"
-				.. "{\"envoys\":1,\"name\":\"LOC_CIVILIZATION_SCIENTIFIC_NAME\",\"player\":13,\"suzerainNeeds\":3,\"type\":\"SCIENTIFIC\"}],"
-				.. "\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0}",
-			EnvoysWith(players)
+			"[{\"envoys\":2,\"influencedBy\":[{\"envoys\":3,\"player\":1},{\"envoys\":2,\"player\":0}],\"name\":\"Samarkand\",\"player\":12,\"suzerain\":1,\"suzerainNeeds\":4,\"type\":\"TRADE\"},"
+				.. "{\"envoys\":1,\"influencedBy\":[{\"envoys\":1,\"player\":0}],\"name\":\"LOC_CIVILIZATION_SCIENTIFIC_NAME\",\"player\":13,\"suzerainNeeds\":3,\"type\":\"SCIENTIFIC\"}]",
+			EnvoysWith(players):match("\"cityStates\":(%b[])")
 		)
 	end)
 
@@ -72,9 +76,84 @@ describe("SentientSystems_GetEnvoyState", function()
 		}
 
 		assert.equal(
-			"{\"cityStates\":[{\"envoys\":0,\"name\":\"Samarkand\",\"player\":12,\"suzerainNeeds\":3}],"
+			"{\"cityStates\":[{\"envoys\":0,\"influencedBy\":[],\"name\":\"Samarkand\",\"player\":12,\"suzerainNeeds\":3}],"
 				.. "\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0}",
 			EnvoysWith(players)
+		)
+	end)
+
+	it("gives the bonuses of each kind of city-state met once", function()
+		local players = {
+			[0] = { met = { 12, 13 } },
+			[12] = CityState("SAMARKAND", "LEADER_MINOR_CIV_TRADE", {}),
+			[13] = CityState("CAHOKIA", "LEADER_MINOR_CIV_TRADE", {}),
+		}
+
+		assert.equal(
+			"{\"TRADE\":[\"+2 [ICON_Gold] Gold\",\"LOC_MINOR_CIV_TRADE_TRAIT_MEDIUM_INFLUENCE_BONUS\",\"LOC_MINOR_CIV_TRADE_TRAIT_LARGE_INFLUENCE_BONUS\"]}",
+			EnvoysWith(players):match("\"bonuses\":(%b{})")
+		)
+	end)
+
+	it("gives the suzerain bonus, its traits joined, and whether Gathering Storm turns it off", function()
+		local samarkand = CityState("SAMARKAND", "LEADER_MINOR_CIV_TRADE", {})
+
+		samarkand.minor.traits = { "Trading Domes.", "More gold." }
+		samarkand.minor.uniqueDisabled = true
+
+		local players = { [0] = { met = { 12 } }, [12] = samarkand }
+
+		assert.truthy(EnvoysWith(players):find("\"suzerainBonus\":\"Trading Domes.[NEWLINE][NEWLINE]More gold.\",\"suzerainNeeds\":3,", 1, true))
+		assert.truthy(EnvoysWith(players, true):find("\"suzerainBonus\":\"Trading Domes.[NEWLINE][NEWLINE]More gold.\",\"suzerainBonusDisabled\":true,", 1, true))
+	end)
+
+	it("lists the city-state's resources, and with Gathering Storm a strategic resource's amount per turn", function()
+		local samarkand = CityState("SAMARKAND", "LEADER_MINOR_CIV_TRADE", {})
+
+		samarkand.minor.resources = {
+			{ type = "RESOURCE_SILK", amount = 1, exported = 1 },
+			{ type = "RESOURCE_IRON", amount = 0, perTurn = 2 },
+			{ type = "RESOURCE_SPICES", exported = 1 },
+		}
+
+		local players = { [0] = { met = { 12 } }, [12] = samarkand }
+
+		assert.equal(
+			"[{\"amount\":2,\"type\":\"RESOURCE_SILK\"},{\"amount\":1,\"type\":\"RESOURCE_SPICES\"}]",
+			EnvoysWith(players):match("\"resources\":(%b[])")
+		)
+		assert.equal(
+			"[{\"amount\":2,\"type\":\"RESOURCE_SILK\"},{\"amount\":2,\"type\":\"RESOURCE_IRON\"},{\"amount\":1,\"type\":\"RESOURCE_SPICES\"}]",
+			EnvoysWith(players, true):match("\"resources\":(%b[])")
+		)
+	end)
+
+	it("lists the quests the city-state gives the player", function()
+		local samarkand = CityState("SAMARKAND", "LEADER_MINOR_CIV_TRADE", {})
+
+		samarkand.minor.quests = {
+			[0] = { { type = "QUEST_TRAIN_UNIT_TYPE", name = "Train a Spearman.", description = "Train a Spearman military unit.", reward = "[ICON_Envoy] 1 Envoy" } },
+			[1] = { { type = "QUEST_ZONE_DISTRICT_TYPE", name = "Construct an Encampment.", description = "", reward = "" } },
+		}
+
+		assert.equal(
+			"[{\"description\":\"Train a Spearman military unit.\",\"name\":\"Train a Spearman.\",\"reward\":\"[ICON_Envoy] 1 Envoy\",\"type\":\"QUEST_TRAIN_UNIT_TYPE\"}]",
+			EnvoysWith({ [0] = { met = { 12 } }, [1] = {}, [12] = samarkand }):match("\"quests\":(%b[])")
+		)
+	end)
+
+	it("lists the players with envoys there, most first, and hides those the player hasn't met", function()
+		local players = {
+			[0] = { met = { 2, 12 } },
+			[1] = {},
+			[2] = {},
+			[3] = {},
+			[12] = CityState("SAMARKAND", "LEADER_MINOR_CIV_TRADE", { [0] = 1, [1] = 1, [2] = 4, [3] = 2 }),
+		}
+
+		assert.equal(
+			"[{\"envoys\":4,\"player\":2},{\"envoys\":2,\"unmet\":true},{\"envoys\":1,\"player\":0},{\"envoys\":1,\"unmet\":true}]",
+			EnvoysWith(players):match("\"influencedBy\":(%b[])")
 		)
 	end)
 end)

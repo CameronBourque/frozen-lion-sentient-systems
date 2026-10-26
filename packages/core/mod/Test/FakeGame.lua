@@ -1,6 +1,7 @@
 -- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
 -- map's plots, PlayersVisibility, PlayerManager.GetAlive and GetAliveMinors, PlayerConfigurations,
--- a player's influence, GameInfo.Leaders, DefenseTypes, UnitManager.CanStartCommand
+-- PlayerManager.GetAliveMajorIDs, a player's influence and resources, Game.GetQuestsManager,
+-- GameInfo.Leaders, GameInfo.LeaderTraits, GameInfo.Traits, GameInfo.Quests, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
 -- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury, a
@@ -60,7 +61,10 @@
 -- war with. A player's influence has tokens, canGive, false to refuse envoys, points, perTurn,
 -- threshold, and envoys, the envoys each threshold gives. A city-state's minor has name, leader,
 -- inherit, the leader it inherits from, envoys, the count by player ID, suzerain, a player ID, and
--- cantReceive, true for the Free Cities. A player's blockers lists its end-turn
+-- cantReceive, true for the Free Cities, and traits, the text keys of its suzerain bonus, resources,
+-- each with type, amount, exported, and perTurn, quests by player ID, each with type, name,
+-- description, and reward, and uniqueDisabled, true when Gathering Storm turns off its suzerain
+-- bonus. A player's blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
 -- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
@@ -928,7 +932,7 @@ local function Player(id, data, hashes, indexes, env)
 			local influence = data.influence or {}
 			local minor = data.minor or {}
 
-			return {
+			local result = {
 				GetTokensToGive = function()
 					return influence.tokens or 0
 				end,
@@ -979,6 +983,14 @@ local function Player(id, data, hashes, indexes, env)
 					return minor.suzerain or -1
 				end,
 			}
+
+			if env.GameInfo.Governments_XP2 ~= nil then
+				function result.IsSuzerainUniqueBonusDisabled()
+					return minor.uniqueDisabled == true
+				end
+			end
+
+			return result
 		end,
 		GetReligion = function()
 			local religion = Store(YIELD_ROWS.YIELD_FAITH.Index)
@@ -1033,12 +1045,40 @@ local function Player(id, data, hashes, indexes, env)
 				end,
 			}
 		end,
+		-- The resources a city-state has, from data.minor.resources, each with amount, exported,
+		-- and perTurn, which only Gathering Storm reads.
 		GetResources = function()
-			return {
+			local owned = {}
+
+			for _, resource in ipairs((data.minor or {}).resources or {}) do
+				owned[indexes[resource.type]] = resource
+			end
+
+			local resources = {
 				IsResourceVisible = function(_, hash)
 					return not hidden[hash]
 				end,
+				HasResource = function(_, index)
+					return owned[index] ~= nil and (owned[index].amount or 0) > 0
+				end,
+				HasExportedResource = function(_, index)
+					return owned[index] ~= nil and (owned[index].exported or 0) > 0
+				end,
+				GetResourceAmount = function(_, index)
+					return owned[index] and owned[index].amount or 0
+				end,
+				GetExportedResourceAmount = function(_, index)
+					return owned[index] and owned[index].exported or 0
+				end,
 			}
+
+			if env.GameInfo.Governments_XP2 ~= nil then
+				function resources.GetResourceAccumulationPerTurn(_, index)
+					return owned[index] and owned[index].perTurn or 0
+				end
+			end
+
+			return resources
 		end,
 	}
 end
@@ -1080,6 +1120,9 @@ function FakeGame.Install(env, world)
 		Beliefs = {},
 		Religions = {},
 		Leaders = {},
+		LeaderTraits = {},
+		Traits = {},
+		Quests = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -1099,6 +1142,8 @@ function FakeGame.Install(env, world)
 		Governments = "GovernmentType",
 		Beliefs = "BeliefType",
 		Religions = "ReligionType",
+		Resources = "ResourceType",
+		Quests = "QuestType",
 	}) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
@@ -1349,6 +1394,7 @@ function FakeGame.Install(env, world)
 	end
 
 	Callable(env.GameInfo.Government_SlotCounts)
+	Callable(env.GameInfo.LeaderTraits)
 	Callable(env.GameInfo.GovernmentModifiers)
 	Callable(env.GameInfo.ModifierArguments)
 
@@ -1560,6 +1606,19 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- A city-state's resources and quests get their rows.
+	for _, data in pairs(world.players or {}) do
+		for _, resource in ipairs((data.minor or {}).resources or {}) do
+			AddRow("Resources", "ResourceType", resource.type)
+		end
+
+		for _, quests in pairs((data.minor or {}).quests or {}) do
+			for _, quest in ipairs(quests) do
+				AddRow("Quests", "QuestType", quest.type)
+			end
+		end
+	end
+
 	-- Resources are added before the players, whose hidden resources are looked up by hash.
 	for _, data in ipairs(world.plots or {}) do
 		AddRow("Terrains", "TerrainType", data.terrain)
@@ -1726,6 +1785,13 @@ function FakeGame.Install(env, world)
 			env.GameInfo.Leaders[minor.leader] = { LeaderType = minor.leader, InheritFrom = minor.inherit }
 		end
 
+		for i, description in ipairs(minor.traits or {}) do
+			local traitType = minor.leader .. "_TRAIT_" .. i
+
+			table.insert(env.GameInfo.LeaderTraits, { LeaderType = minor.leader, TraitType = traitType })
+			env.GameInfo.Traits[traitType] = { TraitType = traitType, Description = description }
+		end
+
 		-- Each listed plot's index: revealed, or visible, which is revealed too.
 		local revealed, visible = {}, {}
 
@@ -1798,6 +1864,33 @@ function FakeGame.Install(env, world)
 			end,
 		}
 	end
+	-- The quests from data.minor.quests, by the player they are for.
+	env.Game.GetQuestsManager = function()
+		local function Find(playerID, cityStateID, index)
+			local minor = world.players[cityStateID].minor or {}
+
+			for _, quest in ipairs((minor.quests or {})[playerID] or {}) do
+				if indexes[quest.type] == index then
+					return quest
+				end
+			end
+		end
+
+		return {
+			HasActiveQuestFromPlayer = function(_, playerID, cityStateID, index)
+				return Find(playerID, cityStateID, index) ~= nil
+			end,
+			GetActiveQuestName = function(_, playerID, cityStateID, index)
+				return Find(playerID, cityStateID, index).name
+			end,
+			GetActiveQuestDescription = function(_, playerID, cityStateID, index)
+				return Find(playerID, cityStateID, index).description
+			end,
+			GetActiveQuestReward = function(_, playerID, cityStateID, index)
+				return Find(playerID, cityStateID, index).reward
+			end,
+		}
+	end
 	env.Game.GetWorldCongress = function()
 		return {
 			IsInSession = function()
@@ -1827,6 +1920,18 @@ function FakeGame.Install(env, world)
 			end
 
 			return alive
+		end,
+		-- The IDs of the living players without data.minor, in ID order.
+		GetAliveMajorIDs = function()
+			local ids = {}
+
+			for id = 0, 63 do
+				if env.Players[id] ~= nil and world.players[id].minor == nil then
+					ids[#ids + 1] = id
+				end
+			end
+
+			return ids
 		end,
 		-- The living city-states and Free Cities, the players with data.minor, in ID order.
 		GetAliveMinors = function()
