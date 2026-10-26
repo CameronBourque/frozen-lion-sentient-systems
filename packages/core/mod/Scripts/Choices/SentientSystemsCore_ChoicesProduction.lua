@@ -4,7 +4,8 @@
 -- encodes as '{"buildings":[{"cost":32,"district":"DISTRICT_CITY_CENTER","turns":5,
 -- "type":"BUILDING_GRANARY"}],"city":65536,"name":"Rome","units":[{"cost":40,"turns":6,
 -- "type":"UNIT_SETTLER"}],...}', on one line, with districts and wonders too. The checks follow
--- GetData in ProductionPanel.lua. The tiles come from SentientSystemsCore_Placement.lua.
+-- GetData in ProductionPanel.lua. The checks count the tiles from SentientSystemsCore_Placement.lua,
+-- and the bridge reads the tiles themselves with SentientSystems_GetPlacement.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
@@ -136,8 +137,7 @@ local function IsBuilt(row, cityDistricts, progress)
 		and not cityDistricts:IsPillaged(row.Index) and not cityDistricts:IsContaminated(row.Index) and progress == 0
 end
 
--- Returns the districts the city's production panel lists, with the tiles for each, built ones left
--- out. The panel lists a district that CanProduce allows when it only tests, or that the city has.
+-- Returns the districts the city's production panel lists, built ones left out. The panel lists a district that CanProduce allows when it only tests, or that the city has.
 -- It leaves out one marked InternalOnly, and a one-per-city district in production. It greys out a
 -- district that CanProduce refuses, with two changes from the tiles. A district with no tile is
 -- greyed out unless it is placed already and its tile isn't flooded. One with a tile isn't greyed
@@ -159,9 +159,9 @@ local function GetDistrictOptions(city, purchasable)
 			local option = { type = row.DistrictType, cost = buildQueue:GetDistrictCost(row.Index), turns = buildQueue:GetTurnsLeft(row.DistrictType) }
 			local blocked = not canProduce
 
-			option.tiles, option.purchaseTiles = SentientSystems_GetDistrictTiles(city, purchasable, row)
+			local tiles, purchaseTiles = SentientSystems_GetDistrictTiles(city, purchasable, row)
 
-			if #option.tiles + #option.purchaseTiles == 0 then
+			if #tiles + #purchaseTiles == 0 then
 				blocked = blocked or not HasPlaced(city, row.Index) or HasReason(reasons, Locale.Lookup(FLOODED_KEY))
 			elseif blocked and reasons ~= nil and #reasons > 0 then
 				blocked = not OnlyReason(reasons, NO_SUITABLE_LOCATION_KEY)
@@ -202,8 +202,7 @@ local function BuildingOption(buildQueue, row, pillaged)
 	return option
 end
 
--- Returns the buildings and the wonders the city's production panel lists, with the tiles for each
--- wonder. The panel leaves out the building in production, and one whose district is in production,
+-- Returns the buildings and the wonders the city's production panel lists. The panel leaves out the building in production, and one whose district is in production,
 -- as when the district is being repaired. It lists a building that must be bought only when it is
 -- pillaged, to repair it. It greys out a listed building that CanProduce refuses with results, but
 -- not a wonder whose result is NO_SUITABLE_LOCATION and that has a tile. See GetData in
@@ -224,11 +223,11 @@ local function GetBuildingAndWonderOptions(city, purchasable)
 			if row.IsWonder then
 				local canProduce, results = buildQueue:CanProduce(row.Hash, false, true)
 
-				option.tiles, option.purchaseTiles = SentientSystems_GetWonderTiles(city, purchasable, row)
+				local tiles, purchaseTiles = SentientSystems_GetWonderTiles(city, purchasable, row)
 
 				local noLocation = results ~= nil and results[CityOperationResults.NO_SUITABLE_LOCATION] == true
 
-				if not canProduce and not (noLocation and #option.tiles + #option.purchaseTiles > 0) then
+				if not canProduce and not (noLocation and #tiles + #purchaseTiles > 0) then
 					option.blocked = FailureReasons(results)
 				end
 

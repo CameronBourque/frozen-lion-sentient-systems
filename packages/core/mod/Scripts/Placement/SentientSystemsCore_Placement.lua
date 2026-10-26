@@ -1,9 +1,13 @@
 -- The placement tiles: where a city can place a district or a wonder, on tiles it owns or could buy,
--- with each district's adjacency bonus on each tile, as the placement view shows them. The
--- production choice loads this file. Example: SentientSystems_GetDistrictTiles(city, purchasable,
--- GameInfo.Districts["DISTRICT_CAMPUS"]) returns two lists of tiles, which encode as
--- '[{"adjacency":{"science":1},"x":17,"y":13},{"x":16,"y":14}]' and
--- '[{"adjacency":{"science":3},"x":19,"y":14}]'. The calls follow AdjacencyBonusSupport.lua.
+-- with each district's adjacency bonus on each tile, as the placement view shows them when the
+-- player picks one. The bridge reads them for one district or wonder at a time, in a call of their
+-- own, and the production choice counts them. The UI script and the production choice load this
+-- file. Example: SentientSystems_GetPlacement(0, 65536, "DISTRICT_CAMPUS") returns
+-- '{"purchaseTiles":[{"adjacency":{"science":3},"x":19,"y":14}],"tiles":[{"adjacency":{"science":1},
+-- "x":17,"y":13},{"x":16,"y":14}]}', on one line. The calls follow AdjacencyBonusSupport.lua.
+
+include("SentientSystemsCore_Common")
+SentientSystems_Include("SentientSystemsCore_Json")
 
 -- Each yield, by its key in an adjacency bonus, and its name in YieldTypes. The keys are the same as
 -- those of a city's yields in the state.
@@ -99,4 +103,36 @@ function SentientSystems_GetWonderTiles(city, purchasable, row)
 	return PlacementTiles(city, purchasable, CityOperationTypes.PARAM_BUILDING_TYPE, row.Hash, function(plot)
 		return plot:CanHaveWonder(row.Index, city:GetOwner(), city:GetID())
 	end)
+end
+
+-- Returns the tiles where the city with ID cityID, of the player with ID playerID, can place the
+-- district or the wonder typeName, such as DISTRICT_CAMPUS, as JSON. Raises an error for an ID with
+-- no player or city, and for a type that isn't a district or a wonder. The bridge reads it through
+-- the stash, as SentientSystems_Stash(SentientSystems_GetPlacement(playerID, cityID, typeName)).
+function SentientSystems_GetPlacement(playerID, cityID, typeName)
+	local player = Players[playerID]
+
+	if player == nil then
+		error("no player " .. tostring(playerID), 0)
+	end
+
+	local city = player:GetCities():FindID(cityID)
+
+	if city == nil then
+		error("no city " .. tostring(cityID) .. " for player " .. tostring(playerID), 0)
+	end
+
+	local district = GameInfo.Districts[typeName]
+	local building = GameInfo.Buildings[typeName]
+	local tiles, purchaseTiles
+
+	if district ~= nil then
+		tiles, purchaseTiles = SentientSystems_GetDistrictTiles(city, SentientSystems_GetPurchasablePlots(city), district)
+	elseif building ~= nil and building.IsWonder then
+		tiles, purchaseTiles = SentientSystems_GetWonderTiles(city, SentientSystems_GetPurchasablePlots(city), building)
+	else
+		error(tostring(typeName) .. " isn't a district or a wonder", 0)
+	end
+
+	return SentientSystems_EncodeJson({ tiles = tiles, purchaseTiles = purchaseTiles })
 end

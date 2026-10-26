@@ -15,14 +15,8 @@ const ROME = {
 		{ type: "BUILDING_GRANARY", district: "DISTRICT_CITY_CENTER", cost: 32, turns: 5, progress: 8 },
 		{ type: "BUILDING_SHRINE", district: "DISTRICT_HOLY_SITE", cost: 50, turns: 8, repair: true as const, blocked: ["Needs a river."] },
 	],
-	districts: [{
-		type: "DISTRICT_CAMPUS",
-		cost: 29,
-		turns: 6,
-		tiles: [{ x: 17, y: 13, adjacency: { science: 1 } }, { x: 16, y: 14 }],
-		purchaseTiles: [{ x: 19, y: 14, adjacency: { science: 3 } }],
-	}],
-	wonders: [{ type: "BUILDING_PYRAMIDS", cost: 110, turns: 18, tiles: [], purchaseTiles: [{ x: 17, y: 17 }] }],
+	districts: [{ type: "DISTRICT_CAMPUS", cost: 29, turns: 6, progress: 4 }],
+	wonders: [{ type: "BUILDING_PYRAMIDS", cost: 110, turns: 18, blocked: ["Another city is building it."] }],
 };
 
 describe("PRODUCTION_CITY", () => {
@@ -38,18 +32,14 @@ describe("PRODUCTION_CITY", () => {
 		expect(PRODUCTION_CITY.safeParse({ ...ROME, buildings: undefined }).success).toBe(false);
 	});
 
-	test("rejects a district without its tiles to buy", () => {
-		expect(PRODUCTION_CITY.safeParse({ ...ROME, districts: [{ ...ROME.districts[0], purchaseTiles: undefined }] }).success).toBe(false);
+	test("rejects a district without turns", () => {
+		expect(PRODUCTION_CITY.safeParse({ ...ROME, districts: [{ ...ROME.districts[0], turns: undefined }] }).success).toBe(false);
 	});
 
-	test("rejects an adjacency bonus that isn't a number", () => {
-		const tile = { x: 17, y: 13, adjacency: { science: "1" } };
+	test("drops a wonder's tiles, which the placement call gives", () => {
+		const parsed = PRODUCTION_CITY.parse({ ...ROME, wonders: [{ ...ROME.wonders[0], tiles: [] }] });
 
-		expect(PRODUCTION_CITY.safeParse({ ...ROME, districts: [{ ...ROME.districts[0], tiles: [tile] }] }).success).toBe(false);
-	});
-
-	test("rejects a wonder without its tiles", () => {
-		expect(PRODUCTION_CITY.safeParse({ ...ROME, wonders: [{ ...ROME.wonders[0], tiles: undefined }] }).success).toBe(false);
+		expect("tiles" in parsed.wonders[0]).toBe(false);
 	});
 
 	test("rejects a repair that isn't true", () => {

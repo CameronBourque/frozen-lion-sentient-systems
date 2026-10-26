@@ -76,6 +76,8 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 | Districts the panel's checks list for Rome, after `SetTech` for Writing and Astrology | The campus and the holy site, each 29 cost and 6 turns, not greyed out. Each had the tiles (17,13), (16,14), and (16,15), and 8 tiles to buy. The campus had +1 science at (17,13) and (16,15), and +3 science at (19,14), a tile to buy. The city center was left out as built |
 | Wonders with Writing | Stonehenge, the Pyramids, the Great Bath, and Etemenanki, with no tile in Rome's territory and one tile to buy each, and none greyed out |
 | `SentientSystems_GetChoices` with districts and wonders | 1,692 bytes |
+| `SentientSystems_GetPlacement` through `readPlacement`, for Rome | The campus had the same 3 tiles and 8 tiles to buy, with the same bonuses, 335 bytes. The Pyramids had no tile and 1 tile to buy, (17,17), 46 bytes. The granary raised `BUILDING_GRANARY isn't a district or a wonder`, and city 7 raised `no city 7 for player 0` |
+| `SentientSystems_GetChoices` without the tiles | 830 bytes, down from 1,692 |
 | Rome's production panel with districts and wonders | The holy site and the campus at 6 turns, after **City Center** with a checkmark, and the Great Bath and Stonehenge at 14 and the Pyramids and Etemenanki at 18, none greyed out, as in the choices |
 | Rome's production panel against the choices | The same buildings and units with the same turns: walls 6 and granary 5 under **City Center**, and settler 6, builder 4, scout 2, warrior 3, slinger 2, and battering ram 5. The panel sorts the walls before the granary, and the choices keep the game's order. The panel doesn't show cost |
 

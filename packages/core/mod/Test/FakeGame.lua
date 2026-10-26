@@ -37,11 +37,19 @@
 local FakeGame = {}
 
 -- A list with Members(), as the game's city and unit lists have. Members() returns an iterator, as
--- in "for i, city in player:GetCities():Members() do".
+-- in "for i, city in player:GetCities():Members() do". FindID(id) returns the item with that ID, or
+-- nil.
 local function List(items)
 	return {
 		Members = function()
 			return ipairs(items)
+		end,
+		FindID = function(_, id)
+			for _, item in ipairs(items) do
+				if item.GetID() == id then
+					return item
+				end
+			end
 		end,
 	}
 end
@@ -609,9 +617,21 @@ function FakeGame.Install(env, world)
 		Happinesses = HAPPINESSES,
 	}
 	-- GameInfo.Units(), GameInfo.Buildings(), and GameInfo.Districts() list the rows in index order, as
-	-- the game's tables do when called.
-	for _, name in ipairs({ "Units", "Buildings", "Districts" }) do
+	-- the game's tables do when called, and each table finds a row by its type name, as in
+	-- GameInfo.Districts["DISTRICT_CAMPUS"].
+	for name, column in pairs({ Units = "UnitType", Buildings = "BuildingType", Districts = "DistrictType" }) do
 		setmetatable(env.GameInfo[name], {
+			__index = function(rows, key)
+				if type(key) == "string" then
+					for index = 0, #rows do
+						local row = rawget(rows, index)
+
+						if row ~= nil and row[column] == key then
+							return row
+						end
+					end
+				end
+			end,
 			__call = function(rows)
 				local index = -1
 

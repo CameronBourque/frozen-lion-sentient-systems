@@ -169,21 +169,17 @@ local function ChoiceWith(key, options, districts)
 end
 
 describe("SentientSystems_GetProductionChoices for districts", function()
-	it("lists each district's type, cost, turns, and tiles, with each tile's adjacency bonus", function()
+	it("lists each district's type, cost, and turns, without its tiles", function()
 		assert.equal(
-			"[{\"cost\":29,\"purchaseTiles\":[{\"adjacency\":{\"science\":3},\"x\":19,\"y\":14}],"
-				.. "\"tiles\":[{\"adjacency\":{\"science\":1},\"x\":17,\"y\":13},{\"x\":16,\"y\":14}],\"turns\":6,\"type\":\"DISTRICT_CAMPUS\"}]",
-			ChoiceWith("districts", { districts = { With(CAMPUS, {
-				tiles = { { x = 17, y = 13, adjacency = { SCIENCE = 1 } }, { x = 16, y = 14 } },
-				purchaseTiles = { { x = 19, y = 14, adjacency = { SCIENCE = 3 } } },
-			}) } })
+			"[{\"cost\":29,\"turns\":6,\"type\":\"DISTRICT_CAMPUS\"}]",
+			ChoiceWith("districts", { districts = { With(CAMPUS, { purchaseTiles = { { x = 19, y = 14, adjacency = { SCIENCE = 3 } } } }) } })
 		)
 	end)
 
-	it("lists only the tiles to buy where the district can go", function()
-		local districts = ChoiceWith("districts", { districts = { CAMPUS }, purchasable = { { x = 20, y = 14 } } })
+	it("doesn't grey out a district that has only a tile to buy", function()
+		local districts = ChoiceWith("districts", { districts = { With(CAMPUS, { tiles = {}, purchaseTiles = { { x = 19, y = 14 } } }) } })
 
-		assert.truthy(districts:find("\"purchaseTiles\":[]", 1, true))
+		assert.is_nil(districts:find("blocked", 1, true))
 	end)
 
 	it("leaves out a district the panel shows as built, and lists one placed but not complete", function()
@@ -243,9 +239,9 @@ end)
 describe("SentientSystems_GetProductionChoices for wonders", function()
 	local PYRAMIDS = { type = "BUILDING_PYRAMIDS", cost = 110, turns = 18, wonder = true, tiles = {}, purchaseTiles = { { x = 17, y = 17 } } }
 
-	it("lists each wonder's type, cost, turns, and tiles, with no adjacency", function()
+	it("lists each wonder's type, cost, and turns, without its tiles", function()
 		assert.equal(
-			"[{\"cost\":110,\"purchaseTiles\":[{\"x\":17,\"y\":17}],\"tiles\":[],\"turns\":18,\"type\":\"BUILDING_PYRAMIDS\"}]",
+			"[{\"cost\":110,\"turns\":18,\"type\":\"BUILDING_PYRAMIDS\"}]",
 			ChoiceWith("wonders", { buildings = { PYRAMIDS } })
 		)
 	end)
