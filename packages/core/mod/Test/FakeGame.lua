@@ -2,7 +2,8 @@
 -- map's plots, PlayersVisibility, PlayerManager.GetAlive, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
--- CityOperationResults, CityManager and UI for placement tiles, GameInfo.Types,
+-- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury,
+-- GameInfo.Types, GameInfo.Yields,
 -- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
 -- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
 -- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
@@ -94,9 +95,27 @@ local MILITARY_FORMATION_TYPES = { STANDARD_MILITARY_FORMATION = 0, CORPS_MILITA
 local CITY_COMMAND_RESULTS = { FAILURE_REASONS = -2028665063, PLOTS = 2001 }
 local CITY_OPERATION_RESULTS = { CAN_TRAIN_CORPS = 1001, CAN_TRAIN_ARMY = 1002, NO_SUITABLE_LOCATION = 1003, PLOTS = 1004 }
 
--- The operation and command values that ask for placement tiles and tiles to buy.
+-- The operation and command values that ask for placement tiles, tiles to buy, and purchases.
 local CITY_OPERATION_TYPES = { BUILD = 3001, PARAM_DISTRICT_TYPE = 3002, PARAM_BUILDING_TYPE = 3003 }
-local CITY_COMMAND_TYPES = { PURCHASE = 4001, PARAM_PLOT_PURCHASE = 4002 }
+local CITY_COMMAND_TYPES = {
+	PURCHASE = 4001,
+	PARAM_PLOT_PURCHASE = 4002,
+	PARAM_UNIT_TYPE = 4003,
+	PARAM_BUILDING_TYPE = 4004,
+	PARAM_DISTRICT_TYPE = 4005,
+	PARAM_YIELD_TYPE = 4006,
+	PARAM_MILITARY_FORMATION_TYPE = 4007,
+}
+
+-- GameInfo.Yields, by name, with each yield's index from YieldTypes.
+local YIELD_ROWS = {
+	YIELD_FOOD = { Index = 0 },
+	YIELD_PRODUCTION = { Index = 1 },
+	YIELD_GOLD = { Index = 2 },
+	YIELD_SCIENCE = { Index = 3 },
+	YIELD_CULTURE = { Index = 4 },
+	YIELD_FAITH = { Index = 5 },
+}
 
 -- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
@@ -123,7 +142,10 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- its GameInfo row. data.options.projects lists each project the build queue knows, with type,
 -- cost, turns, progress, blocked, and hidden, and maxPlayerInstances, which goes in its GameInfo
 -- row. data.options.purchasable lists more tiles
--- to buy, by x and y. hashes maps each production, unit, building, and district type to its hash,
+-- to buy, by x and y. data.purchases maps a yield name, such as YIELD_GOLD, to the units,
+-- buildings, and districts the city can buy with it. Each has type, cost, blocked, hidden, which the
+-- check refuses even when it only tests, and cantAfford, and a unit has corps and army, each with
+-- cost, blocked, and cantAfford. hashes maps each production, unit, building, and district type to its hash,
 -- and indexes maps each district, building, and unit type to its GameInfo index. ownerID is the
 -- player's ID.
 local function City(data, hashes, indexes, ownerID)
@@ -272,7 +294,25 @@ local function City(data, hashes, indexes, ownerID)
 		return false
 	end
 
+	-- Returns the purchase option for an item's hash and a yield's index, or its corps or army for a
+	-- formation, or nil.
+	local function PurchaseOption(yieldIndex, hash, formation)
+		for name, row in pairs(YIELD_ROWS) do
+			if row.Index == yieldIndex then
+				for _, kind in ipairs({ "units", "buildings", "districts" }) do
+					for _, option in ipairs(((data.purchases or {})[name] or {})[kind] or {}) do
+						if hashes[option.type] == hash then
+							return Formation(option, formation)
+						end
+					end
+				end
+			end
+		end
+	end
+
 	local city = {
+		-- The purchase option for an item, for the fake CityManager.CanStartCommand and treasury.
+		PurchaseOption = PurchaseOption,
 		-- The tiles to buy, for the fake CityManager.GetCommandTargets.
 		purchasable = purchasable,
 		-- The plot indexes where the district or wonder that params names can go, for the fake
@@ -284,6 +324,13 @@ local function City(data, hashes, indexes, ownerID)
 		end,
 		GetOwner = function()
 			return ownerID
+		end,
+		GetGold = function()
+			return {
+				GetPurchaseCost = function(_, yieldIndex, hash, formation)
+					return PurchaseOption(yieldIndex, hash, formation).cost
+				end,
+			}
 		end,
 		GetDistrictID = function()
 			return data.id
@@ -589,6 +636,17 @@ local function Player(id, data, hashes, indexes)
 		GetCities = function()
 			return List(cities)
 		end,
+		-- The player's gold. It can afford an item unless its purchase option has cantAfford.
+		GetTreasury = function()
+			return {
+				CanAfford = function(_, cityID, hash, formation)
+					local city = List(cities):FindID(cityID)
+					local option = city.PurchaseOption(YIELD_ROWS.YIELD_GOLD.Index, hash, formation)
+
+					return option == nil or option.cantAfford ~= true
+				end,
+			}
+		end,
 		GetUnits = function()
 			return List(units)
 		end,
@@ -626,6 +684,7 @@ function FakeGame.Install(env, world)
 		Types = {},
 		Districts = {},
 		Projects = {},
+		Yields = YIELD_ROWS,
 		Buildings = {},
 		Units = {},
 		UnitPromotions = {},
@@ -673,6 +732,30 @@ function FakeGame.Install(env, world)
 			assert(operation == CITY_OPERATION_TYPES.BUILD, "no fake for this operation")
 
 			return { [CITY_OPERATION_RESULTS.PLOTS] = city.PlacementPlots(params) }
+		end,
+		-- With testOnly, whether the city's purchases list the item that params names. Without it,
+		-- whether the city can buy it now, and the results: the reasons it can't, and for a unit,
+		-- whether a corps or an army can be bought.
+		CanStartCommand = function(city, command, testOnly, params, withResults)
+			assert(command == CITY_COMMAND_TYPES.PURCHASE, "no fake for this command")
+
+			local hash = params[CITY_COMMAND_TYPES.PARAM_UNIT_TYPE] or params[CITY_COMMAND_TYPES.PARAM_BUILDING_TYPE] or params[CITY_COMMAND_TYPES.PARAM_DISTRICT_TYPE]
+			local yieldIndex = params[CITY_COMMAND_TYPES.PARAM_YIELD_TYPE]
+			local option = city.PurchaseOption(yieldIndex, hash)
+
+			if testOnly then
+				return option ~= nil and not option.hidden
+			end
+
+			assert(withResults == true, "no fake without results")
+
+			local formationOption = city.PurchaseOption(yieldIndex, hash, params[CITY_COMMAND_TYPES.PARAM_MILITARY_FORMATION_TYPE])
+
+			return formationOption.blocked == nil and formationOption.cantAfford ~= true, {
+				[CITY_COMMAND_RESULTS.FAILURE_REASONS] = formationOption.blocked,
+				[CITY_OPERATION_RESULTS.CAN_TRAIN_CORPS] = option.corps ~= nil or nil,
+				[CITY_OPERATION_RESULTS.CAN_TRAIN_ARMY] = option.army ~= nil or nil,
+			}
 		end,
 		GetCommandTargets = function(city, command, params)
 			assert(command == CITY_COMMAND_TYPES.PURCHASE and params[CITY_COMMAND_TYPES.PARAM_PLOT_PURCHASE] ~= nil, "no fake for this command")
@@ -794,6 +877,22 @@ function FakeGame.Install(env, world)
 				row.Hash = hashes[district.type]
 				row.OnePerCity = district.onePerCity ~= false
 				row.InternalOnly = district.internalOnly == true
+			end
+
+			for yieldName, purchases in pairs(city.purchases or {}) do
+				for _, kind in ipairs({ { "units", "Units", "UnitType" }, { "buildings", "Buildings", "BuildingType" }, { "districts", "Districts", "DistrictType" } }) do
+					for _, option in ipairs(purchases[kind[1]] or {}) do
+						AddRow(kind[2], kind[3], option.type)
+
+						local row = env.GameInfo[kind[2]][indexes[option.type]]
+
+						count = count + 1
+						hashes[option.type] = hashes[option.type] or 3000000 + count
+						row.Hash = hashes[option.type]
+						row.PurchaseYield = yieldName
+						row.OnePerCity = row.OnePerCity ~= false
+					end
+				end
 			end
 
 			for _, project in ipairs((city.options or {}).projects or {}) do

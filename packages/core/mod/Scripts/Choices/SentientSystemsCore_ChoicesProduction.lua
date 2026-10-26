@@ -9,18 +9,6 @@
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
--- Returns the game's reasons from a CanProduce result, as text. The game gives each reason as text
--- already, and the panel passes it through Locale.Lookup, as this does.
-local function FailureReasons(results)
-	local reasons = {}
-
-	for i, reason in ipairs(results and results[CityCommandResults.FAILURE_REASONS] or {}) do
-		reasons[i] = Locale.Lookup(reason)
-	end
-
-	return reasons
-end
-
 -- Sets option.blocked to the game's reasons when the city can't produce what params names now, as
 -- the panel greys it out. params is a building's, district's, or project's hash, or a table that
 -- names a unit and its formation. Returns the CanProduce results.
@@ -28,7 +16,7 @@ local function CheckBlocked(buildQueue, params, option)
 	local canProduce, results = buildQueue:CanProduce(params, false, true)
 
 	if not canProduce then
-		option.blocked = FailureReasons(results)
+		option.blocked = SentientSystems_GetFailureReasons(results)
 	end
 
 	return results
@@ -176,7 +164,7 @@ local function GetDistrictOptions(city, purchasable)
 			end
 
 			if blocked then
-				option.blocked = FailureReasons(results)
+				option.blocked = SentientSystems_GetFailureReasons(results)
 			end
 
 			districts[#districts + 1] = option
@@ -228,7 +216,7 @@ local function GetBuildingAndWonderOptions(city, purchasable)
 				local noLocation = results ~= nil and results[CityOperationResults.NO_SUITABLE_LOCATION] == true
 
 				if not canProduce and not (noLocation and #tiles + #purchaseTiles > 0) then
-					option.blocked = FailureReasons(results)
+					option.blocked = SentientSystems_GetFailureReasons(results)
 				end
 
 				wonders[#wonders + 1] = option

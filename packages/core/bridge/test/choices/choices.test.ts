@@ -11,8 +11,12 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetChoices(0))";
 
-// Choices with one city that can train one unit and build nothing, in the shape the core mod sends.
-const CHOICES = { production: [{ city: 65536, name: "Rome", units: [{ type: "UNIT_SCOUT", cost: 15, turns: 2 }], buildings: [], districts: [], wonders: [], projects: [] }] };
+// Choices with one city that can train one unit, build nothing else, and buy one unit with gold, in
+// the shape the core mod sends.
+const CHOICES = {
+	production: [{ city: 65536, name: "Rome", units: [{ type: "UNIT_SCOUT", cost: 15, turns: 2 }], buildings: [], districts: [], wonders: [], projects: [] }],
+	purchases: [{ city: 65536, name: "Rome", gold: { units: [{ type: "UNIT_SCOUT", cost: 60 }], buildings: [], districts: [] } }],
+};
 const JSON_TEXT = JSON.stringify(CHOICES);
 
 describe("readChoices", () => {
