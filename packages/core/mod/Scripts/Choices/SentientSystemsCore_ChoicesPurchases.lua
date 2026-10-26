@@ -1,14 +1,15 @@
 -- The purchase choice: what each of the player's cities can buy, as the production panel's purchase
 -- tabs list it. SentientSystemsCore_Choices.lua loads this file. Example:
 -- SentientSystems_GetPurchaseChoices(player) returns a list with one table for each city, which
--- encodes as '{"city":65536,"gold":{"buildings":[...],"districts":[],"units":[{"cost":100,
--- "type":"UNIT_BUILDER"}]},"name":"Rome"}', on one line. The checks follow ComposeUnitForPurchase,
+-- encodes as '{"city":65536,"faith":{...},"gold":{"buildings":[...],"districts":[],"units":[{"cost":100,
+-- "type":"UNIT_BUILDER"}]},"name":"Rome"}', on one line, with faith in the same form as gold. The checks follow ComposeUnitForPurchase,
 -- ComposeBldgForPurchase, and ComposeDistrictForPurchase in ProductionPanel.lua, lines 1632 to 1827.
 
 -- Each yield the city can buy with: its key in a city's purchases, its name in GameInfo.Yields, the
 -- player's store of it, the text key the panel adds when the player can't afford an item, and
 -- whether the panel tries a unit or a building with it. The panel tries every district with each
--- yield. See GetData in ProductionPanel.lua, lines 2006 to 2016, 2084 to 2097, and 2188 to 2201.
+-- yield. A city can buy some units and buildings with faith that the game marks for gold, such as
+-- with a policy, and the panel asks the city for those. See GetData in ProductionPanel.lua, lines 2006 to 2016, 2084 to 2097, and 2188 to 2201.
 local PURCHASE_YIELDS = {
 	{
 		key = "gold",
@@ -17,8 +18,25 @@ local PURCHASE_YIELDS = {
 			return player:GetTreasury()
 		end,
 		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FUNDS",
-		tries = function(row)
+		triesUnit = function(row)
 			return row.PurchaseYield == "YIELD_GOLD"
+		end,
+		triesBuilding = function(row)
+			return row.PurchaseYield == "YIELD_GOLD"
+		end,
+	},
+	{
+		key = "faith",
+		yield = "YIELD_FAITH",
+		source = function(player)
+			return player:GetReligion()
+		end,
+		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FAITH",
+		triesUnit = function(row, city)
+			return row.PurchaseYield == "YIELD_FAITH" or city:GetGold():IsUnitFaithPurchaseEnabled(row.Hash)
+		end,
+		triesBuilding = function(row, city)
+			return row.PurchaseYield == "YIELD_FAITH" or city:GetGold():IsBuildingFaithPurchaseEnabled(row.Hash)
 		end,
 	},
 }
@@ -77,7 +95,7 @@ local function GetUnitPurchases(city, purchase)
 	for row in GameInfo.Units() do
 		local params = PurchaseParams(CityCommandTypes.PARAM_UNIT_TYPE, row.Hash, purchase)
 
-		if purchase.tries(row, city) and IsListed(city, params) then
+		if purchase.triesUnit(row, city) and IsListed(city, params) then
 			local option, results = PurchaseOption(city, purchase, params, row.Hash)
 
 			option.type = row.UnitType
@@ -131,7 +149,7 @@ function SentientSystems_GetPurchaseChoices(player)
 			entry[purchase.key] = {
 				units = GetUnitPurchases(city, purchase),
 				buildings = GetPurchases(city, purchase, GameInfo.Buildings, CityCommandTypes.PARAM_BUILDING_TYPE, "BuildingType", function(row)
-					return purchase.tries(row, city)
+					return purchase.triesBuilding(row, city)
 				end),
 				districts = GetPurchases(city, purchase, GameInfo.Districts, CityCommandTypes.PARAM_DISTRICT_TYPE, "DistrictType", function()
 					return true

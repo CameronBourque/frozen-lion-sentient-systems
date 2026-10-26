@@ -32,7 +32,7 @@ end
 describe("SentientSystems_GetPurchaseChoices", function()
 	it("lists each city with the units, buildings, and districts it can buy with gold, and their costs", function()
 		assert.equal(
-			"[{\"city\":65536,\"gold\":{\"buildings\":[{\"cost\":130,\"type\":\"BUILDING_GRANARY\"}],\"districts\":[{\"cost\":195,\"type\":\"DISTRICT_CAMPUS\"}],"
+			"[{\"city\":65536,\"faith\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"gold\":{\"buildings\":[{\"cost\":130,\"type\":\"BUILDING_GRANARY\"}],\"districts\":[{\"cost\":195,\"type\":\"DISTRICT_CAMPUS\"}],"
 				.. "\"units\":[{\"cost\":100,\"type\":\"UNIT_BUILDER\"}]},\"name\":\"Rome\"}]",
 			PurchasesWith({ YIELD_GOLD = {
 				units = { BUILDER },
@@ -43,7 +43,7 @@ describe("SentientSystems_GetPurchaseChoices", function()
 	end)
 
 	it("gives empty lists for a city that can buy nothing", function()
-		assert.equal("[{\"city\":65536,\"gold\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"name\":\"Rome\"}]", PurchasesWith({}))
+		assert.equal("[{\"city\":65536,\"faith\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"gold\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"name\":\"Rome\"}]", PurchasesWith({}))
 	end)
 
 	it("adds the panel's text when the player can't afford an item", function()
@@ -75,9 +75,31 @@ describe("SentientSystems_GetPurchaseChoices", function()
 		assert.truthy(purchases:find("{\"army\":{\"blocked\":[\"" .. CANT_AFFORD .. "\"],\"cost\":240},\"corps\":{\"cost\":160},\"cost\":80,\"type\":\"UNIT_WARRIOR\"}", 1, true))
 	end)
 
-	it("doesn't try a unit or a building that isn't bought with gold", function()
-		local purchases = PurchasesWith({ YIELD_FAITH = { units = { { type = "UNIT_MISSIONARY", cost = 100 } } } })
+	it("lists what the city can buy with faith apart from gold", function()
+		local purchases = PurchasesWith({ YIELD_FAITH = {
+			units = { { type = "UNIT_MISSIONARY", cost = 100 } },
+			buildings = { { type = "BUILDING_TEMPLE", cost = 120 } },
+		} })
 
-		assert.equal("[{\"city\":65536,\"gold\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"name\":\"Rome\"}]", purchases)
+		assert.equal(
+			"[{\"city\":65536,\"faith\":{\"buildings\":[{\"cost\":120,\"type\":\"BUILDING_TEMPLE\"}],\"districts\":[],\"units\":[{\"cost\":100,\"type\":\"UNIT_MISSIONARY\"}]},"
+				.. "\"gold\":{\"buildings\":[],\"districts\":[],\"units\":[]},\"name\":\"Rome\"}]",
+			purchases
+		)
+	end)
+
+	it("lists a unit or a building that the game marks for gold, when the city can buy it with faith", function()
+		local purchases = PurchasesWith({ YIELD_FAITH = {
+			units = { { type = "UNIT_WARRIOR", cost = 160, faithEnabled = true } },
+			buildings = { { type = "BUILDING_MONUMENT", cost = 140, faithEnabled = true } },
+		} })
+
+		assert.truthy(purchases:find("\"faith\":{\"buildings\":[{\"cost\":140,\"type\":\"BUILDING_MONUMENT\"}],\"districts\":[],\"units\":[{\"cost\":160,\"type\":\"UNIT_WARRIOR\"}]}", 1, true))
+	end)
+
+	it("adds the panel's faith text when the player can't afford an item with faith", function()
+		local purchases = PurchasesWith({ YIELD_FAITH = { units = { { type = "UNIT_MISSIONARY", cost = 100, cantAfford = true } } } })
+
+		assert.truthy(purchases:find("\"blocked\":[\"LOC_BUILDING_INSUFFICIENT_FAITH\"]", 1, true))
 	end)
 end)

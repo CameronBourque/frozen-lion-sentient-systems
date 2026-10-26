@@ -145,7 +145,8 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- to buy, by x and y. data.purchases maps a yield name, such as YIELD_GOLD, to the units,
 -- buildings, and districts the city can buy with it. Each has type, cost, blocked, hidden, which the
 -- check refuses even when it only tests, and cantAfford, and a unit has corps and army, each with
--- cost, blocked, and cantAfford. hashes maps each production, unit, building, and district type to its hash,
+-- cost, blocked, and cantAfford. A faith purchase has faithEnabled when the game marks it for
+-- another yield but the city can buy it with faith. hashes maps each production, unit, building, and district type to its hash,
 -- and indexes maps each district, building, and unit type to its GameInfo index. ownerID is the
 -- player's ID.
 local function City(data, hashes, indexes, ownerID)
@@ -329,6 +330,18 @@ local function City(data, hashes, indexes, ownerID)
 			return {
 				GetPurchaseCost = function(_, yieldIndex, hash, formation)
 					return PurchaseOption(yieldIndex, hash, formation).cost
+				end,
+				-- Whether the city can buy a unit or a building with faith that the game marks for
+				-- another yield. The option is under YIELD_FAITH with faithEnabled.
+				IsUnitFaithPurchaseEnabled = function(_, hash)
+					local option = PurchaseOption(YIELD_ROWS.YIELD_FAITH.Index, hash)
+
+					return option ~= nil and option.faithEnabled == true
+				end,
+				IsBuildingFaithPurchaseEnabled = function(_, hash)
+					local option = PurchaseOption(YIELD_ROWS.YIELD_FAITH.Index, hash)
+
+					return option ~= nil and option.faithEnabled == true
 				end,
 			}
 		end,
@@ -615,6 +628,18 @@ end
 
 local function Player(id, data, hashes, indexes)
 	local cities, units = {}, {}
+
+	-- The player's store of a yield, which can afford an item in a city unless the city's purchase
+	-- option for it has cantAfford.
+	local function Store(yieldIndex)
+		return {
+			CanAfford = function(_, cityID, hash, formation)
+				local option = List(cities):FindID(cityID).PurchaseOption(yieldIndex, hash, formation)
+
+				return option == nil or option.cantAfford ~= true
+			end,
+		}
+	end
 	local hidden = {}
 
 	for _, typeName in ipairs(data.hiddenResources or {}) do
@@ -636,16 +661,13 @@ local function Player(id, data, hashes, indexes)
 		GetCities = function()
 			return List(cities)
 		end,
-		-- The player's gold. It can afford an item unless its purchase option has cantAfford.
+		-- The player's gold and faith. Each can afford an item unless its purchase option for that
+		-- yield has cantAfford.
 		GetTreasury = function()
-			return {
-				CanAfford = function(_, cityID, hash, formation)
-					local city = List(cities):FindID(cityID)
-					local option = city.PurchaseOption(YIELD_ROWS.YIELD_GOLD.Index, hash, formation)
-
-					return option == nil or option.cantAfford ~= true
-				end,
-			}
+			return Store(YIELD_ROWS.YIELD_GOLD.Index)
+		end,
+		GetReligion = function()
+			return Store(YIELD_ROWS.YIELD_FAITH.Index)
 		end,
 		GetUnits = function()
 			return List(units)
@@ -889,7 +911,7 @@ function FakeGame.Install(env, world)
 						count = count + 1
 						hashes[option.type] = hashes[option.type] or 3000000 + count
 						row.Hash = hashes[option.type]
-						row.PurchaseYield = yieldName
+						row.PurchaseYield = option.faithEnabled and "YIELD_GOLD" or yieldName
 						row.OnePerCity = row.OnePerCity ~= false
 					end
 				end

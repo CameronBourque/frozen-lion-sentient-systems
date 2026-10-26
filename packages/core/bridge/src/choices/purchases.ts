@@ -33,4 +33,5 @@ export const PURCHASE_CITY = z.object({
 	city: z.number(),
 	name: z.string(),
 	gold: YIELD_PURCHASES,
+	faith: YIELD_PURCHASES,
 });
