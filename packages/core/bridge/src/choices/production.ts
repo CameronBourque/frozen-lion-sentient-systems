@@ -37,9 +37,41 @@ const BUILDING_OPTION = z.object({
 	repair: z.literal(true).optional(),
 });
 
+// A tile where a district or a wonder can go.
+const TILE = z.object({
+	x: z.number(),
+	y: z.number(),
+	// A district's adjacency bonus on the tile, by yield, as the placement view shows it. Left out
+	// for a wonder, and for a tile with no bonus.
+	adjacency: z.object({
+		food: z.number().optional(),
+		production: z.number().optional(),
+		gold: z.number().optional(),
+		science: z.number().optional(),
+		culture: z.number().optional(),
+		faith: z.number().optional(),
+	}).optional(),
+});
+
+// A district or a wonder, with the tiles the city owns where it can go now, and the tiles the city
+// could buy where it could go.
+const PLACED_OPTION = z.object({
+	type: z.string(),
+	cost: z.number(),
+	turns: z.number(),
+	progress: z.number().optional(),
+	blocked: BLOCKED,
+	repair: z.literal(true).optional(),
+	tiles: z.array(TILE),
+	purchaseTiles: z.array(TILE),
+});
+
 export const PRODUCTION_CITY = z.object({
 	city: z.number(),
 	name: z.string(),
 	units: z.array(UNIT_OPTION),
 	buildings: z.array(BUILDING_OPTION),
+	// Districts the panel shows as built are left out.
+	districts: z.array(PLACED_OPTION),
+	wonders: z.array(PLACED_OPTION),
 });

@@ -34,13 +34,13 @@ end
 describe("SentientSystems_GetProductionChoices for units", function()
 	it("lists each city by ID and name, with each unit's type, cost, and turns", function()
 		assert.equal(
-			"[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"},{\"cost\":15,\"turns\":2,\"type\":\"UNIT_SCOUT\"}]}]",
+			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"},{\"cost\":15,\"turns\":2,\"type\":\"UNIT_SCOUT\"}],\"wonders\":[]}]",
 			ProductionWith({ SETTLER, { type = "UNIT_SCOUT", cost = 15, turns = 2 } })
 		)
 	end)
 
 	it("gives an empty list for a city with nothing to produce", function()
-		assert.equal("[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[]}]", ProductionWith({}))
+		assert.equal("[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[],\"wonders\":[]}]", ProductionWith({}))
 	end)
 
 	it("adds the progress once there is some", function()
@@ -50,7 +50,7 @@ describe("SentientSystems_GetProductionChoices for units", function()
 
 	it("gives the game's reasons for a unit the panel greys out", function()
 		assert.equal(
-			"[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[{\"blocked\":[\"This city needs at least 2 [ICON_Citizen] Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}]}]",
+			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[{\"blocked\":[\"This city needs at least 2 [ICON_Citizen] Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
 			ProductionWith({ With(SETTLER, { blocked = { "This city needs at least 2 [ICON_Citizen] Population." } }) })
 		)
 	end)
@@ -61,7 +61,7 @@ describe("SentientSystems_GetProductionChoices for units", function()
 
 	it("leaves out a unit the panel hides, and one that must be bought", function()
 		assert.equal(
-			"[{\"buildings\":[],\"city\":65536,\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}]}]",
+			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"units\":[{\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
 			ProductionWith({ SETTLER, { type = "UNIT_SPEARMAN", cost = 25, turns = 3, hidden = true }, { type = "UNIT_MISSIONARY", cost = 100, turns = 9, mustPurchase = true } })
 		)
 	end)
@@ -150,5 +150,117 @@ describe("SentientSystems_GetProductionChoices for buildings", function()
 			"[{\"cost\":32,\"district\":\"DISTRICT_HOLY_SITE\",\"repair\":true,\"turns\":5,\"type\":\"BUILDING_SHRINE\"}]",
 			BuildingsWith({ With(shrine, { pillaged = true }) })
 		)
+	end)
+end)
+
+local CAMPUS = { type = "DISTRICT_CAMPUS", cost = 29, turns = 6, tiles = { { x = 17, y = 13 } } }
+
+-- Returns a key in the production choice JSON for player 0, whose one city, Rome, has the given
+-- options and districts.
+local function ChoiceWith(key, options, districts)
+	local env = Game.new()
+
+	FakeGame.Install(env, { players = { [0] = { cities = { {
+		id = 65536, name = "Rome", x = 17, y = 14, population = 3, options = options, districts = districts,
+	} } } } })
+	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+	return env.SentientSystems_GetChoices(0):match("\"" .. key .. "\":(%b[])")
+end
+
+describe("SentientSystems_GetProductionChoices for districts", function()
+	it("lists each district's type, cost, turns, and tiles, with each tile's adjacency bonus", function()
+		assert.equal(
+			"[{\"cost\":29,\"purchaseTiles\":[{\"adjacency\":{\"science\":3},\"x\":19,\"y\":14}],"
+				.. "\"tiles\":[{\"adjacency\":{\"science\":1},\"x\":17,\"y\":13},{\"x\":16,\"y\":14}],\"turns\":6,\"type\":\"DISTRICT_CAMPUS\"}]",
+			ChoiceWith("districts", { districts = { With(CAMPUS, {
+				tiles = { { x = 17, y = 13, adjacency = { SCIENCE = 1 } }, { x = 16, y = 14 } },
+				purchaseTiles = { { x = 19, y = 14, adjacency = { SCIENCE = 3 } } },
+			}) } })
+		)
+	end)
+
+	it("lists only the tiles to buy where the district can go", function()
+		local districts = ChoiceWith("districts", { districts = { CAMPUS }, purchasable = { { x = 20, y = 14 } } })
+
+		assert.truthy(districts:find("\"purchaseTiles\":[]", 1, true))
+	end)
+
+	it("leaves out a district the panel shows as built, and lists one placed but not complete", function()
+		local options = { districts = { CAMPUS } }
+
+		assert.equal("[]", ChoiceWith("districts", options, { { type = "DISTRICT_CAMPUS", x = 17, y = 13 } }))
+		assert.truthy(ChoiceWith("districts", options, { { type = "DISTRICT_CAMPUS", x = 17, y = 13, complete = false } }):find("DISTRICT_CAMPUS", 1, true))
+	end)
+
+	it("lists a built district that is pillaged, to repair it", function()
+		local districts = ChoiceWith("districts", { districts = { CAMPUS } }, { { type = "DISTRICT_CAMPUS", x = 17, y = 13, pillaged = true } })
+
+		assert.truthy(districts:find("\"repair\":true", 1, true))
+	end)
+
+	it("lists a district that may be built more than once, and adds its progress", function()
+		local districts = ChoiceWith("districts", { districts = { With(CAMPUS, { type = "DISTRICT_NEIGHBORHOOD", onePerCity = false, progress = 9 }) } }, {
+			{ type = "DISTRICT_NEIGHBORHOOD", x = 17, y = 13 },
+		})
+
+		assert.truthy(districts:find("\"progress\":9", 1, true))
+	end)
+
+	it("leaves out a hidden district and one marked InternalOnly", function()
+		assert.equal("[]", ChoiceWith("districts", { districts = {
+			With(CAMPUS, { hidden = true }),
+			With(CAMPUS, { type = "DISTRICT_WONDER", internalOnly = true }),
+		} }))
+	end)
+
+	it("greys out a district with no tile that isn't placed, with the game's reasons", function()
+		local districts = ChoiceWith("districts", { districts = { With(CAMPUS, { tiles = {} }) } })
+
+		assert.truthy(districts:find("\"blocked\":[]", 1, true))
+	end)
+
+	it("doesn't grey out a district with a tile whose only reason is no suitable location", function()
+		local districts = ChoiceWith("districts", { districts = { With(CAMPUS, { blocked = { "LOC_DISTRICT_ZONE_NO_SUITABLE_LOCATION" } }) } })
+
+		assert.is_nil(districts:find("blocked", 1, true))
+	end)
+
+	it("greys out a district with a tile and another reason", function()
+		local districts = ChoiceWith("districts", { districts = { With(CAMPUS, { blocked = { "Needs a population of 4." } }) } })
+
+		assert.truthy(districts:find("\"blocked\":[\"Needs a population of 4.\"]", 1, true))
+	end)
+
+	it("doesn't grey out a placed district with no tile, unless its tile is flooded", function()
+		local placed = { { type = "DISTRICT_CAMPUS", x = 17, y = 13, complete = false } }
+
+		assert.is_nil(ChoiceWith("districts", { districts = { With(CAMPUS, { tiles = {} }) } }, placed):find("blocked", 1, true))
+		assert.truthy(ChoiceWith("districts", { districts = { With(CAMPUS, { tiles = {}, reasons = { "LOC_DISTRICT_REPAIR_LOCATION_FLOODED" } }) } }, placed):find("blocked", 1, true))
+	end)
+end)
+
+describe("SentientSystems_GetProductionChoices for wonders", function()
+	local PYRAMIDS = { type = "BUILDING_PYRAMIDS", cost = 110, turns = 18, wonder = true, tiles = {}, purchaseTiles = { { x = 17, y = 17 } } }
+
+	it("lists each wonder's type, cost, turns, and tiles, with no adjacency", function()
+		assert.equal(
+			"[{\"cost\":110,\"purchaseTiles\":[{\"x\":17,\"y\":17}],\"tiles\":[],\"turns\":18,\"type\":\"BUILDING_PYRAMIDS\"}]",
+			ChoiceWith("wonders", { buildings = { PYRAMIDS } })
+		)
+	end)
+
+	it("doesn't grey out a wonder with no suitable location that has a tile", function()
+		local wonders = ChoiceWith("wonders", { buildings = { With(PYRAMIDS, { blocked = { "No suitable location to construct this." }, noLocation = true }) } })
+
+		assert.is_nil(wonders:find("blocked", 1, true))
+	end)
+
+	it("greys out a wonder with no suitable location and no tile, or with another reason", function()
+		local noTile = With(PYRAMIDS, { purchaseTiles = {}, blocked = { "No suitable location to construct this." }, noLocation = true })
+		local otherReason = With(PYRAMIDS, { blocked = { "Another city is building it." } })
+
+		assert.truthy(ChoiceWith("wonders", { buildings = { noTile } }):find("\"blocked\":[\"No suitable location to construct this.\"]", 1, true))
+		assert.truthy(ChoiceWith("wonders", { buildings = { otherReason } }):find("\"blocked\":[\"Another city is building it.\"]", 1, true))
 	end)
 end)
