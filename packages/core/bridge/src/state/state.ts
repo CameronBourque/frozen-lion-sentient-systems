@@ -1,13 +1,14 @@
 // Reads one player's state from the core mod: what blocks their turn, their cities, units, revealed
-// tiles, and the rivals they can see. The core mod builds the state as JSON, and the bridge reads it
-// through the stash, in stash.ts. docs/design/core/in-game-lua.md has the format. Each section's
-// schema has its own file in this folder, as each section of the core mod's Lua does.
+// tiles, the rivals they can see, and their religion. The core mod builds the state as JSON, and the
+// bridge reads it through the stash, in stash.ts. docs/design/core/in-game-lua.md has the format.
+// Each section's schema has its own file in this folder, as each section of the core mod's Lua does.
 
 import { z } from "zod";
 import { readStash } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
+import { RELIGION } from "./religion.js";
 import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
 import { TILE } from "./tiles.js";
 import { UNIT } from "./units.js";
@@ -19,6 +20,7 @@ const STATE = z.object({
 	units: z.array(UNIT),
 	tiles: z.array(TILE),
 	rivals: z.object({ cities: z.array(RIVAL_CITY), units: z.array(RIVAL_UNIT) }),
+	religion: RELIGION,
 });
 
 export type State = z.infer<typeof STATE>;

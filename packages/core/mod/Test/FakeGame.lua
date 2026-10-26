@@ -46,7 +46,11 @@
 -- favor, and legacyPercent. world.legacyBonuses turns on the base game's legacy bonuses.
 -- world.beliefs lists the ruleset's beliefs, each with type, class, BELIEF_CLASS_PANTHEON when
 -- missing, description, and taken, true when a player's pantheon or religion holds it. A player's
--- pantheon is its belief type, and canCreatePantheon is true when it can found one.
+-- pantheon is its belief type, and canCreatePantheon is true when it can found one. A player's
+-- religion is the religion it founded, with type, name, beliefs, by type, holyCity, a city ID, and
+-- earned, and prophet is true when it has a Great Prophet. A city's religions lists the religions
+-- in it, each with type and followers, and majority is its majority religion's type.
+-- world.pantheonFaith is the faith the next pantheon needs, 25 when missing.
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
 -- player's met lists the IDs of the players it has met. A player's blockers lists its end-turn
@@ -563,6 +567,24 @@ local function City(data, hashes, indexes, ownerID)
 		GetPopulation = function()
 			return data.population
 		end,
+		-- The religions in the city, from data.religions, each with type and followers, and the
+		-- majority religion, from data.majority, by their GameInfo indexes.
+		GetReligion = function()
+			return {
+				GetMajorityReligion = function()
+					return data.majority and indexes[data.majority] or -1
+				end,
+				GetReligionsInCity = function()
+					local present = {}
+
+					for i, religion in ipairs(data.religions or {}) do
+						present[i] = { Religion = indexes[religion.type] or -1, Followers = religion.followers }
+					end
+
+					return present
+				end,
+			}
+		end,
 	}
 
 	if loyalty ~= nil then
@@ -911,6 +933,26 @@ local function Player(id, data, hashes, indexes, env)
 				return data.canCreatePantheon == true
 			end
 
+			-- The religion the player founded, from data.religion, with type, holyCity, a city ID,
+			-- and earned, the beliefs earned, which is the count of its beliefs when missing.
+			local founded = data.religion or {}
+
+			function religion.GetReligionTypeCreated()
+				return founded.type and indexes[founded.type] or -1
+			end
+
+			function religion.GetHolyCityID()
+				return { player = id, id = founded.holyCity }
+			end
+
+			function religion.GetNumBeliefsEarned()
+				return founded.earned or #(founded.beliefs or {})
+			end
+
+			function religion.HasReligiousFoundingUnit()
+				return data.prophet == true
+			end
+
 			return religion
 		end,
 		GetUnits = function()
@@ -972,6 +1014,7 @@ function FakeGame.Install(env, world)
 		GovernmentSlots = {},
 		Policies = {},
 		Beliefs = {},
+		Religions = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -1020,6 +1063,12 @@ function FakeGame.Install(env, world)
 	env.CityOperationTypes = CITY_OPERATION_TYPES
 	env.CityCommandTypes = CITY_COMMAND_TYPES
 	env.CityManager = {
+		-- The city that a component ID, such as a holy city's, names.
+		GetCity = function(componentID)
+			local player = env.Players[componentID.player]
+
+			return player and player:GetCities():FindID(componentID.id)
+		end,
 		GetOperationTargets = function(city, operation, params)
 			assert(operation == CITY_OPERATION_TYPES.BUILD, "no fake for this operation")
 
@@ -1145,6 +1194,29 @@ function FakeGame.Install(env, world)
 		row.BeliefClassType = belief.class or "BELIEF_CLASS_PANTHEON"
 		row.Description = belief.description
 		row.taken = belief.taken
+	end
+
+	-- Each religion that a player founded or a city holds gets a row, with its name, and each of a
+	-- founded religion's beliefs a belief row.
+	for _, data in pairs(world.players or {}) do
+		local religions = { data.religion }
+
+		for _, city in ipairs(data.cities or {}) do
+			for _, present in ipairs(city.religions or {}) do
+				religions[#religions + 1] = present
+			end
+		end
+
+		for _, religion in ipairs(religions) do
+			AddRow("Religions", "ReligionType", religion.type)
+			local row = env.GameInfo.Religions[indexes[religion.type]]
+
+			row.Name = religion.name or row.Name or religion.type
+
+			for _, belief in ipairs(religion.beliefs or {}) do
+				AddRow("Beliefs", "BeliefType", belief)
+			end
+		end
 	end
 
 	-- Makes a list of rows callable, as GameInfo.Government_SlotCounts() is.
@@ -1595,7 +1667,34 @@ function FakeGame.Install(env, world)
 			return env.GameInfo.Beliefs[index].taken == true
 		end
 
-		return { IsInSomePantheon = IsTaken, IsInSomeReligion = IsTaken }
+		return {
+			IsInSomePantheon = IsTaken,
+			IsInSomeReligion = IsTaken,
+			GetMinimumFaithNextPantheon = function()
+				return world.pantheonFaith or 25
+			end,
+			GetName = function(_, index)
+				return env.GameInfo.Religions[index].Name
+			end,
+			-- Each founded religion, with its index, founder, and belief indexes.
+			GetReligions = function()
+				local religions = {}
+
+				for playerID, data in pairs(world.players or {}) do
+					if data.religion ~= nil then
+						local beliefs = {}
+
+						for i, belief in ipairs(data.religion.beliefs or {}) do
+							beliefs[i] = indexes[belief]
+						end
+
+						religions[#religions + 1] = { Religion = indexes[data.religion.type], Founder = playerID, Beliefs = beliefs }
+					end
+				end
+
+				return religions
+			end,
+		}
 	end
 	env.Game.GetWorldCongress = function()
 		return {
