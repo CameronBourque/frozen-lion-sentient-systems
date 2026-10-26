@@ -1,6 +1,6 @@
 # Step 7: Action API
 
-Add the action API for units, city production, purchases, techs, civics, policies, and end turn. Each action wraps the request function the game's own UI calls, and a failed action returns its reason. Part of [phase 1](README.md).
+Add the action API for units, city production, purchases, techs, civics, policies, deals, and end turn. Each action wraps the request function the game's own UI calls, and a failed action returns its reason. Part of [phase 1](README.md).
 
 ## Tasks
 
@@ -12,8 +12,9 @@ Add the action API for units, city production, purchases, techs, civics, policie
 6. **Tile purchases.** Add `SentientSystems_PurchaseTile(playerID, cityID, x, y)`. Read the call from `Base/Assets/UI/WorldView/PlotInfo.lua`. Commit: `feat(core): add the tile purchase action`.
 7. **Techs, civics, and policies.** Add `SentientSystems_SetResearch`, `SentientSystems_SetCivic`, and `SentientSystems_SetPolicies`. Read the calls from the screens in step 6. Commit: `feat(core): add research, civic, and policy actions`.
 8. **Other blockers.** Add one action for each other blocker in `findings/game-state.md`. Commit: `feat(core): add actions for the other end-turn blockers`.
-9. **End turn.** Add `SentientSystems_EndTurn(playerID, force)`. Without `force`, it returns the blocker as the reason when one is left. With `force`, it sends the request anyway, as the phase 0 gate did, and the game skips the blockers. It sends one request at most per turn. See [ending the turn](../../findings/game-api.md#ending-the-turn). Commit: `feat(core): add the end turn action`.
-10. **Bridge.** Add `src/actions.ts`, with one typed function for each action and a test for each with a fake client. Commit: `feat(core): call the action API from the bridge`.
+9. **Deals.** Add `SentientSystems_RespondToDeal(playerID, otherPlayerID, accept)`, which accepts or rejects a deal another player proposes. Read the calls from `DiplomacyDealView.lua` and its replacements. Commit: `feat(core): add the deal response action`.
+10. **End turn.** Add `SentientSystems_EndTurn(playerID, force)`. Without `force`, it returns the blocker as the reason when one is left. With `force`, it sends the request anyway, as the phase 0 gate did, and the game skips the blockers. It sends one request at most per turn. See [ending the turn](../../findings/game-api.md#ending-the-turn). Commit: `feat(core): add the end turn action`.
+11. **Bridge.** Add `src/actions.ts`, with one typed function for each action and a test for each with a fake client. Commit: `feat(core): call the action API from the bridge`.
 
 ## Done when
 
