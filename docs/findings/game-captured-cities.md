@@ -1,13 +1,12 @@
 # Game captured cities
 
-Status: open. The `capturedCities` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons. Its rebelled city, from Rise and Fall's disloyal city screen, is confirmed only in files.
+Status: open. The `capturedCities` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons and tooltips. Its rebelled city, from Rise and Fall's disloyal city screen, is confirmed only in files.
 
 The calls the captured city choice uses, as the raze and disloyal city screens show them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-1. Do the **Keep City** and **Raze City** tooltips on the raze screen read the same as the choice's descriptions?
-2. Does the disloyal city screen offer the same city and options as the choice, once a city rebels to join the player?
+1. Does the disloyal city screen offer the same city and options as the choice, once a city rebels to join the player?
 
 ## What we know now
 
@@ -38,7 +37,7 @@ A single-player game with Gathering Storm, on turn 3 of the save with 18 city-st
 
 | Check | Result |
 | --- | --- |
-| The choices after a GDR took Caguana, its only city | `[{"city":131073,"districts":0,"kind":"captured","name":"Caguana","options":[KEEP,RAZE],"population":1,"x":47,"y":40}]`, each option with its final-city tooltip naming 100 grievances. `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` with `"choice":"capturedCities"`. The raze screen showed **Keep City** and **Raze City**, population 1, and 0 districts |
+| The choices after a GDR took Caguana, its only city | `[{"city":131073,"districts":0,"kind":"captured","name":"Caguana","options":[KEEP,RAZE],"population":1,"x":47,"y":40}]`, each option with its final-city tooltip naming 100 grievances. `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` with `"choice":"capturedCities"`. The raze screen showed **Keep City** and **Raze City**, population 1, and 0 districts, and each button's tooltip read the same as its description |
 | The choices through the bridge's readers | Parsed, with the same values |
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.
