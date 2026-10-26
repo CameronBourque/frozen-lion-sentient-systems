@@ -1,6 +1,6 @@
 # Game choices
 
-Status: open. `SentientSystems_GetChoices` with the units, buildings, districts, wonders, and projects each city can produce, the units and buildings each city can buy with gold, and the tiles from `SentientSystems_GetPlacement`, are confirmed in a running game. Faith purchases are confirmed in a running game with nothing to buy, and in files. District purchases are confirmed in files only. Corps and armies are confirmed in files only.
+Status: open. `SentientSystems_GetChoices` with the units, buildings, districts, wonders, and projects each city can produce, the units and buildings each city can buy with gold, and the tiles from `SentientSystems_GetPlacement`, are confirmed in a running game. Faith purchases are confirmed in a running game. District purchases are confirmed in files only. Corps and armies are confirmed in files only.
 
 The calls the choices use to list the legal options for each of one player's discrete choices, as the game's own screens list them. The end-turn blockers that the choices resolve are in [game-state.md](game-state.md#end-turn-blockers). See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -8,7 +8,6 @@ The calls the choices use to list the legal options for each of one player's dis
 
 1. Does a unit's corps and army option read as the production panel shows it, once the Nationalism and Mobilization civics allow one? The same for buying one.
 2. Does a district read as the purchase tab shows it, once Reyna with the Contractor promotion is in the city? Contractor lets a city buy districts with gold.
-3. Does a unit or a building read as the faith purchase tab shows it, once the player has faith and something to buy with it, such as a missionary after founding a religion?
 
 ## What we know now
 
@@ -70,10 +69,11 @@ The panel's purchase tabs list what a city can buy with gold and with faith. `Ge
 ## Method
 
 1. In `SentientSystemsCore_UI`, loop over `GameInfo.Units()` and `GameInfo.Buildings()` for each city with the checks above, and compare the lists with the production panel.
-2. To unlock buildings and districts in an early game, in `GameCore_Tuner`, send `Players[0]:GetTechs():SetTech(GameInfo.Technologies["TECH_POTTERY"].Index, true)`, and the same for `TECH_MASONRY`, `TECH_WRITING`, and `TECH_ASTROLOGY`. To add a district without producing it, in `GameCore_Tuner`, send `WorldBuilder.CityManager():CreateDistrict(city, GameInfo.Districts["DISTRICT_CAMPUS"].Index, 100, Map.GetPlot(x, y):GetIndex())`, as `DLC/BlackDeathScenario` does. Reload the save afterwards to undo it.
-3. To see a greyed-out unit, in `GameCore_Tuner`, send `Players[0]:GetCities():FindID(<cityID>):ChangePopulation(-2)` to a city with 3 population, so the settler needs more population. Send `ChangePopulation(2)` afterwards.
-4. To test a choices file that the `.modinfo` doesn't list yet, without a restart, send the file's code without its comments and `include` lines to `SentientSystemsCore_UI`, then the choices file's code the same way. Windows limits a command line to 8,191 characters, so pass long code to the sending script in a file.
-5. Read `SentientSystems_GetChoices(Game.GetLocalPlayer())` with `npm run state`, which prints it after the state.
+2. To unlock buildings and districts in an early game, in `GameCore_Tuner`, send `Players[0]:GetTechs():SetTech(GameInfo.Technologies["TECH_POTTERY"].Index, true)`, and the same for `TECH_MASONRY`, `TECH_WRITING`, and `TECH_ASTROLOGY`. To add a district without producing it, in `GameCore_Tuner`, send `WorldBuilder.CityManager():CreateDistrict(city, GameInfo.Districts["DISTRICT_CAMPUS"].Index, 100, Map.GetPlot(x, y):GetIndex())`, as `DLC/BlackDeathScenario` does. To remove one, send `WorldBuilder.CityManager():RemoveDistrict(city:GetDistricts():GetDistrict(<district index>))`. In `GameCore_Tuner`, a city's `GetDistricts()` has no `Members()`. To add a building, send `WorldBuilder.CityManager():CreateBuilding(city, "BUILDING_SHRINE", 100, plotIndex)`. Reload the save afterwards to undo them.
+3. To see faith purchases, in `GameCore_Tuner`, add a holy site with a shrine as in step 2, send `Players[0]:GetReligion():ChangeFaithBalance(600)`, and send `Game.GetGreatPeople():CreatePerson(0, GameInfo.GreatPersonIndividuals["GREAT_PERSON_INDIVIDUAL_SIDDHARTHA_GAUTAMA"].Hash, x, y)` for a Great Prophet. Faith added during a turn doesn't allow a pantheon until the next turn: `GetReligion():CanCreatePantheon()` returned `false` with 600 faith. End the turn, pick a pantheon, then found a religion with the prophet.
+4. To see a greyed-out unit, in `GameCore_Tuner`, send `Players[0]:GetCities():FindID(<cityID>):ChangePopulation(-2)` to a city with 3 population, so the settler needs more population. Send `ChangePopulation(2)` afterwards.
+5. To test a choices file that the `.modinfo` doesn't list yet, without a restart, send the file's code without its comments and `include` lines to `SentientSystemsCore_UI`, then the choices file's code the same way. Windows limits a command line to 8,191 characters, so pass long code to the sending script in a file.
+6. Read `SentientSystems_GetChoices(Game.GetLocalPlayer())` with `npm run state`, which prints it after the state.
 
 ## Results
 
@@ -97,6 +97,8 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 | Rome's production panel with the campus | The same lists and turns as the choices. **Campus** and **City Center** with checkmarks, the holy site greyed out with the same reason and a cost of 39, as in the choices, and Stonehenge greyed out with `No suitable location to construct this.`, with no tile left after the campus took (17,13). Campus Research Grants at 3 turns, under **Projects** |
 | Gold purchases for Rome, with 101 gold | Builder 100, scout 60, warrior 80, and slinger 65. Settler 160, battering ram 125, granary 130, and library 180, each greyed out with `Not enough [ICON_Gold] Gold in treasury to purchase this.` and no reason from the game. No district, and no walls. The gold purchase tab showed the same, with the same costs. The choices were 1,742 bytes |
 | Faith purchases for Rome, with 0 faith and no religion | No unit, building, or district. `GetReligion():GetFaithBalance()` returned 0. The choices were 1,793 bytes |
+| Purchases for Rome on turn 15, with a holy site and a shrine at (17,13) in place of the campus, a pantheon, a religion, 591 faith, and the settler the pantheon gave in Rome | Faith: the missionary at 70, and the Gurdwara at 190, greyed out with `This building requires a Temple building.`. Gold: the settler at 220 and the builder at 100, each greyed out with `Too many units of the same class in this location.`, then the settler with the gold text too. The scout, warrior, slinger, battering ram, and granary as before. Both purchase tabs showed the same, with the same costs. The choices were 1,992 bytes |
+| Production for Rome on the same turn | The Gurdwara under the holy site at 15 turns, greyed out with `This building requires a Temple building.`, the campus greyed out with the population reason, and Holy Site Prayers, `PROJECT_ENHANCE_DISTRICT_HOLY_SITE`, at 3 turns and repeatable. The production panel showed the same |
 | Rome's production panel with districts and wonders | The holy site and the campus at 6 turns, after **City Center** with a checkmark, and the Great Bath and Stonehenge at 14 and the Pyramids and Etemenanki at 18, none greyed out, as in the choices |
 | Rome's production panel against the choices | The same buildings and units with the same turns: walls 6 and granary 5 under **City Center**, and settler 6, builder 4, scout 2, warrior 3, slinger 2, and battering ram 5. The panel sorts the walls before the granary, and the choices keep the game's order. The panel doesn't show cost |
 
