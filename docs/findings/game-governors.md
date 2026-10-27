@@ -1,12 +1,12 @@
 # Game governors
 
-Status: open. The `governors` section of `SentientSystems_GetState`, the player's governor titles and appointed governors, and the `governors` key of `SentientSystems_GetChoices`, the governors to appoint, the promotions to give, and the cities to assign them to, are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The state matches the Governors panel. The choice hasn't been compared with the panel, the details panel, and the assignment chooser yet. The promotion tree and Secret Societies come later in this task.
+Status: open. The `governors` section of `SentientSystems_GetState`, the player's governor titles and appointed governors, and the `governors` key of `SentientSystems_GetChoices`, the governors to appoint, the promotions to give, and the cities to assign them to, are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The state matches the Governors panel. The choice matches the panel and the assignment chooser's list for a governor with no city, and hasn't been compared with the details panel. The promotion tree and Secret Societies come later in this task.
 
 The calls the governors in the state and the governor choice use, as the Governors panel and its screens show them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-1. Does the assignment chooser list the same cities, in the same order, as the choice, for a governor in a city, for one with none, and for an Ambassador?
+1. Does the assignment chooser leave out the city a governor is already in, as the choice does?
 2. How do Secret Societies' governors, which `GovernorsCannotAssign` marks, and their hidden promotions read in the state?
 
 ## What we know now
@@ -41,5 +41,7 @@ A single-player game with Gathering Storm, on turn 48, in `SentientSystemsCore_U
 | The state through the bridge's readers | Parsed, with the same values |
 | The choices on the same turn | `appoint` with Victor, Amani, Moksha, and Liang, each with loyalty 8 and 3 or 5 turns to establish. `promote` with 2 promotions each for Pingala, Magnus, and Reyna. `assign` with 8 cities each, 3,709 bytes. The same after the blocker was cleared, through the bridge's readers |
 | The choices after appointing Amani | No `appoint`, as all 9 titles were spent. Amani's `assign` with the 9 cities and 8 city-state cities, 744 bytes |
+| The Governors panel after appointing Amani | **Governor titles available: 0** and **Spent: 9**. Amani on **Needs Assignment** with a green **Assign** button, and **Appoint** turned off for Victor, Moksha, and Liang, as the choice has it. The assignment chooser's list wasn't shown |
+| The assignment chooser for Amani, who had no city | Rome, Antium, Lugdunum, Setia, Ravenna, Ostia, Arpinum, Arretium, and Stockholm, then the city-states Kumasi, Zanzibar, Bologna, Nalanda, Valletta, Hunza, Jerusalem, and Hong Kong, in the choice's order, none turned off. The card read **The Diplomat**, 5 turns and loyalty 8, and **Replaces: No Governor Assigned** once a city was picked, and **Assign** turned on |
 
 Date checked: game files on 2026-10-27. Running game on Windows on 2026-10-27.
