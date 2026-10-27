@@ -5,6 +5,8 @@
 -- GameInfo.GreatPersonIndividuals, GameCapabilities, a player's captured and rebelled cities,
 -- CityDestroyDirectives, CivilizationLevelTypes, CityTransferTypes, GlobalParameters, a player's
 -- escaping spy, Cities.GetPlotPurchaseCity, a player's digging archaeologist, Game.GetArtifactByIndex,
+-- a player's governors, GameInfo.Governors, GameInfo.GovernorPromotions,
+-- GameInfo.GovernorPromotionSets,
 -- GameInfo.Leaders, GameInfo.LeaderTraits, GameInfo.Traits, GameInfo.Quests, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
@@ -82,7 +84,10 @@
 -- it escapes from. With one, the four escape districts get rows, with TravelTime 1 to 4. A player's
 -- archaeologist is its next digging archaeologist, with id, name, x, y, and artifact, with index,
 -- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
--- is its leader's name.
+-- is its leader's name. A player's governors has points, spent, and appointed, each with type, city,
+-- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
+-- promotions, each with type and has. Without governors the player has no GetGovernors, as without
+-- Rise and Fall.
 -- world.offCapabilities lists the great people capabilities that are off. A player's
 -- blockers lists its end-turn
 -- blockers by name, in the game's order, such as
@@ -1326,6 +1331,9 @@ function FakeGame.Install(env, world)
 		Traits = {},
 		Quests = {},
 		GreatPersonClasses = {},
+		Governors = {},
+		GovernorPromotions = {},
+		GovernorPromotionSets = {},
 		GreatPersonIndividuals = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
@@ -1348,6 +1356,8 @@ function FakeGame.Install(env, world)
 		Religions = "ReligionType",
 		Resources = "ResourceType",
 		Quests = "QuestType",
+		Governors = "GovernorType",
+		GovernorPromotions = "GovernorPromotionType",
 	}) do
 		setmetatable(env.GameInfo[name], {
 			__index = function(rows, key)
@@ -1546,6 +1556,29 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- Each appointed governor gets a row, with its name, title, and a made-up hash, and each of its
+	-- promotions a row and a place in its set.
+	for _, data in pairs(world.players or {}) do
+		for _, governor in ipairs((data.governors or {}).appointed or {}) do
+			AddRow("Governors", "GovernorType", governor.type)
+
+			local row = env.GameInfo.Governors[indexes[governor.type]]
+
+			row.Name = "LOC_" .. governor.type .. "_NAME"
+			row.Title = "LOC_" .. governor.type .. "_TITLE"
+			row.Hash = 3000000 + row.Index
+
+			for _, promotion in ipairs(governor.promotions or {}) do
+				AddRow("GovernorPromotions", "GovernorPromotionType", promotion.type)
+
+				local promotionRow = env.GameInfo.GovernorPromotions[indexes[promotion.type]]
+
+				promotionRow.Hash = 4000000 + promotionRow.Index
+				table.insert(env.GameInfo.GovernorPromotionSets, { GovernorType = governor.type, GovernorPromotion = promotion.type })
+			end
+		end
+	end
+
 	-- Each artifact's era gets a row.
 	for _, data in pairs(world.players or {}) do
 		if data.archaeologist ~= nil then
@@ -1632,6 +1665,7 @@ function FakeGame.Install(env, world)
 
 	Callable(env.GameInfo.Government_SlotCounts)
 	Callable(env.GameInfo.LeaderTraits)
+	Callable(env.GameInfo.GovernorPromotionSets)
 	Callable(env.GameInfo.GovernmentModifiers)
 	Callable(env.GameInfo.ModifierArguments)
 
@@ -2027,6 +2061,73 @@ function FakeGame.Install(env, world)
 
 	for id, data in pairs(world.players or {}) do
 		env.Players[id] = Player(id, data, hashes, indexes, env)
+
+		-- The player's governors, from data.governors.
+		if data.governors ~= nil then
+			local governorData = data.governors
+
+			env.Players[id].GetGovernors = function()
+				local list = {}
+
+				for i, governor in ipairs(governorData.appointed or {}) do
+					local held = {}
+
+					for _, promotion in ipairs(governor.promotions or {}) do
+						if promotion.has then
+							held[env.GameInfo.GovernorPromotions[promotion.type].Hash] = true
+						end
+					end
+
+					list[i] = {
+						GetType = function()
+							return indexes[governor.type]
+						end,
+						GetAssignedCity = function()
+							local city = governor.city
+
+							return city and {
+								GetOwner = function()
+									return city.owner
+								end,
+								GetID = function()
+									return city.id
+								end,
+							}
+						end,
+						IsEstablished = function()
+							return governor.established == true
+						end,
+						GetTurnsOnSite = function()
+							return governor.turnsOnSite or 0
+						end,
+						GetTurnsToEstablish = function()
+							return governor.turnsToEstablish or 5
+						end,
+						GetNeutralizedTurns = function()
+							return governor.neutralized or 0
+						end,
+						GetIdentityPressure = function()
+							return governor.loyalty or 8
+						end,
+						HasPromotion = function(_, hash)
+							return held[hash] == true
+						end,
+					}
+				end
+
+				return {
+					GetGovernorPoints = function()
+						return governorData.points or 0
+					end,
+					GetGovernorPointsSpent = function()
+						return governorData.spent or 0
+					end,
+					GetGovernorList = function()
+						return #list > 0, list
+					end,
+				}
+			end
+		end
 
 		-- A city-state's name and leader, and its leader's row, with the leader it inherits from.
 		local minor = data.minor or {}

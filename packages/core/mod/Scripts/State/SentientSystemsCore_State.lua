@@ -3,7 +3,7 @@
 -- folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetState(0) returns
 -- '{"blockers":{"list":[...],"units":[...]},"cities":[{"id":65536,"name":"Rome",...}],
--- "envoys":{"cityStates":[...],"influence":{...},"tokens":0},"greatPeople":[...],
+-- "envoys":{"cityStates":[...],"influence":{...},"tokens":0},"governors":{...},"greatPeople":[...],
 -- "religion":{"pantheon":"BELIEF_GOD_OF_THE_SEA"},"rivals":{"cities":[...],"units":[...]},"tiles":[...],
 -- "units":[...]}', on one line.
 
@@ -17,6 +17,7 @@ SentientSystems_Include("SentientSystemsCore_StateBlockers")
 SentientSystems_Include("SentientSystemsCore_StateReligion")
 SentientSystems_Include("SentientSystemsCore_StateEnvoys")
 SentientSystems_Include("SentientSystemsCore_StateGreatPeople")
+SentientSystems_Include("SentientSystemsCore_StateGovernors")
 
 -- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -40,5 +41,6 @@ function SentientSystems_GetState(playerID)
 		religion = SentientSystems_GetReligionState(player),
 		envoys = SentientSystems_GetEnvoyState(player),
 		greatPeople = SentientSystems_GetGreatPeopleState(player),
+		governors = SentientSystems_GetGovernorState(player),
 	})
 end
