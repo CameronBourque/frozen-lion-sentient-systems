@@ -3,7 +3,8 @@
 -- PlayerManager.GetAliveMajorIDs, a player's influence and resources, Game.GetQuestsManager,
 -- Game.GetGreatPeople, a player's great people points, GameInfo.GreatPersonClasses,
 -- GameInfo.GreatPersonIndividuals, GameCapabilities, a player's captured and rebelled cities,
--- CityDestroyDirectives, CivilizationLevelTypes, CityTransferTypes, GlobalParameters,
+-- CityDestroyDirectives, CivilizationLevelTypes, CityTransferTypes, GlobalParameters, a player's
+-- escaping spy, Cities.GetPlotPurchaseCity,
 -- GameInfo.Leaders, GameInfo.LeaderTraits, GameInfo.Traits, GameInfo.Quests, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
@@ -76,7 +77,10 @@
 -- conqueredFrom, gift, true for a city given in a deal, canRaze, false for one the player can't
 -- raze, and warmonger, with keep and raze points. noRiseAndFall leaves out GetNextRebelledCity. A
 -- player's liberate lists the IDs it can liberate a city to, revived the IDs it has brought back,
--- and freeCities is true for the Free Cities. world.offCapabilities lists the great people capabilities that are off. A player's
+-- and freeCities is true for the Free Cities. A player's escapingSpy is its next escaping spy, with
+-- id, name, loot, pursuer, the counterspy's name or "" for the police, x, and y, the tile of the city
+-- it escapes from. With one, the four escape districts get rows, with TravelTime 1 to 4.
+-- world.offCapabilities lists the great people capabilities that are off. A player's
 -- blockers lists its end-turn
 -- blockers by name, in the game's order, such as
 -- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
@@ -880,6 +884,9 @@ local function Player(id, data, hashes, indexes, env)
 
 					return false
 				end,
+				GetNextEscapingSpyID = function()
+					return data.escapingSpy and data.escapingSpy.id or -1
+				end,
 				CanLiberateCityTo = function(_, otherID)
 					for _, liberate in ipairs(data.liberate or {}) do
 						if liberate == otherID then
@@ -1158,8 +1165,43 @@ local function Player(id, data, hashes, indexes, env)
 
 			return religion
 		end,
+		-- The player's units, and its escaping spy from data.escapingSpy, which FindID alone finds.
 		GetUnits = function()
-			return List(units)
+			local list = List(units)
+			local spy = data.escapingSpy
+
+			if spy ~= nil then
+				local findID = list.FindID
+
+				function list.FindID(self, unitID)
+					if unitID ~= spy.id then
+						return findID(self, unitID)
+					end
+
+					return {
+						GetID = function()
+							return spy.id
+						end,
+						GetX = function()
+							return spy.x
+						end,
+						GetY = function()
+							return spy.y
+						end,
+						GetName = function()
+							return spy.name
+						end,
+						GetLootName = function()
+							return spy.loot
+						end,
+						GetPursuingSpyName = function()
+							return spy.pursuer or ""
+						end,
+					}
+				end
+			end
+
+			return list
 		end,
 		GetDistricts = function()
 			return {
@@ -1471,6 +1513,20 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- With an escaping spy, each escape district gets a row, with its travel time and name.
+	for _, data in pairs(world.players or {}) do
+		if data.escapingSpy ~= nil then
+			for i, districtType in ipairs({ "DISTRICT_AERODROME", "DISTRICT_HARBOR", "DISTRICT_COMMERCIAL_HUB", "DISTRICT_CITY_CENTER" }) do
+				AddRow("Districts", "DistrictType", districtType)
+
+				local row = env.GameInfo.Districts[indexes[districtType]]
+
+				row.TravelTime = i
+				row.Name = "LOC_" .. districtType .. "_NAME"
+			end
+		end
+	end
+
 	-- Each great person on offer gets rows for its class, era, and individual.
 	for _, person in ipairs(world.greatPeople or {}) do
 		AddRow("GreatPersonClasses", "GreatPersonClassType", person.class)
@@ -1594,6 +1650,18 @@ function FakeGame.Install(env, world)
 	env.CityDestroyDirectives = { LIBERATE_FOUNDER = 0, LIBERATE_PREVIOUS_OWNER = 1, KEEP = 2, RAZE = 3, REJECT = 4 }
 	env.CivilizationLevelTypes = { CIVILIZATION_LEVEL_FULL_CIV = 0 }
 	env.CityTransferTypes = CITY_TRANSFER_TYPES
+	env.Cities = {
+		-- The city of any player on the tile x, y, where an escaping spy is.
+		GetPlotPurchaseCity = function(x, y)
+			for id = 0, 63 do
+				for _, city in (env.Players[id] and env.Players[id]:GetCities() or List({})):Members() do
+					if city:GetX() == x and city:GetY() == y then
+						return city
+					end
+				end
+			end
+		end,
+	}
 
 	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
 	-- GetUnlockablesForTech and GetUnlockablesForCivic return what one unlocks as { type, name, key }

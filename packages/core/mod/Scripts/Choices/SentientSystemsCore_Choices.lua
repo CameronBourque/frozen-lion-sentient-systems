@@ -4,8 +4,8 @@
 -- SentientSystems_GetChoices(0) returns
 -- '{"capturedCities":[...],"civics":[...],"envoys":{...},"government":{...},"governments":{...},
 -- "greatPeople":[...],"pantheon":{...},"policies":{...},"production":[{"city":65536,"name":"Rome",
--- "units":[...]}],"purchases":[...],"techs":[...]}', on one line. A choice that the player can't make
--- now, such as the pantheon, is left out.
+-- "units":[...]}],"purchases":[...],"spies":[...],"techs":[...]}', on one line. A choice that the
+-- player can't make now, such as the pantheon, is left out.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -31,6 +31,7 @@ SentientSystems_Include("SentientSystemsCore_ChoicesReligion")
 SentientSystems_Include("SentientSystemsCore_ChoicesEnvoys")
 SentientSystems_Include("SentientSystemsCore_ChoicesGreatPeople")
 SentientSystems_Include("SentientSystemsCore_ChoicesCapturedCities")
+SentientSystems_Include("SentientSystemsCore_ChoicesSpies")
 
 -- Returns the choices of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -55,5 +56,6 @@ function SentientSystems_GetChoices(playerID)
 		envoys = SentientSystems_GetEnvoyChoices(player),
 		greatPeople = SentientSystems_GetGreatPeopleChoices(player),
 		capturedCities = SentientSystems_GetCapturedCityChoices(player),
+		spies = SentientSystems_GetSpyChoices(player),
 	})
 end

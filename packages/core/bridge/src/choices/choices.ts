@@ -15,6 +15,7 @@ import { PRODUCTION_CITY } from "./production.js";
 import { PURCHASE_CITY } from "./purchases.js";
 import { PANTHEON, RELIGION_CHOICE } from "./religion.js";
 import { RESEARCH_OPTION } from "./research.js";
+import { SPIES_CHOICE } from "./spies.js";
 
 // Not strict, so a choice from a newer core mod is dropped instead of failing all the choices.
 const CHOICES = z.object({
@@ -30,6 +31,7 @@ const CHOICES = z.object({
 	envoys: ENVOY_CHOICE,
 	greatPeople: GREAT_PEOPLE_CHOICE,
 	capturedCities: CAPTURED_CITIES_CHOICE,
+	spies: SPIES_CHOICE,
 });
 
 export type Choices = z.infer<typeof CHOICES>;
