@@ -1,12 +1,12 @@
 # Game captured cities
 
-Status: open. The `capturedCities` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons and tooltips. Its rebelled city, from Rise and Fall's disloyal city screen, is confirmed only in files.
+Status: open. The `capturedCities` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons and tooltips. Its rebelled city, from Rise and Fall's disloyal city screen, is confirmed in the same game and matches that screen.
 
 The calls the captured city choice uses, as the raze and disloyal city screens show them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-1. Does the disloyal city screen offer the same city and options as the choice, once a city rebels to join the player?
+None open.
 
 ## What we know now
 
@@ -24,7 +24,7 @@ The calls the captured city choice uses, as the raze and disloyal city screens s
 
 `DLC/Expansion1/UI/Additions/DisloyalCityChooser.lua`, the same in Gathering Storm, draws the disloyal city screen. Confirmed in files.
 
-- **City and options.** `OnOpen`, lines 27 to 56, reads `GetCities():GetNextRebelledCity()`, which only Rise and Fall's cities have, and shows the same name, population, and districts as the raze screen. **Keep** sends `CityDestroyDirectives.KEEP` and **Refuse** sends `REJECT`, 4, with fixed tooltips, `LOC_DISLOYAL_CITY_CHOOSER_KEEP_EXPLANATION` and `LOC_DISLOYAL_CITY_CHOOSER_REFUSE_EXPLANATION`, which leaves it a Free City. Confirmed in files.
+- **City and options.** `OnOpen`, lines 27 to 56, reads `GetCities():GetNextRebelledCity()`, which only Rise and Fall's cities have, and shows the same name, population, and districts as the raze screen. **Keep** sends `CityDestroyDirectives.KEEP` and **Refuse** sends `REJECT`, 4, with fixed tooltips, `LOC_DISLOYAL_CITY_CHOOSER_KEEP_EXPLANATION` and `LOC_DISLOYAL_CITY_CHOOSER_REFUSE_EXPLANATION`, which leaves it a Free City. Stockholm, which rebelled to join the player on turn 24, read as `kind` `disloyal` with `KEEP` and `REJECT`, and `ENDTURN_BLOCKING_CONSIDER_DISLOYAL_CITY` was among the blockers. Confirmed in files and on Windows on 2026-10-27.
 
 ## Method
 
@@ -39,5 +39,6 @@ A single-player game with Gathering Storm, on turn 3 of the save with 18 city-st
 | --- | --- |
 | The choices after a GDR took Caguana, its only city | `[{"city":131073,"districts":0,"kind":"captured","name":"Caguana","options":[KEEP,RAZE],"population":1,"x":47,"y":40}]`, each option with its final-city tooltip naming 100 grievances. `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` with `"choice":"capturedCities"`. The raze screen showed **Keep City** and **Raze City**, population 1, and 0 districts, and each button's tooltip read the same as its description |
 | The choices through the bridge's readers | Parsed, with the same values |
+| The choices on turn 24 of another save, after Stockholm rebelled to join the player | `[{"city":589832,"districts":0,"kind":"disloyal","name":"Stockholm","options":[KEEP,REJECT],"population":1,"x":47,"y":27}]`, each with its fixed tooltip, and `ENDTURN_BLOCKING_CONSIDER_DISLOYAL_CITY` with `"choice":"capturedCities"`. The City Rebelled screen showed Stockholm, population 1, 0 districts, **Keep City**, and **Refuse City** |
 
-Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.
+Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26 and 2026-10-27.
