@@ -74,6 +74,21 @@ describe("SentientSystems_HasExpansion2", function()
 	end)
 end)
 
+describe("SentientSystems_HasBlocker", function()
+	it("is true when any of the blockers named blocks the player's turn", function()
+		env.EndTurnBlockingTypes = { ENDTURN_BLOCKING_ARTIFACT = 7, ENDTURN_BLOCKING_UNITS = 9 }
+		env.NotificationManager = {
+			GetAllEndTurnBlocking = function(playerID)
+				return playerID == 0 and { 9, 7 } or nil
+			end,
+		}
+
+		assert.is_true(env.SentientSystems_HasBlocker(0, "ENDTURN_BLOCKING_RESEARCH", "ENDTURN_BLOCKING_ARTIFACT"))
+		assert.is_false(env.SentientSystems_HasBlocker(0, "ENDTURN_BLOCKING_RESEARCH"))
+		assert.is_false(env.SentientSystems_HasBlocker(1, "ENDTURN_BLOCKING_ARTIFACT"))
+	end)
+end)
+
 describe("SentientSystems_Include", function()
 	it("loads the file, returns its path, and prints nothing", function()
 		local loaded = env.SentientSystems_Include("SentientSystemsCore_Json")
