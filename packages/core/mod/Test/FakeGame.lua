@@ -86,8 +86,12 @@
 -- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
 -- is its leader's name. A player's governors has points, spent, and appointed, each with type, city,
 -- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
--- promotions, each with type and has. Without governors the player has no GetGovernors, as without
--- Rise and Fall.
+-- promotions, each with type, has, and canEarn, and canPromote, cityStates, true for one that can
+-- govern city-states, and abroad, true for one that can go to other players' capitals. Its candidates
+-- lists the governors it can appoint, each with type, canEver, false for one it never can, turnsToEstablish,
+-- and loyalty. canAppoint is false without a title, and cannotAssignTo maps "owner:id" of a city
+-- to the reasons a governor can't go there. world.cannotAssign lists the governors of Secret
+-- Societies. Without governors the player has no GetGovernors, as without Rise and Fall.
 -- world.offCapabilities lists the great people capabilities that are off. A player's
 -- blockers lists its end-turn
 -- blockers by name, in the game's order, such as
@@ -829,6 +833,15 @@ local function Player(id, data, hashes, indexes, env)
 				return data.captured and ChangedCity(data.captured)
 			end
 
+			-- The city with capital set, which a major player has.
+			function list.GetCapitalCity()
+				for _, city in ipairs(cities) do
+					if city.IsCapital() then
+						return city
+					end
+				end
+			end
+
 			if not data.noRiseAndFall then
 				function list.GetNextRebelledCity()
 					return data.rebelled and ChangedCity(data.rebelled)
@@ -1334,6 +1347,7 @@ function FakeGame.Install(env, world)
 		Governors = {},
 		GovernorPromotions = {},
 		GovernorPromotionSets = {},
+		GovernorsCannotAssign = {},
 		GreatPersonIndividuals = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
@@ -1559,13 +1573,29 @@ function FakeGame.Install(env, world)
 	-- Each appointed governor gets a row, with its name, title, and a made-up hash, and each of its
 	-- promotions a row and a place in its set.
 	for _, data in pairs(world.players or {}) do
-		for _, governor in ipairs((data.governors or {}).appointed or {}) do
+		local governorData = data.governors or {}
+
+		for _, governor in ipairs(governorData.candidates or {}) do
 			AddRow("Governors", "GovernorType", governor.type)
 
 			local row = env.GameInfo.Governors[indexes[governor.type]]
 
 			row.Name = "LOC_" .. governor.type .. "_NAME"
 			row.Title = "LOC_" .. governor.type .. "_TITLE"
+			row.Description = "LOC_" .. governor.type .. "_DESCRIPTION"
+			row.IdentityPressure = governor.loyalty or 8
+			row.Hash = 3000000 + row.Index
+		end
+
+		for _, governor in ipairs(governorData.appointed or {}) do
+			AddRow("Governors", "GovernorType", governor.type)
+
+			local row = env.GameInfo.Governors[indexes[governor.type]]
+
+			row.Name = "LOC_" .. governor.type .. "_NAME"
+			row.Title = "LOC_" .. governor.type .. "_TITLE"
+			row.Description = "LOC_" .. governor.type .. "_DESCRIPTION"
+			row.IdentityPressure = 8
 			row.Hash = 3000000 + row.Index
 
 			for _, promotion in ipairs(governor.promotions or {}) do
@@ -1573,10 +1603,17 @@ function FakeGame.Install(env, world)
 
 				local promotionRow = env.GameInfo.GovernorPromotions[indexes[promotion.type]]
 
+				promotionRow.Name = "LOC_" .. promotion.type .. "_NAME"
+				promotionRow.Description = "LOC_" .. promotion.type .. "_DESCRIPTION"
 				promotionRow.Hash = 4000000 + promotionRow.Index
 				table.insert(env.GameInfo.GovernorPromotionSets, { GovernorType = governor.type, GovernorPromotion = promotion.type })
 			end
 		end
+	end
+
+	-- The Secret Societies governors that can't be assigned to a city.
+	for _, governorType in ipairs(world.cannotAssign or {}) do
+		table.insert(env.GameInfo.GovernorsCannotAssign, { GovernorType = governorType, CannotAssign = true })
 	end
 
 	-- Each artifact's era gets a row.
@@ -1666,6 +1703,7 @@ function FakeGame.Install(env, world)
 	Callable(env.GameInfo.Government_SlotCounts)
 	Callable(env.GameInfo.LeaderTraits)
 	Callable(env.GameInfo.GovernorPromotionSets)
+	Callable(env.GameInfo.GovernorsCannotAssign)
 	Callable(env.GameInfo.GovernmentModifiers)
 	Callable(env.GameInfo.ModifierArguments)
 
@@ -1724,6 +1762,7 @@ function FakeGame.Install(env, world)
 	env.CityDestroyDirectives = { LIBERATE_FOUNDER = 0, LIBERATE_PREVIOUS_OWNER = 1, KEEP = 2, RAZE = 3, REJECT = 4 }
 	env.CivilizationLevelTypes = { CIVILIZATION_LEVEL_FULL_CIV = 0 }
 	env.CityTransferTypes = CITY_TRANSFER_TYPES
+	env.PlayerOperationResults = { FAILURE_REASONS = 9001 }
 	env.Cities = {
 		-- The city of any player on the tile x, y, where an escaping spy is.
 		GetPlotPurchaseCity = function(x, y)
@@ -2112,7 +2151,28 @@ function FakeGame.Install(env, world)
 						HasPromotion = function(_, hash)
 							return held[hash] == true
 						end,
+						IsGovernCityState = function()
+							return governor.cityStates == true
+						end,
+						CanAssignToMajorCiv = function()
+							return governor.abroad == true
+						end,
 					}
+				end
+
+				-- The candidates by hash, and the promotions each appointed governor can earn.
+				local candidates, earnable, appointed = {}, {}, {}
+
+				for _, candidate in ipairs(governorData.candidates or {}) do
+					candidates[env.GameInfo.Governors[indexes[candidate.type]].Hash] = candidate
+				end
+
+				for _, governor in ipairs(governorData.appointed or {}) do
+					appointed[env.GameInfo.Governors[indexes[governor.type]].Hash] = governor
+
+					for _, promotion in ipairs(governor.promotions or {}) do
+						earnable[env.GameInfo.GovernorPromotions[indexes[promotion.type]].Hash] = promotion.canEarn == true
+					end
 				end
 
 				return {
@@ -2124,6 +2184,35 @@ function FakeGame.Install(env, world)
 					end,
 					GetGovernorList = function()
 						return #list > 0, list
+					end,
+					CanAppoint = function()
+						return governorData.canAppoint ~= false
+					end,
+					HasGovernor = function(_, hash)
+						return appointed[hash] ~= nil
+					end,
+					CanEverAppointGovernor = function(_, hash)
+						return candidates[hash] ~= nil and candidates[hash].canEver ~= false
+					end,
+					GetTurnsToEstablish = function(_, hash)
+						return candidates[hash] and candidates[hash].turnsToEstablish or 5
+					end,
+					CanPromoteGovernor = function(_, hash)
+						return appointed[hash] ~= nil and appointed[hash].canPromote == true
+					end,
+					CanEarnPromotion = function(_, _, promotionHash)
+						return earnable[promotionHash] == true
+					end,
+					-- Whether a city can take a governor, from governorData.cannotAssignTo, with the game's
+					-- failure reasons.
+					CanAssignGovernor = function(_, _, city)
+						local reasons = (governorData.cannotAssignTo or {})[city:GetOwner() .. ":" .. city:GetID()]
+
+						if reasons == nil then
+							return true, {}
+						end
+
+						return false, { [env.PlayerOperationResults.FAILURE_REASONS] = reasons }
 					end,
 				}
 			end
@@ -2365,6 +2454,18 @@ function FakeGame.Install(env, world)
 			end
 
 			return ids
+		end,
+		-- The living players without data.minor, in ID order.
+		GetAliveMajors = function()
+			local majors = {}
+
+			for id = 0, 63 do
+				if env.Players[id] ~= nil and world.players[id].minor == nil then
+					majors[#majors + 1] = env.Players[id]
+				end
+			end
+
+			return majors
 		end,
 		-- The living city-states and Free Cities, the players with data.minor, in ID order.
 		GetAliveMinors = function()

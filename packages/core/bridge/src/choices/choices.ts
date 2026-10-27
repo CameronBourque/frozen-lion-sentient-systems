@@ -12,6 +12,7 @@ import { CAPTURED_CITIES_CHOICE } from "./captured-cities.js";
 import { ENVOY_CHOICE } from "./envoys.js";
 import { GREAT_PEOPLE_CHOICE } from "./great-people.js";
 import { GOVERNMENT, GOVERNMENTS, POLICIES } from "./government.js";
+import { GOVERNORS_CHOICE } from "./governors.js";
 import { PRODUCTION_CITY } from "./production.js";
 import { PURCHASE_CITY } from "./purchases.js";
 import { PANTHEON, RELIGION_CHOICE } from "./religion.js";
@@ -34,6 +35,7 @@ const CHOICES = z.object({
 	capturedCities: CAPTURED_CITIES_CHOICE,
 	spies: SPIES_CHOICE,
 	artifacts: ARTIFACTS_CHOICE,
+	governors: GOVERNORS_CHOICE,
 });
 
 export type Choices = z.infer<typeof CHOICES>;
