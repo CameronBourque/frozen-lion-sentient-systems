@@ -86,10 +86,11 @@
 -- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
 -- is its leader's name. A player's governors has points, spent, and appointed, each with type, city,
 -- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
--- promotions, each with type, has, and canEarn, and canPromote, cityStates, true for one that can
+-- promotions, each with type, has, canEarn, base, true for the base ability, level, column, and
+-- requires, the types of the promotions it follows, and canPromote, cityStates, true for one that can
 -- govern city-states, and abroad, true for one that can go to other players' capitals. Its candidates
--- lists the governors it can appoint, each with type, canEver, false for one it never can, turnsToEstablish,
--- and loyalty. canAppoint is false without a title, and cannotAssignTo maps "owner:id" of a city
+-- lists the governors it can appoint, each with type, canEver, false for one it never can,
+-- turnsToEstablish, loyalty, and promotions, as for an appointed governor. canAppoint is false without a title, and cannotAssignTo maps "owner:id" of a city
 -- to the reasons a governor can't go there. world.cannotAssign lists the governors of Secret
 -- Societies. Without governors the player has no GetGovernors, as without Rise and Fall.
 -- world.offCapabilities lists the great people capabilities that are off. A player's
@@ -1348,6 +1349,7 @@ function FakeGame.Install(env, world)
 		GovernorPromotions = {},
 		GovernorPromotionSets = {},
 		GovernorsCannotAssign = {},
+		GovernorPromotionPrereqs = {},
 		GreatPersonIndividuals = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
@@ -1575,6 +1577,27 @@ function FakeGame.Install(env, world)
 	for _, data in pairs(world.players or {}) do
 		local governorData = data.governors or {}
 
+		-- Rows for a governor's promotions, with their place in its tree and their prerequisites.
+		local function AddPromotions(governor)
+			for _, promotion in ipairs(governor.promotions or {}) do
+				AddRow("GovernorPromotions", "GovernorPromotionType", promotion.type)
+
+				local promotionRow = env.GameInfo.GovernorPromotions[indexes[promotion.type]]
+
+				promotionRow.Name = "LOC_" .. promotion.type .. "_NAME"
+				promotionRow.Description = "LOC_" .. promotion.type .. "_DESCRIPTION"
+				promotionRow.Level = promotion.level or 0
+				promotionRow.Column = promotion.column or 0
+				promotionRow.BaseAbility = promotion.base == true
+				promotionRow.Hash = 4000000 + promotionRow.Index
+				table.insert(env.GameInfo.GovernorPromotionSets, { GovernorType = governor.type, GovernorPromotion = promotion.type })
+
+				for _, required in ipairs(promotion.requires or {}) do
+					table.insert(env.GameInfo.GovernorPromotionPrereqs, { GovernorPromotionType = promotion.type, PrereqGovernorPromotion = required })
+				end
+			end
+		end
+
 		for _, governor in ipairs(governorData.candidates or {}) do
 			AddRow("Governors", "GovernorType", governor.type)
 
@@ -1585,6 +1608,7 @@ function FakeGame.Install(env, world)
 			row.Description = "LOC_" .. governor.type .. "_DESCRIPTION"
 			row.IdentityPressure = governor.loyalty or 8
 			row.Hash = 3000000 + row.Index
+			AddPromotions(governor)
 		end
 
 		for _, governor in ipairs(governorData.appointed or {}) do
@@ -1597,17 +1621,7 @@ function FakeGame.Install(env, world)
 			row.Description = "LOC_" .. governor.type .. "_DESCRIPTION"
 			row.IdentityPressure = 8
 			row.Hash = 3000000 + row.Index
-
-			for _, promotion in ipairs(governor.promotions or {}) do
-				AddRow("GovernorPromotions", "GovernorPromotionType", promotion.type)
-
-				local promotionRow = env.GameInfo.GovernorPromotions[indexes[promotion.type]]
-
-				promotionRow.Name = "LOC_" .. promotion.type .. "_NAME"
-				promotionRow.Description = "LOC_" .. promotion.type .. "_DESCRIPTION"
-				promotionRow.Hash = 4000000 + promotionRow.Index
-				table.insert(env.GameInfo.GovernorPromotionSets, { GovernorType = governor.type, GovernorPromotion = promotion.type })
-			end
+			AddPromotions(governor)
 		end
 	end
 
@@ -1704,6 +1718,7 @@ function FakeGame.Install(env, world)
 	Callable(env.GameInfo.LeaderTraits)
 	Callable(env.GameInfo.GovernorPromotionSets)
 	Callable(env.GameInfo.GovernorsCannotAssign)
+	Callable(env.GameInfo.GovernorPromotionPrereqs)
 	Callable(env.GameInfo.GovernmentModifiers)
 	Callable(env.GameInfo.ModifierArguments)
 

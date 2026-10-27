@@ -1,10 +1,10 @@
-// Tests for trees.ts, against the fake game. The stash's failures are tested in state.test.ts,
+// Tests for research.ts, against the fake game. The stash's failures are tested in state.test.ts,
 // through readState.
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { CORE_STATE } from "../../src/connect.js";
-import { readCivicTree, readTechTree } from "../../src/trees/trees.js";
+import { readCivicTree, readTechTree } from "../../src/trees/research.js";
 import { TunerClient } from "../../src/tuner/client.js";
 import type { CommandResult } from "../tuner/fake-game.js";
 import { FakeGame } from "../tuner/fake-game.js";

@@ -7,7 +7,7 @@
 import { readChoices } from "../src/choices/choices.js";
 import { CORE_STATE } from "../src/connect.js";
 import { readState } from "../src/state/state.js";
-import { readCivicTree, readTechTree } from "../src/trees/trees.js";
+import { readCivicTree, readTechTree } from "../src/trees/research.js";
 import { TunerClient } from "../src/tuner/client.js";
 
 const client = new TunerClient({});

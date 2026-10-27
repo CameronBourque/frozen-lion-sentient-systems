@@ -11,8 +11,8 @@
 -- GovernorAssignmentChooser.lua.
 
 -- Returns whether a governor can't be assigned to a city, which only a Secret Societies governor
--- can't. See IsCannotAssign in GovernorSupport.lua, lines 110 to 125.
-local function IsCannotAssign(definition)
+-- can't. The governor tree uses it too. See IsCannotAssign in GovernorSupport.lua, lines 110 to 125.
+function SentientSystems_IsCannotAssign(definition)
 	if GameInfo.GovernorsCannotAssign ~= nil then
 		for row in GameInfo.GovernorsCannotAssign() do
 			if row.GovernorType == definition.GovernorType then
@@ -38,7 +38,7 @@ local function GetAppointments(governors)
 	for definition in GameInfo.Governors() do
 		local hash = definition.Hash
 
-		if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) and not IsCannotAssign(definition) then
+		if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) and not SentientSystems_IsCannotAssign(definition) then
 			list[#list + 1] = {
 				type = definition.GovernorType,
 				name = Locale.Lookup(definition.Name),
@@ -164,7 +164,7 @@ function SentientSystems_GetGovernorChoices(player)
 	for _, governor in ipairs(list or {}) do
 		local definition = GameInfo.Governors[governor:GetType()]
 
-		if not IsCannotAssign(definition) then
+		if not SentientSystems_IsCannotAssign(definition) then
 			if governors:CanPromoteGovernor(definition.Hash) then
 				local promotions = GetPromotions(governors, governor, definition)
 

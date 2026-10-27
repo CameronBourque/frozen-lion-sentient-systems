@@ -17,7 +17,7 @@ local function Load(world)
 	local env = Game.new()
 
 	FakeGame.Install(env, world)
-	Game.run(env, "Scripts/Trees/SentientSystemsCore_Trees.lua")
+	Game.run(env, "Scripts/Trees/SentientSystemsCore_TreesResearch.lua")
 
 	return env
 end

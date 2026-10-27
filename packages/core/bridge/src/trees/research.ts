@@ -1,6 +1,6 @@
 // Reads one player's tech tree or civic tree from the core mod, as the tree screen shows it, so the
 // agent can plan a route through the tree. The core mod builds it as JSON in a call of its own, in
-// Scripts/Trees/SentientSystemsCore_Trees.lua, and the bridge reads it through the stash, in
+// Scripts/Trees/SentientSystemsCore_TreesResearch.lua, and the bridge reads it through the stash, in
 // stash.ts. docs/design/core/in-game-lua.md has the format.
 
 import { z } from "zod";
