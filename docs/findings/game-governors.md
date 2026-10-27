@@ -1,14 +1,13 @@
 # Game governors
 
-Status: open. The `governors` section of `SentientSystems_GetState`, the player's governor titles and appointed governors, and the `governors` key of `SentientSystems_GetChoices`, the governors to appoint, the promotions to give, and the cities to assign them to, are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The state matches the Governors panel. The choice matches the panel and the assignment chooser's list for a governor with no city, and hasn't been compared with the details panel. The governor tree, `SentientSystems_GetGovernorTree`, is confirmed in the same game, and reads safely since the encoder escapes the percent sign, which crashed the game before. It hasn't been compared with the details panel. Secret Societies comes later in this task.
+Status: open. The `governors` section of `SentientSystems_GetState`, the player's governor titles and appointed governors, and the `governors` key of `SentientSystems_GetChoices`, the governors to appoint, the promotions to give, and the cities to assign them to, are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The state matches the Governors panel. The choice matches the panel and the assignment chooser's list for a governor with no city, and hasn't been compared with the details panel. The governor tree, `SentientSystems_GetGovernorTree`, is confirmed in the same game, and reads safely since the encoder escapes the percent sign, which crashed the game before. It matches the details panel. Secret Societies comes later in this task.
 
 The calls the governors in the state and the governor choice use, as the Governors panel and its screens show them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
 1. Does the assignment chooser leave out the city a governor is already in, as the choice does?
-2. Does the details panel's promotion tree show the same promotions, levels, columns, and requirement lines as the governor tree?
-3. How do Secret Societies' governors, which `GovernorsCannotAssign` marks, and their hidden promotions read in the state?
+2. How do Secret Societies' governors, which `GovernorsCannotAssign` marks, and their hidden promotions read in the state?
 
 ## What we know now
 
@@ -46,6 +45,7 @@ A single-player game with Gathering Storm, on turn 48, in `SentientSystemsCore_U
 | The choices after appointing Amani | No `appoint`, as all 9 titles were spent. Amani's `assign` with the 9 cities and 8 city-state cities, 744 bytes |
 | The Governors panel after appointing Amani | **Governor titles available: 0** and **Spent: 9**. Amani on **Needs Assignment** with a green **Assign** button, and **Appoint** turned off for Victor, Moksha, and Liang, as the choice has it. The assignment chooser's list wasn't shown |
 | The governor tree on turn 48, through the bridge's reader | 7 governors: Pingala, Magnus, and Reyna appointed, and Victor, Amani, Moksha, and Liang as candidates, each with 6 promotions, in 14,770 bytes. Pingala's Curator and Space Initiative, Magnus's Industrialist and Black Marketeer, and Reyna's Harbormaster and Forestry Management were `available`, and the 11 percent signs in the texts came back as `%`. The same read, before the encoder escaped `%`, crashed the game each time |
+| Reyna's details panel, against her tree | Her base ability, Land Acquisition, on a bar across the top, then Harbormaster on the left and Forestry Management on the right, Tax Collector below them between dashed lines from both, and Contractor on the left and Renewable Subsidizer on the right below it, with dashed lines from Tax Collector to both. The tree has the same six promotions at levels 0 to 3, columns 1, 0, 2, 1, 0, and 2, with the same text, and both promotions above Tax Collector in its `requires`. The panel also showed 5 turns to establish, loyalty per turn 8, **Established in: Ostia**, and **Governor titles available: 1**, **Spent: 8**, as the state does |
 | The assignment chooser for Amani, who had no city | Rome, Antium, Lugdunum, Setia, Ravenna, Ostia, Arpinum, Arretium, and Stockholm, then the city-states Kumasi, Zanzibar, Bologna, Nalanda, Valletta, Hunza, Jerusalem, and Hong Kong, in the choice's order, none turned off. The card read **The Diplomat**, 5 turns and loyalty 8, and **Replaces: No Governor Assigned** once a city was picked, and **Assign** turned on |
 
 Date checked: game files on 2026-10-27. Running game on Windows on 2026-10-27.
