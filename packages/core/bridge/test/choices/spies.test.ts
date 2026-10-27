@@ -11,7 +11,7 @@ const CHOICE = [{
 	pursuer: "Police",
 	description: "Choose the escape route out of the city for your agent.",
 	routes: [
-		{ type: "DISTRICT_AERODROME", name: "Airplane", turns: 1, blocked: ["No Aerodrome in city"] },
+		{ type: "DISTRICT_AERODROME", name: "Airplane", blocked: ["No Aerodrome in city"] },
 		{ type: "DISTRICT_CITY_CENTER", name: "Foot", turns: 4 },
 	],
 }];
@@ -25,7 +25,7 @@ describe("SPIES_CHOICE", () => {
 		expect(SPIES_CHOICE.safeParse(undefined).success).toBe(true);
 	});
 
-	test("rejects a route without its turns", () => {
-		expect(SPIES_CHOICE.safeParse([{ ...CHOICE[0], routes: [{ type: "DISTRICT_CITY_CENTER", name: "Foot" }] }]).success).toBe(false);
+	test("rejects a route without its name", () => {
+		expect(SPIES_CHOICE.safeParse([{ ...CHOICE[0], routes: [{ type: "DISTRICT_CITY_CENTER", turns: 4 }] }]).success).toBe(false);
 	});
 });

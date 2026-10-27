@@ -7,8 +7,8 @@ import { z } from "zod";
 // Left out of the choices with no escaping spy. The game offers one spy at a time, so it holds the
 // next one: spy, its unit ID, name, city, the city it escapes from, loot, what it took, pursuer,
 // who chases it, and description, the tooltip the open routes share, each in the game's language.
-// Each route has type, the district it leaves by, such as DISTRICT_HARBOR, name, turns, and
-// blocked, the screen's reason, when the city lacks the district.
+// Each route has type, the district it leaves by, such as DISTRICT_HARBOR, name, and turns, or in its
+// place blocked, the screen's reason, when the city lacks the district, as the screen shows them.
 export const SPIES_CHOICE = z.array(z.object({
 	spy: z.number(),
 	name: z.string(),
@@ -19,7 +19,7 @@ export const SPIES_CHOICE = z.array(z.object({
 	routes: z.array(z.object({
 		type: z.string(),
 		name: z.string(),
-		turns: z.number(),
+		turns: z.number().optional(),
 		blocked: z.array(z.string()).optional(),
 	})),
 })).optional();

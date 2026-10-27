@@ -24,9 +24,9 @@ describe("SentientSystems_GetSpyChoices", function()
 		assert.equal(
 			"[{\"city\":{\"id\":65536,\"name\":\"Istanbul\",\"owner\":4},\"description\":\"LOC_ESPIONAGE_ESCAPE_TOOLTIP\",\"loot\":\"LOC_ESPIONAGE_LOOT_NONE\","
 				.. "\"name\":\"Laurenza\",\"pursuer\":\"LOC_ESPIONAGE_ESCAPE_PURSUIT_POLICE\",\"routes\":["
-				.. "{\"blocked\":[\"LOC_ESPIONAGE_ESCAPE_NO_DISTRICT(LOC_DISTRICT_AERODROME_NAME)\"],\"name\":\"LOC_ESPIONAGE_ESCAPE_CHOICE_1\",\"turns\":1,\"type\":\"DISTRICT_AERODROME\"},"
+				.. "{\"blocked\":[\"LOC_ESPIONAGE_ESCAPE_NO_DISTRICT(LOC_DISTRICT_AERODROME_NAME)\"],\"name\":\"LOC_ESPIONAGE_ESCAPE_CHOICE_1\",\"type\":\"DISTRICT_AERODROME\"},"
 				.. "{\"name\":\"LOC_ESPIONAGE_ESCAPE_CHOICE_2\",\"turns\":2,\"type\":\"DISTRICT_HARBOR\"},"
-				.. "{\"blocked\":[\"LOC_ESPIONAGE_ESCAPE_NO_DISTRICT(LOC_DISTRICT_COMMERCIAL_HUB_NAME)\"],\"name\":\"LOC_ESPIONAGE_ESCAPE_CHOICE_3\",\"turns\":3,\"type\":\"DISTRICT_COMMERCIAL_HUB\"},"
+				.. "{\"blocked\":[\"LOC_ESPIONAGE_ESCAPE_NO_DISTRICT(LOC_DISTRICT_COMMERCIAL_HUB_NAME)\"],\"name\":\"LOC_ESPIONAGE_ESCAPE_CHOICE_3\",\"type\":\"DISTRICT_COMMERCIAL_HUB\"},"
 				.. "{\"name\":\"Foot\",\"turns\":4,\"type\":\"DISTRICT_CITY_CENTER\"}],\"spy\":2555922}]",
 			ChoicesWith(SPY, { { type = "DISTRICT_HARBOR", x = 85, y = 34 } })
 		)

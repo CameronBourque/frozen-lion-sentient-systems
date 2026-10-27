@@ -3,7 +3,7 @@
 -- loads this file. Example: SentientSystems_GetSpyChoices(player) returns a table that encodes as
 -- '[{"city":{"id":65536,"name":"Istanbul","owner":4},"description":"Choose the escape route ...",
 -- "loot":"None","name":"Laurenza","pursuer":"Police","routes":[{"blocked":["No Aerodrome in city"],
--- "name":"Airplane","turns":1,"type":"DISTRICT_AERODROME"},...,{"name":"Foot","turns":4,
+-- "name":"Airplane","type":"DISTRICT_AERODROME"},...,{"name":"Foot","turns":4,
 -- "type":"DISTRICT_CITY_CENTER"}],"spy":2555922}]', on one line. The checks follow OnOpen in
 -- EspionageEscape.lua.
 
@@ -11,18 +11,21 @@
 -- center, so the screen always allows the last.
 local ROUTES = { "DISTRICT_AERODROME", "DISTRICT_HARBOR", "DISTRICT_COMMERCIAL_HUB", "DISTRICT_CITY_CENTER" }
 
--- Returns the escape routes from a city, each with type, its district, name, turns, the district's
--- travel time, and blocked, the screen's reason, when the city lacks the district. See OnOpen in
+-- Returns the escape routes from a city, each with type, its district, name, and turns, the
+-- district's travel time, or in its place blocked, the screen's reason, when the city lacks the
+-- district, as the screen shows them. See OnOpen in
 -- EspionageEscape.lua, lines 71 to 106.
 local function GetRoutes(city)
 	local routes = {}
 
 	for i, districtType in ipairs(ROUTES) do
 		local district = GameInfo.Districts[districtType]
-		local route = { type = districtType, name = Locale.Lookup("LOC_ESPIONAGE_ESCAPE_CHOICE_" .. i), turns = district.TravelTime }
+		local route = { type = districtType, name = Locale.Lookup("LOC_ESPIONAGE_ESCAPE_CHOICE_" .. i) }
 
 		if i < #ROUTES and not city:GetDistricts():HasDistrict(district.Index, true, true) then
 			route.blocked = { Locale.Lookup("LOC_ESPIONAGE_ESCAPE_NO_DISTRICT", district.Name) }
+		else
+			route.turns = district.TravelTime
 		end
 
 		routes[i] = route
