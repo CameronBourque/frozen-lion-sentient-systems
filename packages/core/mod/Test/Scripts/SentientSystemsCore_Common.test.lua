@@ -55,6 +55,14 @@ describe("SentientSystems_CatchErrors", function()
 		assert.same({ "[SENTIENTSYSTEMS] ERROR OnTest C:\\\\Mods\\nline two\\nline three" }, env.printed)
 	end)
 
+	it("escapes a percent sign as \\p, so the game's log doesn't read it as a format code", function()
+		env.SentientSystems_CatchErrors("OnTest", function()
+			error("invalid option '%s' at 50% done", 0)
+		end)()
+
+		assert.same({ "[SENTIENTSYSTEMS] ERROR OnTest invalid option '\\ps' at 50\\p done" }, env.printed)
+	end)
+
 	it("prints an error raised with a table", function()
 		env.SentientSystems_CatchErrors("OnTest", function()
 			error(setmetatable({}, { __tostring = function() return "a table" end }))

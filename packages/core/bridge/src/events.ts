@@ -42,8 +42,10 @@ const CONTEXT = /^\w+$/;
 // An event handler's name, such as "OnPlayerTurnActivated".
 const HANDLER = /^\w+$/;
 // The escapes SentientSystems_CatchErrors writes, so an error with newlines fits on one line: "\\"
-// for a backslash and "\n" for a newline.
-const ESCAPE = /\\([\\n])/g;
+// for a backslash, "\n" for a newline, and "\p" for a percent sign, which the game's log would read
+// as a printf format code.
+const ESCAPE = /\\([\\np])/g;
+const ESCAPED = { n: "\n", p: "%", "\\": "\\" } as const;
 // The line the game's Lua puts between an error and its stack trace.
 const TRACEBACK = "\nstack traceback:\n";
 // The game's folder, in both the My Games folder and the install folder. A Lua error's paths are cut
@@ -62,7 +64,7 @@ const GAME_PATH = new RegExp(String.raw`${DRIVE}(?:${FOLDER})*?${GAME_NAME}\\`, 
 function parseError(args: string[]): CoreEvent | string {
 	const [handler = "", ...words] = args;
 	const text = words.join(" ")
-		.replace(ESCAPE, (_escape, character: string) => character === "n" ? "\n" : "\\")
+		.replace(ESCAPE, (_escape, character: keyof typeof ESCAPED) => ESCAPED[character])
 		.replace(GAME_PATH, GAME_FOLDER);
 
 	if (!HANDLER.test(handler) || text === "") {

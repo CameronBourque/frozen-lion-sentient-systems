@@ -44,6 +44,10 @@ describe("SentientSystems_EncodeJson", function()
 		assert.equal("\"\\u0001\\u001f\\u007f\"", Encode("\1\31\127"))
 	end)
 
+	it("escapes the percent sign, which the game's log would read as a format code", function()
+		assert.equal("\"+15\\u0025 increase, 30\\u0025 science, \\u0025\\u0025\"", Encode("+15% increase, 30% science, %%"))
+	end)
+
 	it("passes UTF-8 text through", function()
 		assert.equal("\"Kraków\"", Encode("Kraków"))
 	end)

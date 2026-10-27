@@ -18,6 +18,7 @@ How the game runs a `CMD:` command and sends back its output. The wire format, m
 | Output size limit | The limit is on a command's whole output, about 2 MiB, not on each print. From `SentientSystemsCore_UI`, one print of 2,097,022 characters arrived intact. With the state prefix, that line is 2,097,046 characters, 106 under 2 MiB. Two prints in one command, the first of 1,000,000 characters, arrived intact up to a second print of 1,096,980 characters, and failed at 1,096,990. Each print adds about 35 bytes of its own. A command over the limit sent no output frame and no tag 3 reply, and the connection answered no later command. The game logged no error. A new connection worked | Confirmed | [Behavior notes](#behavior-notes) |
 | Reply order | The game runs commands one at a time, in the order they arrive. Commands sent without waiting got their output and tag 3 replies back in send order, a fast command after a slow one included | Confirmed | [Probe results](#probe-results) |
 | Unprompted output | UI event handlers print with no command running, and their prints arrive on the tuner connection. Prints from three Lua states, `PlotInfo`, `MapLabelManager`, and `InGame`, arrived on the one connection, each with its state's prefix. An unprompted `InGame:` print looks the same as a command's output. A turn end printed nothing | Confirmed | [Behavior notes](#behavior-notes) |
+| Printed text is a printf format | The game's log, `Lua.log`, writes a print's text as a printf format, while the tuner sends it back unchanged. `print("a%%b")` came back as `a%%b` from the tuner and was logged as `a%b`. `print("50% done")` was logged as `50 1090428152one`, the `% d` taking a garbage integer, and `print("[%d]")` as `[1090428152]`. A `% s` or a `%n` makes the logger read a pointer that was never passed, and the game crashed with an access violation. A governor tree with a `% s` at character 10,663 crashed the game each time it was printed whole. The first 9,000 characters, each promotion alone, and each governor alone never crashed. Strings with 208 icon tokens and 193,106 bytes printed fine, so neither the icons nor the length are the cause. The mod's JSON encoder writes `%` as `\u0025`, so the printed text has no `%`, and the bridge's `JSON.parse` reads it back. An error line writes it as `\p` | Confirmed | [Behavior notes](#behavior-notes) |
 | Runtime errors | A runtime error's message is the error, then `stack traceback:` and one line for each call, all in one string. The chunk name is the first line of the command, such as `[string "(function()..."]`. Inside the marker wrapper, line N of the caller's Lua is line N + 4 of the command | Confirmed | [Behavior notes](#behavior-notes) |
 
 ## Method
@@ -89,4 +90,16 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
   | Move a unit that reveals two tiles of an ocean never seen before. The prints may come from the reveal or from the mouse passing over the ocean | Four `MapLabelManager: INDIAN OCEAN` prints with screen positions, at the same moment |
   | Open, then close the full-screen map | `InGame: Request to BulkHide( true, FullscreenMap ), Show on 0 = 1`, then the same with `false` and `0` |
 
-Date checked: 2026-10-21, 2026-10-22 for the turn signal, resync, and load line, and 2026-10-23 and 2026-10-24 for the large prints from the core mod.
+- **Printed text and the log.** On 2026-10-27, in `SentientSystemsCore_UI`, the bridge printed a governor tree of 14,715 bytes, with 53 icon tokens and 11 percent signs, one of them a `% s`, through `SentientSystems_Stash` and `SentientSystems_PrintPiece`. The game crashed with an access violation each of three times. The core mod's game log ended at the `begin` marker of the `PrintPiece` command. A ladder of commands, each logged before it was sent, found the edge:
+
+  | Command | Result |
+  | --- | --- |
+  | Build the tree twice, then wait 4 seconds | No crash |
+  | Print each of its 42 promotions alone, then each of its 7 governors alone | No crash |
+  | Print the first 6,000 and the first 9,000 characters | No crash. The first 9,000 hold one `% i` and no `% s` |
+  | Print the first 12,000 characters | Crash. They hold the `% s` at 10,663 |
+  | The same tree with each `%` written as `\u0025`, through `Stash` and `PrintPiece`, 14,773 bytes | Printed whole. The game kept answering. The bridge's reader parsed it, with the 11 percent signs back |
+
+  The character after each `%` was checked by its code, without printing the text. The tree held `% i`, `% [`, `% y`, `%.`, `% s`, and `% o`, and the choices, which printed fine, held `% P`, `% U`, `% G`, `% I`, `% D`, `% [`, `%.`, `% f`, `% T`, `% C`, and `% r`. A conversion that only reads a number, such as `% i`, `% o`, or `% f`, logs a garbage number and doesn't crash, and `% s` reads a pointer. The tuner's own output is the raw text, so the bridge saw the right text throughout.
+
+Date checked: 2026-10-21, 2026-10-22 for the turn signal, resync, and load line, 2026-10-23 and 2026-10-24 for the large prints from the core mod, and 2026-10-27 for printed text and the log.
