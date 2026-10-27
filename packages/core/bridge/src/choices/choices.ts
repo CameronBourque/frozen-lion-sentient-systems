@@ -7,6 +7,7 @@
 import { z } from "zod";
 import { readStash } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
+import { ARTIFACTS_CHOICE } from "./artifacts.js";
 import { CAPTURED_CITIES_CHOICE } from "./captured-cities.js";
 import { ENVOY_CHOICE } from "./envoys.js";
 import { GREAT_PEOPLE_CHOICE } from "./great-people.js";
@@ -32,6 +33,7 @@ const CHOICES = z.object({
 	greatPeople: GREAT_PEOPLE_CHOICE,
 	capturedCities: CAPTURED_CITIES_CHOICE,
 	spies: SPIES_CHOICE,
+	artifacts: ARTIFACTS_CHOICE,
 });
 
 export type Choices = z.infer<typeof CHOICES>;

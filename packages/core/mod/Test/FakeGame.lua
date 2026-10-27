@@ -4,7 +4,7 @@
 -- Game.GetGreatPeople, a player's great people points, GameInfo.GreatPersonClasses,
 -- GameInfo.GreatPersonIndividuals, GameCapabilities, a player's captured and rebelled cities,
 -- CityDestroyDirectives, CivilizationLevelTypes, CityTransferTypes, GlobalParameters, a player's
--- escaping spy, Cities.GetPlotPurchaseCity,
+-- escaping spy, Cities.GetPlotPurchaseCity, a player's digging archaeologist, Game.GetArtifactByIndex,
 -- GameInfo.Leaders, GameInfo.LeaderTraits, GameInfo.Traits, GameInfo.Quests, DefenseTypes, UnitManager.CanStartCommand
 -- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
 -- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
@@ -79,7 +79,10 @@
 -- player's liberate lists the IDs it can liberate a city to, revived the IDs it has brought back,
 -- and freeCities is true for the Free Cities. A player's escapingSpy is its next escaping spy, with
 -- id, name, loot, pursuer, the counterspy's name or "" for the police, x, and y, the tile of the city
--- it escapes from. With one, the four escape districts get rows, with TravelTime 1 to 4.
+-- it escapes from. With one, the four escape districts get rows, with TravelTime 1 to 4. A player's
+-- archaeologist is its next digging archaeologist, with id, name, x, y, and artifact, with index,
+-- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
+-- is its leader's name.
 -- world.offCapabilities lists the great people capabilities that are off. A player's
 -- blockers lists its end-turn
 -- blockers by name, in the game's order, such as
@@ -192,9 +195,9 @@ local END_TURN_BLOCKING_TYPES = {
 	ENDTURN_BLOCKING_PRODUCTION = -513644209,
 	ENDTURN_BLOCKING_FILL_CIVIC_SLOT = -1610199318,
 	ENDTURN_BLOCKING_UNIT_PROMOTION = 1706768628,
-	ENDTURN_BLOCKING_ARTIFACT = 3,
 	ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE = 1385632321,
 	ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY = 2048525187,
+	ENDTURN_BLOCKING_ARTIFACT = -234935529,
 }
 
 -- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
@@ -1173,6 +1176,33 @@ local function Player(id, data, hashes, indexes, env)
 			local list = List(units)
 			local spy = data.escapingSpy
 
+			-- The next digging archaeologist, from data.archaeologist.
+			function list.GetNextExtractingArchaeologist()
+				local archaeologist = data.archaeologist
+
+				return archaeologist and {
+					GetID = function()
+						return archaeologist.id
+					end,
+					GetName = function()
+						return archaeologist.name
+					end,
+					GetX = function()
+						return archaeologist.x
+					end,
+					GetY = function()
+						return archaeologist.y
+					end,
+					GetArchaeology = function()
+						return {
+							GetArtifactIndex = function()
+								return archaeologist.artifact.index
+							end,
+						}
+					end,
+				}
+			end
+
 			if spy ~= nil then
 				local findID = list.FindID
 
@@ -1513,6 +1543,13 @@ function FakeGame.Install(env, world)
 			for _, belief in ipairs(religion.beliefs or {}) do
 				AddRow("Beliefs", "BeliefType", belief)
 			end
+		end
+	end
+
+	-- Each artifact's era gets a row.
+	for _, data in pairs(world.players or {}) do
+		if data.archaeologist ~= nil then
+			AddRow("Eras", "EraType", data.archaeologist.artifact.era)
 		end
 	end
 
@@ -2004,6 +2041,9 @@ function FakeGame.Install(env, world)
 			GetCivilizationLevelTypeID = function()
 				return data.minor and 1 or 0
 			end,
+			GetPlayerName = function()
+				return data.playerName or ("LOC_LEADER_" .. id .. "_NAME")
+			end,
 		}
 
 		if minor.leader ~= nil then
@@ -2088,6 +2128,17 @@ function FakeGame.Install(env, world)
 				return religions
 			end,
 		}
+	end
+	-- The artifact of each digging archaeologist, by its index, with the site's type, the acting and
+	-- target players, and the acting player's era, by its GameInfo index.
+	env.Game.GetArtifactByIndex = function(index)
+		for _, data in pairs(world.players or {}) do
+			local artifact = data.archaeologist and data.archaeologist.artifact
+
+			if artifact ~= nil and artifact.index == index then
+				return { Type = artifact.type, ActingPlayerID = artifact.acting, TargetPlayerID = artifact.target or -1, ActingPlayerEra = indexes[artifact.era] }
+			end
+		end
 	end
 	-- The great people on offer, from world.greatPeople, by the GameInfo index of each individual.
 	env.Game.GetGreatPeople = function()
