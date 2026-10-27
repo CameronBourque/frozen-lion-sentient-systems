@@ -36,10 +36,15 @@ end
 
 -- Returns the spy choice: the next escaping spy, with spy, its unit ID, name, city, the city it
 -- escapes from, with owner, id, and name, loot, what it took, pursuer, who chases it, description,
--- the tooltip the open routes share, and routes. Returns nil with no escaping spy. Only the calls the
--- screen makes are safe here: GetNextPursuedSpyID crashed the game with no spy pursued. See OnOpen in
--- EspionageEscape.lua, lines 36 to 113.
+-- the tooltip the open routes share, and routes. Returns nil with no escaping spy. The screen opens
+-- only from a blocker's notification, and its calls are safe only then: GetNextEscapingSpyID crashed
+-- the game with no spy escaping, as GetNextPursuedSpyID did with none pursued, so this reads the spy
+-- only while a blocker for it is up. See OnOpen in EspionageEscape.lua, lines 36 to 113.
 function SentientSystems_GetSpyChoices(player)
+	if not SentientSystems_HasBlocker(player:GetID(), "ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE", "ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY") then
+		return nil
+	end
+
 	local spy = player:GetUnits():FindID(player:GetDiplomacy():GetNextEscapingSpyID())
 
 	if spy == nil then
