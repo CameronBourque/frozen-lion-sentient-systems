@@ -28,6 +28,15 @@ describe("GOVERNORS_CHOICE", () => {
 		expect(GOVERNORS_CHOICE.parse(CHOICE)).toEqual(CHOICE);
 	});
 
+	test("accepts a Secret Society to appoint, with no loyalty or turns, and a hidden promotion", () => {
+		const choice = {
+			appoint: [{ type: "GOVERNOR_OWLS_OF_MINERVA", name: "Owls of Minerva", title: "Secret Society", description: "A secret group.", secret: true as const }],
+			promote: [{ governor: "GOVERNOR_OWLS_OF_MINERVA", promotions: [{ type: "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_3", name: "???", description: "Not yet revealed.", hidden: true as const }] }],
+		};
+
+		expect(GOVERNORS_CHOICE.parse(choice)).toEqual(choice);
+	});
+
 	test("accepts a choice with only some keys, and no governor choice", () => {
 		expect(GOVERNORS_CHOICE.safeParse({ assign: CHOICE.assign }).success).toBe(true);
 		expect(GOVERNORS_CHOICE.safeParse(undefined).success).toBe(true);

@@ -8,6 +8,8 @@
 -- "titles":1}', on one line. The checks follow Refresh and AddGovernorAppointed in GovernorPanel.lua,
 -- and GetGovernorStatus in GovernorSupport.lua.
 
+SentientSystems_Include("SentientSystemsCore_Governors")
+
 -- Returns the promotions an appointed governor has, by type, in the order the panel lists them. See
 -- AddGovernorAppointed in GovernorPanel.lua, lines 359 to 374.
 local function GetPromotions(governor, definition)
@@ -30,19 +32,23 @@ end
 -- governor has none, established, whether they have settled in there, turnsLeft, the turns until
 -- they do, neutralized, the turns they are out of action, there above 0 only, loyalty, the loyalty
 -- pressure they give their city, turnsToEstablish, the turns they take to settle in a city, and
--- promotions. See GetGovernorStatus in GovernorSupport.lua, lines 72 to 95, and AddGovernorInstance
--- in GovernorAssignmentChooser.lua, lines 103 to 121.
+-- promotions. A Secret Society has secret, true, and neither loyalty nor turns, as its card shows no
+-- stats. See GetGovernorStatus in GovernorSupport.lua, lines 72 to 95, AddGovernorInstance in
+-- GovernorAssignmentChooser.lua, lines 103 to 121, and AddSecretGovernorAppointed in
+-- GovernorPanel.lua, lines 313 to 350.
 local function GetGovernor(governor)
 	local definition = GameInfo.Governors[governor:GetType()]
 	local city = governor:GetAssignedCity()
 	local neutralized = governor:GetNeutralizedTurns()
+	local secret = SentientSystems_IsCannotAssign(definition)
 	local entry = {
 		type = definition.GovernorType,
 		name = Locale.Lookup(definition.Name),
 		title = Locale.Lookup(definition.Title),
+		secret = secret and true or nil,
 		neutralized = neutralized > 0 and neutralized or nil,
-		loyalty = governor:GetIdentityPressure(),
-		turnsToEstablish = governor:GetTurnsToEstablish(),
+		loyalty = not secret and governor:GetIdentityPressure() or nil,
+		turnsToEstablish = not secret and governor:GetTurnsToEstablish() or nil,
 		promotions = GetPromotions(governor, definition),
 	}
 

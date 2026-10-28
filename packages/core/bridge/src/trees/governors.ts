@@ -11,6 +11,8 @@ import type { TunerClient } from "../tuner/client.js";
 // tree, and requires, the types of the promotions it follows, any one of which it needs, empty for
 // the base ability. status is held, for one the governor has, available, for one they can earn now,
 // and locked, for one that needs a prerequisite first. A candidate holds only its base ability.
+// hidden is true for a promotion of a Secret Society that the panel hides until the one before it is
+// held, and its name and description are then the game's own text for an unknown promotion.
 const GOVERNOR_PROMOTION = z.object({
 	type: z.string(),
 	name: z.string(),
@@ -19,19 +21,22 @@ const GOVERNOR_PROMOTION = z.object({
 	column: z.number(),
 	requires: z.array(z.string()),
 	status: z.enum(["held", "available", "locked"]),
+	hidden: z.literal(true).optional(),
 });
 
 // A governor with their tree: appointed governors first in the panel's order, then the governors the
-// player could still appoint. turnsToEstablish is the turns they take to settle in a city, and
-// loyalty the loyalty pressure they give.
+// player could still appoint, which includes the Secret Societies they have discovered. A society
+// has secret, true, and neither turnsToEstablish, the turns a governor takes to settle in a city, nor
+// loyalty, the loyalty pressure they give, as its card shows no stats.
 const GOVERNOR = z.object({
 	type: z.string(),
 	name: z.string(),
 	title: z.string(),
 	description: z.string(),
 	status: z.enum(["appointed", "candidate"]),
-	turnsToEstablish: z.number(),
-	loyalty: z.number(),
+	secret: z.literal(true).optional(),
+	turnsToEstablish: z.number().optional(),
+	loyalty: z.number().optional(),
 	promotions: z.array(GOVERNOR_PROMOTION),
 });
 

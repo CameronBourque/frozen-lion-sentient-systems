@@ -17,6 +17,7 @@
 		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Common.lua</File>
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
+			<File>Scripts/SentientSystemsCore_Governors.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -47,6 +48,7 @@
 	<Files>
 		<File>Scripts/SentientSystemsCore_Common.lua</File>
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
+		<File>Scripts/SentientSystemsCore_Governors.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>

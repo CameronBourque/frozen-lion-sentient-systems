@@ -121,11 +121,49 @@ describe("SentientSystems_GetGovernorChoices", function()
 		)
 	end)
 
-	it("leaves out a Secret Societies governor, who can't be assigned", function()
-		local spy = { type = "GOVERNOR_THE_SPY", canPromote = true, promotions = { { type = "GOVERNOR_PROMOTION_SPY_ONE", canEarn = true } } }
-		local json = ChoicesWith({ appointed = { spy }, candidates = { { type = "GOVERNOR_THE_SPY" } } }, { world = { cannotAssign = { "GOVERNOR_THE_SPY" } } })
+	it("offers a Secret Society the player has discovered, with no loyalty or turns, and none they haven't", function()
+		local owls = { type = "GOVERNOR_OWLS_OF_MINERVA" }
+		local hidden = { type = "GOVERNOR_HERMETIC_ORDER", canEver = false }
+		local json = ChoicesWith({ candidates = { owls, hidden, { type = "GOVERNOR_THE_DEFENDER", turnsToEstablish = 3 } } }, { world = { cannotAssign = { "GOVERNOR_OWLS_OF_MINERVA", "GOVERNOR_HERMETIC_ORDER" } } })
 
-		assert.is_nil(json)
+		assert.equal(
+			"[{\"description\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_DESCRIPTION\",\"name\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_NAME\",\"secret\":true,"
+				.. "\"title\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_TITLE\",\"type\":\"GOVERNOR_OWLS_OF_MINERVA\"}," .. Card("GOVERNOR_THE_DEFENDER", 3) .. "]",
+			json:match("\"appoint\":(%b[])")
+		)
+	end)
+
+	it("offers a joined Secret Society the promotions it can earn, with the game's text for a hidden one", function()
+		local owls = {
+			type = "GOVERNOR_OWLS_OF_MINERVA",
+			canPromote = true,
+			promotions = {
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1", base = true, has = true },
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2", requires = { "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1" }, hiddenWithoutPrereqs = true, canEarn = true },
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_3", requires = { "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2" }, hiddenWithoutPrereqs = true, canEarn = true },
+			},
+		}
+		local json = ChoicesWith({ appointed = { owls } }, {
+			world = {
+				cannotAssign = { "GOVERNOR_OWLS_OF_MINERVA" },
+				text = { LOC_GOVERNOR_PROMOTION_UNKNOWN_NAME = "???", LOC_GOVERNOR_PROMOTION_UNKNOWN_DESCRIPTION = "Not yet revealed." },
+			},
+		})
+
+		assert.equal(
+			"[{\"governor\":\"GOVERNOR_OWLS_OF_MINERVA\",\"promotions\":["
+				.. "{\"description\":\"LOC_GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2_DESCRIPTION\",\"name\":\"LOC_GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2_NAME\",\"type\":\"GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2\"},"
+				.. "{\"description\":\"Not yet revealed.\",\"hidden\":true,\"name\":\"???\",\"type\":\"GOVERNOR_PROMOTION_OWLS_OF_MINERVA_3\"}]}]",
+			json:match("\"promote\":(%b[])")
+		)
+	end)
+
+	it("never offers to assign a Secret Society, who can't be assigned", function()
+		local owls = { type = "GOVERNOR_OWLS_OF_MINERVA" }
+		local json = ChoicesWith({ appointed = { REYNA, owls } }, { world = { cannotAssign = { "GOVERNOR_OWLS_OF_MINERVA" } } })
+
+		assert.truthy(json:find("GOVERNOR_THE_MERCHANT", 1, true))
+		assert.falsy(json:find("GOVERNOR_OWLS_OF_MINERVA", 1, true))
 	end)
 
 	it("is left out without Rise and Fall, with nothing to do, and while the World Congress is in session", function()

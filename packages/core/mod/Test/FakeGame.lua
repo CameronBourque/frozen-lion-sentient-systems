@@ -87,7 +87,8 @@
 -- is its leader's name. A player's governors has points, spent, and appointed, each with type, city,
 -- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
 -- promotions, each with type, has, canEarn, base, true for the base ability, level, column, and
--- requires, the types of the promotions it follows, and canPromote, cityStates, true for one that can
+-- requires, the types of the promotions it follows, hiddenWithoutPrereqs, true for one that the panel
+-- hides until its governor holds them, and canPromote, cityStates, true for one that can
 -- govern city-states, and abroad, true for one that can go to other players' capitals. Its candidates
 -- lists the governors it can appoint, each with type, canEver, false for one it never can,
 -- turnsToEstablish, loyalty, and promotions, as for an appointed governor. canAppoint is false without a title, and cannotAssignTo maps "owner:id" of a city
@@ -1350,6 +1351,7 @@ function FakeGame.Install(env, world)
 		GovernorPromotionSets = {},
 		GovernorsCannotAssign = {},
 		GovernorPromotionPrereqs = {},
+		GovernorPromotionConditions = {},
 		GreatPersonIndividuals = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
@@ -1589,6 +1591,10 @@ function FakeGame.Install(env, world)
 				promotionRow.Level = promotion.level or 0
 				promotionRow.Column = promotion.column or 0
 				promotionRow.BaseAbility = promotion.base == true
+
+				if promotion.hiddenWithoutPrereqs then
+					table.insert(env.GameInfo.GovernorPromotionConditions, { GovernorPromotionType = promotion.type, HiddenWithoutPrereqs = true })
+				end
 				promotionRow.Hash = 4000000 + promotionRow.Index
 				table.insert(env.GameInfo.GovernorPromotionSets, { GovernorType = governor.type, GovernorPromotion = promotion.type })
 
@@ -1719,6 +1725,7 @@ function FakeGame.Install(env, world)
 	Callable(env.GameInfo.GovernorPromotionSets)
 	Callable(env.GameInfo.GovernorsCannotAssign)
 	Callable(env.GameInfo.GovernorPromotionPrereqs)
+	Callable(env.GameInfo.GovernorPromotionConditions)
 	Callable(env.GameInfo.GovernmentModifiers)
 	Callable(env.GameInfo.ModifierArguments)
 

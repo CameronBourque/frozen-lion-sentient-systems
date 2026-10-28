@@ -11,20 +11,23 @@ import { z } from "zod";
 export const GOVERNORS_CHOICE = z.object({
 	// The governors the player can appoint, there only with a title to spend. Each has type, such as
 	// GOVERNOR_THE_DEFENDER, name, title, description, loyalty, the loyalty pressure on their card, and
-	// turnsToEstablish, the turns they take to settle in a city.
+	// turnsToEstablish, the turns they take to settle in a city. A Secret Society the player has
+	// discovered has secret, true, and neither loyalty nor turns, as its card shows no stats.
 	appoint: z.array(z.object({
 		type: z.string(),
 		name: z.string(),
 		title: z.string(),
 		description: z.string(),
-		loyalty: z.number(),
-		turnsToEstablish: z.number(),
+		secret: z.literal(true).optional(),
+		loyalty: z.number().optional(),
+		turnsToEstablish: z.number().optional(),
 	})).optional(),
 	// Each appointed governor that can be promoted now, with governor, its type, and promotions, the
-	// ones they can earn now, each with type, name, and description.
+	// ones they can earn now, each with type, name, and description, and hidden, true, with the
+	// game's own text in place of the name and description, for one the panel hides.
 	promote: z.array(z.object({
 		governor: z.string(),
-		promotions: z.array(z.object({ type: z.string(), name: z.string(), description: z.string() })),
+		promotions: z.array(z.object({ type: z.string(), name: z.string(), description: z.string(), hidden: z.literal(true).optional() })),
 	})).optional(),
 	// Each appointed governor that isn't neutralized, with governor and cities, the places they can go:
 	// the player's cities but the one they are in, then the cities of the city-states met for an

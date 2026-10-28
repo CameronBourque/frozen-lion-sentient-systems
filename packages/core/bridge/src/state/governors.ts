@@ -15,7 +15,8 @@ export const GOVERNORS = z.object({
 	// established is whether they have settled in there, and turnsLeft the turns until they do.
 	// neutralized is the turns they are out of action, there above 0 only. loyalty is the loyalty
 	// pressure they give their city, turnsToEstablish the turns they take to settle in a city, and
-	// promotions the promotions they have, by type.
+	// promotions the promotions they have, by type. secret is true for a Secret Society, which has
+	// neither loyalty nor turns to establish, as its card shows no stats.
 	appointed: z.array(z.object({
 		type: z.string(),
 		name: z.string(),
@@ -24,8 +25,9 @@ export const GOVERNORS = z.object({
 		established: z.boolean().optional(),
 		turnsLeft: z.number().optional(),
 		neutralized: z.number().optional(),
-		loyalty: z.number(),
-		turnsToEstablish: z.number(),
+		secret: z.literal(true).optional(),
+		loyalty: z.number().optional(),
+		turnsToEstablish: z.number().optional(),
 		promotions: z.array(z.string()),
 	})),
 }).optional();

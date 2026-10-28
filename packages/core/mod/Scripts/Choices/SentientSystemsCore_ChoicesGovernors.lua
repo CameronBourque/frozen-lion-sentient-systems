@@ -7,27 +7,17 @@
 -- "assign":[{"cities":[{"id":65536,"name":"Rome","owner":0},...],"governor":"GOVERNOR_THE_MERCHANT"}],
 -- "promote":[{"governor":"GOVERNOR_THE_MERCHANT","promotions":[{"description":"Double adjacency
 -- bonuses ...","name":"Harbormaster","type":"GOVERNOR_PROMOTION_MERCHANT_HARBORMASTER"}]}]}', on one
--- line. The checks follow GovernorPanel.lua, GovernorDetailsPanel.lua, and
+-- line. A Secret Society the player has discovered can be appointed and promoted, but not assigned. The checks follow GovernorPanel.lua, GovernorDetailsPanel.lua, and
 -- GovernorAssignmentChooser.lua.
 
--- Returns whether a governor can't be assigned to a city, which only a Secret Societies governor
--- can't. The governor tree uses it too. See IsCannotAssign in GovernorSupport.lua, lines 110 to 125.
-function SentientSystems_IsCannotAssign(definition)
-	if GameInfo.GovernorsCannotAssign ~= nil then
-		for row in GameInfo.GovernorsCannotAssign() do
-			if row.GovernorType == definition.GovernorType then
-				return row.CannotAssign
-			end
-		end
-	end
-
-	return false
-end
+SentientSystems_Include("SentientSystemsCore_Governors")
 
 -- Returns the governors the player can appoint, each with type, name, title, description, loyalty,
 -- the loyalty pressure on their card, and turnsToEstablish, the turns they take to settle in a
--- city. Returns nil without a title to spend, as the panel turns every Appoint button off then. See
--- Refresh in GovernorPanel.lua, lines 39 to 122, and AddGovernorCandidate, lines 198 to 242.
+-- city. A Secret Society the player has discovered is there too, with secret, true, and neither
+-- loyalty nor turns, which its card doesn't show. Returns nil without a title to spend, as the
+-- panel turns every Appoint button off then. See Refresh in GovernorPanel.lua, lines 39 to 122,
+-- AddGovernorCandidate, lines 198 to 242, and AddSecretGovernorCandidate, lines 271 to 311.
 local function GetAppointments(governors)
 	if not governors:CanAppoint() then
 		return nil
@@ -38,14 +28,17 @@ local function GetAppointments(governors)
 	for definition in GameInfo.Governors() do
 		local hash = definition.Hash
 
-		if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) and not SentientSystems_IsCannotAssign(definition) then
+		if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) then
+			local secret = SentientSystems_IsCannotAssign(definition)
+
 			list[#list + 1] = {
 				type = definition.GovernorType,
 				name = Locale.Lookup(definition.Name),
 				title = Locale.Lookup(definition.Title),
 				description = Locale.Lookup(definition.Description),
-				loyalty = definition.IdentityPressure,
-				turnsToEstablish = governors:GetTurnsToEstablish(hash),
+				secret = secret and true or nil,
+				loyalty = not secret and definition.IdentityPressure or nil,
+				turnsToEstablish = not secret and governors:GetTurnsToEstablish(hash) or nil,
 			}
 		end
 	end
@@ -53,9 +46,10 @@ local function GetAppointments(governors)
 	return #list > 0 and list or nil
 end
 
--- Returns the promotions a governor can earn now, each with type, name, and description, in the order
--- of the governor's promotion tree. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150
--- to 230.
+-- Returns the promotions a governor can earn now, each with type, name, and description, in the
+-- game's order, and hidden, true, with the game's own text in place of the name and description, for
+-- one the panel hides. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230, and
+-- CreateSecretPromotionTree, lines 270 to 328.
 local function GetPromotions(governors, governor, definition)
 	local promotions = {}
 
@@ -64,11 +58,9 @@ local function GetPromotions(governors, governor, definition)
 			local promotion = GameInfo.GovernorPromotions[set.GovernorPromotion]
 
 			if not governor:HasPromotion(promotion.Hash) and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
-				promotions[#promotions + 1] = {
-					type = promotion.GovernorPromotionType,
-					name = Locale.Lookup(promotion.Name),
-					description = Locale.Lookup(promotion.Description),
-				}
+				local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
+
+				promotions[#promotions + 1] = { type = promotion.GovernorPromotionType, name = name, description = description, hidden = hidden }
 			end
 		end
 	end
@@ -164,18 +156,16 @@ function SentientSystems_GetGovernorChoices(player)
 	for _, governor in ipairs(list or {}) do
 		local definition = GameInfo.Governors[governor:GetType()]
 
-		if not SentientSystems_IsCannotAssign(definition) then
-			if governors:CanPromoteGovernor(definition.Hash) then
-				local promotions = GetPromotions(governors, governor, definition)
+		if governors:CanPromoteGovernor(definition.Hash) then
+			local promotions = GetPromotions(governors, governor, definition)
 
-				if #promotions > 0 then
-					promote[#promote + 1] = { governor = definition.GovernorType, promotions = promotions }
-				end
+			if #promotions > 0 then
+				promote[#promote + 1] = { governor = definition.GovernorType, promotions = promotions }
 			end
+		end
 
-			if governor:GetNeutralizedTurns() == 0 then
-				assign[#assign + 1] = { governor = definition.GovernorType, cities = GetAssignments(player, governors, governor, definition) }
-			end
+		if not SentientSystems_IsCannotAssign(definition) and governor:GetNeutralizedTurns() == 0 then
+			assign[#assign + 1] = { governor = definition.GovernorType, cities = GetAssignments(player, governors, governor, definition) }
 		end
 	end
 

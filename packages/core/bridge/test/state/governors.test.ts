@@ -26,6 +26,12 @@ describe("GOVERNORS", () => {
 		expect(GOVERNORS.parse(SECTION)).toEqual(SECTION);
 	});
 
+	test("accepts a Secret Society, which has no loyalty or turns to establish", () => {
+		const owls = { type: "GOVERNOR_OWLS_OF_MINERVA", name: "Owls of Minerva", title: "Secret Society", secret: true as const, promotions: ["GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1"] };
+
+		expect(GOVERNORS.parse({ titles: 0, spent: 1, appointed: [owls] })).toEqual({ titles: 0, spent: 1, appointed: [owls] });
+	});
+
 	test("accepts no section without Rise and Fall", () => {
 		expect(GOVERNORS.safeParse(undefined).success).toBe(true);
 	});

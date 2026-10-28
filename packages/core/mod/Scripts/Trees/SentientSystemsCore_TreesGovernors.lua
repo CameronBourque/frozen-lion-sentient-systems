@@ -11,7 +11,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
-SentientSystems_Include("SentientSystemsCore_ChoicesGovernors")
+SentientSystems_Include("SentientSystemsCore_Governors")
 
 -- Returns the promotions each promotion follows, by type, from GameInfo.GovernorPromotionPrereqs. A
 -- promotion needs any one of them, as the game allows Tax Collector with only Harbormaster.
@@ -31,9 +31,11 @@ end
 -- Returns the promotions of a governor, in the game's order, each with type, name,
 -- description, level, column, requires, the promotions it follows, any one of which it needs, and
 -- status: held, for one the governor has, available, for one they can earn now, and locked, for one
--- that needs a prerequisite first. A governor of nil is a candidate, whose card shows only the base
--- ability as held. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230, and
--- AddGovernorCandidate in GovernorPanel.lua, lines 198 to 207.
+-- that needs a prerequisite first. A promotion the panel hides has hidden, true, and the game's own
+-- text in place of its name and description. A governor of nil is a candidate, whose card shows only
+-- the base ability as held. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230,
+-- CreateSecretPromotionTree, lines 270 to 328, and AddGovernorCandidate in GovernorPanel.lua, lines
+-- 198 to 207.
 local function GetPromotions(governors, governor, definition, prerequisites)
 	local promotions = {}
 
@@ -48,10 +50,13 @@ local function GetPromotions(governors, governor, definition, prerequisites)
 				status = "available"
 			end
 
+			local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
+
 			promotions[#promotions + 1] = {
 				type = promotion.GovernorPromotionType,
-				name = Locale.Lookup(promotion.Name),
-				description = Locale.Lookup(promotion.Description),
+				name = name,
+				description = description,
+				hidden = hidden,
 				level = promotion.Level,
 				column = promotion.Column,
 				requires = prerequisites[promotion.GovernorPromotionType] or {},
@@ -65,22 +70,27 @@ end
 
 -- Returns one governor with their tree: type, name, title, description, status, appointed or
 -- candidate, turnsToEstablish, the turns they take to settle in a city, loyalty, the loyalty pressure
--- they give, and promotions.
+-- they give, and promotions. A Secret Society has secret, true, and neither turns nor loyalty, as its
+-- card shows no stats.
 local function GetGovernor(governors, governor, definition, prerequisites)
+	local secret = SentientSystems_IsCannotAssign(definition)
+
 	return {
 		type = definition.GovernorType,
 		name = Locale.Lookup(definition.Name),
 		title = Locale.Lookup(definition.Title),
 		description = Locale.Lookup(definition.Description),
 		status = governor and "appointed" or "candidate",
-		turnsToEstablish = governor and governor:GetTurnsToEstablish() or governors:GetTurnsToEstablish(definition.Hash),
-		loyalty = governor and governor:GetIdentityPressure() or definition.IdentityPressure,
+		secret = secret and true or nil,
+		turnsToEstablish = not secret and (governor and governor:GetTurnsToEstablish() or governors:GetTurnsToEstablish(definition.Hash)) or nil,
+		loyalty = not secret and (governor and governor:GetIdentityPressure() or definition.IdentityPressure) or nil,
 		promotions = GetPromotions(governors, governor, definition, prerequisites),
 	}
 end
 
 -- Returns the governor tree of the player with ID playerID as JSON: each appointed governor in the
--- panel's order, then each governor the player could still appoint. Raises an error for an ID with
+-- panel's order, then each governor the player could still appoint, which includes the Secret
+-- Societies they have discovered. Raises an error for an ID with
 -- no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetGovernorTree(playerID)). See Refresh in GovernorPanel.lua,
 -- lines 39 to 122.
@@ -99,17 +109,13 @@ function SentientSystems_GetGovernorTree(playerID)
 		local _, appointed = governors:GetGovernorList()
 
 		for _, governor in ipairs(appointed or {}) do
-			local definition = GameInfo.Governors[governor:GetType()]
-
-			if not SentientSystems_IsCannotAssign(definition) then
-				entries[#entries + 1] = GetGovernor(governors, governor, definition, prerequisites)
-			end
+			entries[#entries + 1] = GetGovernor(governors, governor, GameInfo.Governors[governor:GetType()], prerequisites)
 		end
 
 		for definition in GameInfo.Governors() do
 			local hash = definition.Hash
 
-			if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) and not SentientSystems_IsCannotAssign(definition) then
+			if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) then
 				entries[#entries + 1] = GetGovernor(governors, nil, definition, prerequisites)
 			end
 		end

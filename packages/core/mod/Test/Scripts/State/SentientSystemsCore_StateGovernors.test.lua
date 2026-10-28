@@ -14,13 +14,18 @@ local REYNA = {
 
 -- Returns the governors section JSON for player 0, whose governors are given, or nil when it is
 -- left out.
-local function GovernorsWith(governors)
+local function GovernorsWith(governors, extra)
 	local env = Game.new()
-
-	FakeGame.Install(env, {
+	local world = {
 		players = { [0] = { governors = governors } },
 		text = { LOC_GOVERNOR_THE_MERCHANT_NAME = "Reyna", LOC_GOVERNOR_THE_MERCHANT_TITLE = "The Financier" },
-	})
+	}
+
+	for key, value in pairs(extra or {}) do
+		world[key] = value
+	end
+
+	FakeGame.Install(env, world)
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
 	return env.SentientSystems_GetState(0):match("\"governors\":(%b{})")
@@ -47,6 +52,22 @@ describe("SentientSystems_GetGovernorState", function()
 
 		assert.truthy(neutralized:find("\"neutralized\":4,", 1, true))
 		assert.falsy(neutralized:find("city", 1, true))
+	end)
+
+	it("marks a Secret Society, which has no loyalty or turns to establish, and lists the promotions it holds", function()
+		local owls = {
+			type = "GOVERNOR_OWLS_OF_MINERVA",
+			promotions = {
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1", base = true, has = true },
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2", requires = { "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1" }, hiddenWithoutPrereqs = true },
+			},
+		}
+
+		assert.equal(
+			"{\"appointed\":[{\"name\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_NAME\",\"promotions\":[\"GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1\"],\"secret\":true,"
+				.. "\"title\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_TITLE\",\"type\":\"GOVERNOR_OWLS_OF_MINERVA\"}],\"spent\":1,\"titles\":0}",
+			GovernorsWith({ points = 1, spent = 1, appointed = { owls } }, { cannotAssign = { "GOVERNOR_OWLS_OF_MINERVA" } })
+		)
 	end)
 
 	it("gives no governors before any are appointed", function()

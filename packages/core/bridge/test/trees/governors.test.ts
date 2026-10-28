@@ -99,6 +99,35 @@ describe("readGovernorTree", () => {
 		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, tree, bytes: Buffer.byteLength(json) });
 	});
 
+	test("reads a Secret Society with no stats and a hidden promotion", async () => {
+		const owls = {
+			type: "GOVERNOR_OWLS_OF_MINERVA",
+			name: "Owls of Minerva",
+			title: "Secret Society",
+			description: "A secret group of wealthy individuals.",
+			status: "candidate" as const,
+			secret: true as const,
+			promotions: [
+				{ type: "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1", name: "Initiation", description: "Unlocked by sending an Envoy.", level: 0, column: 1, requires: [], status: "held" as const },
+				{
+					type: "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2",
+					name: "???",
+					description: "Not yet revealed.",
+					level: 1,
+					column: 1,
+					requires: ["GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1"],
+					status: "locked" as const,
+					hidden: true as const,
+				},
+			],
+		};
+		const json = JSON.stringify({ governors: [owls] });
+
+		stash(json);
+
+		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, tree: { governors: [owls] }, bytes: Buffer.byteLength(json) });
+	});
+
 	test("fails for a promotion status the panel doesn't use", async () => {
 		const bad = { governors: [{ ...GOVERNOR_TREE.governors[1], promotions: [{ ...GOVERNOR_TREE.governors[1].promotions[0], status: "unlocked" }] }] };
 

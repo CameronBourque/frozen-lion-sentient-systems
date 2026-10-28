@@ -93,9 +93,52 @@ describe("SentientSystems_GetGovernorTree", function()
 		assert.falsy(json:find("IBRAHIM", 1, true))
 	end)
 
-	it("leaves out a Secret Societies governor", function()
-		local spy = { type = "GOVERNOR_THE_SPY", promotions = { { type = "GOVERNOR_PROMOTION_SPY_ONE", base = true } } }
-		local json = Load({ appointed = { spy }, candidates = { { type = "GOVERNOR_THE_SPY" } } }, { cannotAssign = { "GOVERNOR_THE_SPY" } }).SentientSystems_GetGovernorTree(0)
+	it("gives a Secret Society the player has discovered, with its hidden promotions masked and no stats", function()
+		local owls = {
+			type = "GOVERNOR_OWLS_OF_MINERVA",
+			promotions = {
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1", base = true, level = 0, column = 1 },
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2", level = 1, column = 1, requires = { "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1" }, hiddenWithoutPrereqs = true },
+			},
+		}
+		local env = Load({ candidates = { owls } }, {
+			cannotAssign = { "GOVERNOR_OWLS_OF_MINERVA" },
+			text = { LOC_GOVERNOR_PROMOTION_UNKNOWN_NAME = "???", LOC_GOVERNOR_PROMOTION_UNKNOWN_DESCRIPTION = "Not yet revealed." },
+		})
+
+		assert.equal(
+			"{\"governors\":[{\"description\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_DESCRIPTION\",\"name\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_NAME\",\"promotions\":["
+				.. "{\"column\":1,\"description\":\"LOC_GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1_DESCRIPTION\",\"level\":0,\"name\":\"LOC_GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1_NAME\","
+				.. "\"requires\":[],\"status\":\"held\",\"type\":\"GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1\"},"
+				.. "{\"column\":1,\"description\":\"Not yet revealed.\",\"hidden\":true,\"level\":1,\"name\":\"???\","
+				.. "\"requires\":[\"GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1\"],\"status\":\"locked\",\"type\":\"GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2\"}],"
+				.. "\"secret\":true,\"status\":\"candidate\",\"title\":\"LOC_GOVERNOR_OWLS_OF_MINERVA_TITLE\",\"type\":\"GOVERNOR_OWLS_OF_MINERVA\"}]}",
+			env.SentientSystems_GetGovernorTree(0)
+		)
+	end)
+
+	it("shows a joined Secret Society's next promotion once it holds the one before, and masks the rest", function()
+		local owls = {
+			type = "GOVERNOR_OWLS_OF_MINERVA",
+			promotions = {
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1", base = true, level = 0, column = 1, has = true },
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2", level = 1, column = 1, requires = { "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1" }, hiddenWithoutPrereqs = true },
+				{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_3", level = 2, column = 1, requires = { "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2" }, hiddenWithoutPrereqs = true },
+			},
+		}
+		local json = Load({ appointed = { owls } }, {
+			cannotAssign = { "GOVERNOR_OWLS_OF_MINERVA" },
+			text = { LOC_GOVERNOR_PROMOTION_UNKNOWN_NAME = "???", LOC_GOVERNOR_PROMOTION_UNKNOWN_DESCRIPTION = "Not yet revealed." },
+		}).SentientSystems_GetGovernorTree(0)
+
+		assert.truthy(json:find("\"secret\":true,\"status\":\"appointed\"", 1, true))
+		assert.falsy(json:find("loyalty", 1, true))
+		assert.truthy(json:find("\"name\":\"LOC_GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2_NAME\"", 1, true))
+		assert.truthy(json:find("\"description\":\"Not yet revealed.\",\"hidden\":true,\"level\":2", 1, true))
+	end)
+
+	it("leaves out a Secret Society the player hasn't discovered", function()
+		local json = Load({ candidates = { { type = "GOVERNOR_HERMETIC_ORDER", canEver = false } } }, { cannotAssign = { "GOVERNOR_HERMETIC_ORDER" } }).SentientSystems_GetGovernorTree(0)
 
 		assert.equal("{\"governors\":[]}", json)
 	end)
