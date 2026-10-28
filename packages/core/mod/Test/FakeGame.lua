@@ -84,7 +84,12 @@
 -- it escapes from. With one, the four escape districts get rows, with TravelTime 1 to 4. A player's
 -- archaeologist is its next digging archaeologist, with id, name, x, y, and artifact, with index,
 -- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
--- is its leader's name. A player's governors has points, spent, and appointed, each with type, city,
+-- is its leader's name. A player's dedications is the era change it is making them for, with era, an
+-- era type, age, heroic, golden, dark, or normal, allowed, the picks it needs, alwaysNormal, true for
+-- a player always allowed the normal bonus too, and options, the category names, such as
+-- "SCIENTIFIC", which give each its row in GameInfo.CommemorationTypes, with the keys
+-- LOC_MOMENT_CATEGORY_<name>, with _BONUS_GOLDEN_AGE, _BONUS_NORMAL_AGE, and _BONUS_DARK_AGE. A
+-- player's governors has points, spent, and appointed, each with type, city,
 -- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
 -- promotions, each with type, has, canEarn, base, true for the base ability, level, column, and
 -- requires, the types of the promotions it follows, hiddenWithoutPrereqs, true for one that the panel
@@ -209,6 +214,7 @@ local END_TURN_BLOCKING_TYPES = {
 	ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE = 1385632321,
 	ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY = 2048525187,
 	ENDTURN_BLOCKING_ARTIFACT = -234935529,
+	ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE = 1215684001,
 }
 
 -- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
@@ -1353,6 +1359,7 @@ function FakeGame.Install(env, world)
 		GovernorPromotionPrereqs = {},
 		GovernorPromotionConditions = {},
 		GreatPersonIndividuals = {},
+		CommemorationTypes = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -1640,6 +1647,28 @@ function FakeGame.Install(env, world)
 	for _, data in pairs(world.players or {}) do
 		if data.archaeologist ~= nil then
 			AddRow("Eras", "EraType", data.archaeologist.artifact.era)
+		end
+	end
+
+	-- Each dedication's era and options get rows, with the text keys of the game's moments.
+	for _, data in pairs(world.players or {}) do
+		if data.dedications ~= nil then
+			AddRow("Eras", "EraType", data.dedications.era)
+			env.GameInfo.Eras[indexes[data.dedications.era]].Name = "LOC_" .. data.dedications.era .. "_NAME"
+
+			for _, category in ipairs(data.dedications.options or {}) do
+				local type = "COMMEMORATION_" .. category
+
+				AddRow("CommemorationTypes", "CommemorationType", type)
+
+				local row = env.GameInfo.CommemorationTypes[indexes[type]]
+				local key = "LOC_MOMENT_CATEGORY_" .. category
+
+				row.CategoryDescription = key
+				row.GoldenAgeBonusDescription = key .. "_BONUS_GOLDEN_AGE"
+				row.NormalAgeBonusDescription = key .. "_BONUS_NORMAL_AGE"
+				row.DarkAgeBonusDescription = key .. "_BONUS_DARK_AGE"
+			end
 		end
 	end
 
@@ -2351,6 +2380,47 @@ function FakeGame.Install(env, world)
 				return { Type = artifact.type, ActingPlayerID = artifact.acting, TargetPlayerID = artifact.target or -1, ActingPlayerEra = indexes[artifact.era] }
 			end
 		end
+	end
+	-- The era change of the first player with dedications, from its data.dedications. The ages are
+	-- the same for every player here, as the tests use one.
+	env.Game.GetEras = function()
+		local data
+
+		for _, playerData in pairs(world.players or {}) do
+			data = data or playerData.dedications
+		end
+
+		data = data or {}
+
+		return {
+			GetCurrentEra = function()
+				return indexes[data.era]
+			end,
+			HasHeroicGoldenAge = function()
+				return data.age == "heroic"
+			end,
+			HasGoldenAge = function()
+				return data.age == "heroic" or data.age == "golden"
+			end,
+			HasDarkAge = function()
+				return data.age == "dark"
+			end,
+			IsPlayerAlwaysAllowedCommemorationQuest = function()
+				return data.alwaysNormal == true
+			end,
+			GetPlayerNumAllowedCommemorations = function()
+				return data.allowed or 0
+			end,
+			GetPlayerCommemorateChoices = function()
+				local choices = {}
+
+				for i, category in ipairs(data.options or {}) do
+					choices[i] = indexes["COMMEMORATION_" .. category]
+				end
+
+				return choices
+			end,
+		}
 	end
 	-- The great people on offer, from world.greatPeople, by the GameInfo index of each individual.
 	env.Game.GetGreatPeople = function()
