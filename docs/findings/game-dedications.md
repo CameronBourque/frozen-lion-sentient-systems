@@ -1,6 +1,6 @@
 # Game dedications
 
-Status: open. The `dedications` key of `SentientSystems_GetChoices`, the dedications the player may make for the era that began, is confirmed in a running game with Gathering Storm and matches the dedication popup, for a golden, a dark, and a heroic age. A normal age is read from the game's files only.
+Status: open. The `dedications` key of `SentientSystems_GetChoices`, the dedications the player may make for the era that began, is confirmed in a running game with Gathering Storm and matches the dedication popup, for a golden, a dark, a heroic, and a normal age.
 
 The calls the dedication choice uses, as the dedication popup shows them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -29,12 +29,13 @@ None open.
 
 ## Results
 
-A single-player game with Gathering Storm, on turns 190 to 380, in `SentientSystemsCore_UI`:
+A single-player game with Gathering Storm, on turns 190 to 380 and 198, in `SentientSystemsCore_UI`:
 
 | Check | Result |
 | --- | --- |
 | The choice in a golden age, at the Classical Era | `age` golden, `picks` 1, four options with the golden text. The popup showed "Because you earned a golden age, you may make one dedication" and the same four names and texts |
 | The same in a dark age, with the score under the threshold | `age` dark, `picks` 1, four options with the dark text. The popup showed "Because you earned a dark age, you may make one dedication" and "Dedication Bonus" texts |
+| The same in a normal age, with the score between the thresholds | `age` normal, `picks` 1, four options with the normal text. The popup showed "Because you earned a normal age, you may make one dedication" and the same names and texts. Read through the bridge's `readChoices`, which parsed it |
 | The same in a heroic age, at the Medieval Era | `age` heroic, `picks` 3, four options with the golden text, with the percent sign as `\u0025`. The popup showed "Because you earned a heroic age, you may make three dedications" |
 
 Date checked: game files on 2026-10-28. Running game on Windows on 2026-10-28.
