@@ -2,11 +2,11 @@
 -- call of its own, so the agent reads them only when it decides. Each choice comes from its own file
 -- in this folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetChoices(0) returns
--- '{"artifacts":[...],"capturedCities":[...],"civics":[...],"dedications":{...},"envoys":{...},
--- "government":{...},"governments":{...},"governors":{...},"greatPeople":[...],"pantheon":{...},
--- "policies":{...},"production":[{"city":65536,"name":"Rome","units":[...]}],"purchases":[...],
--- "spies":[...],"techs":[...]}', on one line. A choice that the player can't make now, such as the
--- pantheon, is left out.
+-- '{"artifacts":[...],"capturedCities":[...],"civics":[...],"dedications":{...},"emergencies":[...],
+-- "envoys":{...},"government":{...},"governments":{...},"governors":{...},"greatPeople":[...],
+-- "pantheon":{...},"policies":{...},"production":[{"city":65536,"name":"Rome","units":[...]}],
+-- "purchases":[...],"spies":[...],"techs":[...]}', on one line. A choice that the player can't make
+-- now, such as the pantheon, is left out.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -36,6 +36,7 @@ SentientSystems_Include("SentientSystemsCore_ChoicesSpies")
 SentientSystems_Include("SentientSystemsCore_ChoicesArtifacts")
 SentientSystems_Include("SentientSystemsCore_ChoicesGovernors")
 SentientSystems_Include("SentientSystemsCore_ChoicesDedications")
+SentientSystems_Include("SentientSystemsCore_ChoicesEmergencies")
 
 -- Returns the choices of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -64,5 +65,6 @@ function SentientSystems_GetChoices(playerID)
 		artifacts = SentientSystems_GetArtifactChoices(player),
 		governors = SentientSystems_GetGovernorChoices(player),
 		dedications = SentientSystems_GetDedicationChoices(player),
+		emergencies = SentientSystems_GetEmergencyChoices(player),
 	})
 end

@@ -10,6 +10,7 @@ import type { TunerClient } from "../tuner/client.js";
 import { ARTIFACTS_CHOICE } from "./artifacts.js";
 import { CAPTURED_CITIES_CHOICE } from "./captured-cities.js";
 import { DEDICATIONS_CHOICE } from "./dedications.js";
+import { EMERGENCIES_CHOICE } from "./emergencies.js";
 import { ENVOY_CHOICE } from "./envoys.js";
 import { GREAT_PEOPLE_CHOICE } from "./great-people.js";
 import { GOVERNMENT, GOVERNMENTS, POLICIES } from "./government.js";
@@ -38,6 +39,7 @@ const CHOICES = z.object({
 	artifacts: ARTIFACTS_CHOICE,
 	governors: GOVERNORS_CHOICE,
 	dedications: DEDICATIONS_CHOICE,
+	emergencies: EMERGENCIES_CHOICE,
 });
 
 export type Choices = z.infer<typeof CHOICES>;

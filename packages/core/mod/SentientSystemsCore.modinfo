@@ -31,6 +31,7 @@
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernors.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesEmergencies.lua</File>
 			<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 			<File>Scripts/Trees/SentientSystemsCore_TreesResearch.lua</File>
 			<File>Scripts/Trees/SentientSystemsCore_TreesGovernors.lua</File>
@@ -63,6 +64,7 @@
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernors.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesEmergencies.lua</File>
 		<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
 		<File>Scripts/Trees/SentientSystemsCore_TreesResearch.lua</File>
 		<File>Scripts/Trees/SentientSystemsCore_TreesGovernors.lua</File>
