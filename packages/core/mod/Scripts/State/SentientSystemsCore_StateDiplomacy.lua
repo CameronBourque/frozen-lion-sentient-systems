@@ -96,8 +96,133 @@ local function GetAlliance(playerID, otherID)
 	return alliance
 end
 
--- Returns one met player's entry. The state is how they see the player, as
--- the screen's Our Relationship row has it, and is left out for a human.
+-- The text key that the screen greys out for a reason it can't explain.
+local UNKNOWN_REASON_KEY = "LOC_TOOLTIP_DIPLOMACY_UNKNOWN_REASON"
+
+-- The first diplomatic state that is not between two major players.
+local FIRST_MINOR_STATE = 7
+
+-- Returns why the other player feels as they do, best reason first, as
+-- the Relationship tab lists them.
+local function GetReasons(other, playerID)
+	local unknownText = Locale.Lookup(UNKNOWN_REASON_KEY)
+	local reasons = {}
+
+	for _, modifier in ipairs(other:GetDiplomaticAI():GetDiplomaticModifiers(playerID) or {}) do
+		if modifier.Score ~= 0 then
+			local unknown = modifier.Text == UNKNOWN_REASON_KEY or modifier.Text == unknownText
+
+			reasons[#reasons + 1] = {
+				score = modifier.Score,
+				text = not unknown and Locale.Lookup(modifier.Text) or nil,
+				unknown = unknown or nil,
+			}
+		end
+	end
+
+	table.sort(reasons, function(a, b)
+		if a.score ~= b.score then
+			return a.score > b.score
+		end
+
+		return (a.text or "") < (b.text or "")
+	end)
+
+	return reasons
+end
+
+-- Returns whether the access level lets the player see random agendas.
+local function CanSeeRandomAgendas(level)
+	for row in GameInfo.Visibilities() do
+		if row.Index <= level and row.RevealAgendas then
+			return true
+		end
+	end
+
+	return false
+end
+
+-- Returns the other player's agendas. The first is the historical agenda,
+-- which always shows. The random ones show with enough access, and
+-- otherwise only their number does.
+local function GetAgendas(other, level)
+	local types = other:GetAgendaTypes()
+	local visible = CanSeeRandomAgendas(level)
+	local list = {}
+
+	for i, agendaType in ipairs(types) do
+		if i == 1 or visible then
+			local row = GameInfo.Agendas[agendaType]
+
+			list[#list + 1] = {
+				type = row.AgendaType,
+				name = Locale.Lookup(row.Name),
+				description = Locale.Lookup(row.Description),
+			}
+		end
+	end
+
+	return { list = list, hidden = visible and 0 or math.max(#types - 1, 0) }
+end
+
+-- Returns the balance of grievances, positive when the player has them
+-- against the other, the change each turn, and the log by turn. Needs
+-- Gathering Storm.
+local function GetGrievances(player, otherID)
+	local diplomacy = player:GetDiplomacy()
+
+	if diplomacy.GetGrievancesAgainst == nil then
+		return nil
+	end
+
+	local game = Game.GetGameDiplomacy()
+	local log = {}
+
+	for _, entry in ipairs(game:GetGrievanceLogEntries(otherID, player:GetID())) do
+		log[#log + 1] = {
+			turn = entry.Turn,
+			from = entry.Initiator,
+			against = entry.Target,
+			amount = entry.Amount,
+			text = entry.Description,
+		}
+	end
+
+	table.sort(log, function(a, b)
+		return a.turn < b.turn
+	end)
+
+	return {
+		balance = diplomacy:GetGrievancesAgainst(otherID),
+		perTurn = game:GetGrievanceChangePerTurn(otherID, player:GetID()),
+		log = log,
+	}
+end
+
+-- Returns how each other player the other has met sees them, left out
+-- when neutral, as the Relationships row of the Overview shows them.
+local function GetOthers(other, playerID)
+	local list = {}
+
+	for _, third in ipairs(PlayerManager.GetAliveMajors()) do
+		local thirdID = third:GetID()
+
+		if thirdID ~= playerID and thirdID ~= other:GetID()
+			and other:GetDiplomacy():HasMet(thirdID) then
+			local index = third:GetDiplomaticAI():GetDiplomaticStateIndex(other:GetID())
+			local stateType = GameInfo.DiplomaticStates[index].StateType
+
+			if index < FIRST_MINOR_STATE and stateType ~= "DIPLO_STATE_NEUTRAL" then
+				list[#list + 1] = { player = thirdID, state = stateType }
+			end
+		end
+	end
+
+	return list
+end
+
+-- Returns one met player's entry. The state, with the relationship and the
+-- agendas, is how they see the player and is left out for a human.
 local function GetEntry(player, other)
 	local playerID, otherID = player:GetID(), other:GetID()
 	local diplomacy = player:GetDiplomacy()
@@ -110,7 +235,13 @@ local function GetEntry(player, other)
 		anarchyTurns = anarchyTurns,
 		agreements = GetAgreements(playerID, otherID),
 		alliance = GetAlliance(playerID, otherID),
+		grievances = GetGrievances(player, otherID),
+		others = GetOthers(other, playerID),
 	}
+
+	if #entry.others == 0 then
+		entry.others = nil
+	end
 
 	entry.access.name = Locale.Lookup(GameInfo.Visibilities[entry.access.level].Name)
 
@@ -120,6 +251,8 @@ local function GetEntry(player, other)
 
 		entry.state = stateType
 		entry.turnsLeft = GetTurnsLeft(playerID, otherID, stateType)
+		entry.relationship = { reasons = GetReasons(other, playerID) }
+		entry.agendas = GetAgendas(other, entry.access.level)
 	end
 
 	return entry

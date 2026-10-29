@@ -8,6 +8,10 @@
 -- and human is true for a human. The alliance calls need world.era, as Rise and
 -- Fall does. world.denounceLimit is the turns a friendship or denouncement
 -- lasts, 20 when missing. A player's anarchyUntil is the turn its anarchy ends.
+-- Its agendas lists its agenda types, the first historical. What a player has
+-- with another also has modifiers, each with Score and Text, and grievances,
+-- with balance, perTurn, and log, each entry with Turn, Initiator, Target,
+-- Amount, and Description. The grievance calls need world.expansion2.
 
 local STATES = {
 	"DIPLO_STATE_ALLIED",
@@ -23,15 +27,32 @@ return function(env, world, ctx)
 	local indexes = ctx.indexes
 
 	env.GameInfo.DiplomaticStates = ctx.TypedRows({}, "StateType")
-	env.GameInfo.Visibilities = {}
+	env.GameInfo.Visibilities = ctx.TypedRows({}, "VisibilityType")
+	env.GameInfo.Agendas = ctx.TypedRows({}, "AgendaType")
 	env.GameInfo.Alliances = ctx.TypedRows({}, "AllianceType")
 	env.GlobalParameters.ALLIANCE_POINTS_MULTIPLIER = 4
 	env.Game.GetGameDiplomacy = function()
-		return {
+		local game = {
 			GetDenounceTimeLimit = function()
 				return world.denounceLimit or 20
 			end,
 		}
+
+		if world.expansion2 then
+			local function Grievances(selectedID, localID)
+				return (((world.players[localID].diplomacy or {})[selectedID] or {}).grievances) or {}
+			end
+
+			function game.GetGrievanceLogEntries(_, selectedID, localID)
+				return Grievances(selectedID, localID).log or {}
+			end
+
+			function game.GetGrievanceChangePerTurn(_, selectedID, localID)
+				return Grievances(selectedID, localID).perTurn or 0
+			end
+		end
+
+		return game
 	end
 
 	for _, stateType in ipairs(STATES) do
@@ -40,10 +61,20 @@ return function(env, world, ctx)
 	end
 
 	for level = 0, 4 do
-		env.GameInfo.Visibilities[level] = { Name = "LOC_VISIBILITY_" .. level }
+		env.GameInfo.Visibilities[level] = {
+			Index = level,
+			Name = "LOC_VISIBILITY_" .. level,
+			RevealAgendas = level == 2,
+		}
 	end
 
 	for _, data in pairs(world.players or {}) do
+		for _, agenda in ipairs(data.agendas or {}) do
+			ctx.AddRow("Agendas", "AgendaType", agenda)
+			env.GameInfo.Agendas[indexes[agenda]].Name = "LOC_" .. agenda .. "_NAME"
+			env.GameInfo.Agendas[indexes[agenda]].Description = "LOC_" .. agenda .. "_DESC"
+		end
+
 		for _, with in pairs(data.diplomacy or {}) do
 			if with.research then
 				ctx.AddRow("Technologies", "TechnologyType", with.research)
@@ -110,6 +141,12 @@ return function(env, world, ctx)
 				return With(data, otherID).denounce or -1
 			end
 
+			if world.expansion2 then
+				function diplomacy.GetGrievancesAgainst(_, otherID)
+					return (With(data, otherID).grievances or {}).balance or 0
+				end
+			end
+
 			if world.era then
 				local function Alliance(otherID)
 					return With(data, otherID).alliance or {}
@@ -148,7 +185,20 @@ return function(env, world, ctx)
 				GetDiplomaticStateIndex = function(_, otherID)
 					return indexes[With(data, otherID).state or "DIPLO_STATE_NEUTRAL"]
 				end,
+				GetDiplomaticModifiers = function(_, otherID)
+					return With(data, otherID).modifiers or {}
+				end,
 			}
+		end
+
+		function player.GetAgendaTypes()
+			local types = {}
+
+			for i, agenda in ipairs(data.agendas or {}) do
+				types[i] = indexes[agenda]
+			end
+
+			return types
 		end
 
 		function player.GetCulture()

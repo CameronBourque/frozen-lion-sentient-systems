@@ -37,6 +37,22 @@ describe("DIPLOMACY", () => {
 		expect(DIPLOMACY.parse([human])).toEqual([human]);
 	});
 
+	test("accepts the relationship, agendas, grievances, and others", () => {
+		const full = {
+			...MENELIK,
+			relationship: { reasons: [{ score: 9, text: "Pleased" }, { score: 6, unknown: true as const }] },
+			agendas: { list: [{ type: "AGENDA_DEVOUT", name: "Devout", description: "Likes faith" }], hidden: 1 },
+			grievances: { balance: 55, perTurn: 0, log: [{ turn: 20, from: 10, against: 0, amount: 50, text: "War declared" }] },
+			others: [{ player: 3, state: "DIPLO_STATE_FRIENDLY" }],
+		};
+
+		expect(DIPLOMACY.parse([full])).toEqual([full]);
+	});
+
+	test("rejects a reason without its score", () => {
+		expect(DIPLOMACY.safeParse([{ ...MENELIK, relationship: { reasons: [{ text: "Pleased" }] } }]).success).toBe(false);
+	});
+
 	test("accepts the highest alliance level with max", () => {
 		const maxed = { ...MENELIK, alliance: { level: 3, max: true as const } };
 

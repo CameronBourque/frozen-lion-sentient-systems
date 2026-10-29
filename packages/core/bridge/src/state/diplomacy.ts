@@ -22,6 +22,32 @@ export const DIPLOMACY = z.array(z.object({
 		researchAgreement: z.string().optional(),
 		jointWar: z.boolean(),
 	}),
+	// Left out for a human player.
+	relationship: z.object({
+		reasons: z.array(z.object({
+			score: z.number(),
+			text: z.string().optional(),
+			unknown: z.literal(true).optional(),
+		})),
+	}).optional(),
+	agendas: z.object({
+		list: z.array(z.object({ type: z.string(), name: z.string(), description: z.string() })),
+		hidden: z.number(),
+	}).optional(),
+	// Left out without Gathering Storm.
+	grievances: z.object({
+		balance: z.number(),
+		perTurn: z.number(),
+		log: z.array(z.object({
+			turn: z.number(),
+			from: z.number(),
+			against: z.number(),
+			amount: z.number(),
+			text: z.string(),
+		})),
+	}).optional(),
+	// Left out when empty.
+	others: z.array(z.object({ player: z.number(), state: z.string() })).optional(),
 	// Left out without Rise and Fall.
 	alliance: z.object({
 		level: z.number(),

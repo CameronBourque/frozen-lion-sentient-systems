@@ -63,7 +63,10 @@ Each task adds what a screen shows about the player as a whole, in a `player` se
 34. **Resources.** Add the strategic and luxury resources the player has, and with Gathering Storm the strategic stockpiles, as the **Resources** tab of Reports shows them. Commit: `feat(core): add resources to the state`.
 35. **City status.** Add each city's growth rate status, war weariness, and governor to `cities`, as the **City Status** tab of Reports shows them. Commit: `feat(core): add city status to the state`.
 36. **Era.** Add the era, era score, current age, the thresholds for the next age, turns until the next era, and the active effects, as the Era Progress panel shows them, from `EraProgressPanel.lua` in `DLC/Expansion1` and `DLC/Expansion2`. Leave it out without Rise and Fall. Commit: `feat(core): add era progress to the state`.
-37. **Diplomacy.** Add a `diplomacy` section with war or peace with each met player, and each deal another player proposes, as the diplomacy screens show them. Read them from `DiplomacyActionView.lua`, `DiplomacyDealView.lua`, and their replacements. Commit: `feat(core): add diplomacy status to the state`.
+37. **Diplomacy.** Add the diplomacy screens to the state, in three commits, read from `DiplomacyActionView.lua`, `DiplomacyDealView.lua`, and their replacements:
+    1. A `diplomacy` section with war or peace with each met player, their access, government, agreements, and alliance. Commit: `feat(core): add diplomacy status to the state`.
+    2. A `proposals` section with each deal another player puts to the player. Commit: `feat(core): add proposed deals to the state`.
+    3. The reasons for each relationship, the agendas, the grievances, and how the other players see each player, in `diplomacy`. Commit: `feat(core): add relationships, agendas, and grievances to the state`.
 
 ### Scoreboard
 
