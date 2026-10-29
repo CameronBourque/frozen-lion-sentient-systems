@@ -32,6 +32,12 @@ describe("EMERGENCIES_CHOICE", () => {
 		expect(EMERGENCIES_CHOICE.safeParse(undefined).success).toBe(true);
 	});
 
+	test("accepts a finished emergency with its outcome", () => {
+		const finished = { ...CHOICE[0]!, turnsLeft: -2, succeeded: true, options: ["acknowledge" as const] };
+
+		expect(EMERGENCIES_CHOICE.parse([finished])).toEqual([finished]);
+	});
+
 	test("rejects an option the popup doesn't have", () => {
 		expect(EMERGENCIES_CHOICE.safeParse([{ ...CHOICE[0], options: ["ignore"] }]).success).toBe(false);
 	});
