@@ -52,19 +52,9 @@
 -- world.governments lists the ruleset's governments, each with type, civic, bonusType, bonuses,
 -- its two text keys, slots, counts by slot type, influence, with perTurn, threshold, and envoys,
 -- favor, and legacyPercent. world.legacyBonuses turns on the base game's legacy bonuses.
--- world.beliefs lists the ruleset's beliefs, each with type, class, BELIEF_CLASS_PANTHEON when
--- missing, description, and taken, true when a player's pantheon or religion holds it. A player's
--- pantheon is its belief type, and canCreatePantheon is true when it can found one. A player's
--- religion is the religion it founded, with type, name, beliefs, by type, and holyCity, a city ID,
--- beliefsEarned the beliefs it has earned, and prophet is true when it has a Great Prophet. A city's religions lists the religions
--- in it, each with type and followers, and majority is its majority religion's type.
--- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
--- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
--- when a religion has too many of its class. world.rename turns on CAPABILITY_RENAME.
+-- world.rename turns on CAPABILITY_RENAME. Beliefs, pantheons, and religions are in FakeGame/Religion.lua.
 -- A city's growth has housingModifier, which is 1 when missing, happinessModifier, and warWeariness,
--- which are 0, and its occupied is true for an occupied city. Its governor is { type, established }
--- for a governor, false for none in a game with Rise and Fall, and missing without it, where the city
--- has no GetAssignedGovernor.
+-- which are 0, and its occupied is true for an occupied city.
 -- A city's income rows come from its tiles, each with x, y, worked, yields, and tourism, its routes,
 -- each with player, id, and yields, and the district yields and adjacency, building yields, wonder, and
 -- greatWorks, each with type and yields, that data.districts holds. growth.yieldModifier is the
@@ -84,11 +74,7 @@
 -- cantReceive, true for the Free Cities, and traits, the text keys of its suzerain bonus, resources,
 -- each with type, amount, exported, and perTurn, quests by player ID, each with type, name,
 -- description, and reward, and uniqueDisabled, true when Gathering Storm turns off its suzerain
--- bonus. world.greatPeople lists the great people on offer, each with class, type, name, era, cost,
--- charges, passive and action, each with the text the timeline gives, canRecruit, passCost, there
--- when the player can pass, gold and faith, each with cost and can, cantEarn, and claimed, true for a
--- class whose great person is taken. A player's greatPeoplePoints maps a class type to its points
--- and perTurn. A player's captured and rebelled are the next city it captured and the next city that
+-- bonus. Great people are in FakeGame/GreatPeople.lua. A player's captured and rebelled are the next city it captured and the next city that
 -- rebelled to join it, each with id, name, x, y, population, districts, originalOwner, ownerBefore,
 -- conqueredFrom, gift, true for a city given in a deal, canRaze, false for one the player can't
 -- raze, and warmonger, with keep and raze points. noRiseAndFall leaves out GetNextRebelledCity. A
@@ -99,17 +85,7 @@
 -- archaeologist is its next digging archaeologist, with id, name, x, y, and artifact, with index,
 -- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
 -- is its leader's name, and favor its Diplomatic Favor. The World Congress, emergencies, eras, and
--- dedications are in FakeGame/WorldCongress.lua, Emergencies.lua, Eras.lua, and Dedications.lua. A
--- player's governors has points, spent, and appointed, each with type, city,
--- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
--- promotions, each with type, has, canEarn, base, true for the base ability, level, column, and
--- requires, the types of the promotions it follows, hiddenWithoutPrereqs, true for one that the panel
--- hides until its governor holds them, and canPromote, cityStates, true for one that can
--- govern city-states, and abroad, true for one that can go to other players' capitals. Its candidates
--- lists the governors it can appoint, each with type, canEver, false for one it never can,
--- turnsToEstablish, loyalty, and promotions, as for an appointed governor. canAppoint is false without a title, and cannotAssignTo maps "owner:id" of a city
--- to the reasons a governor can't go there. world.cannotAssign lists the governors of Secret
--- Societies. Without governors the player has no GetGovernors, as without Rise and Fall.
+-- dedications are in FakeGame/WorldCongress.lua, Emergencies.lua, Eras.lua, and Dedications.lua. Governors, with a city's governor, are in FakeGame/Governors.lua.
 -- world.offCapabilities lists the great people capabilities that are off. A player's
 -- blockers lists its end-turn
 -- blockers by name, in the game's order, such as
@@ -589,16 +565,6 @@ local function BuildCity(data, hashes, indexes, ownerID)
 			}
 		end,
 		tiles = data.tiles or {},
-		GetAssignedGovernor = data.governor ~= nil and function()
-			return data.governor and {
-				GetType = function()
-					return indexes[data.governor.type]
-				end,
-				IsEstablished = function()
-					return data.governor.established == true
-				end,
-			}
-		end or nil,
 		IsOccupied = function()
 			return data.occupied == true
 		end,
@@ -785,24 +751,6 @@ local function BuildCity(data, hashes, indexes, ownerID)
 		end,
 		GetPopulation = function()
 			return data.population
-		end,
-		-- The religions in the city, from data.religions, each with type and followers, and the
-		-- majority religion, from data.majority, by their GameInfo indexes.
-		GetReligion = function()
-			return {
-				GetMajorityReligion = function()
-					return data.majority and indexes[data.majority] or -1
-				end,
-				GetReligionsInCity = function()
-					local present = {}
-
-					for i, religion in ipairs(data.religions or {}) do
-						present[i] = { Religion = indexes[religion.type] or -1, Followers = religion.followers }
-					end
-
-					return present
-				end,
-			}
 		end,
 	}
 
@@ -1281,22 +1229,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 
 			return treasury
 		end,
-		-- The player's points toward each class of great person, from data.greatPeoplePoints by class
-		-- type, each with points and perTurn.
-		GetGreatPeoplePoints = function()
-			local function Points(classIndex)
-				return (data.greatPeoplePoints or {})[env.GameInfo.GreatPersonClasses[classIndex].GreatPersonClassType] or {}
-			end
-
-			return {
-				GetPointsTotal = function(_, classIndex)
-					return Points(classIndex).points or 0
-				end,
-				GetPointsPerTurn = function(_, classIndex)
-					return Points(classIndex).perTurn or 0
-				end,
-			}
-		end,
 		-- The player's influence, from data.influence, and for a city-state, from data.minor.
 		GetInfluence = function()
 			local influence = data.influence or {}
@@ -1376,35 +1308,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 
 			function religion.GetFaithYieldToolTip()
 				return (data.tooltips or {}).faith or ""
-			end
-
-			-- The index of the player's pantheon belief, from data.pantheon, or -1 for none.
-			function religion.GetPantheon()
-				return data.pantheon and indexes[data.pantheon] or -1
-			end
-
-			function religion.CanCreatePantheon()
-				return data.canCreatePantheon == true
-			end
-
-			-- The religion the player founded, from data.religion, with type and holyCity, a city ID.
-			-- The beliefs earned come from data.beliefsEarned, the count of its beliefs when missing.
-			local founded = data.religion or {}
-
-			function religion.GetReligionTypeCreated()
-				return founded.type and indexes[founded.type] or -1
-			end
-
-			function religion.GetHolyCityID()
-				return { player = id, id = founded.holyCity }
-			end
-
-			function religion.GetNumBeliefsEarned()
-				return data.beliefsEarned or #(founded.beliefs or {})
-			end
-
-			function religion.HasReligiousFoundingUnit()
-				return data.prophet == true
 			end
 
 			return religion
@@ -1651,24 +1554,41 @@ function FakeGame.Install(env, world)
 		Governments = {},
 		GovernmentSlots = {},
 		Policies = {},
-		Beliefs = {},
-		Religions = {},
 		Leaders = {},
 		LeaderTraits = {},
 		Traits = {},
 		Quests = {},
-		GreatPersonClasses = {},
-		Governors = {},
-		GovernorPromotions = {},
-		GovernorPromotionSets = {},
-		GovernorsCannotAssign = {},
-		GovernorPromotionPrereqs = {},
-		GovernorPromotionConditions = {},
-		GreatPersonIndividuals = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
 	}
+	-- Gives a table of rows the game's lookups: a row by its type name, as in
+	-- GameInfo.Districts["DISTRICT_CAMPUS"], and a call that lists the rows in index order.
+	local function TypedRows(rows, column)
+		return setmetatable(rows, {
+			__index = function(_, key)
+				if type(key) == "string" then
+					for index = 0, #rows do
+						local row = rawget(rows, index)
+
+						if row ~= nil and row[column] == key then
+							return row
+						end
+					end
+				end
+			end,
+			__call = function()
+				local index = -1
+
+				return function()
+					index = index + 1
+
+					return rows[index]
+				end
+			end,
+		})
+	end
+
 	-- GameInfo.Units(), GameInfo.Buildings(), GameInfo.Districts(), and GameInfo.Projects() list the
 	-- rows in index order, as the game's tables do when called, and each table finds a row by its type
 	-- name, as in GameInfo.Districts["DISTRICT_CAMPUS"].
@@ -1683,35 +1603,10 @@ function FakeGame.Install(env, world)
 		Boosts = "TechnologyType",
 		Policies = "PolicyType",
 		Governments = "GovernmentType",
-		Beliefs = "BeliefType",
-		Religions = "ReligionType",
 		Resources = "ResourceType",
 		Quests = "QuestType",
-		Governors = "GovernorType",
-		GovernorPromotions = "GovernorPromotionType",
 	}) do
-		setmetatable(env.GameInfo[name], {
-			__index = function(rows, key)
-				if type(key) == "string" then
-					for index = 0, #rows do
-						local row = rawget(rows, index)
-
-						if row ~= nil and row[column] == key then
-							return row
-						end
-					end
-				end
-			end,
-			__call = function(rows)
-				local index = -1
-
-				return function()
-					index = index + 1
-
-					return rows[index]
-				end
-			end,
-		})
+		TypedRows(env.GameInfo[name], column)
 	end
 	env.MilitaryFormationTypes = MILITARY_FORMATION_TYPES
 	env.CityCommandResults = CITY_COMMAND_RESULTS
@@ -1881,114 +1776,6 @@ function FakeGame.Install(env, world)
 		row.PrereqCivic = row.PrereqCivic or policy.civic
 	end
 
-	-- Each belief in world.beliefs gets a row.
-	for _, belief in ipairs(world.beliefs or {}) do
-		AddRow("Beliefs", "BeliefType", belief.type)
-
-		local row = env.GameInfo.Beliefs[indexes[belief.type]]
-
-		row.BeliefClassType = belief.class or "BELIEF_CLASS_PANTHEON"
-		row.Description = belief.description
-		row.taken = belief.taken
-		row.tooMany = belief.tooMany
-	end
-
-	-- Each religion in world.religions gets a row.
-	for _, religion in ipairs(world.religions or {}) do
-		AddRow("Religions", "ReligionType", religion.type)
-
-		local row = env.GameInfo.Religions[indexes[religion.type]]
-
-		row.Pantheon = religion.pantheon == true
-		row.RequiresCustomName = religion.customName == true
-		row.founded = religion.founded
-	end
-
-	-- Each religion that a player founded or a city holds gets a row, with its name, and each of a
-	-- founded religion's beliefs a belief row.
-	for _, data in pairs(world.players or {}) do
-		local religions = { data.religion }
-
-		for _, city in ipairs(data.cities or {}) do
-			for _, present in ipairs(city.religions or {}) do
-				religions[#religions + 1] = present
-			end
-		end
-
-		for _, religion in ipairs(religions) do
-			AddRow("Religions", "ReligionType", religion.type)
-			local row = env.GameInfo.Religions[indexes[religion.type]]
-
-			row.Name = religion.name or row.Name or religion.type
-
-			for _, belief in ipairs(religion.beliefs or {}) do
-				AddRow("Beliefs", "BeliefType", belief)
-			end
-		end
-	end
-
-	-- Each appointed governor gets a row, with its name, title, and a made-up hash, and each of its
-	-- promotions a row and a place in its set.
-	for _, data in pairs(world.players or {}) do
-		local governorData = data.governors or {}
-
-		-- Rows for a governor's promotions, with their place in its tree and their prerequisites.
-		local function AddPromotions(governor)
-			for _, promotion in ipairs(governor.promotions or {}) do
-				AddRow("GovernorPromotions", "GovernorPromotionType", promotion.type)
-
-				local promotionRow = env.GameInfo.GovernorPromotions[indexes[promotion.type]]
-
-				promotionRow.Name = "LOC_" .. promotion.type .. "_NAME"
-				promotionRow.Description = "LOC_" .. promotion.type .. "_DESCRIPTION"
-				promotionRow.Level = promotion.level or 0
-				promotionRow.Column = promotion.column or 0
-				promotionRow.BaseAbility = promotion.base == true
-
-				if promotion.hiddenWithoutPrereqs then
-					table.insert(env.GameInfo.GovernorPromotionConditions, { GovernorPromotionType = promotion.type, HiddenWithoutPrereqs = true })
-				end
-				promotionRow.Hash = 4000000 + promotionRow.Index
-				table.insert(env.GameInfo.GovernorPromotionSets, { GovernorType = governor.type, GovernorPromotion = promotion.type })
-
-				for _, required in ipairs(promotion.requires or {}) do
-					table.insert(env.GameInfo.GovernorPromotionPrereqs, { GovernorPromotionType = promotion.type, PrereqGovernorPromotion = required })
-				end
-			end
-		end
-
-		for _, governor in ipairs(governorData.candidates or {}) do
-			AddRow("Governors", "GovernorType", governor.type)
-
-			local row = env.GameInfo.Governors[indexes[governor.type]]
-
-			row.Name = "LOC_" .. governor.type .. "_NAME"
-			row.Title = "LOC_" .. governor.type .. "_TITLE"
-			row.Description = "LOC_" .. governor.type .. "_DESCRIPTION"
-			row.IdentityPressure = governor.loyalty or 8
-			row.Hash = 3000000 + row.Index
-			AddPromotions(governor)
-		end
-
-		for _, governor in ipairs(governorData.appointed or {}) do
-			AddRow("Governors", "GovernorType", governor.type)
-
-			local row = env.GameInfo.Governors[indexes[governor.type]]
-
-			row.Name = "LOC_" .. governor.type .. "_NAME"
-			row.Title = "LOC_" .. governor.type .. "_TITLE"
-			row.Description = "LOC_" .. governor.type .. "_DESCRIPTION"
-			row.IdentityPressure = 8
-			row.Hash = 3000000 + row.Index
-			AddPromotions(governor)
-		end
-	end
-
-	-- The Secret Societies governors that can't be assigned to a city.
-	for _, governorType in ipairs(world.cannotAssign or {}) do
-		table.insert(env.GameInfo.GovernorsCannotAssign, { GovernorType = governorType, CannotAssign = true })
-	end
-
 	-- Each artifact's era gets a row.
 	for _, data in pairs(world.players or {}) do
 		if data.archaeologist ~= nil then
@@ -2008,18 +1795,6 @@ function FakeGame.Install(env, world)
 				row.Name = "LOC_" .. districtType .. "_NAME"
 			end
 		end
-	end
-
-	-- Each great person on offer gets rows for its class, era, and individual.
-	for _, person in ipairs(world.greatPeople or {}) do
-		AddRow("GreatPersonClasses", "GreatPersonClassType", person.class)
-		AddRow("Eras", "EraType", person.era)
-		AddRow("GreatPersonIndividuals", "GreatPersonIndividualType", person.type)
-
-		local row = env.GameInfo.GreatPersonIndividuals[indexes[person.type]]
-
-		row.Name = person.name or person.type
-		row.ActionCharges = person.charges or 0
 	end
 
 	-- Makes a list of rows callable, as GameInfo.Government_SlotCounts() is.
@@ -2075,10 +1850,6 @@ function FakeGame.Install(env, world)
 
 	Callable(env.GameInfo.Government_SlotCounts)
 	Callable(env.GameInfo.LeaderTraits)
-	Callable(env.GameInfo.GovernorPromotionSets)
-	Callable(env.GameInfo.GovernorsCannotAssign)
-	Callable(env.GameInfo.GovernorPromotionPrereqs)
-	Callable(env.GameInfo.GovernorPromotionConditions)
 	Callable(env.GameInfo.GovernmentModifiers)
 	Callable(env.GameInfo.ModifierArguments)
 
@@ -2320,10 +2091,6 @@ function FakeGame.Install(env, world)
 				env.GameInfo.Types[hashes[typeName]] = { Type = typeName }
 			end
 
-			if city.governor then
-				AddRow("Governors", "GovernorType", city.governor.type)
-			end
-
 			for _, district in ipairs(city.districts or {}) do
 				AddRow("Districts", "DistrictType", district.type)
 
@@ -2561,6 +2328,8 @@ function FakeGame.Install(env, world)
 
 			return hashes[typeName]
 		end,
+		TypedRows = TypedRows,
+		Callable = Callable,
 		List = List,
 		ChangedCity = ChangedCity,
 		PlotIndex = PlotIndex,
@@ -2592,123 +2361,6 @@ function FakeGame.Install(env, world)
 		if world.expansion2 then
 			env.Players[id].GetFavorPerTurn = function()
 				return data.favorPerTurn or 0
-			end
-		end
-
-		-- The player's governors, from data.governors.
-		if data.governors ~= nil then
-			local governorData = data.governors
-
-			env.Players[id].GetGovernors = function()
-				local list = {}
-
-				for i, governor in ipairs(governorData.appointed or {}) do
-					local held = {}
-
-					for _, promotion in ipairs(governor.promotions or {}) do
-						if promotion.has then
-							held[env.GameInfo.GovernorPromotions[promotion.type].Hash] = true
-						end
-					end
-
-					list[i] = {
-						GetType = function()
-							return indexes[governor.type]
-						end,
-						GetAssignedCity = function()
-							local city = governor.city
-
-							return city and {
-								GetOwner = function()
-									return city.owner
-								end,
-								GetID = function()
-									return city.id
-								end,
-							}
-						end,
-						IsEstablished = function()
-							return governor.established == true
-						end,
-						GetTurnsOnSite = function()
-							return governor.turnsOnSite or 0
-						end,
-						GetTurnsToEstablish = function()
-							return governor.turnsToEstablish or 5
-						end,
-						GetNeutralizedTurns = function()
-							return governor.neutralized or 0
-						end,
-						GetIdentityPressure = function()
-							return governor.loyalty or 8
-						end,
-						HasPromotion = function(_, hash)
-							return held[hash] == true
-						end,
-						IsGovernCityState = function()
-							return governor.cityStates == true
-						end,
-						CanAssignToMajorCiv = function()
-							return governor.abroad == true
-						end,
-					}
-				end
-
-				-- The candidates by hash, and the promotions each appointed governor can earn.
-				local candidates, earnable, appointed = {}, {}, {}
-
-				for _, candidate in ipairs(governorData.candidates or {}) do
-					candidates[env.GameInfo.Governors[indexes[candidate.type]].Hash] = candidate
-				end
-
-				for _, governor in ipairs(governorData.appointed or {}) do
-					appointed[env.GameInfo.Governors[indexes[governor.type]].Hash] = governor
-
-					for _, promotion in ipairs(governor.promotions or {}) do
-						earnable[env.GameInfo.GovernorPromotions[indexes[promotion.type]].Hash] = promotion.canEarn == true
-					end
-				end
-
-				return {
-					GetGovernorPoints = function()
-						return governorData.points or 0
-					end,
-					GetGovernorPointsSpent = function()
-						return governorData.spent or 0
-					end,
-					GetGovernorList = function()
-						return #list > 0, list
-					end,
-					CanAppoint = function()
-						return governorData.canAppoint ~= false
-					end,
-					HasGovernor = function(_, hash)
-						return appointed[hash] ~= nil
-					end,
-					CanEverAppointGovernor = function(_, hash)
-						return candidates[hash] ~= nil and candidates[hash].canEver ~= false
-					end,
-					GetTurnsToEstablish = function(_, hash)
-						return candidates[hash] and candidates[hash].turnsToEstablish or 5
-					end,
-					CanPromoteGovernor = function(_, hash)
-						return appointed[hash] ~= nil and appointed[hash].canPromote == true
-					end,
-					CanEarnPromotion = function(_, _, promotionHash)
-						return earnable[promotionHash] == true
-					end,
-					-- Whether a city can take a governor, from governorData.cannotAssignTo, with the game's
-					-- failure reasons.
-					CanAssignGovernor = function(_, _, city)
-						local reasons = (governorData.cannotAssignTo or {})[city:GetOwner() .. ":" .. city:GetID()]
-
-						if reasons == nil then
-							return true, {}
-						end
-
-						return false, { [env.PlayerOperationResults.FAILURE_REASONS] = reasons }
-					end,
-				}
 			end
 		end
 
@@ -2772,47 +2424,6 @@ function FakeGame.Install(env, world)
 	env.Game.IsAllowStrategicCommands = function(playerID)
 		return (world.players or {})[playerID].noStrategicCommands ~= true
 	end
-	-- Whether any player's pantheon or religion holds a belief, from each belief's taken.
-	env.Game.GetReligion = function()
-		local function IsTaken(_, index)
-			return env.GameInfo.Beliefs[index].taken == true
-		end
-
-		return {
-			IsInSomePantheon = IsTaken,
-			IsInSomeReligion = IsTaken,
-			IsTooManyForReligion = function(_, index)
-				return env.GameInfo.Beliefs[index].tooMany == true
-			end,
-			HasBeenFounded = function(_, index)
-				return env.GameInfo.Religions[index].founded == true
-			end,
-			GetMinimumFaithNextPantheon = function()
-				return world.pantheonFaith or 25
-			end,
-			GetName = function(_, index)
-				return env.GameInfo.Religions[index].Name
-			end,
-			-- Each founded religion, with its index, founder, and belief indexes.
-			GetReligions = function()
-				local religions = {}
-
-				for playerID, data in pairs(world.players or {}) do
-					if data.religion ~= nil then
-						local beliefs = {}
-
-						for i, belief in ipairs(data.religion.beliefs or {}) do
-							beliefs[i] = indexes[belief]
-						end
-
-						religions[#religions + 1] = { Religion = indexes[data.religion.type], Founder = playerID, Beliefs = beliefs }
-					end
-				end
-
-				return religions
-			end,
-		}
-	end
 	-- The artifact of each digging archaeologist, by its index, with the site's type, the acting and
 	-- target players, and the acting player's era, by its GameInfo index.
 	env.Game.GetArtifactByIndex = function(index)
@@ -2823,60 +2434,6 @@ function FakeGame.Install(env, world)
 				return { Type = artifact.type, ActingPlayerID = artifact.acting, TargetPlayerID = artifact.target or -1, ActingPlayerEra = indexes[artifact.era] }
 			end
 		end
-	end
-	-- The great people on offer, from world.greatPeople, by the GameInfo index of each individual.
-	env.Game.GetGreatPeople = function()
-		local byIndex = {}
-
-		for _, person in ipairs(world.greatPeople or {}) do
-			byIndex[indexes[person.type]] = person
-		end
-
-		local function Patronage(index, yield)
-			return byIndex[index][yield == YIELD_TYPES.GOLD and "gold" or "faith"] or {}
-		end
-
-		return {
-			GetTimeline = function()
-				local timeline = {}
-
-				for i, person in ipairs(world.greatPeople or {}) do
-					local passive, action = person.passive or {}, person.action or {}
-
-					timeline[i] = {
-						Individual = (not person.claimed) and indexes[person.type] or nil,
-						Class = indexes[person.class],
-						Era = indexes[person.era],
-						Cost = person.cost,
-						PassiveNameText = passive.name,
-						PassiveEffectText = passive.effect,
-						ActionNameText = action.name,
-						ActionUsageText = action.usage,
-						ActionEffectText = action.effect,
-					}
-				end
-
-				return timeline
-			end,
-			CanRecruitPerson = function(_, _, index)
-				return byIndex[index].canRecruit == true
-			end,
-			CanRejectPerson = function(_, _, index)
-				return byIndex[index].passCost ~= nil
-			end,
-			GetRejectCost = function(_, _, index)
-				return byIndex[index].passCost
-			end,
-			CanPatronizePerson = function(_, _, index, yield)
-				return Patronage(index, yield).can == true
-			end,
-			GetPatronizeCost = function(_, _, index, yield)
-				return Patronage(index, yield).cost or 2147483647
-			end,
-			GetEarnConditionsText = function(_, _, index)
-				return byIndex[index].cantEarn or ""
-			end,
-		}
 	end
 	-- The quests from data.minor.quests, by the player they are for.
 	env.Game.GetQuestsManager = function()
@@ -3043,5 +2600,8 @@ FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
 FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"))
 FakeGame.Register("Eras", require("FakeGame/Eras"))
 FakeGame.Register("Dedications", require("FakeGame/Dedications"))
+FakeGame.Register("Governors", require("FakeGame/Governors"))
+FakeGame.Register("Religion", require("FakeGame/Religion"))
+FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"))
 
 return FakeGame
