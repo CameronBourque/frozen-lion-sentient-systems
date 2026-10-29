@@ -68,22 +68,17 @@
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
 -- player's met lists the IDs of the players it has met, and atWar the IDs of the players it is at
--- war with. A player's influence has tokens, canGive, false to refuse envoys, points, perTurn,
--- threshold, and envoys, the envoys each threshold gives. A city-state's minor has name, leader,
--- inherit, the leader it inherits from, envoys, the count by player ID, suzerain, a player ID, and
--- cantReceive, true for the Free Cities, and traits, the text keys of its suzerain bonus, resources,
--- each with type, amount, exported, and perTurn, quests by player ID, each with type, name,
--- description, and reward, and uniqueDisabled, true when Gathering Storm turns off its suzerain
--- bonus. Great people are in FakeGame/GreatPeople.lua. A player's captured and rebelled are the next city it captured and the next city that
+-- war with. A player's influence and a city-state's quests and envoys are in FakeGame/Envoys.lua. A
+-- city-state's minor also has name, leader, inherit, the leader it inherits from, traits, the text
+-- keys of its suzerain bonus, and resources, each with type, amount, exported, and perTurn.
+-- Great people are in FakeGame/GreatPeople.lua.
+-- A player's captured and rebelled are the next city it captured and the next city that
 -- rebelled to join it, each with id, name, x, y, population, districts, originalOwner, ownerBefore,
 -- conqueredFrom, gift, true for a city given in a deal, canRaze, false for one the player can't
 -- raze, and warmonger, with keep and raze points. noRiseAndFall leaves out GetNextRebelledCity. A
 -- player's liberate lists the IDs it can liberate a city to, revived the IDs it has brought back,
--- and freeCities is true for the Free Cities. A player's escapingSpy is its next escaping spy, with
--- id, name, loot, pursuer, the counterspy's name or "" for the police, x, and y, the tile of the city
--- it escapes from. With one, the four escape districts get rows, with TravelTime 1 to 4. A player's
--- archaeologist is its next digging archaeologist, with id, name, x, y, and artifact, with index,
--- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
+-- and freeCities is true for the Free Cities. Escaping spies are in FakeGame/Spies.lua, and digging
+-- archaeologists and artifacts in FakeGame/Artifacts.lua. A player's playerName
 -- is its leader's name, and favor its Diplomatic Favor. The World Congress, emergencies, eras, and
 -- dedications are in FakeGame/WorldCongress.lua, Emergencies.lua, Eras.lua, and Dedications.lua. Governors, with a city's governor, are in FakeGame/Governors.lua.
 -- world.offCapabilities lists the great people capabilities that are off. A player's
@@ -1031,9 +1026,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 
 					return false
 				end,
-				GetNextEscapingSpyID = function()
-					return data.escapingSpy and data.escapingSpy.id or -1
-				end,
 				CanLiberateCityTo = function(_, otherID)
 					for _, liberate in ipairs(data.liberate or {}) do
 						if liberate == otherID then
@@ -1229,71 +1221,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 
 			return treasury
 		end,
-		-- The player's influence, from data.influence, and for a city-state, from data.minor.
-		GetInfluence = function()
-			local influence = data.influence or {}
-			local minor = data.minor or {}
-
-			local result = {
-				GetTokensToGive = function()
-					return influence.tokens or 0
-				end,
-				CanGiveInfluence = function()
-					return influence.canGive ~= false
-				end,
-				GetPointsEarned = function()
-					return influence.points or 0
-				end,
-				GetPointsPerTurn = function()
-					return influence.perTurn or 0
-				end,
-				GetPointsThreshold = function()
-					return influence.threshold or 50
-				end,
-				GetTokensPerThreshold = function()
-					return influence.envoys or 1
-				end,
-				-- A city-state that can receive envoys, which the player has met and isn't at war
-				-- with.
-				CanGiveTokensToPlayer = function(_, otherID)
-					local other = env.Players[otherID]
-
-					for _, enemy in ipairs(data.atWar or {}) do
-						if enemy == otherID then
-							return false
-						end
-					end
-
-					return other:GetInfluence():CanReceiveInfluence() and env.Players[id]:GetDiplomacy():HasMet(otherID)
-				end,
-				CanReceiveInfluence = function()
-					return data.minor ~= nil and minor.cantReceive ~= true
-				end,
-				GetTokensReceived = function(_, playerID)
-					return (minor.envoys or {})[playerID] or 0
-				end,
-				GetMostTokensReceived = function()
-					local most = 0
-
-					for _, envoys in pairs(minor.envoys or {}) do
-						most = math.max(most, envoys)
-					end
-
-					return most
-				end,
-				GetSuzerain = function()
-					return minor.suzerain or -1
-				end,
-			}
-
-			if env.GameInfo.Governments_XP2 ~= nil then
-				function result.IsSuzerainUniqueBonusDisabled()
-					return minor.uniqueDisabled == true
-				end
-			end
-
-			return result
-		end,
 		GetReligion = function()
 			local religion = Store(YIELD_ROWS.YIELD_FAITH.Index)
 
@@ -1312,70 +1239,9 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 
 			return religion
 		end,
-		-- The player's units, and its escaping spy from data.escapingSpy, which FindID alone finds.
+		-- The player's units.
 		GetUnits = function()
-			local list = List(units)
-			local spy = data.escapingSpy
-
-			-- The next digging archaeologist, from data.archaeologist.
-			function list.GetNextExtractingArchaeologist()
-				local archaeologist = data.archaeologist
-
-				return archaeologist and {
-					GetID = function()
-						return archaeologist.id
-					end,
-					GetName = function()
-						return archaeologist.name
-					end,
-					GetX = function()
-						return archaeologist.x
-					end,
-					GetY = function()
-						return archaeologist.y
-					end,
-					GetArchaeology = function()
-						return {
-							GetArtifactIndex = function()
-								return archaeologist.artifact.index
-							end,
-						}
-					end,
-				}
-			end
-
-			if spy ~= nil then
-				local findID = list.FindID
-
-				function list.FindID(self, unitID)
-					if unitID ~= spy.id then
-						return findID(self, unitID)
-					end
-
-					return {
-						GetID = function()
-							return spy.id
-						end,
-						GetX = function()
-							return spy.x
-						end,
-						GetY = function()
-							return spy.y
-						end,
-						GetName = function()
-							return spy.name
-						end,
-						GetLootName = function()
-							return spy.loot
-						end,
-						GetPursuingSpyName = function()
-							return spy.pursuer or ""
-						end,
-					}
-				end
-			end
-
-			return list
+			return List(units)
 		end,
 		GetDistricts = function()
 			return {
@@ -1557,7 +1423,6 @@ function FakeGame.Install(env, world)
 		Leaders = {},
 		LeaderTraits = {},
 		Traits = {},
-		Quests = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -1604,7 +1469,6 @@ function FakeGame.Install(env, world)
 		Policies = "PolicyType",
 		Governments = "GovernmentType",
 		Resources = "ResourceType",
-		Quests = "QuestType",
 	}) do
 		TypedRows(env.GameInfo[name], column)
 	end
@@ -1776,27 +1640,6 @@ function FakeGame.Install(env, world)
 		row.PrereqCivic = row.PrereqCivic or policy.civic
 	end
 
-	-- Each artifact's era gets a row.
-	for _, data in pairs(world.players or {}) do
-		if data.archaeologist ~= nil then
-			AddRow("Eras", "EraType", data.archaeologist.artifact.era)
-		end
-	end
-
-	-- With an escaping spy, each escape district gets a row, with its travel time and name.
-	for _, data in pairs(world.players or {}) do
-		if data.escapingSpy ~= nil then
-			for i, districtType in ipairs({ "DISTRICT_AERODROME", "DISTRICT_HARBOR", "DISTRICT_COMMERCIAL_HUB", "DISTRICT_CITY_CENTER" }) do
-				AddRow("Districts", "DistrictType", districtType)
-
-				local row = env.GameInfo.Districts[indexes[districtType]]
-
-				row.TravelTime = i
-				row.Name = "LOC_" .. districtType .. "_NAME"
-			end
-		end
-	end
-
 	-- Makes a list of rows callable, as GameInfo.Government_SlotCounts() is.
 	local function Callable(rows)
 		return setmetatable(rows, {
@@ -1911,18 +1754,6 @@ function FakeGame.Install(env, world)
 	env.CivilizationLevelTypes = { CIVILIZATION_LEVEL_FULL_CIV = 0 }
 	env.CityTransferTypes = CITY_TRANSFER_TYPES
 	env.PlayerOperationResults = { FAILURE_REASONS = 9001 }
-	env.Cities = {
-		-- The city of any player on the tile x, y, where an escaping spy is.
-		GetPlotPurchaseCity = function(x, y)
-			for id = 0, 63 do
-				for _, city in (env.Players[id] and env.Players[id]:GetCities() or List({})):Members() do
-					if city:GetX() == x and city:GetY() == y then
-						return city
-					end
-				end
-			end
-		end,
-	}
 
 	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
 	-- GetUnlockablesForTech and GetUnlockablesForCivic return what one unlocks as { type, name, key }
@@ -2159,12 +1990,6 @@ function FakeGame.Install(env, world)
 			row.Hash = hashes[resource.type]
 			row.ResourceClassType = "RESOURCECLASS_" .. resource.class:upper()
 			row.Name = "LOC_" .. resource.type .. "_NAME"
-		end
-
-		for _, quests in pairs((data.minor or {}).quests or {}) do
-			for _, quest in ipairs(quests) do
-				AddRow("Quests", "QuestType", quest.type)
-			end
 		end
 	end
 
@@ -2424,44 +2249,6 @@ function FakeGame.Install(env, world)
 	env.Game.IsAllowStrategicCommands = function(playerID)
 		return (world.players or {})[playerID].noStrategicCommands ~= true
 	end
-	-- The artifact of each digging archaeologist, by its index, with the site's type, the acting and
-	-- target players, and the acting player's era, by its GameInfo index.
-	env.Game.GetArtifactByIndex = function(index)
-		for _, data in pairs(world.players or {}) do
-			local artifact = data.archaeologist and data.archaeologist.artifact
-
-			if artifact ~= nil and artifact.index == index then
-				return { Type = artifact.type, ActingPlayerID = artifact.acting, TargetPlayerID = artifact.target or -1, ActingPlayerEra = indexes[artifact.era] }
-			end
-		end
-	end
-	-- The quests from data.minor.quests, by the player they are for.
-	env.Game.GetQuestsManager = function()
-		local function Find(playerID, cityStateID, index)
-			local minor = world.players[cityStateID].minor or {}
-
-			for _, quest in ipairs((minor.quests or {})[playerID] or {}) do
-				if indexes[quest.type] == index then
-					return quest
-				end
-			end
-		end
-
-		return {
-			HasActiveQuestFromPlayer = function(_, playerID, cityStateID, index)
-				return Find(playerID, cityStateID, index) ~= nil
-			end,
-			GetActiveQuestName = function(_, playerID, cityStateID, index)
-				return Find(playerID, cityStateID, index).name
-			end,
-			GetActiveQuestDescription = function(_, playerID, cityStateID, index)
-				return Find(playerID, cityStateID, index).description
-			end,
-			GetActiveQuestReward = function(_, playerID, cityStateID, index)
-				return Find(playerID, cityStateID, index).reward
-			end,
-		}
-	end
 	env.Game.GetPlayers = function(filter)
 		assert(filter.Major == true, "no fake for this filter")
 
@@ -2603,5 +2390,8 @@ FakeGame.Register("Dedications", require("FakeGame/Dedications"))
 FakeGame.Register("Governors", require("FakeGame/Governors"))
 FakeGame.Register("Religion", require("FakeGame/Religion"))
 FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"))
+FakeGame.Register("Envoys", require("FakeGame/Envoys"))
+FakeGame.Register("Spies", require("FakeGame/Spies"))
+FakeGame.Register("Artifacts", require("FakeGame/Artifacts"))
 
 return FakeGame
