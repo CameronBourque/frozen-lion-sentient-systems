@@ -31,7 +31,7 @@ end
 describe("SentientSystems_GetUnitStates", function()
 	it("lists each unit's ID, type, position, moves, and health", function()
 		assert.equal(
-			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[{\"health\":{\"max\":100,\"value\":100},\"id\":196608,\"moves\":{\"left\":3,\"max\":3},"
+			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"science\":0,\"tourism\":0},\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[{\"health\":{\"max\":100,\"value\":100},\"id\":196608,\"moves\":{\"left\":3,\"max\":3},"
 				.. "\"type\":\"UNIT_SCOUT\",\"x\":24,\"y\":15}]}",
 			StateWith({ SCOUT })
 		)
@@ -45,11 +45,11 @@ describe("SentientSystems_GetUnitStates", function()
 	end)
 
 	it("skips a unit that isn't on the map", function()
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", StateWith({ With(SCOUT, { x = -9999, y = -9999 }) }))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"science\":0,\"tourism\":0},\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", StateWith({ With(SCOUT, { x = -9999, y = -9999 }) }))
 	end)
 
 	it("skips a unit that is dead or about to die", function()
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", StateWith({ With(SCOUT, { dead = true }), With(SCOUT, { id = 2, delayedDeath = true }) }))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"science\":0,\"tourism\":0},\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", StateWith({ With(SCOUT, { dead = true }), With(SCOUT, { id = 2, delayedDeath = true }) }))
 	end)
 
 	it("adds the unit's experience and its promotions", function()

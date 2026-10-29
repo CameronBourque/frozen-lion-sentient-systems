@@ -61,6 +61,10 @@
 -- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
 -- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
 -- when a religion has too many of its class. world.rename turns on CAPABILITY_RENAME.
+-- A player's income numbers: unitDiscount, tooltips with gold, faith, science, and culture, deals, each with
+-- player, gold, duration, enacted, and outgoing, and units with formation, such as
+-- "CORPS_MILITARY_FORMATION". world.maintenance maps a district or building type to its upkeep,
+-- world.unitMaintenance a unit type to its unit, corps, and army upkeep, and world.turn is the turn.
 -- A player's top bar numbers are science, culture, tourism, gold, upkeep, goldPerTurn, faith,
 -- faithPerTurn, favor, favorPerTurn, with Gathering Storm only, and trade, with active and capacity.
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
@@ -769,6 +773,14 @@ local function Unit(data, indexes)
 		GetType = function()
 			return indexes[data.type]
 		end,
+		GetUnitType = function()
+			return indexes[data.type]
+		end,
+		-- The unit's formation, from data.formation, such as "CORPS_MILITARY_FORMATION", standard when
+		-- missing.
+		GetMilitaryFormation = function()
+			return MILITARY_FORMATION_TYPES[data.formation or "STANDARD_MILITARY_FORMATION"]
+		end,
 		GetX = function()
 			return data.x
 		end,
@@ -898,6 +910,9 @@ local function Player(id, data, hashes, indexes, env)
 				GetScienceYield = function()
 					return data.science or 0
 				end,
+				GetScienceYieldToolTip = function()
+					return (data.tooltips or {}).science or ""
+				end,
 				GetResearchingTech = function()
 					return techData.current and indexes[techData.current] or -1
 				end,
@@ -981,6 +996,9 @@ local function Player(id, data, hashes, indexes, env)
 			return {
 				GetCultureYield = function()
 					return data.culture or 0
+				end,
+				GetCultureYieldToolTip = function()
+					return (data.tooltips or {}).culture or ""
 				end,
 				GetProgressingCivic = function()
 					return civicData.current and indexes[civicData.current] or -1
@@ -1125,6 +1143,16 @@ local function Player(id, data, hashes, indexes, env)
 				return data.upkeep or 0
 			end
 
+			-- What the player's units cost less each, from data.unitDiscount, and the income's text
+			-- from data.tooltips.gold.
+			function treasury.GetMaintDiscountPerUnit()
+				return data.unitDiscount or 0
+			end
+
+			function treasury.GetGoldYieldToolTip()
+				return (data.tooltips or {}).gold or ""
+			end
+
 			return treasury
 		end,
 		-- The player's points toward each class of great person, from data.greatPeoplePoints by class
@@ -1218,6 +1246,10 @@ local function Player(id, data, hashes, indexes, env)
 
 			function religion.GetFaithYield()
 				return data.faithPerTurn or 0
+			end
+
+			function religion.GetFaithYieldToolTip()
+				return (data.tooltips or {}).faith or ""
 			end
 
 			-- The index of the player's pantheon belief, from data.pantheon, or -1 for none.
@@ -2069,6 +2101,37 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- The upkeep of districts and buildings, from world.maintenance by type, and each unit's by type from
+	-- world.unitMaintenance, with unit, corps, and army. A placed unit gets a hash and a name.
+	local unitCosts = {}
+
+	for _, tableName in ipairs({ "Districts", "Buildings" }) do
+		for index, row in pairs(env.GameInfo[tableName]) do
+			if type(index) == "number" then
+				row.Maintenance = (world.maintenance or {})[row.DistrictType or row.BuildingType] or 0
+			end
+		end
+	end
+
+	for index, row in pairs(env.GameInfo.Units) do
+		if type(index) == "number" then
+			hashes[row.UnitType] = hashes[row.UnitType] or 5000000 + index
+			row.Hash = hashes[row.UnitType]
+			row.Name = row.Name or "LOC_" .. row.UnitType .. "_NAME"
+			unitCosts[row.Hash] = (world.unitMaintenance or {})[row.UnitType] or {}
+		end
+	end
+
+	env.UnitManager.GetUnitMaintenance = function(hash)
+		return unitCosts[hash].unit or 0
+	end
+	env.UnitManager.GetUnitCorpsMaintenance = function(hash)
+		return unitCosts[hash].corps or 0
+	end
+	env.UnitManager.GetUnitArmyMaintenance = function(hash)
+		return unitCosts[hash].army or 0
+	end
+
 	-- A city-state's resources and quests get their rows.
 	for _, data in pairs(world.players or {}) do
 		for _, resource in ipairs((data.minor or {}).resources or {}) do
@@ -2778,6 +2841,50 @@ function FakeGame.Install(env, world)
 			return minors
 		end,
 	}
+
+	-- The gold deals, from each player's data.deals: each has player, the other player's ID, gold,
+	-- duration, enacted, and outgoing, true for gold the player pays. A deal with several gold items has
+	-- one entry for each, in a deal of its own.
+	env.DealItemTypes = { GOLD = 1 }
+	env.DealItemSubTypes = { NONE = 0 }
+	env.DealManager = {
+		GetPlayerDeals = function(playerID, otherID)
+			local deals = {}
+
+			for _, entry in ipairs(world.players[playerID].deals or {}) do
+				if entry.player == otherID then
+					deals[#deals + 1] = {
+						FindItemsByType = function(_, _, _, owner)
+							local payer = entry.outgoing and playerID or otherID
+
+							if owner ~= payer then
+								return nil
+							end
+
+							return {
+								{
+									GetAmount = function()
+										return entry.gold
+									end,
+									GetDuration = function()
+										return entry.duration
+									end,
+									GetEnactedTurn = function()
+										return entry.enacted
+									end,
+								},
+							}
+						end,
+					}
+				end
+			end
+
+			return deals
+		end,
+	}
+	env.Game.GetCurrentGameTurn = function()
+		return world.turn or 1
+	end
 
 	local text = world.text or {}
 

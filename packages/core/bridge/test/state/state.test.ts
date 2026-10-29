@@ -56,6 +56,15 @@ const STATE: State = {
 		science: 3,
 		culture: 2,
 		tourism: 0,
+		income: {
+			gold: { total: 5 },
+			faith: { total: 1 },
+			science: { total: 3 },
+			culture: { total: 2 },
+			expenses: { total: 0, cities: 0, units: 0, deals: 0 },
+			unitUpkeep: [],
+			deals: [],
+		},
 	},
 	rivals: {
 		cities: [{

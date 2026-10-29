@@ -2,14 +2,14 @@ local FakeGame = require("FakeGame")
 local Game = require("Game")
 
 -- Returns the player section JSON for player 0, whose data is given, with or without Gathering
--- Storm.
+-- Storm, without its income, which has tests of its own.
 local function PlayerWith(data, expansion2)
 	local env = Game.new()
 
 	FakeGame.Install(env, { expansion2 = expansion2, players = { [0] = data } })
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
-	return env.SentientSystems_GetState(0):match("\"player\":(%b{})")
+	return (env.SentientSystems_GetState(0):match("\"player\":(%b{})"):gsub("\"income\":%b{},", ""))
 end
 
 describe("SentientSystems_GetPlayerState", function()
