@@ -142,6 +142,36 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- The YieldTypes names by GameInfo.Yields index.
 local YIELD_NAMES = { [0] = "FOOD", "PRODUCTION", "GOLD", "SCIENCE", "CULTURE", "FAITH" }
 
+-- The districts and buildings of a city from data, which more than one feature reads: placed, each
+-- district by its GameInfo index, buildings, each building by its index, and buildingsAt, the
+-- building indexes at each plot. It is built once for each city.
+local layouts = setmetatable({}, { __mode = "k" })
+
+local function CityLayout(data, indexes)
+	if layouts[data] == nil then
+		local layout = { placed = {}, buildings = {}, buildingsAt = {} }
+
+		for _, district in ipairs(data.districts or {}) do
+			local plotIndex = PlotIndex(district.x, district.y)
+
+			layout.buildingsAt[plotIndex] = {}
+
+			for _, building in ipairs(district.buildings or {}) do
+				local index = indexes[building.type]
+
+				layout.buildings[index] = building
+				layout.buildingsAt[plotIndex][#layout.buildingsAt[plotIndex] + 1] = index
+			end
+
+			layout.placed[indexes[district.type]] = district
+		end
+
+		layouts[data] = layout
+	end
+
+	return layouts[data]
+end
+
 -- A city from data. data.production is { type, turnsLeft }, or { hash, turnsLeft } for a hash that
 -- GameInfo.Types doesn't know, or nil for nothing in production. data.yields maps a YieldTypes
 -- name to its amount, and a missing yield is 0. data.growth has foodSurplus, housing, amenities,
@@ -158,82 +188,6 @@ local YIELD_NAMES = { [0] = "FOOD", "PRODUCTION", "GOLD", "SCIENCE", "CULTURE", 
 local function BuildCity(data, hashes, indexes, ownerID)
 	local growth = data.growth or {}
 	local loyalty = data.loyalty
-	local districts = {}
-	-- Each placed district by its GameInfo index.
-	local placed = {}
-	-- Each building by its index, and the indexes at each plot.
-	local buildings, buildingsAt = {}, {}
-
-	for i, district in ipairs(data.districts or {}) do
-		local plotIndex = PlotIndex(district.x, district.y)
-
-		buildingsAt[plotIndex] = {}
-
-		for _, building in ipairs(district.buildings or {}) do
-			local index = indexes[building.type]
-
-			buildings[index] = building
-			buildingsAt[plotIndex][#buildingsAt[plotIndex] + 1] = index
-		end
-
-		placed[indexes[district.type]] = district
-		districts[i] = {
-			GetType = function()
-				return indexes[district.type]
-			end,
-			GetX = function()
-				return district.x
-			end,
-			GetY = function()
-				return district.y
-			end,
-			IsComplete = function()
-				return district.complete ~= false
-			end,
-			IsPillaged = function()
-				return district.pillaged == true
-			end,
-			-- The district's yield and adjacency bonus for a GameInfo.Yields index, from district.yields and
-			-- district.adjacency, which map a YieldTypes name to an amount.
-			GetYield = function(_, yieldIndex)
-				return (district.yields or {})[YIELD_NAMES[yieldIndex]] or 0
-			end,
-			GetAdjacencyYield = function(_, yieldIndex)
-				return (district.adjacency or {})[YIELD_NAMES[yieldIndex]] or 0
-			end,
-		}
-	end
-
-
-	-- Each building option by its hash, which IsPillaged accepts.
-	local buildingsByHash = {}
-
-	for _, building in ipairs((data.options or {}).buildings or {}) do
-		buildingsByHash[hashes[building.type]] = building
-	end
-
-	local defense = data.defense or {}
-	local garrison = defense.garrison or { damage = 0, max = 200 }
-	local walls = defense.walls or { damage = 0, max = 0 }
-
-	local districtList = List(districts)
-
-	-- The city's district list also answers for a district type, by its GameInfo index.
-	function districtList.HasDistrict(_, index)
-		return placed[index] ~= nil
-	end
-
-	function districtList.IsComplete(_, index)
-		return placed[index] ~= nil and placed[index].complete ~= false
-	end
-
-	function districtList.IsPillaged(_, index)
-		return placed[index] ~= nil and placed[index].pillaged == true
-	end
-
-	function districtList.IsContaminated()
-		return false
-	end
 
 	local city = {
 		GetOwner = function()
@@ -241,30 +195,6 @@ local function BuildCity(data, hashes, indexes, ownerID)
 		end,
 		GetDistrictID = function()
 			return data.id
-		end,
-		IsCapital = function()
-			return data.capital == true
-		end,
-		-- The city center district, which the fake player's GetDistricts():FindID returns by the
-		-- city's ID.
-		center = {
-			GetDefenseStrength = function()
-				return defense.strength or 0
-			end,
-			GetDamage = function(_, defenseType)
-				return defenseType == DEFENSE_TYPES.DISTRICT_OUTER and walls.damage or garrison.damage
-			end,
-			GetMaxDamage = function(_, defenseType)
-				return defenseType == DEFENSE_TYPES.DISTRICT_OUTER and walls.max or garrison.max
-			end,
-		},
-		GetDistricts = function()
-			return districtList
-		end,
-		-- A building's yield for an index and a yield type such as "YIELD_GOLD", from building.yields,
-		-- which maps a YieldTypes name to an amount.
-		GetBuildingYield = function(_, index, yieldType)
-			return ((buildings[index] or {}).yields or {})[yieldType:gsub("^YIELD_", "")] or 0
 		end,
 		-- The routes the city sends out, from data.routes, each with player, id, the destination city, and
 		-- yields, a YieldTypes name to the amount it gives this city.
@@ -307,33 +237,6 @@ local function BuildCity(data, hashes, indexes, ownerID)
 		tiles = data.tiles or {},
 		IsOccupied = function()
 			return data.occupied == true
-		end,
-		GetBuildings = function()
-			return {
-				GetBuildingsAtLocation = function(_, plotIndex)
-					return buildingsAt[plotIndex] or {}
-				end,
-				HasBuilding = function(_, index)
-					return buildings[index].built ~= false
-				end,
-				-- The great works in a building, from building.greatWorks, each with type. A slot's great work
-				-- is numbered by its building and slot, and its type is that great work's GameInfo index.
-				GetNumGreatWorkSlots = function(_, index)
-					return #(buildings[index].greatWorks or {})
-				end,
-				GetGreatWorkInSlot = function(_, index, slot)
-					return (buildings[index].greatWorks or {})[slot + 1] and index * 100 + slot or -1
-				end,
-				GetGreatWorkTypeFromIndex = function(_, work)
-					return indexes[buildings[math.floor(work / 100)].greatWorks[work % 100 + 1].type]
-				end,
-				-- The game takes an index or a hash. A building option is found by its hash.
-				IsPillaged = function(_, indexOrHash)
-					local building = buildingsByHash[indexOrHash] or buildings[indexOrHash]
-
-					return building ~= nil and building.pillaged == true
-				end,
-			}
 		end,
 		GetGrowth = function()
 			return {
@@ -583,7 +486,7 @@ end
 -- ID to its data. world.text maps each LOC_ key to its text. Locale.Lookup returns any other key as
 -- it is. GameInfo.Types holds each production type in world, under a made-up hash.
 function FakeGame.Install(env, world)
-	playerHooks, cityHooks = {}, {}
+	playerHooks, cityHooks, layouts = {}, {}, setmetatable({}, { __mode = "k" })
 
 	local hashes, indexes = {}, {}
 	local count = 0
@@ -867,6 +770,9 @@ function FakeGame.Install(env, world)
 		TypedRows = TypedRows,
 		Callable = Callable,
 		List = List,
+		Layout = function(data)
+			return CityLayout(data, indexes)
+		end,
 		Formation = Formation,
 		PlotIndex = PlotIndex,
 		wonderTypes = wonderTypes,
@@ -906,6 +812,8 @@ FakeGame.Register("Stores", require("FakeGame/Stores"))
 FakeGame.Register("Players", require("FakeGame/Players"))
 FakeGame.Register("Locale", require("FakeGame/Locale"))
 FakeGame.Register("Capabilities", require("FakeGame/Capabilities"))
+FakeGame.Register("CityDistricts", require("FakeGame/CityDistricts"))
+FakeGame.Register("CityBuildings", require("FakeGame/CityBuildings"))
 FakeGame.Register("Blockers", require("FakeGame/Blockers"))
 FakeGame.Register("Deals", require("FakeGame/Deals"))
 FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
