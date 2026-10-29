@@ -1,25 +1,7 @@
--- A fake of the game's Lua API for tests, with players, their cities, districts, and units, the
--- map's plots, PlayersVisibility, PlayerManager.GetAlive and GetAliveMinors, PlayerConfigurations,
--- PlayerManager.GetAliveMajorIDs, a player's influence and resources, Game.GetQuestsManager,
--- Game.GetGreatPeople, a player's great people points, GameInfo.GreatPersonClasses,
--- GameInfo.GreatPersonIndividuals, GameCapabilities, a player's captured and rebelled cities,
--- CityDestroyDirectives, CivilizationLevelTypes, CityTransferTypes, GlobalParameters, a player's
--- escaping spy, Cities.GetPlotPurchaseCity, a player's digging archaeologist, Game.GetArtifactByIndex,
--- a player's governors, GameInfo.Governors, GameInfo.GovernorPromotions,
--- GameInfo.GovernorPromotionSets,
--- GameInfo.Leaders, GameInfo.LeaderTraits, GameInfo.Traits, GameInfo.Quests, DefenseTypes, UnitManager.CanStartCommand
--- for promotions, EndTurnBlockingTypes, NotificationManager.GetAllEndTurnBlocking, a build queue for
--- units, buildings, and districts with MilitaryFormationTypes, CityCommandResults, and
--- CityOperationResults, CityManager and UI for placement tiles and purchases, a treasury, a
--- player's techs and civics with the advisor's recommendations and the game's
--- GetUnlockablesForTech and GetUnlockablesForCivic, GameInfo.Types, GameInfo.Yields,
--- GameInfo.Technologies, GameInfo.Civics, GameInfo.Boosts, GameInfo.Eras, UITree for player 0's
--- techs and civics, Game.GetPlayers, a player's diplomacy, a player's government and policy slots
--- with GameInfo.Governments, GameInfo.GovernmentSlots, and GameInfo.Policies,
--- GameInfo.Districts, GameInfo.Buildings, GameInfo.Units, GameInfo.UnitPromotions,
--- GameInfo.Terrains, GameInfo.Features, GameInfo.Resources, GameInfo.Improvements, GameInfo.Routes,
--- GameInfo.Happinesses, YieldTypes, UnitCommandTypes,
--- UnitCommandResults, and Locale. It has only the calls the core mod makes. Example:
+-- A fake of the game's Lua API for tests. It has only the calls the core mod makes. The core here
+-- builds the shared GameInfo tables, a player's cities and units, and the fake env, and each area of
+-- the game is a feature in FakeGame/, which holds the docs for the world and player data it reads. A
+-- feature registers with one line at the end of this file. Example:
 -- local env = Game.new()
 -- FakeGame.Install(env, {
 -- 	players = { [0] = { cities = { {
@@ -36,43 +18,20 @@
 -- 		route = "ROUTE_ANCIENT_ROAD", routePillaged = false,
 -- 	} },
 -- })
--- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
--- Techs and civics are in FakeGame/Research.lua, and governments and policies in
--- FakeGame/Governments.lua. noStrategicCommands is true while the player can't act.
--- world.legacyBonuses turns on the base game's legacy bonuses.
--- world.rename turns on CAPABILITY_RENAME. Beliefs, pantheons, and religions are in FakeGame/Religion.lua.
--- A city's growth has housingModifier, which is 1 when missing, happinessModifier, and warWeariness,
--- which are 0, and its occupied is true for an occupied city.
--- A city's income rows come from its tiles, each with x, y, worked, yields, and tourism, its routes,
--- each with player, id, and yields, and the district yields and adjacency, building yields, wonder, and
--- greatWorks, each with type and yields, that data.districts holds. growth.yieldModifier is the
--- amenities' modifier.
--- A player's tooltips also has science, and it has units with formation, such as
--- "CORPS_MILITARY_FORMATION". Income, tourism, and the gold and faith tooltips are in
--- FakeGame/Income.lua, upkeep in FakeGame/Maintenance.lua, plots in FakeGame/Plots.lua, and world.turn is the turn.
--- A player's top bar numbers are science, culture, tourism, gold, upkeep, goldPerTurn, faith,
--- faithPerTurn, favor, favorPerTurn, with Gathering Storm only, and trade, with active and capacity.
--- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
--- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
--- player's met lists the IDs of the players it has met, and atWar the IDs of the players it is at
--- war with, in FakeGame/Rivals.lua. A player's influence and a city-state's quests and envoys are in FakeGame/Envoys.lua. A
--- city-state's minor also has name, leader, inherit, the leader it inherits from, traits, the text
--- keys of its suzerain bonus, and resources, each with type, amount, exported, and perTurn.
--- Great people are in FakeGame/GreatPeople.lua.
--- Captured and rebelled cities, liberate, and revived are in FakeGame/CapturedCities.lua. A player's
--- freeCities is true for the Free Cities. Escaping spies are in FakeGame/Spies.lua, and digging
--- archaeologists and artifacts in FakeGame/Artifacts.lua. A player's playerName
--- is its leader's name, and favor its Diplomatic Favor. The World Congress, emergencies, eras, and
--- dedications are in FakeGame/WorldCongress.lua, Emergencies.lua, Eras.lua, and Dedications.lua. Governors, with a city's governor, are in FakeGame/Governors.lua.
--- world.offCapabilities lists the great people capabilities that are off. A player's
--- blockers are in FakeGame/Blockers.lua, deals in FakeGame/Deals.lua, and its resources and
--- hiddenResources in FakeGame/Resources.lua. A city's capital is
--- true or false, and its defense has strength, garrison, and walls, each with damage and max. A
--- city's options lists what its build queue offers, such as options = { units = { { type =
--- "UNIT_SETTLER", cost = 40, turns = 6 } }, buildings = { { type = "BUILDING_GRANARY", cost = 32,
--- turns = 5 } }, districts = { { type = "DISTRICT_CAMPUS", cost = 29, turns = 6, tiles = { { x = 17,
--- y = 13, adjacency = { SCIENCE = 1 } } } } } }.
 -- env.Players[0]:GetCities():Members() then lists the one city.
+--
+-- Where the data is documented:
+-- - City: BuildCity below. Its build queue, purchases, and placement tiles are in Production,
+--   Purchases, and Placement. Its governor is in Governors, and its religion in Religion.
+-- - Unit: Unit below, with a player's escaping spy in Spies and digging archaeologist in Artifacts.
+-- - Player: TopBar for the numbers on the top bar, Stores and Income for gold and faith, Research
+--   and Governments for techs, civics, governments, and policies, Resources, Rivals, Deals, Blockers,
+--   Envoys, CapturedCities, GreatPeople, and Eras. A player's era.loyalty is its civilian loyalty.
+-- - World: Players for the player managers, leaders, visibility, and world.turn, Capabilities for
+--   world.legacyBonuses, rename, dramaticAges, offCapabilities, and unlockWithFaith, Plots for
+--   world.plots, Maintenance for world.maintenance and unitMaintenance, and Locale for world.text.
+--   WorldCongress, Emergencies, Dedications, and Eras have their own data, and world.expansion2 adds
+--   Gathering Storm's checks.
 
 local FakeGame = {}
 
@@ -557,17 +516,6 @@ end
 local function BuildPlayer(id, data, hashes, indexes, env)
 	local cities, units = {}, {}
 
-	-- The player's store of a yield, which can afford an item in a city unless the city's purchase
-	-- option for it has cantAfford.
-	local function Store(yieldIndex)
-		return {
-			CanAfford = function(_, cityID, hash, formation)
-				local option = List(cities):FindID(cityID).PurchaseOption(yieldIndex, hash, formation)
-
-				return option == nil or option.cantAfford ~= true
-			end,
-		}
-	end
 	for i, city in ipairs(data.cities or {}) do
 		cities[i] = City(city, hashes, indexes, id)
 	end
@@ -598,61 +546,9 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 		IsFreeCities = function()
 			return data.freeCities == true
 		end,
-		GetStats = function()
-			return {
-				GetTourism = function()
-					return data.tourism or 0
-				end,
-			}
-		end,
-		GetFavor = function()
-			return data.favor or 0
-		end,
 		-- The loyalty pressure each of the player's citizens exerts, from data.era.loyalty.
 		GetCivilianLoyalty = function()
 			return (data.era or {}).loyalty or 0
-		end,
-		-- The player's trade routes, from data.trade with active and capacity.
-		GetTrade = function()
-			local trade = data.trade or {}
-
-			return {
-				GetNumOutgoingRoutes = function()
-					return trade.active or 0
-				end,
-				GetOutgoingRouteCapacity = function()
-					return trade.capacity or 0
-				end,
-			}
-		end,
-		GetCulture = function()
-			return {
-				GetCultureYield = function()
-					return data.culture or 0
-				end,
-			}
-		end,
-		-- The player's gold and faith. Each can afford an item unless its purchase option for that
-		-- yield has cantAfford.
-		GetTreasury = function()
-			local treasury = Store(YIELD_ROWS.YIELD_GOLD.Index)
-
-			-- The player's gold, from data.gold, which is 0 when missing.
-			function treasury.GetGoldBalance()
-				return data.gold or 0
-			end
-
-			return treasury
-		end,
-		GetReligion = function()
-			local religion = Store(YIELD_ROWS.YIELD_FAITH.Index)
-
-			-- The player's faith, from data.faith, which is 0 when missing.
-			function religion.GetFaithBalance()
-				return data.faith or 0
-			end
-
-			return religion
 		end,
 		-- The player's units.
 		GetUnits = function()
@@ -832,26 +728,6 @@ function FakeGame.Install(env, world)
 		})
 	end
 
-	Callable(env.GameInfo.LeaderTraits)
-
-	env.GameCapabilities = {
-		HasCapability = function(capability)
-			return (capability == "CAPABILITY_GOVERNMENTS_LEGACY_BONUSES" and world.legacyBonuses == true)
-				or (capability == "CAPABILITY_RENAME" and world.rename == true)
-				or (capability == "CAPABILITY_DRAMATICAGES" and world.dramaticAges == true)
-				or (capability:find("^CAPABILITY_GREAT_PEOPLE_") ~= nil and not (world.offCapabilities or {})[capability])
-		end,
-	}
-	env.GlobalParameters = {
-		GOVERNMENT_UNLOCK_WITH_FAITH = world.unlockWithFaith and 1 or 0,
-		FAVOR_FOR_LIBERATE_PLAYER_CITY = 100,
-		FAVOR_FOR_LIBERATE_CITY_STATE = 50,
-		FAVOR_FOR_REVIVE_PLAYER = 20,
-		WARMONGER_FINAL_MAJOR_CITY_MULTIPLIER = 200,
-		NEXT_ERA_TURN_COUNTDOWN = 10,
-	}
-	env.PlayerOperationResults = { FAILURE_REASONS = 9001 }
-
 	-- GameInfo.GreatWork_YieldChanges() lists what each great work in a building gives, from the
 	-- building's greatWorks, each with type and yields, a YieldTypes name to the amount.
 	local greatWorkYields, wonderTypes = {}, {}
@@ -865,7 +741,6 @@ function FakeGame.Install(env, world)
 			return greatWorkYields[i]
 		end
 	end
-	env.GameInfo.GlobalParameters = { CULTURE_PERCENTAGE_YIELD_PER_POP = { Value = 30 } }
 
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do
@@ -1018,160 +893,7 @@ function FakeGame.Install(env, world)
 
 	for id, data in pairs(world.players or {}) do
 		env.Players[id] = Player(id, data, hashes, indexes, env)
-
-		-- Gathering Storm's favor per turn, from data.favorPerTurn.
-		if world.expansion2 then
-			env.Players[id].GetFavorPerTurn = function()
-				return data.favorPerTurn or 0
-			end
-		end
-
-		-- A city-state's name and leader, and its leader's row, with the leader it inherits from.
-		local minor = data.minor or {}
-
-		env.PlayerConfigurations[id] = {
-			GetCivilizationShortDescription = function()
-				return minor.name
-			end,
-			GetLeaderTypeName = function()
-				return minor.leader
-			end,
-			GetCivilizationLevelTypeID = function()
-				return data.minor and 1 or 0
-			end,
-			GetPlayerName = function()
-				return data.playerName or ("LOC_LEADER_" .. id .. "_NAME")
-			end,
-		}
-
-		if minor.leader ~= nil then
-			env.GameInfo.Leaders[minor.leader] = { LeaderType = minor.leader, InheritFrom = minor.inherit }
-		end
-
-		for i, description in ipairs(minor.traits or {}) do
-			local traitType = minor.leader .. "_TRAIT_" .. i
-
-			table.insert(env.GameInfo.LeaderTraits, { LeaderType = minor.leader, TraitType = traitType })
-			env.GameInfo.Traits[traitType] = { TraitType = traitType, Description = description }
-		end
-
-		-- Each listed plot's index: revealed, or visible, which is revealed too.
-		local revealed, visible = {}, {}
-
-		for _, position in ipairs(data.revealed or {}) do
-			revealed[PlotIndex(position[1], position[2])] = true
-		end
-
-		for _, position in ipairs(data.visible or {}) do
-			revealed[PlotIndex(position[1], position[2])] = true
-			visible[PlotIndex(position[1], position[2])] = true
-		end
-
-		-- Each takes a plot index, or x and y, as in the game.
-		env.PlayersVisibility[id] = {
-			IsRevealed = function(_, indexOrX, y)
-				return revealed[y and PlotIndex(indexOrX, y) or indexOrX] == true
-			end,
-			IsVisible = function(_, indexOrX, y)
-				return visible[y and PlotIndex(indexOrX, y) or indexOrX] == true
-			end,
-			IsUnitVisible = function(_, unit)
-				return not unit.hidden
-			end,
-		}
 	end
-
-	-- The major players, in ID order, as Game.GetPlayers({ Major = true }) lists them.
-	env.Game = env.Game or {}
-	env.Game.IsAllowStrategicCommands = function(playerID)
-		return (world.players or {})[playerID].noStrategicCommands ~= true
-	end
-	env.Game.GetPlayers = function(filter)
-		assert(filter.Major == true, "no fake for this filter")
-
-		local players = {}
-
-		for id = 0, 63 do
-			if env.Players[id] ~= nil and world.players[id].minor == nil then
-				players[#players + 1] = env.Players[id]
-			end
-		end
-
-		return players
-	end
-
-	-- The living players, in ID order, as the game lists them.
-	env.PlayerManager = {
-		GetAlive = function()
-			local alive = {}
-
-			for id = 0, 63 do
-				alive[#alive + 1] = env.Players[id]
-			end
-
-			return alive
-		end,
-		-- The IDs of the living players without data.minor, in ID order.
-		GetAliveMajorIDs = function()
-			local ids = {}
-
-			for id = 0, 63 do
-				if env.Players[id] ~= nil and world.players[id].minor == nil then
-					ids[#ids + 1] = id
-				end
-			end
-
-			return ids
-		end,
-		-- The living players without data.minor, in ID order.
-		GetAliveMajors = function()
-			local majors = {}
-
-			for id = 0, 63 do
-				if env.Players[id] ~= nil and world.players[id].minor == nil then
-					majors[#majors + 1] = env.Players[id]
-				end
-			end
-
-			return majors
-		end,
-		-- The living city-states and Free Cities, the players with data.minor, in ID order.
-		GetAliveMinors = function()
-			local minors = {}
-
-			for id = 0, 63 do
-				if env.Players[id] ~= nil and world.players[id].minor ~= nil then
-					minors[#minors + 1] = env.Players[id]
-				end
-			end
-
-			return minors
-		end,
-	}
-
-	env.Game.GetCurrentGameTurn = function()
-		return world.turn or 1
-	end
-
-	local text = world.text or {}
-
-	env.Locale = {
-		-- With arguments, the text is followed by them in parentheses, such as "KEY(5)", so a test
-		-- can check them.
-		Lookup = function(key, ...)
-			local arguments = { ... }
-
-			if #arguments == 0 then
-				return text[key] or key
-			end
-
-			for i, argument in ipairs(arguments) do
-				arguments[i] = tostring(argument)
-			end
-
-			return (text[key] or key) .. "(" .. table.concat(arguments, ",") .. ")"
-		end,
-	}
 end
 
 -- One line for each feature in FakeGame/, in the order Install runs them. Each file returns its
@@ -1179,6 +901,11 @@ end
 FakeGame.Register("Resources", require("FakeGame/Resources"))
 FakeGame.Register("Plots", require("FakeGame/Plots"))
 FakeGame.Register("Rivals", require("FakeGame/Rivals"))
+FakeGame.Register("TopBar", require("FakeGame/TopBar"))
+FakeGame.Register("Stores", require("FakeGame/Stores"))
+FakeGame.Register("Players", require("FakeGame/Players"))
+FakeGame.Register("Locale", require("FakeGame/Locale"))
+FakeGame.Register("Capabilities", require("FakeGame/Capabilities"))
 FakeGame.Register("Blockers", require("FakeGame/Blockers"))
 FakeGame.Register("Deals", require("FakeGame/Deals"))
 FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
