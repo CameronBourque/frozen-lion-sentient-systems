@@ -157,6 +157,17 @@ local END_TURN_BLOCKING_TYPES = {
 -- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
 local MILITARY_FORMATION_TYPES = { STANDARD_MILITARY_FORMATION = 0, CORPS_MILITARY_FORMATION = 1, ARMY_MILITARY_FORMATION = 2 }
 
+-- Returns the unit option, or its corps or army, for a formation.
+local function Formation(unit, formation)
+	if formation == MILITARY_FORMATION_TYPES.CORPS_MILITARY_FORMATION then
+		return unit.corps
+	elseif formation == MILITARY_FORMATION_TYPES.ARMY_MILITARY_FORMATION then
+		return unit.army
+	end
+
+	return unit
+end
+
 -- The result keys of a CanProduce check. FAILURE_REASONS has the game's number.
 local CITY_COMMAND_RESULTS = { FAILURE_REASONS = -2028665063, PLOTS = 2001 }
 local CITY_OPERATION_RESULTS = { CAN_TRAIN_CORPS = 1001, CAN_TRAIN_ARMY = 1002, NO_SUITABLE_LOCATION = 1003, PLOTS = 1004 }
@@ -197,30 +208,12 @@ local YIELD_NAMES = { [0] = "FOOD", "PRODUCTION", "GOLD", "SCIENCE", "CULTURE", 
 -- as in the game. data.loyalty has value, max, and perTurn. Without it, the city has no
 -- GetCulturalIdentity, as in a game without the Rise and Fall expansion. data.districts lists each
 -- district with type, x, y, complete, which is true when missing, pillaged, and buildings. Each
--- building has type, built, which is true when missing, and pillaged. data.options.units lists each
--- unit the build queue knows, with type, cost, turns, progress, which is 0 when missing, blocked, a
--- list of reasons the queue refuses it, hidden, which the queue refuses even when it only tests, and
--- corps and army, each with cost, turns, and blocked. data.options.buildings lists each building the
--- build queue knows, with type, cost, turns, progress, blocked, and hidden in the same way, and
--- pillaged, district, its PrereqDistrict, wonder, and mustPurchase, which go in its GameInfo row. A
--- wonder also has tiles, purchaseTiles, and noLocation, the NO_SUITABLE_LOCATION result.
--- data.options.districts lists each district the build queue knows, with type, cost, turns,
--- progress, blocked, hidden, reasons, which the queue returns when it allows the district, tiles,
--- the tiles where it can go, and purchaseTiles, the tiles to buy where it can go, each with x, y,
--- and adjacency, a bonus by YieldTypes name. onePerCity, true when missing, and internalOnly go in
--- its GameInfo row. data.options.projects lists each project the build queue knows, with type,
--- cost, turns, progress, blocked, and hidden, and maxPlayerInstances, which goes in its GameInfo
--- row. data.options.purchasable lists more tiles
--- to buy, by x and y, each with cost, its gold cost. data.purchases maps a yield name, such as YIELD_GOLD, to the units,
--- buildings, and districts the city can buy with it. Each has type, cost, blocked, hidden, which the
--- check refuses even when it only tests, and cantAfford, and a unit has corps and army, each with
--- cost, blocked, and cantAfford. A faith purchase has faithEnabled when the game marks it for
--- another yield but the city can buy it with faith. hashes maps each production, unit, building, and district type to its hash,
+-- building has type, built, which is true when missing, and pillaged. The build queue's data.options
+-- are in FakeGame/Production.lua, data.purchases in Purchases.lua, and the tiles to place or buy in
+-- Placement.lua. hashes maps each production, unit, building, and district type to its hash,
 -- and indexes maps each district, building, and unit type to its GameInfo index. ownerID is the
 -- player's ID.
 local function BuildCity(data, hashes, indexes, ownerID)
-	local production = data.production
-	local hash = production and (production.hash or hashes[production.type]) or 0
 	local growth = data.growth or {}
 	local loyalty = data.loyalty
 	local districts = {}
@@ -269,84 +262,12 @@ local function BuildCity(data, hashes, indexes, ownerID)
 		}
 	end
 
-	-- Each unit and building option by its hash and by its index.
-	local unitsByHash, unitsByIndex = {}, {}
-	local buildingsByHash, buildingsByIndex = {}, {}
 
-	for _, unit in ipairs((data.options or {}).units or {}) do
-		unitsByHash[hashes[unit.type]] = unit
-		unitsByIndex[indexes[unit.type]] = unit
-	end
+	-- Each building option by its hash, which IsPillaged accepts.
+	local buildingsByHash = {}
 
 	for _, building in ipairs((data.options or {}).buildings or {}) do
 		buildingsByHash[hashes[building.type]] = building
-		buildingsByIndex[indexes[building.type]] = building
-	end
-
-	-- Each district and project option by its hash, its index, and its type.
-	local districtsByHash, districtsByIndex, districtsByType = {}, {}, {}
-	local projectsByHash, projectsByIndex, projectsByType = {}, {}, {}
-
-	for _, project in ipairs((data.options or {}).projects or {}) do
-		projectsByHash[hashes[project.type]] = project
-		projectsByIndex[indexes[project.type]] = project
-		projectsByType[project.type] = project
-	end
-
-	for _, district in ipairs((data.options or {}).districts or {}) do
-		districtsByHash[hashes[district.type]] = district
-		districtsByIndex[indexes[district.type]] = district
-		districtsByType[district.type] = district
-	end
-
-	-- Returns the plot indexes of a list of tiles.
-	local function PlotIndexes(tiles)
-		local list = {}
-
-		for i, tile in ipairs(tiles or {}) do
-			list[i] = PlotIndex(tile.x, tile.y)
-		end
-
-		return list
-	end
-
-	-- The plot indexes of every tile to buy, each once.
-	local purchasable, seen = {}, {}
-
-	for _, option in ipairs((data.options or {}).districts or {}) do
-		for _, plotIndex in ipairs(PlotIndexes(option.purchaseTiles)) do
-			if not seen[plotIndex] then
-				seen[plotIndex] = true
-				purchasable[#purchasable + 1] = plotIndex
-			end
-		end
-	end
-
-	for _, option in ipairs((data.options or {}).buildings or {}) do
-		for _, plotIndex in ipairs(PlotIndexes(option.purchaseTiles)) do
-			if not seen[plotIndex] then
-				seen[plotIndex] = true
-				purchasable[#purchasable + 1] = plotIndex
-			end
-		end
-	end
-
-	for _, plotIndex in ipairs(PlotIndexes((data.options or {}).purchasable)) do
-		if not seen[plotIndex] then
-			seen[plotIndex] = true
-			purchasable[#purchasable + 1] = plotIndex
-		end
-	end
-
-	-- Returns the unit option, or its corps or army, for a formation.
-	local function Formation(unit, formation)
-		if formation == MILITARY_FORMATION_TYPES.CORPS_MILITARY_FORMATION then
-			return unit.corps
-		elseif formation == MILITARY_FORMATION_TYPES.ARMY_MILITARY_FORMATION then
-			return unit.army
-		end
-
-		return unit
 	end
 
 	local defense = data.defense or {}
@@ -372,65 +293,9 @@ local function BuildCity(data, hashes, indexes, ownerID)
 		return false
 	end
 
-	-- Returns the purchase option for an item's hash and a yield's index, or its corps or army for a
-	-- formation, or nil.
-	local function PurchaseOption(yieldIndex, hash, formation)
-		for name, row in pairs(YIELD_ROWS) do
-			if row.Index == yieldIndex then
-				for _, kind in ipairs({ "units", "buildings", "districts" }) do
-					for _, option in ipairs(((data.purchases or {})[name] or {})[kind] or {}) do
-						if hashes[option.type] == hash then
-							return Formation(option, formation)
-						end
-					end
-				end
-			end
-		end
-	end
-
 	local city = {
-		-- The purchase option for an item, for the fake CityManager.CanStartCommand and treasury.
-		PurchaseOption = PurchaseOption,
-		-- The tiles to buy, for the fake CityManager.GetCommandTargets.
-		purchasable = purchasable,
-		-- The plot indexes where the district or wonder that params names can go, for the fake
-		-- CityManager.GetOperationTargets.
-		PlacementPlots = function(params)
-			local option = districtsByHash[params[CITY_OPERATION_TYPES.PARAM_DISTRICT_TYPE]] or buildingsByHash[params[CITY_OPERATION_TYPES.PARAM_BUILDING_TYPE]]
-
-			return PlotIndexes(option and option.tiles)
-		end,
 		GetOwner = function()
 			return ownerID
-		end,
-		GetGold = function()
-			return {
-				GetPurchaseCost = function(_, yieldIndex, hash, formation)
-					return PurchaseOption(yieldIndex, hash, formation).cost
-				end,
-				-- The cost of a tile to buy, from its tile in data.options.purchasable, or 0.
-				GetPlotPurchaseCost = function(_, plotIndex)
-					for _, tile in ipairs((data.options or {}).purchasable or {}) do
-						if PlotIndex(tile.x, tile.y) == plotIndex then
-							return tile.cost or 0
-						end
-					end
-
-					return 0
-				end,
-				-- Whether the city can buy a unit or a building with faith that the game marks for
-				-- another yield. The option is under YIELD_FAITH with faithEnabled.
-				IsUnitFaithPurchaseEnabled = function(_, hash)
-					local option = PurchaseOption(YIELD_ROWS.YIELD_FAITH.Index, hash)
-
-					return option ~= nil and option.faithEnabled == true
-				end,
-				IsBuildingFaithPurchaseEnabled = function(_, hash)
-					local option = PurchaseOption(YIELD_ROWS.YIELD_FAITH.Index, hash)
-
-					return option ~= nil and option.faithEnabled == true
-				end,
-			}
 		end,
 		GetDistrictID = function()
 			return data.id
@@ -562,102 +427,6 @@ local function BuildCity(data, hashes, indexes, ownerID)
 				end,
 				GetTurnsUntilStarvation = function()
 					return growth.turnsUntilStarvation or -1
-				end,
-			}
-		end,
-		GetBuildQueue = function()
-			return {
-				GetCurrentProductionTypeHash = function()
-					return hash
-				end,
-				-- The game takes a hash or a type name, and a formation for a unit.
-				GetTurnsLeft = function(_, typeOrHash, formation)
-					local unit = unitsByHash[typeOrHash]
-
-					if unit ~= nil then
-						return Formation(unit, formation).turns
-					end
-
-					if buildingsByHash[typeOrHash] ~= nil then
-						return buildingsByHash[typeOrHash].turns
-					end
-
-					if districtsByType[typeOrHash] ~= nil then
-						return districtsByType[typeOrHash].turns
-					end
-
-					if projectsByType[typeOrHash] ~= nil then
-						return projectsByType[typeOrHash].turns
-					end
-
-					assert(production and (typeOrHash == hash or typeOrHash == production.type), "no production " .. tostring(typeOrHash))
-
-					return production.turnsLeft
-				end,
-				-- With testOnly, whether the queue knows the unit or building. Without it, whether the
-				-- city can produce it now, and the results: the reasons it can't, and for a unit, whether
-				-- a corps or an army can be trained. params is a building's hash, or a table that names a
-				-- unit and its formation, as in the game.
-				CanProduce = function(_, params, testOnly, withResults)
-					if type(params) == "number" then
-						local option = buildingsByHash[params] or districtsByHash[params] or projectsByHash[params]
-
-						if testOnly then
-							return option ~= nil and not option.hidden
-						end
-
-						return option.blocked == nil, {
-							[CITY_COMMAND_RESULTS.FAILURE_REASONS] = option.blocked or option.reasons,
-							[CITY_OPERATION_RESULTS.NO_SUITABLE_LOCATION] = option.noLocation,
-						}
-					end
-
-					local unit = unitsByHash[params.UnitType]
-
-					if testOnly then
-						return unit ~= nil and not unit.hidden
-					end
-
-					assert(withResults == true, "no fake without results")
-
-					local option = Formation(unit, params.MilitaryFormationType)
-
-					return option.blocked == nil, {
-						[CITY_COMMAND_RESULTS.FAILURE_REASONS] = option.blocked,
-						[CITY_OPERATION_RESULTS.CAN_TRAIN_CORPS] = unit.corps ~= nil or nil,
-						[CITY_OPERATION_RESULTS.CAN_TRAIN_ARMY] = unit.army ~= nil or nil,
-					}
-				end,
-				GetUnitCost = function(_, index)
-					return unitsByIndex[index].cost
-				end,
-				GetUnitProgress = function(_, index)
-					return unitsByIndex[index].progress or 0
-				end,
-				GetUnitCorpsCost = function(_, index)
-					return unitsByIndex[index].corps.cost
-				end,
-				GetUnitArmyCost = function(_, index)
-					return unitsByIndex[index].army.cost
-				end,
-				GetBuildingCost = function(_, index)
-					return buildingsByIndex[index].cost
-				end,
-				GetBuildingProgress = function(_, index)
-					return buildingsByIndex[index].progress or 0
-				end,
-				GetDistrictCost = function(_, index)
-					return districtsByIndex[index].cost
-				end,
-				-- 0 for a district the queue doesn't know, such as a built city center.
-				GetDistrictProgress = function(_, index)
-					return (districtsByIndex[index] or {}).progress or 0
-				end,
-				GetProjectCost = function(_, index)
-					return projectsByIndex[index].cost
-				end,
-				GetProjectProgress = function(_, index)
-					return projectsByIndex[index].progress or 0
 				end,
 			}
 		end,
@@ -1194,40 +963,6 @@ function FakeGame.Install(env, world)
 
 			return player and player:GetCities():FindID(componentID.id)
 		end,
-		GetOperationTargets = function(city, operation, params)
-			assert(operation == CITY_OPERATION_TYPES.BUILD, "no fake for this operation")
-
-			return { [CITY_OPERATION_RESULTS.PLOTS] = city.PlacementPlots(params) }
-		end,
-		-- With testOnly, whether the city's purchases list the item that params names. Without it,
-		-- whether the city can buy it now, and the results: the reasons it can't, and for a unit,
-		-- whether a corps or an army can be bought.
-		CanStartCommand = function(city, command, testOnly, params, withResults)
-			assert(command == CITY_COMMAND_TYPES.PURCHASE, "no fake for this command")
-
-			local hash = params[CITY_COMMAND_TYPES.PARAM_UNIT_TYPE] or params[CITY_COMMAND_TYPES.PARAM_BUILDING_TYPE] or params[CITY_COMMAND_TYPES.PARAM_DISTRICT_TYPE]
-			local yieldIndex = params[CITY_COMMAND_TYPES.PARAM_YIELD_TYPE]
-			local option = city.PurchaseOption(yieldIndex, hash)
-
-			if testOnly then
-				return option ~= nil and not option.hidden
-			end
-
-			assert(withResults == true, "no fake without results")
-
-			local formationOption = city.PurchaseOption(yieldIndex, hash, params[CITY_COMMAND_TYPES.PARAM_MILITARY_FORMATION_TYPE])
-
-			return formationOption.blocked == nil and formationOption.cantAfford ~= true, {
-				[CITY_COMMAND_RESULTS.FAILURE_REASONS] = formationOption.blocked,
-				[CITY_OPERATION_RESULTS.CAN_TRAIN_CORPS] = option.corps ~= nil or nil,
-				[CITY_OPERATION_RESULTS.CAN_TRAIN_ARMY] = option.army ~= nil or nil,
-			}
-		end,
-		GetCommandTargets = function(city, command, params)
-			assert(command == CITY_COMMAND_TYPES.PURCHASE and params[CITY_COMMAND_TYPES.PARAM_PLOT_PURCHASE] ~= nil, "no fake for this command")
-
-			return { [CITY_COMMAND_RESULTS.PLOTS] = city.purchasable }
-		end,
 	}
 	env.UI = {
 		GetInterfaceModeParameter = function(parameter)
@@ -1604,84 +1339,6 @@ function FakeGame.Install(env, world)
 		}
 	end
 
-	-- Each placement tile gets a plot, with the adjacency bonuses and the districts and wonders that
-	-- CanHaveDistrict and CanHaveWonder allow on it as a tile to buy.
-	local adjacencyAt, districtsAt, wondersAt = {}, {}, {}
-
-	-- Adds a fake plot at a tile that world.plots doesn't hold, and returns its index.
-	local function PlacementPlot(tile)
-		local index = PlotIndex(tile.x, tile.y)
-
-		plots[index] = plots[index] or {
-			GetX = function()
-				return tile.x
-			end,
-			GetY = function()
-				return tile.y
-			end,
-		}
-		adjacencyAt[index] = adjacencyAt[index] or {}
-		districtsAt[index] = districtsAt[index] or {}
-		wondersAt[index] = wondersAt[index] or {}
-
-		return index
-	end
-
-	for _, data in pairs(world.players or {}) do
-		for _, city in ipairs(data.cities or {}) do
-			local options = city.options or {}
-
-			for _, district in ipairs(options.districts or {}) do
-				for _, list in ipairs({ district.tiles or {}, district.purchaseTiles or {} }) do
-					for _, tile in ipairs(list) do
-						adjacencyAt[PlacementPlot(tile)][indexes[district.type]] = tile.adjacency
-					end
-				end
-
-				for _, tile in ipairs(district.purchaseTiles or {}) do
-					districtsAt[PlacementPlot(tile)][indexes[district.type]] = true
-				end
-			end
-
-			for _, building in ipairs(options.buildings or {}) do
-				for _, tile in ipairs(building.tiles or {}) do
-					PlacementPlot(tile)
-				end
-
-				for _, tile in ipairs(building.purchaseTiles or {}) do
-					wondersAt[PlacementPlot(tile)][indexes[building.type]] = true
-				end
-			end
-
-			for _, tile in ipairs(options.purchasable or {}) do
-				PlacementPlot(tile)
-			end
-		end
-	end
-
-	for index, plot in pairs(plots) do
-		-- The bonus of a district on the plot, for a YieldTypes value.
-		function plot.GetAdjacencyYield(_, _, _, districtIndex, yieldType)
-			local adjacency = (adjacencyAt[index] or {})[districtIndex] or {}
-
-			for name, value in pairs(YIELD_TYPES) do
-				if value == yieldType then
-					return adjacency[name] or 0
-				end
-			end
-
-			return 0
-		end
-
-		function plot.CanHaveDistrict(_, districtIndex)
-			return (districtsAt[index] or {})[districtIndex] == true
-		end
-
-		function plot.CanHaveWonder(_, buildingIndex)
-			return (wondersAt[index] or {})[buildingIndex] == true
-		end
-	end
-
 	-- What a feature gets from the core: the rows and their hashes and indexes, the plots by index,
 	-- and the shared helpers. NextHash(base, typeName) gives a type the hash base plus a running
 	-- count, once. OnPlayer(hook) and OnCity(hook) run hook(player, data, id) and hook(city, data,
@@ -1702,6 +1359,7 @@ function FakeGame.Install(env, world)
 		TypedRows = TypedRows,
 		Callable = Callable,
 		List = List,
+		Formation = Formation,
 		PlotIndex = PlotIndex,
 		MAP_WIDTH = MAP_WIDTH,
 		YIELD_TYPES = YIELD_TYPES,
@@ -1941,5 +1599,8 @@ FakeGame.Register("Artifacts", require("FakeGame/Artifacts"))
 FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"))
 FakeGame.Register("Research", require("FakeGame/Research"))
 FakeGame.Register("Governments", require("FakeGame/Governments"))
+FakeGame.Register("Production", require("FakeGame/Production"))
+FakeGame.Register("Purchases", require("FakeGame/Purchases"))
+FakeGame.Register("Placement", require("FakeGame/Placement"))
 
 return FakeGame
