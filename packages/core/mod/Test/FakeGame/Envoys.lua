@@ -3,7 +3,7 @@
 -- by player ID, suzerain, a player ID, cantReceive, true for the Free Cities, quests by player ID,
 -- each with type, name, description, and reward, and uniqueDisabled, true when Gathering Storm turns
 -- off its suzerain bonus. The minor's name, leader, inherit, traits, and resources are in
--- FakeGame.lua.
+-- FakeGame/Players.lua and Resources.lua.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes

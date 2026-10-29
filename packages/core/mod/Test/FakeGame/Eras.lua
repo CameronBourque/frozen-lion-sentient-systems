@@ -3,7 +3,7 @@
 -- golden, the score's thresholds, previous and current, the score's sources, each a table of its
 -- text to its points, and commemorations, the active dedications' category names, such as
 -- "ECONOMIC". Without world.era, as in a game without Rise and Fall, there are none of the era's
--- calls. The ChronologyIndex rows of GameInfo.Eras are in FakeGame.lua. See FakeGame/Dedications.lua
+-- calls. A player's era.loyalty is its civilian loyalty. The ChronologyIndex rows of GameInfo.Eras are in FakeGame.lua. See FakeGame/Dedications.lua
 -- for the era change.
 
 return function(env, world, ctx)
@@ -101,4 +101,11 @@ return function(env, world, ctx)
 
 		return eras
 	end
+
+	-- The loyalty pressure each of the player's citizens exerts, from data.era.loyalty.
+	ctx.OnPlayer(function(player, data)
+		function player.GetCivilianLoyalty()
+			return (data.era or {}).loyalty or 0
+		end
+	end)
 end

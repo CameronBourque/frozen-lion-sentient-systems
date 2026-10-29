@@ -4,7 +4,7 @@
 -- tree, era, which is ERA_ANCIENT when missing, researched, hidden, which IsTechRevealed refuses, and
 -- prerequisites, by type. techs.turnsLeft is what GetTurnsLeft returns. A player's civics has the
 -- same, with civic types. The player's science and its tooltip are here, and its culture is in
--- FakeGame.lua. Governments and policies are in FakeGame/Governments.lua, which is registered after
+-- FakeGame/TopBar.lua. Governments and policies are in FakeGame/Governments.lua, which is registered after
 -- this file.
 
 return function(env, world, ctx)

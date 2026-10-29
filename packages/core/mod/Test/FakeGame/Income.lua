@@ -2,7 +2,7 @@
 -- data.unitDiscount what its units cost less each, and data.faithPerTurn its faith income, each 0 when
 -- missing. data.tooltips has the income's text, as gold, faith, and culture, each "" when missing. A tile
 -- that a city of the player owns gives GetTourismAt its tourism, from the city's tiles. The gold and
--- faith stores are in FakeGame.lua, and a city's tiles and income rows in FakeGame/Plots.lua.
+-- faith stores are in FakeGame/Stores.lua, and a city's tiles and income rows in FakeGame/Plots.lua.
 
 return function(env, world, ctx)
 	local PlotIndex = ctx.PlotIndex

@@ -3,7 +3,7 @@
 -- even when it only tests, and cantAfford, and a unit has corps and army, each with cost, blocked,
 -- and cantAfford. A faith purchase has faithEnabled when the game marks it for another yield but the
 -- city can buy it with faith. data.options.purchasable lists tiles to buy, each with x, y, and cost,
--- its gold cost, and the player's gold and faith stores are in FakeGame.lua.
+-- its gold cost, and the player's gold and faith stores are in FakeGame/Stores.lua.
 
 return function(env, world, ctx)
 	local hashes, Formation, PlotIndex = ctx.hashes, ctx.Formation, ctx.PlotIndex

@@ -21,12 +21,13 @@
 -- env.Players[0]:GetCities():Members() then lists the one city.
 --
 -- Where the data is documented:
--- - City: BuildCity below. Its build queue, purchases, and placement tiles are in Production,
---   Purchases, and Placement. Its governor is in Governors, and its religion in Religion.
--- - Unit: Unit below, with a player's escaping spy in Spies and digging archaeologist in Artifacts.
+-- - City: CityDistricts, CityBuildings, CityGrowth, and CityYields. Its build queue, purchases,
+--   and placement tiles are in Production, Purchases, and Placement. Its governor is in Governors,
+--   and its religion in Religion.
+-- - Unit: Units, with a player's escaping spy in Spies and digging archaeologist in Artifacts.
 -- - Player: TopBar for the numbers on the top bar, Stores and Income for gold and faith, Research
 --   and Governments for techs, civics, governments, and policies, Resources, Rivals, Deals, Blockers,
---   Envoys, CapturedCities, GreatPeople, and Eras. A player's era.loyalty is its civilian loyalty.
+--   Envoys, CapturedCities, GreatPeople, and Eras.
 -- - World: Players for the player managers, leaders, visibility, and world.turn, Capabilities for
 --   world.legacyBonuses, rename, dramaticAges, offCapabilities, and unlockWithFaith, Plots for
 --   world.plots, Maintenance for world.maintenance and unitMaintenance, and Locale for world.text.
@@ -37,7 +38,7 @@ local FakeGame = {}
 
 -- The features that Install runs, in registration order, and the hooks they add to each Install's
 -- players and cities.
-local features, playerHooks, cityHooks = {}, {}, {}
+local features, playerHooks, cityHooks, unitHooks = {}, {}, {}, {}
 
 -- Registers a feature, the part of the fake that one area of the game needs. install(env, world,
 -- ctx) runs in every Install, after the shared GameInfo rows and before the players are built. It
@@ -215,47 +216,11 @@ local function City(data, hashes, indexes, ownerID)
 	return city
 end
 
--- A unit from data, with id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
--- maxDamage, which is 100 when missing, dead, delayedDeath, ready, which IsReadyToSelect returns, hidden, which hides it from other players'
--- IsUnitVisible, as a stealthy unit is, and experience. experience has points,
--- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
--- unit has no experience. indexes maps each unit and promotion type to its GameInfo index.
+-- A unit from data: its identity, id and type, and its place, x and y. The rest is added by
+-- FakeGame/Units.lua, with OnUnit, which describes the data it reads. indexes maps each unit type to
+-- its GameInfo index.
 local function Unit(data, indexes)
-	local experience = data.experience
-
-	-- Returns the GameInfo indexes of a list of promotion types.
-	local function Indexes(types)
-		local list = {}
-
-		for i, typeName in ipairs(types or {}) do
-			list[i] = indexes[typeName]
-		end
-
-		return list
-	end
-
-	return {
-		-- The available promotions, for the fake UnitManager.CanStartCommand.
-		availablePromotions = experience and Indexes(experience.available),
-		-- Whether other players' IsUnitVisible hides the unit.
-		hidden = data.hidden == true,
-		GetExperience = function()
-			if experience == nil then
-				return nil
-			end
-
-			return {
-				GetExperiencePoints = function()
-					return experience.points
-				end,
-				GetExperienceForNextLevel = function()
-					return experience.nextLevel
-				end,
-				GetPromotions = function()
-					return Indexes(experience.promotions)
-				end,
-			}
-		end,
+	local unit = {
 		GetID = function()
 			return data.id
 		end,
@@ -265,42 +230,25 @@ local function Unit(data, indexes)
 		GetUnitType = function()
 			return indexes[data.type]
 		end,
-		-- The unit's formation, from data.formation, such as "CORPS_MILITARY_FORMATION", standard when
-		-- missing.
-		GetMilitaryFormation = function()
-			return MILITARY_FORMATION_TYPES[data.formation or "STANDARD_MILITARY_FORMATION"]
-		end,
 		GetX = function()
 			return data.x
 		end,
 		GetY = function()
 			return data.y
 		end,
-		GetMovesRemaining = function()
-			return data.moves
-		end,
-		GetMaxMoves = function()
-			return data.maxMoves
-		end,
-		GetDamage = function()
-			return data.damage or 0
-		end,
-		GetMaxDamage = function()
-			return data.maxDamage or 100
-		end,
-		IsDead = function()
-			return data.dead == true
-		end,
-		IsDelayedDeath = function()
-			return data.delayedDeath == true
-		end,
-		IsReadyToSelect = function()
-			return data.ready == true
-		end,
 	}
+
+	for _, hook in ipairs(unitHooks) do
+		hook(unit, data)
+	end
+
+	return unit
 end
 
-local function BuildPlayer(id, data, hashes, indexes, env)
+-- A player from data: its ID, its cities and units, and the districts it finds by ID. The rest is
+-- added by the features, with OnPlayer. hashes maps each production, unit, building, and district
+-- type to its hash, and indexes maps each district, building, and unit type to its GameInfo index.
+local function BuildPlayer(id, data, hashes, indexes)
 	local cities, units = {}, {}
 
 	for i, city in ipairs(data.cities or {}) do
@@ -330,13 +278,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 
 			return list
 		end,
-		IsFreeCities = function()
-			return data.freeCities == true
-		end,
-		-- The loyalty pressure each of the player's citizens exerts, from data.era.loyalty.
-		GetCivilianLoyalty = function()
-			return (data.era or {}).loyalty or 0
-		end,
 		-- The player's units.
 		GetUnits = function()
 			return List(units)
@@ -356,8 +297,8 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 end
 
 -- A player with the calls that the features add to it.
-local function Player(id, data, hashes, indexes, env)
-	local player = BuildPlayer(id, data, hashes, indexes, env)
+local function Player(id, data, hashes, indexes)
+	local player = BuildPlayer(id, data, hashes, indexes)
 
 	for _, hook in ipairs(playerHooks) do
 		hook(player, data, id)
@@ -370,7 +311,7 @@ end
 -- ID to its data. world.text maps each LOC_ key to its text. Locale.Lookup returns any other key as
 -- it is. GameInfo.Types holds each production type in world, under a made-up hash.
 function FakeGame.Install(env, world)
-	playerHooks, cityHooks, layouts = {}, {}, setmetatable({}, { __mode = "k" })
+	playerHooks, cityHooks, unitHooks, layouts = {}, {}, {}, setmetatable({}, { __mode = "k" })
 
 	local hashes, indexes = {}, {}
 	local count = 0
@@ -666,6 +607,9 @@ function FakeGame.Install(env, world)
 		OnPlayer = function(hook)
 			playerHooks[#playerHooks + 1] = hook
 		end,
+		OnUnit = function(hook)
+			unitHooks[#unitHooks + 1] = hook
+		end,
 		OnCity = function(hook)
 			cityHooks[#cityHooks + 1] = hook
 		end,
@@ -682,7 +626,7 @@ function FakeGame.Install(env, world)
 	env.PlayerConfigurations = {}
 
 	for id, data in pairs(world.players or {}) do
-		env.Players[id] = Player(id, data, hashes, indexes, env)
+		env.Players[id] = Player(id, data, hashes, indexes)
 	end
 end
 
@@ -700,6 +644,7 @@ FakeGame.Register("CityDistricts", require("FakeGame/CityDistricts"))
 FakeGame.Register("CityBuildings", require("FakeGame/CityBuildings"))
 FakeGame.Register("CityGrowth", require("FakeGame/CityGrowth"))
 FakeGame.Register("CityYields", require("FakeGame/CityYields"))
+FakeGame.Register("Units", require("FakeGame/Units"))
 FakeGame.Register("Blockers", require("FakeGame/Blockers"))
 FakeGame.Register("Deals", require("FakeGame/Deals"))
 FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))

@@ -85,7 +85,11 @@ return function(env, world, ctx)
 		end,
 	}
 
-	ctx.OnPlayer(function(_, data, id)
+	ctx.OnPlayer(function(player, data, id)
+		function player.IsFreeCities()
+			return data.freeCities == true
+		end
+
 		-- A city-state's name and leader, and its leader's row, with the leader it inherits from.
 		local minor = data.minor or {}
 

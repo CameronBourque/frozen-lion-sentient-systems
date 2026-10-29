@@ -6,7 +6,7 @@
 -- in it, each with type and followers, and majority is its majority religion's type.
 -- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
 -- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
--- when a religion has too many of its class. The player's faith store is in FakeGame.lua.
+-- when a religion has too many of its class. The player's faith store is in FakeGame/Stores.lua.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes
