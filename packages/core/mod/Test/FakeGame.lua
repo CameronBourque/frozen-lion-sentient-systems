@@ -172,117 +172,19 @@ local function CityLayout(data, indexes)
 	return layouts[data]
 end
 
--- A city from data. data.production is { type, turnsLeft }, or { hash, turnsLeft } for a hash that
--- GameInfo.Types doesn't know, or nil for nothing in production. data.yields maps a YieldTypes
--- name to its amount, and a missing yield is 0. data.growth has foodSurplus, housing, amenities,
--- and amenitiesNeeded, each 0 when missing, happiness, an index in GameInfo.Happinesses that is 4,
--- content, when missing, and turnsUntilGrowth and turnsUntilStarvation, which are -1 when missing,
--- as in the game. data.loyalty has value, max, and perTurn. Without it, the city has no
--- GetCulturalIdentity, as in a game without the Rise and Fall expansion. data.districts lists each
--- district with type, x, y, complete, which is true when missing, pillaged, and buildings. Each
--- building has type, built, which is true when missing, and pillaged. The build queue's data.options
--- are in FakeGame/Production.lua, data.purchases in Purchases.lua, and the tiles to place or buy in
--- Placement.lua. hashes maps each production, unit, building, and district type to its hash,
--- and indexes maps each district, building, and unit type to its GameInfo index. ownerID is the
--- player's ID.
+-- A city from data: its identity, id, name, x, y, and population. The rest is added by the features,
+-- with OnCity, each describing the data it reads: FakeGame/CityDistricts.lua and CityBuildings.lua,
+-- CityGrowth.lua, CityYields.lua, Production.lua for data.production and the build queue's options,
+-- Purchases.lua for data.purchases, and Placement.lua for the tiles to place or buy. hashes maps each
+-- production, unit, building, and district type to its hash, and indexes maps each district,
+-- building, and unit type to its GameInfo index. ownerID is the player's ID.
 local function BuildCity(data, hashes, indexes, ownerID)
-	local growth = data.growth or {}
-	local loyalty = data.loyalty
-
-	local city = {
+	return {
 		GetOwner = function()
 			return ownerID
 		end,
 		GetDistrictID = function()
 			return data.id
-		end,
-		-- The routes the city sends out, from data.routes, each with player, id, the destination city, and
-		-- yields, a YieldTypes name to the amount it gives this city.
-		GetTrade = function()
-			return {
-				GetOutgoingRoutes = function()
-					local routes = {}
-
-					for i, route in ipairs(data.routes or {}) do
-						local origin = {}
-
-						for name, index in pairs(YIELD_TYPES) do
-							origin[#origin + 1] = { YieldIndex = index, Amount = (route.yields or {})[name] or 0 }
-						end
-
-						table.sort(origin, function(a, b)
-							return a.YieldIndex < b.YieldIndex
-						end)
-						routes[i] = { DestinationCityPlayer = route.player, DestinationCityID = route.id, OriginYields = origin }
-					end
-
-					return routes
-				end,
-			}
-		end,
-		-- The tiles the city owns, from data.tiles, each with x, y, worked, yields, and tourism.
-		GetCitizens = function()
-			return {
-				IsPlotWorked = function(_, x, y)
-					for _, tile in ipairs(data.tiles or {}) do
-						if tile.x == x and tile.y == y then
-							return tile.worked == true
-						end
-					end
-
-					return false
-				end,
-			}
-		end,
-		tiles = data.tiles or {},
-		IsOccupied = function()
-			return data.occupied == true
-		end,
-		GetGrowth = function()
-			return {
-				GetFoodSurplus = function()
-					return growth.foodSurplus or 0
-				end,
-				GetHousing = function()
-					return growth.housing or 0
-				end,
-				GetAmenities = function()
-					return growth.amenities or 0
-				end,
-				GetAmenitiesNeeded = function()
-					return growth.amenitiesNeeded or 0
-				end,
-				GetHappiness = function()
-					return growth.happiness or 4
-				end,
-				GetHappinessNonFoodYieldModifier = function()
-					return growth.yieldModifier or 0
-				end,
-				GetHousingGrowthModifier = function()
-					return growth.housingModifier or 1
-				end,
-				GetHappinessGrowthModifier = function()
-					return growth.happinessModifier or 0
-				end,
-				GetAmenitiesLostFromWarWeariness = function()
-					return growth.warWeariness or 0
-				end,
-				GetTurnsUntilGrowth = function()
-					return growth.turnsUntilGrowth or -1
-				end,
-				GetTurnsUntilStarvation = function()
-					return growth.turnsUntilStarvation or -1
-				end,
-			}
-		end,
-		GetYield = function(_, yieldType)
-			for name, value in pairs(YIELD_TYPES) do
-				if value == yieldType then
-					return (data.yields or {})[name] or 0
-				end
-			end
-
-			error("no yield type " .. tostring(yieldType))
 		end,
 		GetID = function()
 			return data.id
@@ -300,31 +202,8 @@ local function BuildCity(data, hashes, indexes, ownerID)
 			return data.population
 		end,
 	}
-
-	if loyalty ~= nil then
-		function city.GetCulturalIdentity()
-			return {
-				GetLoyalty = function()
-					return loyalty.value
-				end,
-				GetMaxLoyalty = function()
-					return loyalty.max
-				end,
-				GetLoyaltyPerTurn = function()
-					return loyalty.perTurn
-				end,
-			}
-		end
-	end
-
-	return city
 end
 
--- A unit from data, with id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
--- maxDamage, which is 100 when missing, dead, delayedDeath, ready, which IsReadyToSelect returns, hidden, which hides it from other players'
--- IsUnitVisible, as a stealthy unit is, and experience. experience has points,
--- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
--- unit has no experience. indexes maps each unit and promotion type to its GameInfo index.
 -- A city with the calls that the features add to it.
 local function City(data, hashes, indexes, ownerID)
 	local city = BuildCity(data, hashes, indexes, ownerID)
@@ -336,6 +215,11 @@ local function City(data, hashes, indexes, ownerID)
 	return city
 end
 
+-- A unit from data, with id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
+-- maxDamage, which is 100 when missing, dead, delayedDeath, ready, which IsReadyToSelect returns, hidden, which hides it from other players'
+-- IsUnitVisible, as a stealthy unit is, and experience. experience has points,
+-- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
+-- unit has no experience. indexes maps each unit and promotion type to its GameInfo index.
 local function Unit(data, indexes)
 	local experience = data.experience
 
@@ -814,6 +698,8 @@ FakeGame.Register("Locale", require("FakeGame/Locale"))
 FakeGame.Register("Capabilities", require("FakeGame/Capabilities"))
 FakeGame.Register("CityDistricts", require("FakeGame/CityDistricts"))
 FakeGame.Register("CityBuildings", require("FakeGame/CityBuildings"))
+FakeGame.Register("CityGrowth", require("FakeGame/CityGrowth"))
+FakeGame.Register("CityYields", require("FakeGame/CityYields"))
 FakeGame.Register("Blockers", require("FakeGame/Blockers"))
 FakeGame.Register("Deals", require("FakeGame/Deals"))
 FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
