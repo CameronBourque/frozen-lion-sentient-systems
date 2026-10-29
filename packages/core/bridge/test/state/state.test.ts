@@ -56,6 +56,7 @@ const STATE: State = {
 		science: 3,
 		culture: 2,
 		tourism: 0,
+		resources: [],
 		income: {
 			gold: { total: 5 },
 			faith: { total: 1 },

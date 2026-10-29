@@ -20,9 +20,9 @@ local function Load(world)
 	return env
 end
 
--- Returns a state without its income, whose cities have tests of their own.
+-- Returns a state without its player's income and resources, which have tests of their own.
 local function WithoutIncome(state)
-	return (state:gsub("\"income\":%b{},", ""))
+	return (state:gsub("\"income\":%b{},", ""):gsub("\"resources\":%b[],", ""))
 end
 
 -- Returns a copy of city with the fields in changes.

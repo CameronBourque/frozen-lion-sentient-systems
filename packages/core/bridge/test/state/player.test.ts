@@ -9,6 +9,7 @@ const SECTION = {
 	science: 123.5,
 	culture: 216.6,
 	tourism: 92,
+	resources: [],
 	income: {
 		gold: { total: 475.1, cities: 420 },
 		faith: { total: 109 },
@@ -29,7 +30,7 @@ describe("PLAYER", () => {
 	});
 
 	test("accepts no trade routes and no favor", () => {
-		const rest = { gold: SECTION.gold, faith: SECTION.faith, science: 1, culture: 2, tourism: 0, income: SECTION.income };
+		const rest = { gold: SECTION.gold, faith: SECTION.faith, science: 1, culture: 2, tourism: 0, income: SECTION.income, resources: [] };
 
 		expect(PLAYER.parse(rest)).toEqual(rest);
 	});

@@ -44,6 +44,7 @@
 			<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
@@ -80,6 +81,7 @@
 		<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>

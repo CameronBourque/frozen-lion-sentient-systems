@@ -65,8 +65,8 @@
 -- each with player, id, and yields, and the district yields and adjacency, building yields, wonder, and
 -- greatWorks, each with type and yields, that data.districts holds. growth.yieldModifier is the
 -- amenities' modifier.
--- A player's income numbers: unitDiscount, tooltips with gold, faith, science, and culture, deals, each with
--- player, gold, duration, enacted, and outgoing, and units with formation, such as
+-- A player's income numbers: unitDiscount, tooltips with gold, faith, science, and culture, deals, each
+-- with player, gold or resource and amount, duration, enacted, and outgoing, and units with formation, such as
 -- "CORPS_MILITARY_FORMATION". world.maintenance maps a district or building type to its upkeep,
 -- world.unitMaintenance a unit type to its unit, corps, and army upkeep, and world.turn is the turn.
 -- A player's top bar numbers are science, culture, tourism, gold, upkeep, goldPerTurn, faith,
@@ -1477,6 +1477,77 @@ local function Player(id, data, hashes, indexes, env)
 				end
 			end
 
+			-- A major player's resources, from data.resources, each with type, class, amount, the stockpile,
+			-- cap, reserved, unitDemand, powerDemand, imported, and perTurn, which are 0 when missing,
+			-- cities, a city ID to the amount it extracts, and allocation, a city ID to the amount it gets. A
+			-- resource is found by its index, its hash, or its type.
+			local mine = data.resources or {}
+
+			local function Find(key)
+				for _, resource in ipairs(mine) do
+					if key == resource.type or key == indexes[resource.type] or key == hashes[resource.type] then
+						return resource
+					end
+				end
+
+				return {}
+			end
+
+			if #mine > 0 then
+				function resources.GetResourceAmount(_, key)
+					return Find(key).amount or 0
+				end
+			end
+
+			function resources.GetResourceAllocationCities(_, key)
+				local cities = {}
+
+				for id, amount in pairs(Find(key).allocation or {}) do
+					cities[#cities + 1] = { CityID = id, AllocationAmount = amount }
+				end
+
+				table.sort(cities, function(a, b)
+					return a.CityID < b.CityID
+				end)
+
+				return cities
+			end
+
+			-- Whether a plot's resource can be extracted, from the tile's extractable.
+			function resources.IsResourceExtractableAt(_, plot)
+				return plot.extractable == true
+			end
+
+			if env.GameInfo.Governments_XP2 ~= nil then
+				function resources.GetResourceAccumulationPerTurn(_, key)
+					return Find(key).perTurn or owned[key] and owned[key].perTurn or 0
+				end
+
+				for method, field in pairs({
+					GetResourceStockpileCap = "cap",
+					GetReservedResourceAmount = "reserved",
+					GetUnitResourceDemandPerTurn = "unitDemand",
+					GetPowerResourceDemandPerTurn = "powerDemand",
+					GetResourceImportPerTurn = "imported",
+				}) do
+					resources[method] = function(_, key)
+						return Find(key)[field] or 0
+					end
+				end
+
+				function resources.GetResourcesExtractedByCity(_, cityID)
+					local extracted = {}
+
+					for _, resource in ipairs(mine) do
+						if (resource.cities or {})[cityID] ~= nil then
+							extracted[#extracted + 1] = { ResourceType = indexes[resource.type], Amount = resource.cities[cityID] }
+						end
+					end
+
+					return extracted
+				end
+			end
+
 			return resources
 		end,
 	}
@@ -1691,6 +1762,11 @@ function FakeGame.Install(env, world)
 					GetYield = function(_, yieldIndex)
 						return (tile.yields or {})[YIELD_NAMES[yieldIndex]] or 0
 					end,
+					-- The tile's resource, from tile.resource, and whether it can be extracted.
+					GetResourceType = function()
+						return tile.resource and indexes[tile.resource] or -1
+					end,
+					extractable = tile.extractable,
 				}
 			end
 		end
@@ -2294,6 +2370,17 @@ function FakeGame.Install(env, world)
 	for _, data in pairs(world.players or {}) do
 		for _, resource in ipairs((data.minor or {}).resources or {}) do
 			AddRow("Resources", "ResourceType", resource.type)
+		end
+
+		for _, resource in ipairs(data.resources or {}) do
+			AddRow("Resources", "ResourceType", resource.type)
+
+			local row = env.GameInfo.Resources[indexes[resource.type]]
+
+			hashes[resource.type] = hashes[resource.type] or 6000000 + indexes[resource.type]
+			row.Hash = hashes[resource.type]
+			row.ResourceClassType = "RESOURCECLASS_" .. resource.class:upper()
+			row.Name = "LOC_" .. resource.type .. "_NAME"
 		end
 
 		for _, quests in pairs((data.minor or {}).quests or {}) do
@@ -3003,7 +3090,8 @@ function FakeGame.Install(env, world)
 	-- The gold deals, from each player's data.deals: each has player, the other player's ID, gold,
 	-- duration, enacted, and outgoing, true for gold the player pays. A deal with several gold items has
 	-- one entry for each, in a deal of its own.
-	env.DealItemTypes = { GOLD = 1 }
+	env.DealItemTypes = { GOLD = 1, RESOURCES = 2 }
+	env.ResultFormat = { SUMMARY = 1 }
 	env.DealItemSubTypes = { NONE = 0 }
 	env.DealManager = {
 		GetPlayerDeals = function(playerID, otherID)
@@ -3012,17 +3100,20 @@ function FakeGame.Install(env, world)
 			for _, entry in ipairs(world.players[playerID].deals or {}) do
 				if entry.player == otherID then
 					deals[#deals + 1] = {
-						FindItemsByType = function(_, _, _, owner)
+						FindItemsByType = function(_, itemType, _, owner)
 							local payer = entry.outgoing and playerID or otherID
 
-							if owner ~= payer then
+							if owner ~= payer or (entry.resource ~= nil) ~= (itemType == env.DealItemTypes.RESOURCES) then
 								return nil
 							end
 
 							return {
 								{
 									GetAmount = function()
-										return entry.gold
+										return entry.amount or entry.gold
+									end,
+									GetValueType = function()
+										return indexes[entry.resource]
 									end,
 									GetDuration = function()
 										return entry.duration

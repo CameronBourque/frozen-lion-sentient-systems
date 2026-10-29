@@ -4,11 +4,14 @@
 -- SentientSystems_GetPlayerState(player) returns a table that encodes as '{"culture":216.6,
 -- "faith":{"balance":2357,"perTurn":109},"favor":{"balance":335,"perTurn":3},
 -- "gold":{"balance":9610,"perTurn":265.1},"science":123.5,"tourism":92,
--- "income":{...},"tradeRoutes":{"active":17,"capacity":20}}', on one line. The numbers follow
--- RefreshYields, RefreshTrade, and the favor override in TopPanel.lua and TopPanel_Expansion2.lua.
--- income comes from SentientSystemsCore_StatePlayerIncome.lua.
+-- "income":{...},"resources":[...],"tradeRoutes":{"active":17,"capacity":20}}', on one line. The
+-- numbers follow RefreshYields, RefreshTrade, and the favor override in TopPanel.lua and
+-- TopPanel_Expansion2.lua.
+-- income and resources come from SentientSystemsCore_StatePlayerIncome.lua and
+-- SentientSystemsCore_StatePlayerResources.lua.
 
 SentientSystems_Include("SentientSystemsCore_StatePlayerIncome")
+SentientSystems_Include("SentientSystemsCore_StatePlayerResources")
 
 -- Rounds a number to the nearest tenth, as the top bar's number format does.
 local function RoundNearest(number)
@@ -34,10 +37,11 @@ local function GetFaith(player)
 	return { balance = RoundNearest(religion:GetFaithBalance()), perTurn = RoundNearest(religion:GetFaithYield()) }
 end
 
--- Returns the player section: gold, faith, science, culture, and tourism per turn, income, tradeRoutes,
--- with active and capacity, left out while the capacity is 0 as the bar hides it, and favor, with
--- balance and perTurn, left out without Gathering Storm, whose players have no GetFavorPerTurn. See
--- RefreshTrade in TopPanel.lua, lines 190 to 224, and RefreshYields in TopPanel_Expansion2.lua.
+-- Returns the player section: gold, faith, science, culture, and tourism per turn, income,
+-- resources, tradeRoutes, with active and capacity, left out while the capacity is 0 as the bar hides
+-- it, and favor, with balance and perTurn, left out without Gathering Storm, whose players have no
+-- GetFavorPerTurn. See RefreshTrade in TopPanel.lua, lines 190 to 224, and RefreshYields in
+-- TopPanel_Expansion2.lua.
 function SentientSystems_GetPlayerState(player)
 	local trade = player:GetTrade()
 	local capacity = trade:GetOutgoingRouteCapacity()
@@ -48,6 +52,7 @@ function SentientSystems_GetPlayerState(player)
 		culture = RoundNearest(player:GetCulture():GetCultureYield()),
 		tourism = RoundNearest(player:GetStats():GetTourism()),
 		income = SentientSystems_GetIncomeState(player),
+		resources = SentientSystems_GetResourcesState(player),
 	}
 
 	if capacity > 0 then
