@@ -61,6 +61,10 @@
 -- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
 -- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
 -- when a religion has too many of its class. world.rename turns on CAPABILITY_RENAME.
+-- A city's income rows come from its tiles, each with x, y, worked, yields, and tourism, its routes,
+-- each with player, id, and yields, and the district yields and adjacency, building yields, wonder, and
+-- greatWorks, each with type and yields, that data.districts holds. growth.yieldModifier is the
+-- amenities' modifier.
 -- A player's income numbers: unitDiscount, tooltips with gold, faith, science, and culture, deals, each with
 -- player, gold, duration, enacted, and outgoing, and units with formation, such as
 -- "CORPS_MILITARY_FORMATION". world.maintenance maps a district or building type to its upkeep,
@@ -269,6 +273,9 @@ local YIELD_ROWS = {
 -- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
 
+-- The YieldTypes names by GameInfo.Yields index.
+local YIELD_NAMES = { [0] = "FOOD", "PRODUCTION", "GOLD", "SCIENCE", "CULTURE", "FAITH" }
+
 -- A city from data. data.production is { type, turnsLeft }, or { hash, turnsLeft } for a hash that
 -- GameInfo.Types doesn't know, or nil for nothing in production. data.yields maps a YieldTypes
 -- name to its amount, and a missing yield is 0. data.growth has foodSurplus, housing, amenities,
@@ -337,6 +344,14 @@ local function City(data, hashes, indexes, ownerID)
 			end,
 			IsPillaged = function()
 				return district.pillaged == true
+			end,
+			-- The district's yield and adjacency bonus for a GameInfo.Yields index, from district.yields and
+			-- district.adjacency, which map a YieldTypes name to an amount.
+			GetYield = function(_, yieldIndex)
+				return (district.yields or {})[YIELD_NAMES[yieldIndex]] or 0
+			end,
+			GetAdjacencyYield = function(_, yieldIndex)
+				return (district.adjacency or {})[YIELD_NAMES[yieldIndex]] or 0
 			end,
 		}
 	end
@@ -526,6 +541,50 @@ local function City(data, hashes, indexes, ownerID)
 		GetDistricts = function()
 			return districtList
 		end,
+		-- A building's yield for an index and a yield type such as "YIELD_GOLD", from building.yields,
+		-- which maps a YieldTypes name to an amount.
+		GetBuildingYield = function(_, index, yieldType)
+			return ((buildings[index] or {}).yields or {})[yieldType:gsub("^YIELD_", "")] or 0
+		end,
+		-- The routes the city sends out, from data.routes, each with player, id, the destination city, and
+		-- yields, a YieldTypes name to the amount it gives this city.
+		GetTrade = function()
+			return {
+				GetOutgoingRoutes = function()
+					local routes = {}
+
+					for i, route in ipairs(data.routes or {}) do
+						local origin = {}
+
+						for name, index in pairs(YIELD_TYPES) do
+							origin[#origin + 1] = { YieldIndex = index, Amount = (route.yields or {})[name] or 0 }
+						end
+
+						table.sort(origin, function(a, b)
+							return a.YieldIndex < b.YieldIndex
+						end)
+						routes[i] = { DestinationCityPlayer = route.player, DestinationCityID = route.id, OriginYields = origin }
+					end
+
+					return routes
+				end,
+			}
+		end,
+		-- The tiles the city owns, from data.tiles, each with x, y, worked, yields, and tourism.
+		GetCitizens = function()
+			return {
+				IsPlotWorked = function(_, x, y)
+					for _, tile in ipairs(data.tiles or {}) do
+						if tile.x == x and tile.y == y then
+							return tile.worked == true
+						end
+					end
+
+					return false
+				end,
+			}
+		end,
+		tiles = data.tiles or {},
 		GetBuildings = function()
 			return {
 				GetBuildingsAtLocation = function(_, plotIndex)
@@ -533,6 +592,17 @@ local function City(data, hashes, indexes, ownerID)
 				end,
 				HasBuilding = function(_, index)
 					return buildings[index].built ~= false
+				end,
+				-- The great works in a building, from building.greatWorks, each with type. A slot's great work
+				-- is numbered by its building and slot, and its type is that great work's GameInfo index.
+				GetNumGreatWorkSlots = function(_, index)
+					return #(buildings[index].greatWorks or {})
+				end,
+				GetGreatWorkInSlot = function(_, index, slot)
+					return (buildings[index].greatWorks or {})[slot + 1] and index * 100 + slot or -1
+				end,
+				GetGreatWorkTypeFromIndex = function(_, work)
+					return indexes[buildings[math.floor(work / 100)].greatWorks[work % 100 + 1].type]
 				end,
 				-- The game takes an index or a hash. A building option is found by its hash.
 				IsPillaged = function(_, indexOrHash)
@@ -558,6 +628,9 @@ local function City(data, hashes, indexes, ownerID)
 				end,
 				GetHappiness = function()
 					return growth.happiness or 4
+				end,
+				GetHappinessNonFoodYieldModifier = function()
+					return growth.yieldModifier or 0
 				end,
 				GetTurnsUntilGrowth = function()
 					return growth.turnsUntilGrowth or -1
@@ -997,6 +1070,18 @@ local function Player(id, data, hashes, indexes, env)
 				GetCultureYield = function()
 					return data.culture or 0
 				end,
+				-- The tourism of a plot, from the tile that a city of the player owns there.
+				GetTourismAt = function(_, plotIndex)
+					for _, city in ipairs(data.cities or {}) do
+						for _, tile in ipairs(city.tiles or {}) do
+							if PlotIndex(tile.x, tile.y) == plotIndex then
+								return tile.tourism or 0
+							end
+						end
+					end
+
+					return 0
+				end,
 				GetCultureYieldToolTip = function()
 					return (data.tooltips or {}).culture or ""
 				end,
@@ -1406,6 +1491,14 @@ function FakeGame.Install(env, world)
 	-- Each plot in world.plots by its index, and the plot count, which covers the highest row.
 	local plots, plotCount = {}, 0
 
+	-- GameInfo.Yields finds a yield by its type or by its index, as the game's table does.
+	local yieldInfo = {}
+
+	for name, row in pairs(YIELD_ROWS) do
+		yieldInfo[name] = { Index = row.Index, YieldType = name }
+		yieldInfo[row.Index] = yieldInfo[name]
+	end
+
 	env.GameInfo = {
 		Types = {},
 		Districts = {},
@@ -1418,9 +1511,11 @@ function FakeGame.Install(env, world)
 			ERA_CLASSICAL = { ChronologyIndex = 2 },
 			ERA_MEDIEVAL = { ChronologyIndex = 3 },
 		},
-		Yields = YIELD_ROWS,
+		Yields = yieldInfo,
 		Buildings = {},
 		Units = {},
+		GreatWorks = {},
+		GreatWorks = {},
 		UnitPromotions = {},
 		Terrains = {},
 		Features = {},
@@ -1458,6 +1553,7 @@ function FakeGame.Install(env, world)
 	-- name, as in GameInfo.Districts["DISTRICT_CAMPUS"].
 	for name, column in pairs({
 		Units = "UnitType",
+		GreatWorks = "GreatWorkType",
 		Buildings = "BuildingType",
 		Districts = "DistrictType",
 		Projects = "ProjectType",
@@ -1579,6 +1675,27 @@ function FakeGame.Install(env, world)
 		end,
 	}
 	env.DefenseTypes = DEFENSE_TYPES
+	-- The plots that cities own, by index, with the yield each gives for a GameInfo.Yields index.
+	local tilePlots = {}
+
+	for _, player in pairs(world.players or {}) do
+		for _, city in ipairs(player.cities or {}) do
+			for _, tile in ipairs(city.tiles or {}) do
+				tilePlots[PlotIndex(tile.x, tile.y)] = {
+					GetX = function()
+						return tile.x
+					end,
+					GetY = function()
+						return tile.y
+					end,
+					GetYield = function(_, yieldIndex)
+						return (tile.yields or {})[YIELD_NAMES[yieldIndex]] or 0
+					end,
+				}
+			end
+		end
+	end
+
 	env.Map = {
 		GetPlot = function(x, y)
 			return {
@@ -1591,7 +1708,21 @@ function FakeGame.Install(env, world)
 			return plotCount
 		end,
 		GetPlotByIndex = function(index)
-			return assert(plots[index], "no fake plot " .. index)
+			return plots[index] or assert(tilePlots[index], "no fake plot " .. index)
+		end,
+		-- The plots a city owns, as the indexes of its data.tiles.
+		GetCityPlots = function()
+			return {
+				GetPurchasedPlots = function(_, city)
+					local indexes = {}
+
+					for i, tile in ipairs(city.tiles) do
+						indexes[i] = PlotIndex(tile.x, tile.y)
+					end
+
+					return indexes
+				end,
+			}
 		end,
 	}
 
@@ -2006,6 +2137,21 @@ function FakeGame.Install(env, world)
 		end,
 	}
 
+	-- GameInfo.GreatWork_YieldChanges() lists what each great work in a building gives, from the
+	-- building's greatWorks, each with type and yields, a YieldTypes name to the amount.
+	local greatWorkYields, wonderTypes = {}, {}
+
+	env.GameInfo.GreatWork_YieldChanges = function()
+		local i = 0
+
+		return function()
+			i = i + 1
+
+			return greatWorkYields[i]
+		end
+	end
+	env.GameInfo.GlobalParameters = { CULTURE_PERCENTAGE_YIELD_PER_POP = { Value = 30 } }
+
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do
 			AddRow("Units", "UnitType", unit.type)
@@ -2096,6 +2242,16 @@ function FakeGame.Install(env, world)
 
 				for _, building in ipairs(district.buildings or {}) do
 					AddRow("Buildings", "BuildingType", building.type)
+					wonderTypes[building.type] = building.wonder == true or wonderTypes[building.type]
+
+					for _, work in ipairs(building.greatWorks or {}) do
+						AddRow("GreatWorks", "GreatWorkType", work.type)
+						env.GameInfo.GreatWorks[indexes[work.type]].Name = "LOC_" .. work.type .. "_NAME"
+
+						for name, amount in pairs(work.yields or {}) do
+							greatWorkYields[#greatWorkYields + 1] = { GreatWorkType = work.type, YieldType = "YIELD_" .. name, YieldChange = amount }
+						end
+					end
 				end
 			end
 		end
@@ -2109,6 +2265,8 @@ function FakeGame.Install(env, world)
 		for index, row in pairs(env.GameInfo[tableName]) do
 			if type(index) == "number" then
 				row.Maintenance = (world.maintenance or {})[row.DistrictType or row.BuildingType] or 0
+				row.Name = row.Name or "LOC_" .. (row.DistrictType or row.BuildingType) .. "_NAME"
+				row.IsWonder = row.IsWonder or wonderTypes[row.BuildingType]
 			end
 		end
 	end

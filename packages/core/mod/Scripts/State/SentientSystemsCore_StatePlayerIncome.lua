@@ -119,32 +119,256 @@ local function GetYield(yield, total, tooltip)
 	return result
 end
 
--- Returns the gold that districts and buildings cost each turn: each built district that isn't
--- pillaged, and each building in them that isn't. The game's own maintenance call for a building
--- returns 0 for them all, so the report leaves them out, and the cost is the row's Maintenance, as
--- the top bar's tooltip counts it. See BuildingsAndDistricts in CitySupport.lua, lines 627 to 761.
-local function GetCityUpkeep(player)
-	local total = 0
+-- Each yield a city makes, by its key in the state and its type, in the order the report lists them.
+local CITY_YIELDS = {
+	{ key = "food", type = "YIELD_FOOD" },
+	{ key = "production", type = "YIELD_PRODUCTION" },
+	{ key = "gold", type = "YIELD_GOLD" },
+	{ key = "science", type = "YIELD_SCIENCE" },
+	{ key = "culture", type = "YIELD_CULTURE" },
+	{ key = "faith", type = "YIELD_FAITH" },
+}
 
-	for _, city in player:GetCities():Members() do
-		local buildings = city:GetBuildings()
+-- Returns the yields a source gives, each rounded to a tenth and left out while 0, or nil when it
+-- gives none. read is called with each yield's type, and returns its amount.
+local function CollectYields(read)
+	local yields, found = {}, false
 
-		for _, district in city:GetDistricts():Members() do
-			if district:IsComplete() and not district:IsPillaged() then
-				total = total + GameInfo.Districts[district:GetType()].Maintenance
+	for _, yield in ipairs(CITY_YIELDS) do
+		local amount = RoundNearest(read(yield.type))
+
+		if amount ~= 0 then
+			yields[yield.key] = amount
+			found = true
+		end
+	end
+
+	return found and yields or nil
+end
+
+-- Adds a row to a city's sources unless it gives no yield and costs no upkeep. A row has kind, name,
+-- type, left out for a row that isn't a district, a building, a wonder, or a great work, yields, and
+-- upkeep.
+local function AddSource(sources, row)
+	if row.yields ~= nil or row.upkeep ~= nil then
+		sources[#sources + 1] = row
+	end
+end
+
+-- Returns a function that reads the amount of a yield type from a table of amounts, 0 for a missing one.
+local function Reader(amounts)
+	return function(yieldType)
+		return amounts[yieldType] or 0
+	end
+end
+
+-- Returns the gold a district or building costs each turn, which is its row's Maintenance while it
+-- isn't pillaged, or nil for none. The game's own call for a building's cost returns 0 for every
+-- building, so the report leaves them out, and the top bar's tooltip counts the row's cost.
+local function GetUpkeep(cost, pillaged)
+	return cost > 0 and not pillaged and cost or nil
+end
+
+-- Returns the rows for the great works in a building, each with the yields its row gives. See
+-- GetGreatWorksForCity in Civ6Common.lua, lines 631 to 661.
+local function GetGreatWorkRows(buildings, index)
+	local rows = {}
+
+	for slot = 0, buildings:GetNumGreatWorkSlots(index) - 1 do
+		local work = buildings:GetGreatWorkInSlot(index, slot)
+
+		if work ~= -1 then
+			local row = GameInfo.GreatWorks[buildings:GetGreatWorkTypeFromIndex(work)]
+			local amounts = {}
+
+			for change in GameInfo.GreatWork_YieldChanges() do
+				if change.GreatWorkType == row.GreatWorkType then
+					amounts[change.YieldType] = change.YieldChange
+				end
 			end
 
-			local plotIndex = Map.GetPlot(district:GetX(), district:GetY()):GetIndex()
+			rows[#rows + 1] = { kind = "greatWork", name = Locale.Lookup(row.Name), type = row.GreatWorkType, yields = CollectYields(Reader(amounts)) }
+		end
+	end
 
-			for _, index in ipairs(buildings:GetBuildingsAtLocation(plotIndex)) do
-				if buildings:HasBuilding(index) and not buildings:IsPillaged(index) then
-					total = total + GameInfo.Buildings[index].Maintenance
-				end
+	return rows
+end
+
+-- Adds the rows of the buildings on a district's plot to sources, and the rows of its wonders to
+-- wonders, and returns the upkeep of the buildings. A wonder sits in a district of its own, which the
+-- report leaves out, and its rows follow the districts'. See GetCityData in CitySupport.lua, lines
+-- 687 to 755.
+local function AddBuildingRows(city, plotIndex, sources, wonders)
+	local buildings = city:GetBuildings()
+	local upkeep = 0
+
+	for _, index in ipairs(buildings:GetBuildingsAtLocation(plotIndex)) do
+		if buildings:HasBuilding(index) then
+			local row = GameInfo.Buildings[index]
+			local cost = GetUpkeep(row.Maintenance, buildings:IsPillaged(index))
+			local target = row.IsWonder and wonders or sources
+
+			AddSource(target, {
+				kind = row.IsWonder and "wonder" or "building",
+				name = Locale.Lookup(row.Name),
+				type = row.BuildingType,
+				yields = CollectYields(function(yieldType)
+					return city:GetBuildingYield(index, yieldType)
+				end),
+				upkeep = cost,
+			})
+
+			for _, work in ipairs(GetGreatWorkRows(buildings, index)) do
+				AddSource(target, work)
+			end
+
+			upkeep = upkeep + (cost or 0)
+		end
+	end
+
+	return upkeep
+end
+
+-- Adds the rows of the city's districts, with their adjacency bonuses and buildings, to sources, and
+-- the rows of its wonders to wonders, and returns the upkeep of them all.
+local function AddDistrictRows(city, sources, wonders)
+	local upkeep = 0
+
+	for _, district in city:GetDistricts():Members() do
+		local row = GameInfo.Districts[district:GetType()]
+		local cost = GetUpkeep(row.Maintenance, not district:IsComplete() or district:IsPillaged())
+
+		if row.DistrictType ~= "DISTRICT_WONDER" then
+			AddSource(sources, {
+				kind = "district",
+				name = Locale.Lookup(row.Name),
+				type = row.DistrictType,
+				yields = CollectYields(function(yieldType)
+					return district:GetYield(GameInfo.Yields[yieldType].Index)
+				end),
+				upkeep = cost,
+			})
+			AddSource(sources, {
+				kind = "adjacency",
+				name = Locale.Lookup("LOC_HUD_REPORTS_ADJACENCY_BONUS"),
+				yields = CollectYields(function(yieldType)
+					return district:GetAdjacencyYield(GameInfo.Yields[yieldType].Index)
+				end),
+			})
+		end
+
+		upkeep = upkeep + (cost or 0)
+			+ AddBuildingRows(city, Map.GetPlot(district:GetX(), district:GetY()):GetIndex(), sources, wonders)
+	end
+
+	return upkeep
+end
+
+-- Adds a row for each trade route the city sends out, with what it gives the city. See ViewYieldsPage
+-- in ReportScreen.lua, lines 941 to 974.
+local function AddRouteRows(city, sources)
+	for _, route in ipairs(city:GetTrade():GetOutgoingRoutes()) do
+		local amounts = {}
+
+		for _, yield in ipairs(route.OriginYields or {}) do
+			amounts[GameInfo.Yields[yield.YieldIndex].YieldType] = yield.Amount
+		end
+
+		local destination = Players[route.DestinationCityPlayer]:GetCities():FindID(route.DestinationCityID)
+
+		AddSource(sources, {
+			kind = "route",
+			name = Locale.Lookup(destination:GetName()),
+			city = { owner = route.DestinationCityPlayer, id = route.DestinationCityID },
+			yields = CollectYields(Reader(amounts)),
+		})
+	end
+end
+
+-- Returns what the city's worked tiles give by yield type, and the tourism of its tiles. See
+-- GetWorkedTileYieldData in ReportScreen.lua, lines 567 to 598.
+local function GetTileYields(player, city)
+	local amounts, tourism = {}, 0
+	local citizens = city:GetCitizens()
+	local culture = player:GetCulture()
+
+	for _, plotID in ipairs(Map.GetCityPlots():GetPurchasedPlots(city)) do
+		local plot = Map.GetPlotByIndex(plotID)
+
+		tourism = tourism + culture:GetTourismAt(plotID)
+
+		if citizens:IsPlotWorked(plot:GetX(), plot:GetY()) then
+			for _, yield in ipairs(CITY_YIELDS) do
+				amounts[yield.type] = (amounts[yield.type] or 0) + plot:GetYield(GameInfo.Yields[yield.type].Index)
 			end
 		end
 	end
 
-	return total
+	return amounts, tourism
+end
+
+-- The happiness status that gives no yield, which is content.
+local CONTENT = 4
+
+-- Adds the rows for the city's worked tiles, its amenities, and its population, and returns the
+-- tourism of its tiles. While the city isn't content, its amenities give a tenth of the worked tiles'
+-- yields but food, scaled by the city's modifier. The population gives culture. See ViewYieldsPage in
+-- ReportScreen.lua, lines 976 to 1008.
+local function AddTileRows(player, city, sources)
+	local amounts, tourism = GetTileYields(player, city)
+	local growth = city:GetGrowth()
+
+	AddSource(sources, { kind = "tiles", name = Locale.Lookup("LOC_HUD_REPORTS_WORKED_TILES"), yields = CollectYields(Reader(amounts)) })
+
+	if growth:GetHappiness() ~= CONTENT then
+		local percent = math.floor((1 + growth:GetHappinessNonFoodYieldModifier() / 100) * 100 + 0.5) / 100 * 0.1
+
+		AddSource(sources, {
+			kind = "amenities",
+			name = Locale.Lookup("LOC_HUD_REPORTS_HEADER_AMENITIES"),
+			yields = CollectYields(function(yieldType)
+				return yieldType ~= "YIELD_FOOD" and (amounts[yieldType] or 0) * percent or 0
+			end),
+		})
+	end
+
+	AddSource(sources, {
+		kind = "population",
+		name = Locale.Lookup("LOC_HUD_CITY_POPULATION"),
+		yields = CollectYields(function(yieldType)
+			return yieldType == "YIELD_CULTURE" and city:GetPopulation() * GameInfo.GlobalParameters.CULTURE_PERCENTAGE_YIELD_PER_POP.Value / 100 or 0
+		end),
+	})
+
+	return tourism
+end
+
+-- Returns each of the player's cities with the tourism its tiles give, the gold its districts and
+-- buildings cost, and its sources, in the order of the report's city table, and the cost of all of
+-- them. A city's other yields are in cities[].yields.
+local function GetCityIncomes(player)
+	local list, total = {}, 0
+
+	for _, city in player:GetCities():Members() do
+		local sources, wonders = {}, {}
+		local upkeep = AddDistrictRows(city, sources, wonders)
+
+		for _, wonder in ipairs(wonders) do
+			sources[#sources + 1] = wonder
+		end
+
+		AddRouteRows(city, sources)
+
+		list[#list + 1] = {
+			city = { owner = player:GetID(), id = city:GetID() },
+			tourism = RoundNearest(AddTileRows(player, city, sources)),
+			upkeep = upkeep,
+			sources = sources,
+		}
+		total = total + upkeep
+	end
+
+	return list, total
 end
 
 -- Returns the gold one unit costs each turn, less the player's discount, by its formation, as GetData
@@ -287,7 +511,10 @@ function SentientSystems_GetIncomeState(player)
 	local unitUpkeep, unitTotal = GetUnitUpkeep(player, treasury:GetMaintDiscountPerUnit())
 	local deals, paid = GetDeals(player:GetID())
 
-	income.expenses = GetExpenses(treasury, unitTotal, paid, GetCityUpkeep(player))
+	local cities, cityUpkeep = GetCityIncomes(player)
+
+	income.cities = cities
+	income.expenses = GetExpenses(treasury, unitTotal, paid, cityUpkeep)
 	income.unitUpkeep = unitUpkeep
 	income.deals = deals
 

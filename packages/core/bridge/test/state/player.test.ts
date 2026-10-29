@@ -15,6 +15,7 @@ const SECTION = {
 		science: { total: 123.5 },
 		culture: { total: 216.6 },
 		expenses: { total: 210, cities: 117, units: 88, deals: 5 },
+		cities: [],
 		unitUpkeep: [],
 		deals: [],
 	},

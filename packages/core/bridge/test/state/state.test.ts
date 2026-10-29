@@ -62,6 +62,7 @@ const STATE: State = {
 			science: { total: 3 },
 			culture: { total: 2 },
 			expenses: { total: 0, cities: 0, units: 0, deals: 0 },
+			cities: [],
 			unitUpkeep: [],
 			deals: [],
 		},
