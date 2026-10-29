@@ -10,7 +10,7 @@ return function(env, world, ctx)
 	local indexes = ctx.indexes
 
 	env.GameInfo.CommemorationTypes = {}
-	env.EndTurnBlockingTypes.ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE = 1215684001
+	ctx.AddBlockerType("ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE", 1215684001)
 
 	-- The era and each player's active dedications get rows, with the text keys of the game's moments.
 	if world.era then

@@ -10,8 +10,8 @@ return function(env, world, ctx)
 	local indexes = ctx.indexes
 
 	env.GameInfo.Resolutions = {}
-	env.EndTurnBlockingTypes.ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK = 1215684003
-	env.EndTurnBlockingTypes.ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION = 1215684004
+	ctx.AddBlockerType("ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK", 1215684003)
+	ctx.AddBlockerType("ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION", 1215684004)
 
 	-- Each resolution in the World Congress gets a row, with the text keys the screen reads.
 	local congress = world.congress or {}

@@ -10,7 +10,7 @@ return function(env, world, ctx)
 
 	env.GameInfo.EmergencyAlliances = {}
 	env.GameInfo.Emergencies_XP2 = {}
-	env.EndTurnBlockingTypes.ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION = 1215684002
+	ctx.AddBlockerType("ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION", 1215684002)
 
 	-- Each emergency gets rows in the tables the popup reads, by its GameInfo index.
 	for _, data in pairs(world.players or {}) do
