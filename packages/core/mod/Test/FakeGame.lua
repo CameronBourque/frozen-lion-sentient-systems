@@ -103,13 +103,8 @@
 -- targetType, targets, the game's possible targets, favored, and disfavored, proposals, each with the
 -- game's TypeName, Name, Description, Sender, and Target, available, the same with Disabled and cost,
 -- effects, each with type, targetType, and the game's ChosenLabel, ChosenOption, and ChosenThing, and
--- review, the same with PlayerSelections, each with OptionChosen and Votes. A player's emergencies are the entries of the game's
--- GetEmergencyInfoTable, each with type, an EmergencyType, hostile, waiting, true for the one
--- GetNextBlockingEmergency returns, and the game's own fields, such as TargetID, TargetCityName,
--- NameText, ShortDescriptionText, GoalDescription, TurnsLeft, HasBegun, MemberIDs, GoalsTable,
--- TargetGoalsTable, ScoreSourcesTable, BuffsText, ExtraBuffs, the MemberRewardsText lists,
--- TargetRewardsText, and ExtraRewards, with a missing text 0 or "" and a missing list empty. A
--- player's dedications is the era change it is making them for, with era, an
+-- review, the same with PlayerSelections, each with OptionChosen and Votes. A player's emergencies
+-- are in FakeGame/Emergencies.lua. A player's dedications is the era change it is making them for, with era, an
 -- era type, age, heroic, golden, dark, or normal, allowed, the picks it needs, alwaysNormal, true for
 -- a player always allowed the normal bonus too, and options, the category names, such as
 -- "SCIENTIFIC", which give each its row in GameInfo.CommemorationTypes, with the keys
@@ -258,7 +253,6 @@ local END_TURN_BLOCKING_TYPES = {
 	ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY = 2048525187,
 	ENDTURN_BLOCKING_ARTIFACT = -234935529,
 	ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE = 1215684001,
-	ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION = 1215684002,
 	ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK = 1215684003,
 	ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION = 1215684004,
 }
@@ -1684,9 +1678,7 @@ function FakeGame.Install(env, world)
 		GovernorPromotionConditions = {},
 		GreatPersonIndividuals = {},
 		CommemorationTypes = {},
-		EmergencyAlliances = {},
 		Resolutions = {},
-		Emergencies_XP2 = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -2030,14 +2022,6 @@ function FakeGame.Install(env, world)
 			row.Name = "LOC_" .. resolution.type .. "_NAME"
 			row.Effect1Description = "LOC_" .. resolution.type .. "_A"
 			row.Effect2Description = "LOC_" .. resolution.type .. "_B"
-		end
-	end
-
-	-- Each emergency gets rows in the tables the popup reads, by its GameInfo index.
-	for _, data in pairs(world.players or {}) do
-		for _, emergency in ipairs(data.emergencies or {}) do
-			AddRow("EmergencyAlliances", "EmergencyType", emergency.type)
-			env.GameInfo.Emergencies_XP2[indexes[emergency.type]] = { Hostile = emergency.hostile }
 		end
 	end
 
@@ -2912,53 +2896,6 @@ function FakeGame.Install(env, world)
 			end
 		end
 	end
-	-- A player's emergency entries, and the next one waiting, from data.emergencies. The game's
-	-- table holds the emergency type as an index, and each list defaults to an empty one.
-	env.Game.GetEmergencyManager = function()
-		return {
-			GetEmergencyInfoTable = function(_, playerID)
-				local entries = {}
-
-				for _, emergency in ipairs(world.players[playerID].emergencies or {}) do
-					local entry = {
-						EmergencyType = indexes[emergency.type],
-						TargetCityName = "",
-						NameText = "",
-						ShortDescriptionText = "",
-						GoalDescription = "",
-						ExtraBuffs = "",
-						ExtraRewards = "",
-						TurnsLeft = 0,
-						MemberIDs = {},
-						GoalsTable = {},
-						TargetGoalsTable = {},
-						ScoreSourcesTable = {},
-						BuffsText = {},
-						MemberRewardsTextFirst = {},
-						MemberRewardsTextTop = {},
-						MemberRewardsTextBottom = {},
-						MemberRewardsTextExtra = {},
-						TargetRewardsText = {},
-					}
-
-					for key, value in pairs(emergency) do
-						entry[key] = value
-					end
-
-					entries[#entries + 1] = entry
-				end
-
-				return entries
-			end,
-			GetNextBlockingEmergency = function(_, playerID)
-				for _, emergency in ipairs(world.players[playerID].emergencies or {}) do
-					if emergency.waiting then
-						return { eTarget = emergency.TargetID, eEmergencyType = indexes[emergency.type] }
-					end
-				end
-			end,
-		}
-	end
 	-- The era change of the first player with dedications, from its data.dedications. The ages are
 	-- the same for every player here, as the tests use one.
 	env.Game.GetEras = function()
@@ -3351,5 +3288,6 @@ end
 
 -- One line for each feature in FakeGame/, in the order Install runs them. Each file returns its
 -- install function, as FakeGame.Register describes.
+FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
 
 return FakeGame
