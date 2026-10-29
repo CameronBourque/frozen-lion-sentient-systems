@@ -19,6 +19,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [game-spies.md](game-spies.md) | The calls the spy choice uses, as the escape screen shows it |
 | [game-artifacts.md](game-artifacts.md) | The calls the artifact choice uses, as the artifact screen shows it |
 | [game-dedications.md](game-dedications.md) | The calls the dedication choice uses, as the dedication popup shows it |
+| [game-world-congress.md](game-world-congress.md) | The calls the World Congress choice uses, as the congress screen shows them |
 | [game-emergencies.md](game-emergencies.md) | The calls the emergency choice uses, as the emergency popup shows it, not yet confirmed in a running game |
 | [game-governors.md](game-governors.md) | The calls the governors in the state use, as the Governors panel shows them |
 | [game-city-states.md](game-city-states.md) | The calls the envoy choice and the envoys and city-state details in the state use, as the City-States screen shows them |
