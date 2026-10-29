@@ -17,7 +17,7 @@ The calls the player section of the state uses. See [in-game-lua.md](../design/c
 - **Science and culture.** `RefreshYields` shows `GetTechs():GetScienceYield()` and `GetCulture():GetCultureYield()` per turn, in the number format `{1: number +#,###.#;-#,###.#}`, which rounds to the nearest tenth. They were 123.50390625 and 216.62109375, and the bar showed +123.5 and +216.6. Confirmed in files and on Windows on 2026-10-29.
 - **Faith.** `GetReligion():GetFaithBalance()` in the format `#,###.#`, and `GetFaithYield()` per turn. They were 2357.01 and 109, and the bar showed 2,357 and +109. Confirmed in files and on Windows on 2026-10-29.
 - **Gold.** The balance is `GetTreasury():GetGoldBalance()` rounded down, and the income per turn is `GetGoldYield()` less `GetTotalMaintenance()`, so the upkeep is already taken off. They were 9610.84 and 475.08 less 210, and the bar showed 9,610 and +265. Confirmed in files and on Windows on 2026-10-29.
-- **Tourism.** `GetStats():GetTourism()` rounded to a tenth. The bar hides it at 0. It was 92. Confirmed in files and on Windows on 2026-10-29.
+- **Tourism.** `GetStats():GetTourism()` rounded to a tenth. The bar hides it at 0, as a turn 1 game showed, but the state always has it. It was 92 in a late save and 0 on turn 1. Confirmed in files and on Windows on 2026-10-29.
 - **Trade routes.** `RefreshTrade` shows `GetTrade():GetNumOutgoingRoutes()` over `GetOutgoingRouteCapacity()`, and hides the button when the capacity is 0. They were 17 and 20. Confirmed in files and on Windows on 2026-10-29.
 - **Favor.** With Gathering Storm only, the override of `RefreshYields` shows `GetFavor()` and `GetFavorPerTurn()`, which a player has only with that expansion. They were 335 and +3. Confirmed in files and on Windows on 2026-10-29.
 - **Envoys.** The bar's envoy counter reads `GetInfluence()`, which the `envoys` section holds, so the player section leaves it out. Confirmed in files.
@@ -34,6 +34,7 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 
 | Check | Result |
 | --- | --- |
-| The player section against the top bar | Science 123.5, culture 216.6, faith 2,357 and 109, gold 9,610 and 265.1, tourism 92, trade routes 17 of 20, favor 335 and 3. All matched the bar |
+| The player section against the top bar | Science 123.5, culture 216.6, faith 2,357 and 109, gold 9,610 and 265.1, tourism 92, trade routes 17 of 20, favor 335 and 3. All matched the bar 
+| The player section on turn 1 of a new game | Science 0, culture 0, faith 0 and 0, gold 5 and 0, favor 0 and 0, tourism 0, and no trade routes. The bar showed the same, with the favor button showing 0 and 0, no tourism, and the envoy counter at 0 |
 
 Date checked: game files and a running game on Windows on 2026-10-29.
