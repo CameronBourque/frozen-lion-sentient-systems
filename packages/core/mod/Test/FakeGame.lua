@@ -47,10 +47,10 @@
 -- each with player, id, and yields, and the district yields and adjacency, building yields, wonder, and
 -- greatWorks, each with type and yields, that data.districts holds. growth.yieldModifier is the
 -- amenities' modifier.
--- A player's income numbers: unitDiscount, tooltips with gold, faith, science, and culture, deals, each
+-- A player's tooltips also has science, and it has deals, each
 -- with player, gold or resource and amount, duration, enacted, and outgoing, and units with formation, such as
--- "CORPS_MILITARY_FORMATION". world.maintenance maps a district or building type to its upkeep,
--- world.unitMaintenance a unit type to its unit, corps, and army upkeep, and world.turn is the turn.
+-- "CORPS_MILITARY_FORMATION". Income, tourism, and the gold and faith tooltips are in
+-- FakeGame/Income.lua, upkeep in FakeGame/Maintenance.lua, plots in FakeGame/Plots.lua, and world.turn is the turn.
 -- A player's top bar numbers are science, culture, tourism, gold, upkeep, goldPerTurn, faith,
 -- faithPerTurn, favor, favorPerTurn, with Gathering Storm only, and trade, with active and capacity.
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
@@ -666,21 +666,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 				GetCultureYield = function()
 					return data.culture or 0
 				end,
-				-- The tourism of a plot, from the tile that a city of the player owns there.
-				GetTourismAt = function(_, plotIndex)
-					for _, city in ipairs(data.cities or {}) do
-						for _, tile in ipairs(city.tiles or {}) do
-							if PlotIndex(tile.x, tile.y) == plotIndex then
-								return tile.tourism or 0
-							end
-						end
-					end
-
-					return 0
-				end,
-				GetCultureYieldToolTip = function()
-					return (data.tooltips or {}).culture or ""
-				end,
 			}
 		end,
 		-- The player's gold and faith. Each can afford an item unless its purchase option for that
@@ -693,25 +678,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 				return data.gold or 0
 			end
 
-			-- The player's gold income and upkeep per turn, from data.goldPerTurn and data.upkeep.
-			function treasury.GetGoldYield()
-				return data.goldPerTurn or 0
-			end
-
-			function treasury.GetTotalMaintenance()
-				return data.upkeep or 0
-			end
-
-			-- What the player's units cost less each, from data.unitDiscount, and the income's text
-			-- from data.tooltips.gold.
-			function treasury.GetMaintDiscountPerUnit()
-				return data.unitDiscount or 0
-			end
-
-			function treasury.GetGoldYieldToolTip()
-				return (data.tooltips or {}).gold or ""
-			end
-
 			return treasury
 		end,
 		GetReligion = function()
@@ -720,14 +686,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 			-- The player's faith, from data.faith, which is 0 when missing.
 			function religion.GetFaithBalance()
 				return data.faith or 0
-			end
-
-			function religion.GetFaithYield()
-				return data.faithPerTurn or 0
-			end
-
-			function religion.GetFaithYieldToolTip()
-				return (data.tooltips or {}).faith or ""
 			end
 
 			return religion
@@ -875,8 +833,8 @@ function FakeGame.Install(env, world)
 
 	local hashes, indexes = {}, {}
 	local count = 0
-	-- Each plot in world.plots by its index, and the plot count, which covers the highest row.
-	local plots, plotCount = {}, 0
+	-- Each plot in world.plots by its index, which FakeGame/Plots.lua fills.
+	local plots = {}
 
 	-- GameInfo.Yields finds a yield by its type or by its index, as the game's table does.
 	local yieldInfo = {}
@@ -1000,61 +958,6 @@ function FakeGame.Install(env, world)
 		end,
 	}
 	env.DefenseTypes = DEFENSE_TYPES
-	-- The plots that cities own, by index, with the yield each gives for a GameInfo.Yields index.
-	local tilePlots = {}
-
-	for _, player in pairs(world.players or {}) do
-		for _, city in ipairs(player.cities or {}) do
-			for _, tile in ipairs(city.tiles or {}) do
-				tilePlots[PlotIndex(tile.x, tile.y)] = {
-					GetX = function()
-						return tile.x
-					end,
-					GetY = function()
-						return tile.y
-					end,
-					GetYield = function(_, yieldIndex)
-						return (tile.yields or {})[YIELD_NAMES[yieldIndex]] or 0
-					end,
-					-- The tile's resource, from tile.resource, and whether it can be extracted.
-					GetResourceType = function()
-						return tile.resource and indexes[tile.resource] or -1
-					end,
-					extractable = tile.extractable,
-				}
-			end
-		end
-	end
-
-	env.Map = {
-		GetPlot = function(x, y)
-			return {
-				GetIndex = function()
-					return PlotIndex(x, y)
-				end,
-			}
-		end,
-		GetPlotCount = function()
-			return plotCount
-		end,
-		GetPlotByIndex = function(index)
-			return plots[index] or assert(tilePlots[index], "no fake plot " .. index)
-		end,
-		-- The plots a city owns, as the indexes of its data.tiles.
-		GetCityPlots = function()
-			return {
-				GetPurchasedPlots = function(_, city)
-					local indexes = {}
-
-					for i, tile in ipairs(city.tiles) do
-						indexes[i] = PlotIndex(tile.x, tile.y)
-					end
-
-					return indexes
-				end,
-			}
-		end,
-	}
 
 	-- Adds a type to a GameInfo table under the next index, as the game numbers its rows.
 	local function AddRow(tableName, column, typeName)
@@ -1223,39 +1126,6 @@ function FakeGame.Install(env, world)
 		end
 	end
 
-	-- The upkeep of districts and buildings, from world.maintenance by type, and each unit's by type from
-	-- world.unitMaintenance, with unit, corps, and army. A placed unit gets a hash and a name.
-	local unitCosts = {}
-
-	for _, tableName in ipairs({ "Districts", "Buildings" }) do
-		for index, row in pairs(env.GameInfo[tableName]) do
-			if type(index) == "number" then
-				row.Maintenance = (world.maintenance or {})[row.DistrictType or row.BuildingType] or 0
-				row.Name = row.Name or "LOC_" .. (row.DistrictType or row.BuildingType) .. "_NAME"
-				row.IsWonder = row.IsWonder or wonderTypes[row.BuildingType]
-			end
-		end
-	end
-
-	for index, row in pairs(env.GameInfo.Units) do
-		if type(index) == "number" then
-			hashes[row.UnitType] = hashes[row.UnitType] or 5000000 + index
-			row.Hash = hashes[row.UnitType]
-			row.Name = row.Name or "LOC_" .. row.UnitType .. "_NAME"
-			unitCosts[row.Hash] = (world.unitMaintenance or {})[row.UnitType] or {}
-		end
-	end
-
-	env.UnitManager.GetUnitMaintenance = function(hash)
-		return unitCosts[hash].unit or 0
-	end
-	env.UnitManager.GetUnitCorpsMaintenance = function(hash)
-		return unitCosts[hash].corps or 0
-	end
-	env.UnitManager.GetUnitArmyMaintenance = function(hash)
-		return unitCosts[hash].army or 0
-	end
-
 	-- A city-state's resources and quests get their rows.
 	for _, data in pairs(world.players or {}) do
 		for _, resource in ipairs((data.minor or {}).resources or {}) do
@@ -1272,71 +1142,6 @@ function FakeGame.Install(env, world)
 			row.ResourceClassType = "RESOURCECLASS_" .. resource.class:upper()
 			row.Name = "LOC_" .. resource.type .. "_NAME"
 		end
-	end
-
-	-- Resources are added before the players, whose hidden resources are looked up by hash.
-	for _, data in ipairs(world.plots or {}) do
-		AddRow("Terrains", "TerrainType", data.terrain)
-
-		if data.feature ~= nil then
-			AddRow("Features", "FeatureType", data.feature)
-		end
-
-		for _, field in ipairs({ { "Districts", "DistrictType", data.district }, { "Improvements", "ImprovementType", data.improvement }, { "Routes", "RouteType", data.route } }) do
-			if field[3] ~= nil then
-				AddRow(field[1], field[2], field[3])
-			end
-		end
-
-		if data.resource ~= nil and hashes[data.resource] == nil then
-			AddRow("Resources", "ResourceType", data.resource)
-			count = count + 1
-			hashes[data.resource] = 2000000 + count
-		end
-
-		local index = PlotIndex(data.x, data.y)
-
-		plotCount = math.max(plotCount, (data.y + 1) * MAP_WIDTH)
-		plots[index] = {
-			GetX = function()
-				return data.x
-			end,
-			GetY = function()
-				return data.y
-			end,
-			GetTerrainType = function()
-				return indexes[data.terrain]
-			end,
-			-- The game returns -1 for a plot with no feature or resource.
-			GetFeatureType = function()
-				return data.feature and indexes[data.feature] or -1
-			end,
-			GetResourceType = function()
-				return data.resource and indexes[data.resource] or -1
-			end,
-			GetResourceTypeHash = function()
-				return data.resource and hashes[data.resource] or 0
-			end,
-			-- The game returns -1 for no owner, district, improvement, or route.
-			GetOwner = function()
-				return data.owner or -1
-			end,
-			GetDistrictType = function()
-				return data.district and indexes[data.district] or -1
-			end,
-			GetImprovementType = function()
-				return data.improvement and indexes[data.improvement] or -1
-			end,
-			IsImprovementPillaged = function()
-				return data.improvementPillaged == true
-			end,
-			GetRouteType = function()
-				return data.route and indexes[data.route] or -1
-			end,
-			IsRoutePillaged = function()
-				return data.routePillaged == true
-			end,
-		}
 	end
 
 	-- What a feature gets from the core: the rows and their hashes and indexes, the plots by index,
@@ -1361,6 +1166,7 @@ function FakeGame.Install(env, world)
 		List = List,
 		Formation = Formation,
 		PlotIndex = PlotIndex,
+		wonderTypes = wonderTypes,
 		MAP_WIDTH = MAP_WIDTH,
 		YIELD_TYPES = YIELD_TYPES,
 		YIELD_NAMES = YIELD_NAMES,
@@ -1586,6 +1392,7 @@ end
 
 -- One line for each feature in FakeGame/, in the order Install runs them. Each file returns its
 -- install function, as FakeGame.Register describes.
+FakeGame.Register("Plots", require("FakeGame/Plots"))
 FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
 FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"))
 FakeGame.Register("Eras", require("FakeGame/Eras"))
@@ -1602,5 +1409,7 @@ FakeGame.Register("Governments", require("FakeGame/Governments"))
 FakeGame.Register("Production", require("FakeGame/Production"))
 FakeGame.Register("Purchases", require("FakeGame/Purchases"))
 FakeGame.Register("Placement", require("FakeGame/Placement"))
+FakeGame.Register("Income", require("FakeGame/Income"))
+FakeGame.Register("Maintenance", require("FakeGame/Maintenance"))
 
 return FakeGame
