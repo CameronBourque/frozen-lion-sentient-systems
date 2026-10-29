@@ -24,6 +24,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [game-governors.md](game-governors.md) | The calls the governors in the state use, as the Governors panel shows them |
 | [game-diplomacy.md](game-diplomacy.md) | The calls the diplomacy status in the state uses, as the Intel Report shows them |
 | [game-player.md](game-player.md) | The calls the player section of the state uses, as the top bar shows them |
+| [game-scoreboard.md](game-scoreboard.md) | The calls the scoreboard in the state uses, as the Score tab of World Rankings and the leader panel show them |
 | [game-city-states.md](game-city-states.md) | The calls the envoy choice and the envoys and city-state details in the state use, as the City-States screen shows them |
 | [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |

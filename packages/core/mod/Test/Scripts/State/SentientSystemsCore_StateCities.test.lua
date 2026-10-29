@@ -1,6 +1,12 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
+-- The scoreboard of a world with one player, ID 0, who has not met anyone.
+local SCOREBOARD = "[{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":0,\"type\":\"CATEGORY_CIVICS\"},{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":0,\"type\":\"CATEGORY_EMPIRE\"},{\"name\":\"LOC_CATEGORY_GREAT_PEOPLE_NAME\",\"score\":0,\"type\":\"CATEGORY_GREAT_PEOPLE\"},{\"name\":\"LOC_CATEGORY_RELIGION_NAME\",\"score\":0,\"type\":\"CATEGORY_RELIGION\"},{\"name\":\"LOC_CATEGORY_TECH_NAME\",\"score\":0,\"type\":\"CATEGORY_TECH\"},{\"name\":\"LOC_CATEGORY_WONDER_NAME\",\"score\":0,\"type\":\"CATEGORY_WONDER\"},{\"name\":\"LOC_CATEGORY_ERA_SCORE_NAME\",\"score\":0,\"type\":\"CATEGORY_ERA_SCORE\"}],\"culture\":0,\"faith\":0,\"gold\":0,\"military\":0,\"player\":0,\"science\":0,\"score\":0}]"
+
+-- The scoreboard of player 1 in a world with players 0 and 1, who have not met.
+local SCOREBOARD_OF_1 = "[{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":0,\"type\":\"CATEGORY_CIVICS\"},{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":0,\"type\":\"CATEGORY_EMPIRE\"},{\"name\":\"LOC_CATEGORY_GREAT_PEOPLE_NAME\",\"score\":0,\"type\":\"CATEGORY_GREAT_PEOPLE\"},{\"name\":\"LOC_CATEGORY_RELIGION_NAME\",\"score\":0,\"type\":\"CATEGORY_RELIGION\"},{\"name\":\"LOC_CATEGORY_TECH_NAME\",\"score\":0,\"type\":\"CATEGORY_TECH\"},{\"name\":\"LOC_CATEGORY_WONDER_NAME\",\"score\":0,\"type\":\"CATEGORY_WONDER\"},{\"name\":\"LOC_CATEGORY_ERA_SCORE_NAME\",\"score\":0,\"type\":\"CATEGORY_ERA_SCORE\"}],\"score\":0},{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":0,\"type\":\"CATEGORY_CIVICS\"},{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":0,\"type\":\"CATEGORY_EMPIRE\"},{\"name\":\"LOC_CATEGORY_GREAT_PEOPLE_NAME\",\"score\":0,\"type\":\"CATEGORY_GREAT_PEOPLE\"},{\"name\":\"LOC_CATEGORY_RELIGION_NAME\",\"score\":0,\"type\":\"CATEGORY_RELIGION\"},{\"name\":\"LOC_CATEGORY_TECH_NAME\",\"score\":0,\"type\":\"CATEGORY_TECH\"},{\"name\":\"LOC_CATEGORY_WONDER_NAME\",\"score\":0,\"type\":\"CATEGORY_WONDER\"},{\"name\":\"LOC_CATEGORY_ERA_SCORE_NAME\",\"score\":0,\"type\":\"CATEGORY_ERA_SCORE\"}],\"culture\":0,\"faith\":0,\"gold\":0,\"military\":0,\"player\":1,\"science\":0,\"score\":0}]"
+
 -- The yields JSON for a city with every yield at 0.
 local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\"production\":0,\"science\":0}"
 
@@ -49,7 +55,7 @@ describe("SentientSystems_GetCityStates", function()
 
 		assert.equal(
 			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65536,\"name\":\"Rome\",\"population\":3,\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
-				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}",
+				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[]}",
 			WithoutIncome(env.SentientSystems_GetState(0))
 		)
 	end)
@@ -59,7 +65,7 @@ describe("SentientSystems_GetCityStates", function()
 			players = { [0] = { cities = { ROME } }, [1] = { cities = { { id = 65537, name = "Uruk", x = 10, y = 10, population = 5 } } } },
 		})
 
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", WithoutIncome(env.SentientSystems_GetState(1)))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD_OF_1 .. ",\"tiles\":[],\"units\":[]}", WithoutIncome(env.SentientSystems_GetState(1)))
 	end)
 
 	it("escapes a city name with quotes", function()

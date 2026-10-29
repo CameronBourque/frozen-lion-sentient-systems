@@ -48,6 +48,7 @@ const STATE: State = {
 		{ x: 29, y: 17, terrain: "TERRAIN_GRASS", resource: "RESOURCE_CATTLE", owner: 1, visible: false },
 	],
 	proposals: [],
+	scoreboard: [{ player: 0, score: 0, categories: [] }],
 	religion: { pantheon: "BELIEF_GOD_OF_THE_SEA", prophet: false },
 	diplomacy: [],
 	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 50, envoys: 1 }, cityStates: [] },
@@ -146,11 +147,11 @@ describe("readState", () => {
 	});
 
 	test("drops a field that the schema doesn't know", async () => {
-		stash([JSON.stringify({ ...STATE, scoreboard: [] })]);
+		stash([JSON.stringify({ ...STATE, victories: [] })]);
 
 		const result = await readState(client, 0);
 
-		expect(result.ok && "scoreboard" in result.state).toBe(false);
+		expect(result.ok && "victories" in result.state).toBe(false);
 	});
 
 	test("fails when the stash doesn't print a piece count", async () => {

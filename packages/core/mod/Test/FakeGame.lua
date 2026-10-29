@@ -468,5 +468,6 @@ FakeGame.Register("Income", require("FakeGame/Income"), { "TopBar", "Stores" })
 FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings", "Units" })
 FakeGame.Register("Diplomacy", require("FakeGame/Diplomacy"), { "Players", "Rivals", "Capabilities", "Research" })
 FakeGame.Register("Proposals", require("FakeGame/Proposals"), { "Deals", "Research", "Diplomacy" })
+FakeGame.Register("Scoreboard", require("FakeGame/Scoreboard"), { "TopBar", "CapturedCities" })
 
 return FakeGame

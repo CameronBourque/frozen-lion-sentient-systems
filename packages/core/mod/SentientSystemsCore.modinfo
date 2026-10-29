@@ -51,6 +51,7 @@
 			<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateScoreboard.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateUnits.lua</File>
 		</ImportFiles>
