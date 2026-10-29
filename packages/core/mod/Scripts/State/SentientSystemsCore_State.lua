@@ -6,6 +6,7 @@
 -- "envoys":{"cityStates":[...],"influence":{...},"tokens":0},"governors":{...},"greatPeople":[...],
 -- "player":{...},"religion":{"pantheon":"BELIEF_GOD_OF_THE_SEA"},"rivals":{"cities":[...],"units":[...]},"tiles":[...],
 -- "scoreboard":[{"player":0,"score":48,...}],
+-- "victories":{"science":[{"player":0,"progress":0.1,...},{"unmet":true}],...},
 -- "units":[...]}', on one line.
 
 include("SentientSystemsCore_Common")
@@ -23,6 +24,7 @@ SentientSystems_Include("SentientSystemsCore_StateGovernors")
 SentientSystems_Include("SentientSystemsCore_StatePlayer")
 SentientSystems_Include("SentientSystemsCore_StateProposals")
 SentientSystems_Include("SentientSystemsCore_StateScoreboard")
+SentientSystems_Include("SentientSystemsCore_StateVictories")
 
 -- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -51,5 +53,6 @@ function SentientSystems_GetState(playerID)
 		player = SentientSystems_GetPlayerState(player),
 		proposals = SentientSystems_GetProposalState(player),
 		scoreboard = SentientSystems_GetScoreboardState(player),
+		victories = SentientSystems_GetVictoryState(player),
 	})
 end

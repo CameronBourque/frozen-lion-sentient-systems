@@ -46,6 +46,12 @@ local function With(city, changes)
 	return copy
 end
 
+-- The victories of a world with one player, ID 0, who has not met anyone.
+local VICTORIES = "{\"culture\":[{\"culturePerTurn\":0,\"player\":0,\"progress\":0,\"tourismPerTurn\":0}],\"domination\":[{\"military\":0,\"player\":0,\"progress\":0}],\"religion\":[{\"cities\":0,\"faithPerTurn\":0,\"player\":0,\"progress\":0}],\"science\":[{\"player\":0,\"progress\":0,\"sciencePerTurn\":0,\"techs\":0}]}"
+
+-- The victories of player 1 in a world with players 0 and 1, who have not met.
+local VICTORIES_OF_1 = "{\"culture\":[{\"unmet\":true},{\"culturePerTurn\":0,\"player\":1,\"progress\":0,\"tourismPerTurn\":0}],\"domination\":[{\"unmet\":true},{\"military\":0,\"player\":1,\"progress\":0}],\"religion\":[{\"unmet\":true},{\"cities\":0,\"faithPerTurn\":0,\"player\":1,\"progress\":0}],\"science\":[{\"unmet\":true},{\"player\":1,\"progress\":0,\"sciencePerTurn\":0,\"techs\":0}]}"
+
 describe("SentientSystems_GetCityStates", function()
 	it("lists each city's ID, name, position, and population", function()
 		local env = Load({
@@ -55,7 +61,7 @@ describe("SentientSystems_GetCityStates", function()
 
 		assert.equal(
 			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65536,\"name\":\"Rome\",\"population\":3,\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
-				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[]}",
+				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[],\"victories\":" .. VICTORIES .. "}",
 			WithoutIncome(env.SentientSystems_GetState(0))
 		)
 	end)
@@ -65,7 +71,7 @@ describe("SentientSystems_GetCityStates", function()
 			players = { [0] = { cities = { ROME } }, [1] = { cities = { { id = 65537, name = "Uruk", x = 10, y = 10, population = 5 } } } },
 		})
 
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD_OF_1 .. ",\"tiles\":[],\"units\":[]}", WithoutIncome(env.SentientSystems_GetState(1)))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD_OF_1 .. ",\"tiles\":[],\"units\":[],\"victories\":" .. VICTORIES_OF_1 .. "}", WithoutIncome(env.SentientSystems_GetState(1)))
 	end)
 
 	it("escapes a city name with quotes", function()

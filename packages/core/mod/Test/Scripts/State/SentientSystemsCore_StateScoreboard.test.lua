@@ -69,7 +69,7 @@ describe("SentientSystems_GetScoreboardState", function()
 
 		assert.truthy(ScoreboardOf(world):find("\"favor\":12,", 1, true))
 
-		world.noDiplomaticVictory = true
+		world.disabledVictories = { VICTORY_DIPLOMATIC = true }
 
 		assert.is_nil(ScoreboardOf(world):find("\"favor\"", 1, true))
 	end)

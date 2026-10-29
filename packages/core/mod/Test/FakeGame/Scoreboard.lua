@@ -2,9 +2,8 @@
 -- points, such as CATEGORY_CIVICS = 3, each 0 when missing. Its military is its military
 -- strength without the treasury, 0 when missing. GameInfo.ScoringCategories has the game's
 -- categories, each with a CategoryType, Name, and Multiplier. CATEGORY_TRADE has no multiplier, so the
--- Score tab leaves it out. world.noDiplomaticVictory turns that victory off, which Game.IsVictoryEnabled
--- reports. Culture, science, gold, faith, and favor are in FakeGame/TopBar.lua, Research.lua, and
--- Stores.lua.
+-- Score tab leaves it out. Culture, science, gold, faith, and favor are in FakeGame/TopBar.lua,
+-- Research.lua, and Stores.lua.
 
 local CATEGORIES = {
 	{ "CATEGORY_CIVICS", 1 },
@@ -27,10 +26,6 @@ return function(env, world, ctx)
 			Name = "LOC_" .. row[1] .. "_NAME",
 			Multiplier = row[2],
 		}
-	end
-
-	env.Game.IsVictoryEnabled = function(victory)
-		return victory ~= "VICTORY_DIPLOMATIC" or world.noDiplomaticVictory ~= true
 	end
 
 	ctx.OnPlayer(function(player, data)

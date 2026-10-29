@@ -34,11 +34,17 @@ local function With(unit, changes)
 	return copy
 end
 
+-- The victories of a world with one player, ID 0, who has not met anyone.
+local VICTORIES = "{\"culture\":[{\"culturePerTurn\":0,\"player\":0,\"progress\":0,\"tourismPerTurn\":0}],\"domination\":[{\"military\":0,\"player\":0,\"progress\":0}],\"religion\":[{\"cities\":0,\"faithPerTurn\":0,\"player\":0,\"progress\":0}],\"science\":[{\"player\":0,\"progress\":0,\"sciencePerTurn\":0,\"techs\":0}]}"
+
+-- The victories of player 1 in a world with players 0 and 1, who have not met.
+local VICTORIES_OF_1 = "{\"culture\":[{\"unmet\":true},{\"culturePerTurn\":0,\"player\":1,\"progress\":0,\"tourismPerTurn\":0}],\"domination\":[{\"unmet\":true},{\"military\":0,\"player\":1,\"progress\":0}],\"religion\":[{\"unmet\":true},{\"cities\":0,\"faithPerTurn\":0,\"player\":1,\"progress\":0}],\"science\":[{\"unmet\":true},{\"player\":1,\"progress\":0,\"sciencePerTurn\":0,\"techs\":0}]}"
+
 describe("SentientSystems_GetUnitStates", function()
 	it("lists each unit's ID, type, position, moves, and health", function()
 		assert.equal(
 			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[{\"health\":{\"max\":100,\"value\":100},\"id\":196608,\"moves\":{\"left\":3,\"max\":3},"
-				.. "\"type\":\"UNIT_SCOUT\",\"x\":24,\"y\":15}]}",
+				.. "\"type\":\"UNIT_SCOUT\",\"x\":24,\"y\":15}],\"victories\":" .. VICTORIES .. "}",
 			StateWith({ SCOUT })
 		)
 	end)
@@ -51,11 +57,11 @@ describe("SentientSystems_GetUnitStates", function()
 	end)
 
 	it("skips a unit that isn't on the map", function()
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[]}", StateWith({ With(SCOUT, { x = -9999, y = -9999 }) }))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[],\"victories\":" .. VICTORIES .. "}", StateWith({ With(SCOUT, { x = -9999, y = -9999 }) }))
 	end)
 
 	it("skips a unit that is dead or about to die", function()
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[]}", StateWith({ With(SCOUT, { dead = true }), With(SCOUT, { id = 2, delayedDeath = true }) }))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[],\"victories\":" .. VICTORIES .. "}", StateWith({ With(SCOUT, { dead = true }), With(SCOUT, { id = 2, delayedDeath = true }) }))
 	end)
 
 	it("adds the unit's experience and its promotions", function()
