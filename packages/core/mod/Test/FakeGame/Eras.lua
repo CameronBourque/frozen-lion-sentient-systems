@@ -3,12 +3,17 @@
 -- golden, the score's thresholds, previous and current, the score's sources, each a table of its
 -- text to its points, and commemorations, the active dedications' category names, such as
 -- "ECONOMIC". Without world.era, as in a game without Rise and Fall, there are none of the era's
--- calls. A player's era.loyalty is its civilian loyalty. The ChronologyIndex rows of GameInfo.Eras are in FakeGame.lua. See FakeGame/Dedications.lua
--- for the era change.
+-- calls. A player's era.loyalty is its civilian loyalty. GameInfo.Eras starts with ERA_ANCIENT, ERA_CLASSICAL, and ERA_MEDIEVAL,
+-- each with a ChronologyIndex. See FakeGame/Dedications.lua for the era change.
 
 return function(env, world, ctx)
 	local indexes = ctx.indexes
 
+	env.GameInfo.Eras = {
+		ERA_ANCIENT = { ChronologyIndex = 1 },
+		ERA_CLASSICAL = { ChronologyIndex = 2 },
+		ERA_MEDIEVAL = { ChronologyIndex = 3 },
+	}
 	env.GameInfo.CommemorationTypes = {}
 	ctx.AddBlockerType("ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE", 1215684001)
 

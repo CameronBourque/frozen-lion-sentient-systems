@@ -5,11 +5,44 @@
 -- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
 -- unit has no experience. A unit and its promotions get GameInfo rows, which the upkeep pass in
 -- FakeGame/Maintenance.lua names and hashes. A player's escaping spy and digging archaeologist are
--- in FakeGame/Spies.lua and Artifacts.lua.
+-- in FakeGame/Spies.lua and Artifacts.lua. UnitManager.CanStartCommand has only the promotion
+-- command, with results, as the units state asks for it. The game returns false and no results when
+-- the unit can't promote. ctx.Formation(unit, formation) gives a unit option, or its corps or army,
+-- for a formation.
 
 return function(env, world, ctx)
 	local indexes, AddRow = ctx.indexes, ctx.AddRow
-	local MILITARY_FORMATION_TYPES = env.MilitaryFormationTypes
+
+	-- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
+	local MILITARY_FORMATION_TYPES = { STANDARD_MILITARY_FORMATION = 0, CORPS_MILITARY_FORMATION = 1, ARMY_MILITARY_FORMATION = 2 }
+
+	env.MilitaryFormationTypes = MILITARY_FORMATION_TYPES
+	env.UnitCommandTypes = { PROMOTE = -1259482049 }
+	env.UnitCommandResults = { PROMOTIONS = 827475943 }
+	env.UnitManager = {
+		CanStartCommand = function(unit, command, testOnly, withResults)
+			assert(command == env.UnitCommandTypes.PROMOTE and testOnly == true and withResults == true, "no fake for this command")
+
+			local available = unit.availablePromotions
+
+			if available == nil or #available == 0 then
+				return false, nil
+			end
+
+			return true, { [env.UnitCommandResults.PROMOTIONS] = available }
+		end,
+	}
+
+	-- Returns the unit option, or its corps or army, for a formation.
+	ctx.Formation = function(unit, formation)
+		if formation == MILITARY_FORMATION_TYPES.CORPS_MILITARY_FORMATION then
+			return unit.corps
+		elseif formation == MILITARY_FORMATION_TYPES.ARMY_MILITARY_FORMATION then
+			return unit.army
+		end
+
+		return unit
+	end
 
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do

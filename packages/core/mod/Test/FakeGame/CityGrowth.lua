@@ -7,6 +7,17 @@
 -- and Fall expansion.
 
 return function(env, world, ctx)
+	-- GameInfo.Happinesses, by index, as in the game.
+	env.GameInfo.Happinesses = {
+		[0] = { HappinessType = "HAPPINESS_REVOLT" },
+		{ HappinessType = "HAPPINESS_UNREST" },
+		{ HappinessType = "HAPPINESS_UNHAPPY" },
+		{ HappinessType = "HAPPINESS_DISPLEASED" },
+		{ HappinessType = "HAPPINESS_CONTENT" },
+		{ HappinessType = "HAPPINESS_HAPPY" },
+		{ HappinessType = "HAPPINESS_ECSTATIC" },
+	}
+
 	ctx.OnCity(function(city, data)
 		local growth = data.growth or {}
 		local loyalty = data.loyalty

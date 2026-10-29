@@ -91,50 +91,6 @@ local function PlotIndex(x, y)
 	return y * MAP_WIDTH + x
 end
 
--- GameInfo.Happinesses, by index, as in the game.
-local HAPPINESSES = {
-	[0] = { HappinessType = "HAPPINESS_REVOLT" },
-	{ HappinessType = "HAPPINESS_UNREST" },
-	{ HappinessType = "HAPPINESS_UNHAPPY" },
-	{ HappinessType = "HAPPINESS_DISPLEASED" },
-	{ HappinessType = "HAPPINESS_CONTENT" },
-	{ HappinessType = "HAPPINESS_HAPPY" },
-	{ HappinessType = "HAPPINESS_ECSTATIC" },
-}
-
--- The DefenseTypes values for a district's garrison and walls.
-local DEFENSE_TYPES = { DISTRICT_GARRISON = 0, DISTRICT_OUTER = 1 }
-
--- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
-local MILITARY_FORMATION_TYPES = { STANDARD_MILITARY_FORMATION = 0, CORPS_MILITARY_FORMATION = 1, ARMY_MILITARY_FORMATION = 2 }
-
--- Returns the unit option, or its corps or army, for a formation.
-local function Formation(unit, formation)
-	if formation == MILITARY_FORMATION_TYPES.CORPS_MILITARY_FORMATION then
-		return unit.corps
-	elseif formation == MILITARY_FORMATION_TYPES.ARMY_MILITARY_FORMATION then
-		return unit.army
-	end
-
-	return unit
-end
-
--- The result keys of a CanProduce check. FAILURE_REASONS has the game's number.
-local CITY_COMMAND_RESULTS = { FAILURE_REASONS = -2028665063, PLOTS = 2001 }
-local CITY_OPERATION_RESULTS = { CAN_TRAIN_CORPS = 1001, CAN_TRAIN_ARMY = 1002, NO_SUITABLE_LOCATION = 1003, PLOTS = 1004 }
-
--- The operation and command values that ask for placement tiles, tiles to buy, and purchases.
-local CITY_OPERATION_TYPES = { BUILD = 3001, PARAM_DISTRICT_TYPE = 3002, PARAM_BUILDING_TYPE = 3003 }
-local CITY_COMMAND_TYPES = {
-	PURCHASE = 4001,
-	PARAM_PLOT_PURCHASE = 4002,
-	PARAM_UNIT_TYPE = 4003,
-	PARAM_BUILDING_TYPE = 4004,
-	PARAM_DISTRICT_TYPE = 4005,
-	PARAM_YIELD_TYPE = 4006,
-	PARAM_MILITARY_FORMATION_TYPE = 4007,
-}
-
 -- GameInfo.Yields, by name, with each yield's index from YieldTypes.
 local YIELD_ROWS = {
 	YIELD_FOOD = { Index = 0 },
@@ -338,11 +294,6 @@ function FakeGame.Install(env, world)
 		Types = {},
 		Districts = {},
 		Projects = {},
-		Eras = {
-			ERA_ANCIENT = { ChronologyIndex = 1 },
-			ERA_CLASSICAL = { ChronologyIndex = 2 },
-			ERA_MEDIEVAL = { ChronologyIndex = 3 },
-		},
 		Yields = yieldInfo,
 		Buildings = {},
 		Units = {},
@@ -353,7 +304,6 @@ function FakeGame.Install(env, world)
 		Resources = {},
 		Improvements = {},
 		Routes = {},
-		Happinesses = HAPPINESSES,
 		Leaders = {},
 		LeaderTraits = {},
 		Traits = {},
@@ -398,43 +348,7 @@ function FakeGame.Install(env, world)
 	}) do
 		TypedRows(env.GameInfo[name], column)
 	end
-	env.MilitaryFormationTypes = MILITARY_FORMATION_TYPES
-	env.CityCommandResults = CITY_COMMAND_RESULTS
-	env.CityOperationResults = CITY_OPERATION_RESULTS
-	env.CityOperationTypes = CITY_OPERATION_TYPES
-	env.CityCommandTypes = CITY_COMMAND_TYPES
-	env.CityManager = {
-		-- The city that a component ID, such as a holy city's, names.
-		GetCity = function(componentID)
-			local player = env.Players[componentID.player]
-
-			return player and player:GetCities():FindID(componentID.id)
-		end,
-	}
-	env.UI = {
-		GetInterfaceModeParameter = function(parameter)
-			return parameter
-		end,
-	}
-	env.UnitCommandTypes = { PROMOTE = -1259482049 }
-	env.UnitCommandResults = { PROMOTIONS = 827475943 }
-	-- Only the promotion command, with results, as the units state asks for it. The game returns
-	-- false and no results when the unit can't promote.
-	env.UnitManager = {
-		CanStartCommand = function(unit, command, testOnly, withResults)
-			assert(command == env.UnitCommandTypes.PROMOTE and testOnly == true and withResults == true, "no fake for this command")
-
-			local available = unit.availablePromotions
-
-			if available == nil or #available == 0 then
-				return false, nil
-			end
-
-			return true, { [env.UnitCommandResults.PROMOTIONS] = available }
-		end,
-	}
 	env.YieldTypes = YIELD_TYPES
-	env.DefenseTypes = DEFENSE_TYPES
 
 	-- Adds a type to a GameInfo table under the next index, as the game numbers its rows.
 	local function AddRow(tableName, column, typeName)
@@ -486,7 +400,6 @@ function FakeGame.Install(env, world)
 		Layout = function(data)
 			return CityLayout(data, indexes)
 		end,
-		Formation = Formation,
 		PlotIndex = PlotIndex,
 		MAP_WIDTH = MAP_WIDTH,
 		YIELD_TYPES = YIELD_TYPES,
@@ -527,6 +440,7 @@ FakeGame.Register("Stores", require("FakeGame/Stores"))
 FakeGame.Register("Players", require("FakeGame/Players"))
 FakeGame.Register("Locale", require("FakeGame/Locale"))
 FakeGame.Register("Capabilities", require("FakeGame/Capabilities"))
+FakeGame.Register("CityCommands", require("FakeGame/CityCommands"))
 FakeGame.Register("CityDistricts", require("FakeGame/CityDistricts"))
 FakeGame.Register("CityBuildings", require("FakeGame/CityBuildings"))
 FakeGame.Register("CityGrowth", require("FakeGame/CityGrowth"))
@@ -540,17 +454,17 @@ FakeGame.Register("Eras", require("FakeGame/Eras"), { "Blockers" })
 FakeGame.Register("Dedications", require("FakeGame/Dedications"), { "Eras" })
 FakeGame.Register("Governors", require("FakeGame/Governors"))
 FakeGame.Register("Religion", require("FakeGame/Religion"), { "Stores" })
-FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"))
+FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"), { "Eras" })
 FakeGame.Register("Envoys", require("FakeGame/Envoys"))
 FakeGame.Register("Spies", require("FakeGame/Spies"), { "Rivals" })
-FakeGame.Register("Artifacts", require("FakeGame/Artifacts"))
+FakeGame.Register("Artifacts", require("FakeGame/Artifacts"), { "Eras" })
 FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"), { "TopBar", "Rivals" })
 FakeGame.Register("Research", require("FakeGame/Research"), { "TopBar" })
 FakeGame.Register("Governments", require("FakeGame/Governments"), { "TopBar" })
-FakeGame.Register("Production", require("FakeGame/Production"))
-FakeGame.Register("Purchases", require("FakeGame/Purchases"), { "Production" })
-FakeGame.Register("Placement", require("FakeGame/Placement"), { "Plots" })
+FakeGame.Register("Production", require("FakeGame/Production"), { "Units", "CityCommands" })
+FakeGame.Register("Purchases", require("FakeGame/Purchases"), { "Production", "Units", "CityCommands" })
+FakeGame.Register("Placement", require("FakeGame/Placement"), { "Plots", "CityCommands" })
 FakeGame.Register("Income", require("FakeGame/Income"), { "TopBar", "Stores" })
-FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings" })
+FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings", "Units" })
 
 return FakeGame

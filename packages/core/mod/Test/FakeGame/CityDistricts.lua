@@ -7,7 +7,11 @@
 
 return function(env, world, ctx)
 	local indexes, YIELD_NAMES, List, Layout = ctx.indexes, ctx.YIELD_NAMES, ctx.List, ctx.Layout
-	local DEFENSE_TYPES = env.DefenseTypes
+
+	-- The DefenseTypes values for a district's garrison and walls.
+	local DEFENSE_TYPES = { DISTRICT_GARRISON = 0, DISTRICT_OUTER = 1 }
+
+	env.DefenseTypes = DEFENSE_TYPES
 
 	ctx.OnCity(function(city, data)
 		local placed = Layout(data).placed

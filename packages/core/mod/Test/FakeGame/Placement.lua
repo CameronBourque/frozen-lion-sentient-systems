@@ -3,11 +3,18 @@
 -- with x, y, and adjacency, a bonus by YieldTypes name. A wonder in data.options.buildings also has
 -- tiles and purchaseTiles. data.options.purchasable lists more tiles to buy, by x and y. Each tile
 -- gets a plot, and CanHaveDistrict and CanHaveWonder allow a district or wonder on a tile to buy.
+-- UI.GetInterfaceModeParameter returns the parameter it is given.
 
 return function(env, world, ctx)
 	local hashes, indexes, plots, PlotIndex, YIELD_TYPES = ctx.hashes, ctx.indexes, ctx.plots, ctx.PlotIndex, ctx.YIELD_TYPES
 	local CITY_OPERATION_TYPES, CITY_OPERATION_RESULTS = env.CityOperationTypes, env.CityOperationResults
 	local CITY_COMMAND_TYPES, CITY_COMMAND_RESULTS = env.CityCommandTypes, env.CityCommandResults
+
+	env.UI = {
+		GetInterfaceModeParameter = function(parameter)
+			return parameter
+		end,
+	}
 
 	-- Each placement tile gets a plot, with the adjacency bonuses and the districts and wonders that
 	-- CanHaveDistrict and CanHaveWonder allow on it as a tile to buy.
