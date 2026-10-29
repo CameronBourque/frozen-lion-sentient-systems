@@ -7,10 +7,11 @@
 -- "income":{...},"resources":[...],"tradeRoutes":{"active":17,"capacity":20}}', on one line. The
 -- numbers follow RefreshYields, RefreshTrade, and the favor override in TopPanel.lua and
 -- TopPanel_Expansion2.lua.
--- income and resources come from SentientSystemsCore_StatePlayerIncome.lua and
--- SentientSystemsCore_StatePlayerResources.lua.
+-- income, resources, and era come from SentientSystemsCore_StatePlayerIncome.lua,
+-- SentientSystemsCore_StatePlayerResources.lua, and SentientSystemsCore_StatePlayerEra.lua.
 
 SentientSystems_Include("SentientSystemsCore_StatePlayerIncome")
+SentientSystems_Include("SentientSystemsCore_StatePlayerEra")
 SentientSystems_Include("SentientSystemsCore_StatePlayerResources")
 
 -- Rounds a number to the nearest tenth, as the top bar's number format does.
@@ -37,9 +38,9 @@ local function GetFaith(player)
 	return { balance = RoundNearest(religion:GetFaithBalance()), perTurn = RoundNearest(religion:GetFaithYield()) }
 end
 
--- Returns the player section: gold, faith, science, culture, and tourism per turn, income,
--- resources, tradeRoutes, with active and capacity, left out while the capacity is 0 as the bar hides
--- it, and favor, with balance and perTurn, left out without Gathering Storm, whose players have no
+-- Returns the player section: gold, faith, science, culture, and tourism per turn, income, resources,
+-- era, tradeRoutes, with active and capacity, left out while the capacity is 0 as the bar hides it,
+-- and favor, with balance and perTurn, left out without Gathering Storm, whose players have no
 -- GetFavorPerTurn. See RefreshTrade in TopPanel.lua, lines 190 to 224, and RefreshYields in
 -- TopPanel_Expansion2.lua.
 function SentientSystems_GetPlayerState(player)
@@ -53,6 +54,7 @@ function SentientSystems_GetPlayerState(player)
 		tourism = RoundNearest(player:GetStats():GetTourism()),
 		income = SentientSystems_GetIncomeState(player),
 		resources = SentientSystems_GetResourcesState(player),
+		era = SentientSystems_GetEraState(player),
 	}
 
 	if capacity > 0 then

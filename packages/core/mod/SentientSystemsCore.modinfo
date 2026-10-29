@@ -18,6 +18,7 @@
 			<File>Scripts/SentientSystemsCore_Common.lua</File>
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
 			<File>Scripts/SentientSystemsCore_Governors.lua</File>
+			<File>Scripts/SentientSystemsCore_Eras.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -44,6 +45,7 @@
 			<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StatePlayerEra.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
@@ -55,6 +57,7 @@
 		<File>Scripts/SentientSystemsCore_Common.lua</File>
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
 		<File>Scripts/SentientSystemsCore_Governors.lua</File>
+		<File>Scripts/SentientSystemsCore_Eras.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -81,6 +84,7 @@
 		<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StatePlayerEra.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>

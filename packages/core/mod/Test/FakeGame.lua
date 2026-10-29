@@ -1044,6 +1044,10 @@ local function Player(id, data, hashes, indexes, env)
 		GetFavor = function()
 			return data.favor or 0
 		end,
+		-- The loyalty pressure each of the player's citizens exerts, from data.era.loyalty.
+		GetCivilianLoyalty = function()
+			return (data.era or {}).loyalty or 0
+		end,
 		-- The player's trade routes, from data.trade with active and capacity.
 		GetTrade = function()
 			local trade = data.trade or {}
@@ -1995,6 +1999,27 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- The era and each player's active dedications get rows, with the text keys of the game's moments.
+	if world.era then
+		AddRow("Eras", "EraType", world.era.type)
+		env.GameInfo.Eras[indexes[world.era.type]].Name = "LOC_" .. world.era.type .. "_NAME"
+	end
+
+	for _, data in pairs(world.players or {}) do
+		for _, category in ipairs((data.era or {}).commemorations or {}) do
+			local type = "COMMEMORATION_" .. category
+
+			AddRow("CommemorationTypes", "CommemorationType", type)
+
+			local row = env.GameInfo.CommemorationTypes[indexes[type]]
+			local key = "LOC_MOMENT_CATEGORY_" .. category
+
+			row.GoldenAgeBonusDescription = key .. "_BONUS_GOLDEN_AGE"
+			row.NormalAgeBonusDescription = key .. "_BONUS_NORMAL_AGE"
+			row.DarkAgeBonusDescription = key .. "_BONUS_DARK_AGE"
+		end
+	end
+
 	-- Each dedication's era and options get rows, with the text keys of the game's moments.
 	for _, data in pairs(world.players or {}) do
 		if data.dedications ~= nil then
@@ -2145,6 +2170,7 @@ function FakeGame.Install(env, world)
 		HasCapability = function(capability)
 			return (capability == "CAPABILITY_GOVERNMENTS_LEGACY_BONUSES" and world.legacyBonuses == true)
 				or (capability == "CAPABILITY_RENAME" and world.rename == true)
+				or (capability == "CAPABILITY_DRAMATICAGES" and world.dramaticAges == true)
 				or (capability:find("^CAPABILITY_GREAT_PEOPLE_") ~= nil and not (world.offCapabilities or {})[capability])
 		end,
 	}
@@ -2154,6 +2180,7 @@ function FakeGame.Install(env, world)
 		FAVOR_FOR_LIBERATE_CITY_STATE = 50,
 		FAVOR_FOR_REVIVE_PLAYER = 20,
 		WARMONGER_FINAL_MAJOR_CITY_MULTIPLIER = 200,
+		NEXT_ERA_TURN_COUNTDOWN = 10,
 	}
 	env.CityDestroyDirectives = { LIBERATE_FOUNDER = 0, LIBERATE_PREVIOUS_OWNER = 1, KEEP = 2, RAZE = 3, REJECT = 4 }
 	env.CivilizationLevelTypes = { CIVILIZATION_LEVEL_FULL_CIV = 0 }
@@ -2864,18 +2891,26 @@ function FakeGame.Install(env, world)
 
 		data = data or {}
 
-		return {
+		-- A player's age, from its era.age, or the dedications' age.
+		local function AgeOf(id)
+			local era = ((world.players or {})[id] or {}).era
+
+			return era and era.age or data.age
+		end
+
+		local eras
+		eras = {
 			GetCurrentEra = function()
-				return indexes[data.era]
+				return indexes[world.era and world.era.type or data.era]
 			end,
-			HasHeroicGoldenAge = function()
-				return data.age == "heroic"
+			HasHeroicGoldenAge = function(_, id)
+				return AgeOf(id) == "heroic"
 			end,
-			HasGoldenAge = function()
-				return data.age == "heroic" or data.age == "golden"
+			HasGoldenAge = function(_, id)
+				return AgeOf(id) == "heroic" or AgeOf(id) == "golden"
 			end,
-			HasDarkAge = function()
-				return data.age == "dark"
+			HasDarkAge = function(_, id)
+				return AgeOf(id) == "dark"
 			end,
 			IsPlayerAlwaysAllowedCommemorationQuest = function()
 				return data.alwaysNormal == true
@@ -2893,6 +2928,55 @@ function FakeGame.Install(env, world)
 				return choices
 			end,
 		}
+
+		-- The era's calls, from world.era with type, final, countdown, which is -1 when missing,
+		-- minEnd, maxEnd, and each player's era with score, age, dark, golden, previous and current,
+		-- the score's sources, each a table of its text to its points, and commemorations, such as
+		-- "ECONOMIC". Without world.era, as in a game without Rise and Fall, there are none.
+		if world.era then
+			local function Era(id)
+				return world.players[id].era or {}
+			end
+
+			eras.GetFinalEra = function()
+				return world.era.final and indexes[world.era.type] or -1
+			end
+			eras.GetPlayerCurrentScore = function(_, id)
+				return Era(id).score or 0
+			end
+			eras.GetPlayerDarkAgeThreshold = function(_, id)
+				return Era(id).dark or 0
+			end
+			eras.GetPlayerGoldenAgeThreshold = function(_, id)
+				return Era(id).golden or 0
+			end
+			eras.GetPlayerPreviousEraScoreBreakdown = function(_, id)
+				return Era(id).previous or {}
+			end
+			eras.GetPlayerCurrentEraScoreBreakdown = function(_, id)
+				return Era(id).current or {}
+			end
+			eras.GetNextEraCountdown = function()
+				return world.era.countdown or -1
+			end
+			eras.GetCurrentEraMinimumEndTurn = function()
+				return world.era.minEnd
+			end
+			eras.GetCurrentEraMaximumEndTurn = function()
+				return world.era.maxEnd
+			end
+			eras.GetPlayerActiveCommemorations = function(_, id)
+				local active = {}
+
+				for i, category in ipairs(Era(id).commemorations or {}) do
+					active[i] = indexes["COMMEMORATION_" .. category]
+				end
+
+				return active
+			end
+		end
+
+		return eras
 	end
 	-- The great people on offer, from world.greatPeople, by the GameInfo index of each individual.
 	env.Game.GetGreatPeople = function()
