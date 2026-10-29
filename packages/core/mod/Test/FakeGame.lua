@@ -138,6 +138,24 @@
 
 local FakeGame = {}
 
+-- The features that Install runs, in registration order, and the hooks they add to each Install's
+-- players and cities.
+local features, playerHooks, cityHooks = {}, {}, {}
+
+-- Registers a feature, the part of the fake that one area of the game needs. install(env, world,
+-- ctx) runs in every Install, after the shared GameInfo rows and before the players are built. It
+-- adds its GameInfo rows with ctx.AddRow, sets its Game.* and other globals on env, and attaches its
+-- calls to players and cities with ctx.OnPlayer and ctx.OnCity. Its file has the docs for the world
+-- and player data it reads. A file under FakeGame/ returns its install function, and the
+-- registration lines at the end of this file list them.
+function FakeGame.Register(name, install)
+	for _, feature in ipairs(features) do
+		assert(feature.name ~= name, "feature registered twice: " .. name)
+	end
+
+	features[#features + 1] = { name = name, install = install }
+end
+
 -- A list with Members(), as the game's city and unit lists have. Members() returns an iterator, as
 -- in "for i, city in player:GetCities():Members() do". FindID(id) returns the item with that ID, or
 -- nil.
@@ -309,7 +327,7 @@ local YIELD_NAMES = { [0] = "FOOD", "PRODUCTION", "GOLD", "SCIENCE", "CULTURE", 
 -- another yield but the city can buy it with faith. hashes maps each production, unit, building, and district type to its hash,
 -- and indexes maps each district, building, and unit type to its GameInfo index. ownerID is the
 -- player's ID.
-local function City(data, hashes, indexes, ownerID)
+local function BuildCity(data, hashes, indexes, ownerID)
 	local production = data.production
 	local hash = production and (production.hash or hashes[production.type]) or 0
 	local growth = data.growth or {}
@@ -830,6 +848,17 @@ end
 -- IsUnitVisible, as a stealthy unit is, and experience. experience has points,
 -- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
 -- unit has no experience. indexes maps each unit and promotion type to its GameInfo index.
+-- A city with the calls that the features add to it.
+local function City(data, hashes, indexes, ownerID)
+	local city = BuildCity(data, hashes, indexes, ownerID)
+
+	for _, hook in ipairs(cityHooks) do
+		hook(city, data, ownerID)
+	end
+
+	return city
+end
+
 local function Unit(data, indexes)
 	local experience = data.experience
 
@@ -910,7 +939,7 @@ local function Unit(data, indexes)
 	}
 end
 
-local function Player(id, data, hashes, indexes, env)
+local function BuildPlayer(id, data, hashes, indexes, env)
 	local cities, units = {}, {}
 	local techData, civicData, governmentData = data.techs or {}, data.civics or {}, data.government or {}
 
@@ -1583,10 +1612,23 @@ local function Player(id, data, hashes, indexes, env)
 	}
 end
 
+-- A player with the calls that the features add to it.
+local function Player(id, data, hashes, indexes, env)
+	local player = BuildPlayer(id, data, hashes, indexes, env)
+
+	for _, hook in ipairs(playerHooks) do
+		hook(player, data, id)
+	end
+
+	return player
+end
+
 -- Sets Players, GameInfo, YieldTypes, and Locale in env from world. world.players maps each player
 -- ID to its data. world.text maps each LOC_ key to its text. Locale.Lookup returns any other key as
 -- it is. GameInfo.Types holds each production type in world, under a made-up hash.
 function FakeGame.Install(env, world)
+	playerHooks, cityHooks = {}, {}
+
 	local hashes, indexes = {}, {}
 	local count = 0
 	-- Each plot in world.plots by its index, and the plot count, which covers the highest row.
@@ -2590,6 +2632,43 @@ function FakeGame.Install(env, world)
 		end
 	end
 
+	-- What a feature gets from the core: the rows and their hashes and indexes, the plots by index,
+	-- and the shared helpers. NextHash(base, typeName) gives a type the hash base plus a running
+	-- count, once. OnPlayer(hook) and OnCity(hook) run hook(player, data, id) and hook(city, data,
+	-- ownerID) on each one built, to add its calls.
+	local ctx = {
+		hashes = hashes,
+		indexes = indexes,
+		plots = plots,
+		AddRow = AddRow,
+		NextHash = function(base, typeName)
+			if hashes[typeName] == nil then
+				count = count + 1
+				hashes[typeName] = base + count
+			end
+
+			return hashes[typeName]
+		end,
+		List = List,
+		ChangedCity = ChangedCity,
+		PlotIndex = PlotIndex,
+		MAP_WIDTH = MAP_WIDTH,
+		YIELD_TYPES = YIELD_TYPES,
+		YIELD_NAMES = YIELD_NAMES,
+		OnPlayer = function(hook)
+			playerHooks[#playerHooks + 1] = hook
+		end,
+		OnCity = function(hook)
+			cityHooks[#cityHooks + 1] = hook
+		end,
+	}
+
+	env.Game = env.Game or {}
+
+	for _, feature in ipairs(features) do
+		feature.install(env, world, ctx)
+	end
+
 	env.Players = {}
 	env.PlayersVisibility = {}
 	env.PlayerConfigurations = {}
@@ -3269,5 +3348,8 @@ function FakeGame.Install(env, world)
 		end,
 	}
 end
+
+-- One line for each feature in FakeGame/, in the order Install runs them. Each file returns its
+-- install function, as FakeGame.Register describes.
 
 return FakeGame
