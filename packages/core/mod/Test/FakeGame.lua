@@ -37,21 +37,9 @@
 -- 	} },
 -- })
 -- A player's revealed and visible lists name plots by x and y, such as revealed = { { 17, 14 } }.
--- A player's techs has current, the tech in research, and options, the techs the player knows,
--- each with type, cost, turns, progress, boost, with percent, trigger, and triggered, unlocks,
--- description, a text key, recommended, locked, which CanResearch refuses, and for the tech tree,
--- era, which is ERA_ANCIENT when missing, researched, hidden, which IsTechRevealed refuses, and
--- prerequisites, by type. techs.turnsLeft is what GetTurnsLeft returns. A player's civics has the
--- same, with civic types. A player's government has type, missing for none, and slots, each with
--- type, such as SLOT_MILITARY, and policy, missing for an empty slot, and civicThisTurn, slotsOpen,
--- changeMade, and unlockCost, as the game's culture calls give them. A player's policies lists the
--- policies the player knows, each with type, slot, its slot type, description, civic, its
--- prerequisite, and locked, obsolete, banned, and unslottable. noStrategicCommands is true while
--- the player can't act. A player's government also has unlocked, the other governments it has
--- unlocked, anarchy, the turns by government type, canChangeAtAll, and governmentChangeMade.
--- world.governments lists the ruleset's governments, each with type, civic, bonusType, bonuses,
--- its two text keys, slots, counts by slot type, influence, with perTurn, threshold, and envoys,
--- favor, and legacyPercent. world.legacyBonuses turns on the base game's legacy bonuses.
+-- Techs and civics are in FakeGame/Research.lua, and governments and policies in
+-- FakeGame/Governments.lua. noStrategicCommands is true while the player can't act.
+-- world.legacyBonuses turns on the base game's legacy bonuses.
 -- world.rename turns on CAPABILITY_RENAME. Beliefs, pantheons, and religions are in FakeGame/Religion.lua.
 -- A city's growth has housingModifier, which is 1 when missing, happinessModifier, and warWeariness,
 -- which are 0, and its occupied is true for an occupied city.
@@ -72,12 +60,8 @@
 -- city-state's minor also has name, leader, inherit, the leader it inherits from, traits, the text
 -- keys of its suzerain bonus, and resources, each with type, amount, exported, and perTurn.
 -- Great people are in FakeGame/GreatPeople.lua.
--- A player's captured and rebelled are the next city it captured and the next city that
--- rebelled to join it, each with id, name, x, y, population, districts, originalOwner, ownerBefore,
--- conqueredFrom, gift, true for a city given in a deal, canRaze, false for one the player can't
--- raze, and warmonger, with keep and raze points. noRiseAndFall leaves out GetNextRebelledCity. A
--- player's liberate lists the IDs it can liberate a city to, revived the IDs it has brought back,
--- and freeCities is true for the Free Cities. Escaping spies are in FakeGame/Spies.lua, and digging
+-- Captured and rebelled cities, liberate, and revived are in FakeGame/CapturedCities.lua. A player's
+-- freeCities is true for the Free Cities. Escaping spies are in FakeGame/Spies.lua, and digging
 -- archaeologists and artifacts in FakeGame/Artifacts.lua. A player's playerName
 -- is its leader's name, and favor its Diplomatic Favor. The World Congress, emergencies, eras, and
 -- dedications are in FakeGame/WorldCongress.lua, Emergencies.lua, Eras.lua, and Dedications.lua. Governors, with a city's governor, are in FakeGame/Governors.lua.
@@ -130,52 +114,6 @@ local function List(items)
 		end,
 		GetCount = function()
 			return #items
-		end,
-	}
-end
-
--- The game's city transfer types, of which the raze screen checks only BY_GIFT.
-local CITY_TRANSFER_TYPES = { BY_GIFT = 7 }
-
--- A captured or rebelled city from data, with the calls the raze and disloyal city screens make.
-local function ChangedCity(data)
-	return {
-		GetID = function()
-			return data.id
-		end,
-		GetName = function()
-			return data.name
-		end,
-		GetX = function()
-			return data.x
-		end,
-		GetY = function()
-			return data.y
-		end,
-		GetPopulation = function()
-			return data.population
-		end,
-		GetDistricts = function()
-			return {
-				GetNumZonedDistrictsRequiringPopulation = function()
-					return data.districts or 0
-				end,
-			}
-		end,
-		GetOriginalOwner = function()
-			return data.originalOwner
-		end,
-		GetOwnerBeforeOccupation = function()
-			return data.ownerBefore
-		end,
-		GetJustConqueredFrom = function()
-			return data.conqueredFrom
-		end,
-		GetLastTransferType = function()
-			return data.gift and CITY_TRANSFER_TYPES.BY_GIFT or 0
-		end,
-		CanRaze = function()
-			return data.canRaze ~= false
 		end,
 	}
 end
@@ -866,22 +804,6 @@ end
 
 local function BuildPlayer(id, data, hashes, indexes, env)
 	local cities, units = {}, {}
-	local techData, civicData, governmentData = data.techs or {}, data.civics or {}, data.government or {}
-
-	-- Each tech and civic option by its GameInfo index, and each policy by its hash.
-	local techsByIndex, civicsByIndex, policiesByHash = {}, {}, {}
-
-	for _, policy in ipairs(data.policies or {}) do
-		policiesByHash[hashes[policy.type]] = policy
-	end
-
-	for _, tech in ipairs(techData.options or {}) do
-		techsByIndex[indexes[tech.type]] = tech
-	end
-
-	for _, civic in ipairs(civicData.options or {}) do
-		civicsByIndex[indexes[civic.type]] = civic
-	end
 
 	-- The player's store of a yield, which can afford an item in a city unless the city's purchase
 	-- option for it has cantAfford.
@@ -912,15 +834,9 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 		GetID = function()
 			return id
 		end,
-		-- The player's cities, and the next city it captured and the next that rebelled to join it,
-		-- from data.captured and data.rebelled. Without Rise and Fall there is no
-		-- GetNextRebelledCity.
+		-- The player's cities.
 		GetCities = function()
 			local list = List(cities)
-
-			function list.GetNextCapturedCity()
-				return data.captured and ChangedCity(data.captured)
-			end
 
 			-- The city with capital set, which a major player has.
 			function list.GetCapitalCity()
@@ -928,12 +844,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 					if city.IsCapital() then
 						return city
 					end
-				end
-			end
-
-			if not data.noRiseAndFall then
-				function list.GetNextRebelledCity()
-					return data.rebelled and ChangedCity(data.rebelled)
 				end
 			end
 
@@ -946,52 +856,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 			return {
 				GetTourism = function()
 					return data.tourism or 0
-				end,
-				GetHasRevivedPlayer = function(_, otherID)
-					for _, revived in ipairs(data.revived or {}) do
-						if revived == otherID then
-							return true
-						end
-					end
-
-					return false
-				end,
-			}
-		end,
-		GetTechs = function()
-			return {
-				GetScienceYield = function()
-					return data.science or 0
-				end,
-				GetScienceYieldToolTip = function()
-					return (data.tooltips or {}).science or ""
-				end,
-				GetResearchingTech = function()
-					return techData.current and indexes[techData.current] or -1
-				end,
-				CanResearch = function(_, index)
-					return techsByIndex[index] ~= nil and not techsByIndex[index].locked
-				end,
-				GetResearchCost = function(_, index)
-					return techsByIndex[index].cost
-				end,
-				GetResearchProgress = function(_, index)
-					return techsByIndex[index].progress or 0
-				end,
-				GetTurnsToResearch = function(_, index)
-					return techsByIndex[index].turns
-				end,
-				HasBoostBeenTriggered = function(_, index)
-					return techsByIndex[index].boost.triggered == true
-				end,
-				HasTech = function(_, index)
-					return techsByIndex[index] ~= nil and techsByIndex[index].researched == true
-				end,
-				IsTechRevealed = function(_, index)
-					return techsByIndex[index] ~= nil and techsByIndex[index].hidden ~= true
-				end,
-				GetTurnsLeft = function()
-					return techData.turnsLeft or -1
 				end,
 			}
 		end,
@@ -1026,24 +890,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 
 					return false
 				end,
-				CanLiberateCityTo = function(_, otherID)
-					for _, liberate in ipairs(data.liberate or {}) do
-						if liberate == otherID then
-							return true
-						end
-					end
-
-					return false
-				end,
-				-- The warmonger points of keeping or razing, from data.captured.warmonger.
-				ComputeCityWarmongerPoints = function(_, _, _, raze)
-					local warmonger = data.captured.warmonger or {}
-
-					return (raze and warmonger.raze or warmonger.keep) or 0
-				end,
-				GetWarmongerLevel = function(_, points)
-					return "LOC_WARMONGER_LEVEL_" .. points
-				end,
 			}
 		end,
 		GetCulture = function()
@@ -1065,128 +911,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 				end,
 				GetCultureYieldToolTip = function()
 					return (data.tooltips or {}).culture or ""
-				end,
-				GetProgressingCivic = function()
-					return civicData.current and indexes[civicData.current] or -1
-				end,
-				CanProgress = function(_, index)
-					return civicsByIndex[index] ~= nil and not civicsByIndex[index].locked
-				end,
-				GetCultureCost = function(_, index)
-					return civicsByIndex[index].cost
-				end,
-				GetCulturalProgress = function(_, index)
-					return civicsByIndex[index].progress or 0
-				end,
-				GetTurnsToProgressCivic = function(_, index)
-					return civicsByIndex[index].turns
-				end,
-				HasCivic = function(_, index)
-					return civicsByIndex[index] ~= nil and civicsByIndex[index].researched == true
-				end,
-				IsCivicRevealed = function(_, index)
-					return civicsByIndex[index] ~= nil and civicsByIndex[index].hidden ~= true
-				end,
-				GetTurnsLeft = function()
-					return civicData.turnsLeft or -1
-				end,
-				GetCurrentGovernment = function()
-					return governmentData.type and indexes[governmentData.type] or -1
-				end,
-				GetNumPolicySlots = function()
-					return #(governmentData.slots or {})
-				end,
-				GetSlotType = function(_, i)
-					return indexes[governmentData.slots[i + 1].type]
-				end,
-				GetSlotPolicy = function(_, i)
-					local policy = governmentData.slots[i + 1].policy
-
-					return policy and indexes[policy] or -1
-				end,
-				CivicCompletedThisTurn = function()
-					return governmentData.civicThisTurn ~= nil
-				end,
-				CanChangeGovernmentAtAll = function()
-					return governmentData.canChangeAtAll == true
-				end,
-				GovernmentChangeMade = function()
-					return governmentData.governmentChangeMade == true
-				end,
-				-- The player's current government is always unlocked.
-				IsGovernmentUnlocked = function(_, hash)
-					for _, typeName in ipairs(governmentData.unlocked or {}) do
-						if hashes[typeName] == hash then
-							return true
-						end
-					end
-
-					return governmentData.type ~= nil and hashes[governmentData.type] == hash
-				end,
-				GetAnarchyTurns = function(_, index)
-					return (governmentData.anarchy or {})[env.GameInfo.Governments[index].GovernmentType] or 0
-				end,
-				GetCivicCompletedThisTurn = function()
-					return governmentData.civicThisTurn and indexes[governmentData.civicThisTurn] or -1
-				end,
-				GetNumPolicySlotsOpen = function()
-					return governmentData.slotsOpen or 0
-				end,
-				PolicyChangeMade = function()
-					return governmentData.changeMade == true
-				end,
-				GetCostToUnlockPolicies = function()
-					return governmentData.unlockCost or 0
-				end,
-				IsPolicyUnlocked = function(_, hash)
-					return policiesByHash[hash] ~= nil and policiesByHash[hash].locked ~= true
-				end,
-				IsPolicyObsolete = function(_, hash)
-					return policiesByHash[hash] ~= nil and policiesByHash[hash].obsolete == true
-				end,
-				IsPolicyBanned = function(_, hash)
-					return policiesByHash[hash] ~= nil and policiesByHash[hash].banned == true
-				end,
-				-- In Gathering Storm, a locked policy can't be slotted either.
-				CanPolicyBeSlotted = function(_, hash)
-					local policy = policiesByHash[hash]
-
-					return policy ~= nil and policy.locked ~= true and policy.unslottable ~= true
-				end,
-				IsPolicyActive = function(_, hash)
-					for _, slot in ipairs(governmentData.slots or {}) do
-						if slot.policy ~= nil and hashes[slot.policy] == hash then
-							return true
-						end
-					end
-
-					return false
-				end,
-				HasBoostBeenTriggered = function(_, index)
-					return civicsByIndex[index].boost.triggered == true
-				end,
-			}
-		end,
-		GetGrandStrategicAI = function()
-			-- Returns the recommended options, each with its hash in field.
-			local function Recommendations(options, field)
-				local recommendations = {}
-
-				for _, option in ipairs(options or {}) do
-					if option.recommended then
-						recommendations[#recommendations + 1] = { [field] = hashes[option.type] }
-					end
-				end
-
-				return recommendations
-			end
-
-			return {
-				GetTechRecommendations = function()
-					return Recommendations(techData.options, "TechHash")
-				end,
-				GetCivicsRecommendations = function()
-					return Recommendations(civicData.options, "CivicHash")
 				end,
 			}
 		end,
@@ -1397,9 +1121,6 @@ function FakeGame.Install(env, world)
 		Types = {},
 		Districts = {},
 		Projects = {},
-		Technologies = {},
-		Civics = {},
-		Boosts = {},
 		Eras = {
 			ERA_ANCIENT = { ChronologyIndex = 1 },
 			ERA_CLASSICAL = { ChronologyIndex = 2 },
@@ -1417,15 +1138,9 @@ function FakeGame.Install(env, world)
 		Improvements = {},
 		Routes = {},
 		Happinesses = HAPPINESSES,
-		Governments = {},
-		GovernmentSlots = {},
-		Policies = {},
 		Leaders = {},
 		LeaderTraits = {},
 		Traits = {},
-		Government_SlotCounts = {},
-		GovernmentModifiers = {},
-		ModifierArguments = {},
 	}
 	-- Gives a table of rows the game's lookups: a row by its type name, as in
 	-- GameInfo.Districts["DISTRICT_CAMPUS"], and a call that lists the rows in index order.
@@ -1463,11 +1178,6 @@ function FakeGame.Install(env, world)
 		Buildings = "BuildingType",
 		Districts = "DistrictType",
 		Projects = "ProjectType",
-		Technologies = "TechnologyType",
-		Civics = "CivicType",
-		Boosts = "TechnologyType",
-		Policies = "PolicyType",
-		Governments = "GovernmentType",
 		Resources = "ResourceType",
 	}) do
 		TypedRows(env.GameInfo[name], column)
@@ -1623,23 +1333,6 @@ function FakeGame.Install(env, world)
 		end
 	end
 
-	-- Adds a policy's row with a hash. A policy in a slot alone has only its type.
-	local function AddPolicy(policy)
-		AddRow("Policies", "PolicyType", policy.type)
-
-		local row = env.GameInfo.Policies[indexes[policy.type]]
-
-		if hashes[policy.type] == nil then
-			count = count + 1
-			hashes[policy.type] = 4000000 + count
-		end
-
-		row.Hash = hashes[policy.type]
-		row.GovernmentSlotType = row.GovernmentSlotType or policy.slot
-		row.Description = row.Description or policy.description
-		row.PrereqCivic = row.PrereqCivic or policy.civic
-	end
-
 	-- Makes a list of rows callable, as GameInfo.Government_SlotCounts() is.
 	local function Callable(rows)
 		return setmetatable(rows, {
@@ -1655,85 +1348,8 @@ function FakeGame.Install(env, world)
 		})
 	end
 
-	-- Each government in world.governments gets its row, its slot counts, the modifier that holds
-	-- its legacy percent, and its Gathering Storm row with its favor.
-	local governmentsXP2 = Callable({})
-
-	for _, government in ipairs(world.governments or {}) do
-		AddRow("Governments", "GovernmentType", government.type)
-
-		local row = env.GameInfo.Governments[indexes[government.type]]
-		local influence = government.influence or {}
-
-		count = count + 1
-		hashes[government.type] = 4000000 + count
-		row.Hash = hashes[government.type]
-		row.PrereqCivic = government.civic
-		row.BonusType = government.bonusType or "NO_GOVERNMENTBONUS"
-		row.InherentBonusDesc = (government.bonuses or {})[1]
-		row.AccumulatedBonusShortDesc = (government.bonuses or {})[2]
-		row.InfluencePointsPerTurn = influence.perTurn or 1
-		row.InfluencePointsThreshold = influence.threshold or 100
-		row.InfluenceTokensPerThreshold = influence.envoys or 1
-
-		for slotType, slotCount in pairs(government.slots or {}) do
-			table.insert(env.GameInfo.Government_SlotCounts, { GovernmentType = government.type, GovernmentSlotType = slotType, NumSlots = slotCount })
-		end
-
-		if government.legacyPercent ~= nil then
-			local modifierID = "MODIFIER_" .. government.type
-
-			table.insert(env.GameInfo.GovernmentModifiers, { GovernmentType = government.type, ModifierId = modifierID })
-			table.insert(env.GameInfo.ModifierArguments, { ModifierId = modifierID, Name = "BonusType", Value = row.BonusType })
-			table.insert(env.GameInfo.ModifierArguments, { ModifierId = modifierID, Name = "Amount", Value = tostring(government.legacyPercent) })
-		end
-
-		table.insert(governmentsXP2, { GovernmentType = government.type, Favor = government.favor or 0 })
-	end
-
-	Callable(env.GameInfo.Government_SlotCounts)
 	Callable(env.GameInfo.LeaderTraits)
-	Callable(env.GameInfo.GovernmentModifiers)
-	Callable(env.GameInfo.ModifierArguments)
 
-	-- Each government, slot type, policy, and civic completed this turn gets a row.
-	for _, data in pairs(world.players or {}) do
-		local government = data.government or {}
-
-		if government.type ~= nil then
-			AddRow("Governments", "GovernmentType", government.type)
-		end
-
-		if government.civicThisTurn ~= nil then
-			AddRow("Civics", "CivicType", government.civicThisTurn)
-		end
-
-		for _, slot in ipairs(government.slots or {}) do
-			AddRow("GovernmentSlots", "GovernmentSlotType", slot.type)
-
-			if slot.policy ~= nil then
-				AddPolicy({ type = slot.policy })
-			end
-		end
-
-		for _, policy in ipairs(data.policies or {}) do
-			AddPolicy(policy)
-		end
-	end
-
-	-- A government only a player names gets a hash and the default influence.
-	for _, row in pairs(env.GameInfo.Governments) do
-		if row.Hash == nil then
-			count = count + 1
-			hashes[row.GovernmentType] = 4000000 + count
-			row.Hash = hashes[row.GovernmentType]
-			row.BonusType = "NO_GOVERNMENTBONUS"
-			row.InfluencePointsPerTurn, row.InfluencePointsThreshold, row.InfluenceTokensPerThreshold = 1, 100, 1
-		end
-	end
-
-	-- Gathering Storm's rows, the faith rule for paying to change policies, and the World Congress.
-	env.GameInfo.Governments_XP2 = world.expansion2 and governmentsXP2 or nil
 	env.GameCapabilities = {
 		HasCapability = function(capability)
 			return (capability == "CAPABILITY_GOVERNMENTS_LEGACY_BONUSES" and world.legacyBonuses == true)
@@ -1750,77 +1366,7 @@ function FakeGame.Install(env, world)
 		WARMONGER_FINAL_MAJOR_CITY_MULTIPLIER = 200,
 		NEXT_ERA_TURN_COUNTDOWN = 10,
 	}
-	env.CityDestroyDirectives = { LIBERATE_FOUNDER = 0, LIBERATE_PREVIOUS_OWNER = 1, KEEP = 2, RAZE = 3, REJECT = 4 }
-	env.CivilizationLevelTypes = { CIVILIZATION_LEVEL_FULL_CIV = 0 }
-	env.CityTransferTypes = CITY_TRANSFER_TYPES
 	env.PlayerOperationResults = { FAILURE_REASONS = 9001 }
-
-	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
-	-- GetUnlockablesForTech and GetUnlockablesForCivic return what one unlocks as { type, name, key }
-	-- rows.
-	local unlocksByType = {}
-
-	for _, data in pairs(world.players or {}) do
-		for _, kind in ipairs({ { data.techs, "Technologies", "TechnologyType" }, { data.civics, "Civics", "CivicType" } }) do
-			for _, option in ipairs((kind[1] or {}).options or {}) do
-				AddRow(kind[2], kind[3], option.type)
-				count = count + 1
-				hashes[option.type] = hashes[option.type] or 4000000 + count
-
-				local row = env.GameInfo[kind[2]][indexes[option.type]]
-
-				row.Hash = hashes[option.type]
-				row.Description = option.description
-				row.EraType = option.era or "ERA_ANCIENT"
-				unlocksByType[option.type] = option.unlocks
-
-				if option.boost ~= nil then
-					local boosts = env.GameInfo.Boosts
-
-					boosts[#boosts + (boosts[0] and 1 or 0)] = { [kind[3]] = option.type, Boost = option.boost.percent, TriggerDescription = option.boost.trigger }
-				end
-			end
-		end
-	end
-
-	-- Returns the unlock rows of a tech or civic type.
-	local function UnlockRows(typeName)
-		local rows = {}
-
-		for i, unlock in ipairs(unlocksByType[typeName] or {}) do
-			rows[i] = { unlock, unlock, unlock }
-		end
-
-		return rows
-	end
-
-	env.GetFilteredUnlockableItems = function()
-		return {}
-	end
-	env.GetUnlockablesForTech = UnlockRows
-	env.GetUnlockablesForCivic = UnlockRows
-
-	-- Returns the nodes of a tree from player 0's techs or civics, in order, with their type in
-	-- nameField, Name for a tech and CivicName for a civic, and their prerequisites in field.
-	local function TreeNodes(key, nameField, field)
-		local nodes = {}
-		local options = (((world.players or {})[0] or {})[key] or {}).options or {}
-
-		for i, option in ipairs(options) do
-			nodes[i] = { [nameField] = option.type, [field] = option.prerequisites or {} }
-		end
-
-		return nodes
-	end
-
-	env.UITree = {
-		GetAvailableTechs = function()
-			return TreeNodes("techs", "Name", "PrereqTechTypes")
-		end,
-		GetAvailableCivics = function()
-			return TreeNodes("civics", "CivicName", "PrereqCivicTypes")
-		end,
-	}
 
 	-- GameInfo.GreatWork_YieldChanges() lists what each great work in a building gives, from the
 	-- building's greatWorks, each with type and yields, a YieldTypes name to the amount.
@@ -2156,7 +1702,6 @@ function FakeGame.Install(env, world)
 		TypedRows = TypedRows,
 		Callable = Callable,
 		List = List,
-		ChangedCity = ChangedCity,
 		PlotIndex = PlotIndex,
 		MAP_WIDTH = MAP_WIDTH,
 		YIELD_TYPES = YIELD_TYPES,
@@ -2393,5 +1938,8 @@ FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"))
 FakeGame.Register("Envoys", require("FakeGame/Envoys"))
 FakeGame.Register("Spies", require("FakeGame/Spies"))
 FakeGame.Register("Artifacts", require("FakeGame/Artifacts"))
+FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"))
+FakeGame.Register("Research", require("FakeGame/Research"))
+FakeGame.Register("Governments", require("FakeGame/Governments"))
 
 return FakeGame
