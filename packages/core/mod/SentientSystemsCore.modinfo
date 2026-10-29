@@ -40,6 +40,7 @@
 			<File>Scripts/State/SentientSystemsCore_State.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateDiplomacy.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
@@ -79,6 +80,7 @@
 		<File>Scripts/State/SentientSystemsCore_State.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateDiplomacy.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>

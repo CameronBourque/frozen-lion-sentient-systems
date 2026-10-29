@@ -10,6 +10,7 @@
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_StateCities")
+SentientSystems_Include("SentientSystemsCore_StateDiplomacy")
 SentientSystems_Include("SentientSystemsCore_StateUnits")
 SentientSystems_Include("SentientSystemsCore_StateTiles")
 SentientSystems_Include("SentientSystemsCore_StateRivals")
@@ -33,6 +34,7 @@ function SentientSystems_GetState(playerID)
 	return SentientSystems_EncodeJson({
 		blockers = SentientSystems_GetBlockerState(playerID),
 		cities = SentientSystems_GetCityStates(player),
+		diplomacy = SentientSystems_GetDiplomacyState(player),
 		units = SentientSystems_GetUnitStates(player),
 		tiles = SentientSystems_GetTileStates(playerID),
 		rivals = {

@@ -9,6 +9,7 @@ import { readStash } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
+import { DIPLOMACY } from "./diplomacy.js";
 import { ENVOYS } from "./envoys.js";
 import { GOVERNORS } from "./governors.js";
 import { GREAT_PEOPLE } from "./great-people.js";
@@ -22,6 +23,7 @@ import { UNIT } from "./units.js";
 const STATE = z.object({
 	blockers: BLOCKERS,
 	cities: z.array(CITY),
+	diplomacy: DIPLOMACY,
 	units: z.array(UNIT),
 	tiles: z.array(TILE),
 	rivals: z.object({ cities: z.array(RIVAL_CITY), units: z.array(RIVAL_UNIT) }),
