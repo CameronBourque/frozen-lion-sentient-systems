@@ -17,7 +17,7 @@ const STATE: State = {
 		x: 17,
 		y: 14,
 		population: 3,
-		amenities: { have: 2, need: 2, mood: "HAPPINESS_CONTENT" },
+		amenities: { have: 2, need: 2, mood: "HAPPINESS_CONTENT", warWeariness: 0 },
 		defense: { strength: 13, garrison: { value: 200, max: 200 } },
 		districts: [{
 			type: "DISTRICT_CITY_CENTER",
@@ -27,7 +27,7 @@ const STATE: State = {
 			pillaged: false,
 			buildings: [{ type: "BUILDING_MONUMENT", pillaged: false }],
 		}],
-		growth: { foodSurplus: 3, housing: 6, turnsUntilGrowth: 2 },
+		growth: { foodSurplus: 3, housing: 6, rate: "normal", turnsUntilGrowth: 2 },
 		loyalty: { value: 100, max: 100, perTurn: 21 },
 		production: { type: "UNIT_SLINGER", turnsLeft: 2 },
 		yields: { food: 9, production: 6, gold: 8, science: 3.5, culture: 3.8, faith: 0 },

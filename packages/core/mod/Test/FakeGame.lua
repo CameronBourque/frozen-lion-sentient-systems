@@ -61,6 +61,10 @@
 -- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
 -- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
 -- when a religion has too many of its class. world.rename turns on CAPABILITY_RENAME.
+-- A city's growth has housingModifier, which is 1 when missing, happinessModifier, and warWeariness,
+-- which are 0, and its occupied is true for an occupied city. Its governor is { type, established }
+-- for a governor, false for none in a game with Rise and Fall, and missing without it, where the city
+-- has no GetAssignedGovernor.
 -- A city's income rows come from its tiles, each with x, y, worked, yields, and tourism, its routes,
 -- each with player, id, and yields, and the district yields and adjacency, building yields, wonder, and
 -- greatWorks, each with type and yields, that data.districts holds. growth.yieldModifier is the
@@ -585,6 +589,19 @@ local function City(data, hashes, indexes, ownerID)
 			}
 		end,
 		tiles = data.tiles or {},
+		GetAssignedGovernor = data.governor ~= nil and function()
+			return data.governor and {
+				GetType = function()
+					return indexes[data.governor.type]
+				end,
+				IsEstablished = function()
+					return data.governor.established == true
+				end,
+			}
+		end or nil,
+		IsOccupied = function()
+			return data.occupied == true
+		end,
 		GetBuildings = function()
 			return {
 				GetBuildingsAtLocation = function(_, plotIndex)
@@ -631,6 +648,15 @@ local function City(data, hashes, indexes, ownerID)
 				end,
 				GetHappinessNonFoodYieldModifier = function()
 					return growth.yieldModifier or 0
+				end,
+				GetHousingGrowthModifier = function()
+					return growth.housingModifier or 1
+				end,
+				GetHappinessGrowthModifier = function()
+					return growth.happinessModifier or 0
+				end,
+				GetAmenitiesLostFromWarWeariness = function()
+					return growth.warWeariness or 0
 				end,
 				GetTurnsUntilGrowth = function()
 					return growth.turnsUntilGrowth or -1
@@ -2311,6 +2337,10 @@ function FakeGame.Install(env, world)
 				count = count + 1
 				hashes[typeName] = hashes[typeName] or 1000000 + count
 				env.GameInfo.Types[hashes[typeName]] = { Type = typeName }
+			end
+
+			if city.governor then
+				AddRow("Governors", "GovernorType", city.governor.type)
 			end
 
 			for _, district in ipairs(city.districts or {}) do

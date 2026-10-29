@@ -1,10 +1,11 @@
 -- The cities section of the state: the player's own cities, as the city panel shows them.
 -- SentientSystemsCore_State.lua loads this file. Example: SentientSystems_GetCityStates(player)
 -- returns a list with one table for each city, which encodes as
--- '{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2},
+-- '{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2,"warWeariness":0},
 -- "defense":{"garrison":{"max":200,"value":200},"strength":13},"districts":[{"buildings":[{"pillaged":false,"type":"BUILDING_MONUMENT"},{"pillaged":false,"type":"BUILDING_PALACE"}],
 -- "complete":true,"pillaged":false,"type":"DISTRICT_CITY_CENTER","x":17,"y":14}],
--- "growth":{"foodSurplus":3,"housing":6,"turnsUntilGrowth":2},"id":65536,
+-- "governor":{"established":true,"type":"GOVERNOR_THE_MERCHANT"},
+-- "growth":{"foodSurplus":3,"housing":6,"rate":"normal","turnsUntilGrowth":2},"id":65536,
 -- "loyalty":{"max":100,"perTurn":21,"value":100},"name":"Rome","population":3,
 -- "production":{"turnsLeft":2,"type":"UNIT_SLINGER"},"x":17,"y":14,
 -- "yields":{"culture":3.8,"faith":0,"food":9,"gold":8,"production":6,"science":3.5}}', on one line.
@@ -56,12 +57,35 @@ local function GetYields(city)
 	return yields
 end
 
--- Returns the food surplus per turn, the housing, and the turns until the city grows or, when it
--- starves, until it loses a citizen. The game returns -1 for each count that doesn't apply, and a
--- city that neither grows nor starves has neither count, as in GetCityData in CitySupport.lua.
+-- Returns the city's growth rate status as the City Status tab of Reports shows it: halted without
+-- room to grow or while the city is occupied, slowed at half the rate or less, accelerated when its
+-- amenities speed it up, and normal otherwise. See CreateCityStatusInstance in ReportScreen.lua,
+-- lines 1678 to 1689.
+local function GetGrowthRate(city, growth)
+	local housingModifier = growth:GetHousingGrowthModifier()
+
+	if housingModifier == 0 or city:IsOccupied() then
+		return "halted"
+	elseif housingModifier <= 0.5 then
+		return "slowed"
+	elseif growth:GetHappinessGrowthModifier() > 0 then
+		return "accelerated"
+	end
+
+	return "normal"
+end
+
+-- Returns the food surplus per turn, the housing, the growth rate status, and the turns until the city
+-- grows or, when it starves, until it loses a citizen. The game returns -1 for each count that doesn't
+-- apply, and a city that neither grows nor starves has neither count, as in GetCityData in
+-- CitySupport.lua.
 local function GetGrowth(city)
 	local growth = city:GetGrowth()
-	local result = { foodSurplus = RoundDown(growth:GetFoodSurplus()), housing = RoundDown(growth:GetHousing()) }
+	local result = {
+		foodSurplus = RoundDown(growth:GetFoodSurplus()),
+		housing = RoundDown(growth:GetHousing()),
+		rate = GetGrowthRate(city, growth),
+	}
 	local turnsUntilGrowth = growth:GetTurnsUntilGrowth()
 
 	if turnsUntilGrowth ~= -1 then
@@ -77,8 +101,8 @@ local function GetGrowth(city)
 	return result
 end
 
--- Returns the amenities the city has and needs, and its mood, such as HAPPINESS_CONTENT. The city
--- panel shows have minus need.
+-- Returns the amenities the city has and needs, its mood, such as HAPPINESS_CONTENT, and the amenities
+-- it loses to war weariness. The city panel shows have minus need.
 local function GetAmenities(city)
 	local growth = city:GetGrowth()
 	local mood = GameInfo.Happinesses[growth:GetHappiness()]
@@ -87,7 +111,21 @@ local function GetAmenities(city)
 		have = growth:GetAmenities(),
 		need = growth:GetAmenitiesNeeded(),
 		mood = mood and mood.HappinessType,
+		warWeariness = growth:GetAmenitiesLostFromWarWeariness(),
 	}
+end
+
+-- Returns the city's governor, with type, such as GOVERNOR_THE_MERCHANT, and established, whether they
+-- have settled in, or nil for none, and in a game without Rise and Fall, which adds governors. See
+-- CreateCityStatusInstance in ReportScreen_Expansion1.lua.
+local function GetGovernor(city)
+	local governor = city.GetAssignedGovernor ~= nil and city:GetAssignedGovernor()
+
+	if not governor then
+		return nil
+	end
+
+	return { type = GameInfo.Governors[governor:GetType()].GovernorType, established = governor:IsEstablished() }
 end
 
 -- Returns the city's loyalty, its most, and its change per turn, rounded as the city panel shows
@@ -170,6 +208,7 @@ function SentientSystems_GetCityStates(player)
 			amenities = GetAmenities(city),
 			defense = SentientSystems_GetCityDefense(player, city),
 			districts = GetDistricts(city),
+			governor = GetGovernor(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
 			production = GetProduction(city),

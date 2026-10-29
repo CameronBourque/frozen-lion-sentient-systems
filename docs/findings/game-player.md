@@ -1,6 +1,6 @@
 # Game player overview
 
-Status: open. The `player` section of `SentientSystems_GetState`, what the top bar shows about the player as a whole, is confirmed in a running game with Gathering Storm, with the file sent through the tuner. It matches the top bar. The income, expenses, unit upkeep, and gold deals of the Yields tab of Reports are confirmed on the same game, and the per-city rows are confirmed against the report's city table for the first city. The resources of the Resources tab are confirmed on the same game against its screenshots. Later tasks add the City Status and Era Progress screens here.
+Status: open. The `player` section of `SentientSystems_GetState`, what the top bar shows about the player as a whole, is confirmed in a running game with Gathering Storm, with the file sent through the tuner. It matches the top bar. The income, expenses, unit upkeep, and gold deals of the Yields tab of Reports are confirmed on the same game, and the per-city rows are confirmed against the report's city table for the first city. The resources of the Resources tab are confirmed on the same game against its screenshots. The City Status tab's growth rate, war weariness, and governor, which sit in `cities`, are confirmed on the same game. Later tasks add the Era Progress screen here.
 
 The calls the player section of the state uses. See [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -43,12 +43,20 @@ The calls the player section of the state uses. See [in-game-lua.md](../design/c
 - **Where they show.** A resource with no sources but a stockpile has no group, and shows only in the strip at the bottom, with its stockpile out of its cap. A resource with no sources and no stockpile isn't on the screen. The strategic strip shows `GetResourceAmount` over `GetResourceStockpileCap`, and the bonus and luxury strips the totals. `GetResourceAllocationCities(index)` gives the cities a resource goes to, each with `CityID` and `AllocationAmount`, and the screen shows their number as "4 Cities" with the amounts in its tooltip. Every luxury on the save but Marble was allocated to 4 cities. Confirmed in files and on Windows on 2026-10-29.
 - **On the save.** 23 resources, in 7,040 bytes. Cattle was 5 from four cities, Crabs 5 with 1 from Gameplay Bonuses, Stone 5 from three cities, the Turtles 1 from a city, minus 1 exported to the player with ID 8 for 19 turns, plus 1 from Gameplay Bonuses, Whales 1 for 4 cities, and Aluminum, Coal, Oil, and Uranium 105 from Gameplay Bonuses with a stockpile of 105 out of 105, as set with the tuner. Iron was 6 a turn with 105 out of 105, and Niter 2 with 32. Taking Uranium to 0 with `ChangeResourceAmount` dropped it from the list. Confirmed on Windows on 2026-10-29.
 
+### City Status tab
+
+`CreateCityStatusInstance` in `ReportScreen.lua`, which the Rise and Fall `ReportScreen_Expansion1.lua` replaces for Rise and Fall and Gathering Storm, builds each row from `GetCityData` in `CitySupport.lua`. The Rise and Fall row drops the base game's Under Siege column and adds loyalty and the governor. Confirmed in files.
+
+- **Growth rate status.** `GetHousingGrowthModifier()` of 0, or `IsOccupied()`, is Halted, a modifier of 0.5 or less is Slowed, `GetHappinessGrowthModifier()` above 0 is Accelerated, and anything else is Normal. The save's cities had modifiers of 1, 0.5, and 0.25, and no happiness modifier. Confirmed in files and on Windows on 2026-10-29.
+- **War weariness and governor.** `GetAmenitiesLostFromWarWeariness()` is the amenities lost, which the tab shows as 0 or a negative number. `GetAssignedGovernor()`, which a city has only with Rise and Fall, gives the governor's type and `IsEstablished()`, which picks the icon's fill. Confirmed in files and on Windows on 2026-10-29.
+
 ## Method
 
 1. To read the player section before the `.modinfo` loads `SentientSystemsCore_StatePlayer.lua`, send the file with its comment lines removed, then `print(SentientSystems_EncodeJson(SentientSystems_GetPlayerState(Players[0])))`, as in [game-choices.md](game-choices.md#method), step 6.
 2. Compare each value with the top bar.
 3. For the Resources tab, send `SentientSystemsCore_StatePlayerResources.lua` the same way, with `print(SentientSystems_EncodeJson(SentientSystems_GetResourcesState(Players[0])))`, and compare with the screen's groups and strips. To see a strategic resource at 0, set it with `Players[0]:GetResources():ChangeResourceAmount(index, -amount)` in `GameCore_Tuner`.
-4. For the Yields tab, send `SentientSystemsCore_StatePlayerIncome.lua` the same way, with `print(SentientSystems_EncodeJson(SentientSystems_GetIncomeState(Players[0])))`, and compare with the screen's bottom bar and tables, and with the gold tooltip of the top bar.
+4. For the City Status tab, send `SentientSystemsCore_StateCities.lua` without its comments, then print each city's `growth.rate`, `amenities`, and `governor`, and compare with the tab.
+5. For the Yields tab, send `SentientSystemsCore_StatePlayerIncome.lua` the same way, with `print(SentientSystems_EncodeJson(SentientSystems_GetIncomeState(Players[0])))`, and compare with the screen's bottom bar and tables, and with the gold tooltip of the top bar.
 
 ## Results
 
@@ -59,6 +67,7 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | The player section against the top bar | Science 123.5, culture 216.6, faith 2,357 and 109, gold 9,610 and 265.1, tourism 92, trade routes 17 of 20, favor 335 and 3. All matched the bar 
 | The player section on turn 1 of a new game | Science 0, culture 0, faith 0 and 0, gold 5 and 0, favor 0 and 0, tourism 0, and no trade routes. The bar showed the same, with the favor button showing 0 and 0, no tourism, and the envoy counter at 0 |
 | The per-city rows through the bridge's reader | `INCOME` parsed. Aduatuca's 21 rows matched the report's table, with a Shipyard upkeep of 1 and a Factory upkeep of 2, and its upkeep of 9 and tourism of 18 as the table and the sum of its Stable, Armory, and the rest gave |
+| The City Status tab on the same save | The 15 cities' growth rates matched the tab row for row, with 8 slowed and 7 normal, the amenities had and needed matched, war weariness was 0 for all, and the governors on Aduatuca, Samarobriva, and Cenabum matched its icons. Halted, accelerated, and war weariness above 0 weren't on the save, and are tested against the fake game only |
 | The Resources tab on the same save, through the bridge's reader | `RESOURCES` parsed 23 resources. Totals, sources, the export deal, and the 4-city allocations matched the two screenshots, and the strips' stockpiles matched. With Uranium at 0 it was left out |
 | The Yields tab's totals and tables on a save with 15 cities | Gold 475.1 with 420 from cities, 22 from deals, and 33 from envoys, faith 109 with 101 and 8, science 123.5 and culture 216.6 from cities. Expenses 210: 117 from cities, 88 from units, and 5 from deals. 7 unit groups and 4 deals, as the screen's tables had them. The state's totals matched the bar and the gold tooltip |
 

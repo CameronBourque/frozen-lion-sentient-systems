@@ -14,7 +14,8 @@ export const CITY = z.object({
 	x: z.number(),
 	y: z.number(),
 	population: z.number(),
-	amenities: z.object({ have: z.number(), need: z.number(), mood: z.string().optional() }),
+	// warWeariness is the amenities lost to war weariness.
+	amenities: z.object({ have: z.number(), need: z.number(), mood: z.string().optional(), warWeariness: z.number() }),
 	defense: DEFENSE,
 	districts: z.array(z.object({
 		type: z.string(),
@@ -27,9 +28,14 @@ export const CITY = z.object({
 	growth: z.object({
 		foodSurplus: z.number(),
 		housing: z.number(),
+		// The growth rate status of the City Status tab of Reports.
+		rate: z.enum(["normal", "slowed", "halted", "accelerated"]),
 		turnsUntilGrowth: z.number().optional(),
 		turnsUntilLoss: z.number().optional(),
 	}),
+	// The city's governor, with its type and whether it has settled in. Left out for none, and in a game
+	// without the Rise and Fall expansion.
+	governor: z.object({ type: z.string(), established: z.boolean() }).optional(),
 	// Only in a game with the Rise and Fall expansion.
 	loyalty: z.object({ value: z.number(), max: z.number(), perTurn: z.number() }).optional(),
 	// Left out when the city produces nothing.

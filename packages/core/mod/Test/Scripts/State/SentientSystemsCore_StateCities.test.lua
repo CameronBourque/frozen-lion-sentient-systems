@@ -6,7 +6,7 @@ local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\
 
 -- The amenities, defense, districts, and growth JSON for a content city with no amenities,
 -- districts, or housing, that neither grows nor starves, and a garrison at full health.
-local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0},\"defense\":{\"garrison\":{\"max\":200,\"value\":200},\"strength\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0},"
+local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0,\"warWeariness\":0},\"defense\":{\"garrison\":{\"max\":200,\"value\":200},\"strength\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0,\"rate\":\"normal\"},"
 
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
@@ -109,13 +109,13 @@ describe("SentientSystems_GetCityStates", function()
 	it("adds the food surplus and the turns until the city grows", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = 3.25, housing = 6, turnsUntilGrowth = 2 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":3.2,\"housing\":6,\"turnsUntilGrowth\":2}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":3.2,\"housing\":6,\"rate\":\"normal\",\"turnsUntilGrowth\":2}", 1, true))
 	end)
 
 	it("adds the turns until a starving city loses a citizen", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = -2, turnsUntilStarvation = 4 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":-2,\"housing\":0,\"turnsUntilLoss\":4}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":-2,\"housing\":0,\"rate\":\"normal\",\"turnsUntilLoss\":4}", 1, true))
 	end)
 
 	it("rounds housing down to one decimal place", function()
@@ -127,13 +127,45 @@ describe("SentientSystems_GetCityStates", function()
 	it("adds the amenities the city has and needs, and its mood", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { amenities = 1, amenitiesNeeded = 3, happiness = 2 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":1,\"mood\":\"HAPPINESS_UNHAPPY\",\"need\":3}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":1,\"mood\":\"HAPPINESS_UNHAPPY\",\"need\":3,\"warWeariness\":0}", 1, true))
 	end)
 
 	it("leaves out a mood that GameInfo.Happinesses doesn't have", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { happiness = 9 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":0,\"need\":0}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":0,\"need\":0,\"warWeariness\":0}", 1, true))
+	end)
+
+	it("adds the growth rate status, halted, slowed, accelerated, or normal", function()
+		local function Rate(growth, occupied)
+			local env = Load({ players = { [0] = { cities = { With(ROME, { growth = growth, occupied = occupied }) } } } })
+
+			return env.SentientSystems_GetState(0):match("\"rate\":\"(%a+)\"")
+		end
+
+		assert.equal("normal", Rate({}))
+		assert.equal("halted", Rate({ housingModifier = 0 }))
+		assert.equal("halted", Rate({}, true))
+		assert.equal("slowed", Rate({ housingModifier = 0.5 }))
+		assert.equal("slowed", Rate({ housingModifier = 0.25, happinessModifier = 0.2 }))
+		assert.equal("accelerated", Rate({ housingModifier = 1, happinessModifier = 0.2 }))
+	end)
+
+	it("adds the amenities lost to war weariness", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { warWeariness = 2 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"warWeariness\":2}", 1, true))
+	end)
+
+	it("adds the city's governor, and leaves it out for none or without Rise and Fall", function()
+		local function State(governor)
+			return Load({ players = { [0] = { cities = { With(ROME, { governor = governor }) } } } }).SentientSystems_GetState(0)
+		end
+
+		assert.truthy(State({ type = "GOVERNOR_THE_MERCHANT", established = true }):find("\"governor\":{\"established\":true,\"type\":\"GOVERNOR_THE_MERCHANT\"}", 1, true))
+		assert.truthy(State({ type = "GOVERNOR_THE_MERCHANT" }):find("\"governor\":{\"established\":false,", 1, true))
+		assert.falsy(State(false):find("\"governor\"", 1, true))
+		assert.falsy(State(nil):find("\"governor\"", 1, true))
 	end)
 
 	it("adds loyalty, its most, and its change per turn, rounded to the nearest tenth", function()
