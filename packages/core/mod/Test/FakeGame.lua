@@ -47,8 +47,7 @@
 -- each with player, id, and yields, and the district yields and adjacency, building yields, wonder, and
 -- greatWorks, each with type and yields, that data.districts holds. growth.yieldModifier is the
 -- amenities' modifier.
--- A player's tooltips also has science, and it has deals, each
--- with player, gold or resource and amount, duration, enacted, and outgoing, and units with formation, such as
+-- A player's tooltips also has science, and it has units with formation, such as
 -- "CORPS_MILITARY_FORMATION". Income, tourism, and the gold and faith tooltips are in
 -- FakeGame/Income.lua, upkeep in FakeGame/Maintenance.lua, plots in FakeGame/Plots.lua, and world.turn is the turn.
 -- A player's top bar numbers are science, culture, tourism, gold, upkeep, goldPerTurn, faith,
@@ -56,7 +55,7 @@
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
 -- player's met lists the IDs of the players it has met, and atWar the IDs of the players it is at
--- war with. A player's influence and a city-state's quests and envoys are in FakeGame/Envoys.lua. A
+-- war with, in FakeGame/Rivals.lua. A player's influence and a city-state's quests and envoys are in FakeGame/Envoys.lua. A
 -- city-state's minor also has name, leader, inherit, the leader it inherits from, traits, the text
 -- keys of its suzerain bonus, and resources, each with type, amount, exported, and perTurn.
 -- Great people are in FakeGame/GreatPeople.lua.
@@ -66,10 +65,8 @@
 -- is its leader's name, and favor its Diplomatic Favor. The World Congress, emergencies, eras, and
 -- dedications are in FakeGame/WorldCongress.lua, Emergencies.lua, Eras.lua, and Dedications.lua. Governors, with a city's governor, are in FakeGame/Governors.lua.
 -- world.offCapabilities lists the great people capabilities that are off. A player's
--- blockers lists its end-turn
--- blockers by name, in the game's order, such as
--- { "ENDTURN_BLOCKING_RESEARCH" }. A number in the list is a value that EndTurnBlockingTypes doesn't
--- hold. A player's hiddenResources lists the resource types its techs don't reveal yet. A city's capital is
+-- blockers are in FakeGame/Blockers.lua, deals in FakeGame/Deals.lua, and its resources and
+-- hiddenResources in FakeGame/Resources.lua. A city's capital is
 -- true or false, and its defense has strength, garrison, and walls, each with damage and max. A
 -- city's options lists what its build queue offers, such as options = { units = { { type =
 -- "UNIT_SETTLER", cost = 40, turns = 6 } }, buildings = { { type = "BUILDING_GRANARY", cost = 32,
@@ -139,20 +136,6 @@ local HAPPINESSES = {
 
 -- The DefenseTypes values for a district's garrison and walls.
 local DEFENSE_TYPES = { DISTRICT_GARRISON = 0, DISTRICT_OUTER = 1 }
-
--- Some EndTurnBlockingTypes values, with their hashes from the game.
-local END_TURN_BLOCKING_TYPES = {
-	NO_ENDTURN_BLOCKING = 0,
-	ENDTURN_BLOCKING_UNITS = 23669119,
-	ENDTURN_BLOCKING_RESEARCH = -286188551,
-	ENDTURN_BLOCKING_CIVIC = -2034242607,
-	ENDTURN_BLOCKING_PRODUCTION = -513644209,
-	ENDTURN_BLOCKING_FILL_CIVIC_SLOT = -1610199318,
-	ENDTURN_BLOCKING_UNIT_PROMOTION = 1706768628,
-	ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE = 1385632321,
-	ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY = 2048525187,
-	ENDTURN_BLOCKING_ARTIFACT = -234935529,
-}
 
 -- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
 local MILITARY_FORMATION_TYPES = { STANDARD_MILITARY_FORMATION = 0, CORPS_MILITARY_FORMATION = 1, ARMY_MILITARY_FORMATION = 2 }
@@ -585,12 +568,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 			end,
 		}
 	end
-	local hidden = {}
-
-	for _, typeName in ipairs(data.hiddenResources or {}) do
-		hidden[hashes[typeName]] = true
-	end
-
 	for i, city in ipairs(data.cities or {}) do
 		cities[i] = City(city, hashes, indexes, id)
 	end
@@ -648,19 +625,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 				end,
 			}
 		end,
-		GetDiplomacy = function()
-			return {
-				HasMet = function(_, otherID)
-					for _, met in ipairs(data.met or {}) do
-						if met == otherID then
-							return true
-						end
-					end
-
-					return false
-				end,
-			}
-		end,
 		GetCulture = function()
 			return {
 				GetCultureYield = function()
@@ -704,112 +668,6 @@ local function BuildPlayer(id, data, hashes, indexes, env)
 					end
 				end,
 			}
-		end,
-		-- The resources a city-state has, from data.minor.resources, each with amount, exported,
-		-- and perTurn, which only Gathering Storm reads.
-		GetResources = function()
-			local owned = {}
-
-			for _, resource in ipairs((data.minor or {}).resources or {}) do
-				owned[indexes[resource.type]] = resource
-			end
-
-			local resources = {
-				IsResourceVisible = function(_, hash)
-					return not hidden[hash]
-				end,
-				HasResource = function(_, index)
-					return owned[index] ~= nil and (owned[index].amount or 0) > 0
-				end,
-				HasExportedResource = function(_, index)
-					return owned[index] ~= nil and (owned[index].exported or 0) > 0
-				end,
-				GetResourceAmount = function(_, index)
-					return owned[index] and owned[index].amount or 0
-				end,
-				GetExportedResourceAmount = function(_, index)
-					return owned[index] and owned[index].exported or 0
-				end,
-			}
-
-			if env.GameInfo.Governments_XP2 ~= nil then
-				function resources.GetResourceAccumulationPerTurn(_, index)
-					return owned[index] and owned[index].perTurn or 0
-				end
-			end
-
-			-- A major player's resources, from data.resources, each with type, class, amount, the stockpile,
-			-- cap, reserved, unitDemand, powerDemand, imported, and perTurn, which are 0 when missing,
-			-- cities, a city ID to the amount it extracts, and allocation, a city ID to the amount it gets. A
-			-- resource is found by its index, its hash, or its type.
-			local mine = data.resources or {}
-
-			local function Find(key)
-				for _, resource in ipairs(mine) do
-					if key == resource.type or key == indexes[resource.type] or key == hashes[resource.type] then
-						return resource
-					end
-				end
-
-				return {}
-			end
-
-			if #mine > 0 then
-				function resources.GetResourceAmount(_, key)
-					return Find(key).amount or 0
-				end
-			end
-
-			function resources.GetResourceAllocationCities(_, key)
-				local cities = {}
-
-				for id, amount in pairs(Find(key).allocation or {}) do
-					cities[#cities + 1] = { CityID = id, AllocationAmount = amount }
-				end
-
-				table.sort(cities, function(a, b)
-					return a.CityID < b.CityID
-				end)
-
-				return cities
-			end
-
-			-- Whether a plot's resource can be extracted, from the tile's extractable.
-			function resources.IsResourceExtractableAt(_, plot)
-				return plot.extractable == true
-			end
-
-			if env.GameInfo.Governments_XP2 ~= nil then
-				function resources.GetResourceAccumulationPerTurn(_, key)
-					return Find(key).perTurn or owned[key] and owned[key].perTurn or 0
-				end
-
-				for method, field in pairs({
-					GetResourceStockpileCap = "cap",
-					GetReservedResourceAmount = "reserved",
-					GetUnitResourceDemandPerTurn = "unitDemand",
-					GetPowerResourceDemandPerTurn = "powerDemand",
-					GetResourceImportPerTurn = "imported",
-				}) do
-					resources[method] = function(_, key)
-						return Find(key)[field] or 0
-					end
-				end
-
-				function resources.GetResourcesExtractedByCity(_, cityID)
-					local extracted = {}
-
-					for _, resource in ipairs(mine) do
-						if (resource.cities or {})[cityID] ~= nil then
-							extracted[#extracted + 1] = { ResourceType = indexes[resource.type], Amount = resource.cities[cityID] }
-						end
-					end
-
-					return extracted
-				end
-			end
-
-			return resources
 		end,
 	}
 end
@@ -945,18 +803,6 @@ function FakeGame.Install(env, world)
 		end,
 	}
 	env.YieldTypes = YIELD_TYPES
-	env.EndTurnBlockingTypes = END_TURN_BLOCKING_TYPES
-	env.NotificationManager = {
-		GetAllEndTurnBlocking = function(playerID)
-			local values = {}
-
-			for i, blocker in ipairs((world.players or {})[playerID].blockers or {}) do
-				values[i] = END_TURN_BLOCKING_TYPES[blocker] or blocker
-			end
-
-			return values
-		end,
-	}
 	env.DefenseTypes = DEFENSE_TYPES
 
 	-- Adds a type to a GameInfo table under the next index, as the game numbers its rows.
@@ -1123,24 +969,6 @@ function FakeGame.Install(env, world)
 					end
 				end
 			end
-		end
-	end
-
-	-- A city-state's resources and quests get their rows.
-	for _, data in pairs(world.players or {}) do
-		for _, resource in ipairs((data.minor or {}).resources or {}) do
-			AddRow("Resources", "ResourceType", resource.type)
-		end
-
-		for _, resource in ipairs(data.resources or {}) do
-			AddRow("Resources", "ResourceType", resource.type)
-
-			local row = env.GameInfo.Resources[indexes[resource.type]]
-
-			hashes[resource.type] = hashes[resource.type] or 6000000 + indexes[resource.type]
-			row.Hash = hashes[resource.type]
-			row.ResourceClassType = "RESOURCECLASS_" .. resource.class:upper()
-			row.Name = "LOC_" .. resource.type .. "_NAME"
 		end
 	end
 
@@ -1321,50 +1149,6 @@ function FakeGame.Install(env, world)
 		end,
 	}
 
-	-- The gold deals, from each player's data.deals: each has player, the other player's ID, gold,
-	-- duration, enacted, and outgoing, true for gold the player pays. A deal with several gold items has
-	-- one entry for each, in a deal of its own.
-	env.DealItemTypes = { GOLD = 1, RESOURCES = 2 }
-	env.ResultFormat = { SUMMARY = 1 }
-	env.DealItemSubTypes = { NONE = 0 }
-	env.DealManager = {
-		GetPlayerDeals = function(playerID, otherID)
-			local deals = {}
-
-			for _, entry in ipairs(world.players[playerID].deals or {}) do
-				if entry.player == otherID then
-					deals[#deals + 1] = {
-						FindItemsByType = function(_, itemType, _, owner)
-							local payer = entry.outgoing and playerID or otherID
-
-							if owner ~= payer or (entry.resource ~= nil) ~= (itemType == env.DealItemTypes.RESOURCES) then
-								return nil
-							end
-
-							return {
-								{
-									GetAmount = function()
-										return entry.amount or entry.gold
-									end,
-									GetValueType = function()
-										return indexes[entry.resource]
-									end,
-									GetDuration = function()
-										return entry.duration
-									end,
-									GetEnactedTurn = function()
-										return entry.enacted
-									end,
-								},
-							}
-						end,
-					}
-				end
-			end
-
-			return deals
-		end,
-	}
 	env.Game.GetCurrentGameTurn = function()
 		return world.turn or 1
 	end
@@ -1392,7 +1176,11 @@ end
 
 -- One line for each feature in FakeGame/, in the order Install runs them. Each file returns its
 -- install function, as FakeGame.Register describes.
+FakeGame.Register("Resources", require("FakeGame/Resources"))
 FakeGame.Register("Plots", require("FakeGame/Plots"))
+FakeGame.Register("Rivals", require("FakeGame/Rivals"))
+FakeGame.Register("Blockers", require("FakeGame/Blockers"))
+FakeGame.Register("Deals", require("FakeGame/Deals"))
 FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
 FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"))
 FakeGame.Register("Eras", require("FakeGame/Eras"))
