@@ -98,17 +98,8 @@
 -- it escapes from. With one, the four escape districts get rows, with TravelTime 1 to 4. A player's
 -- archaeologist is its next digging archaeologist, with id, name, x, y, and artifact, with index,
 -- type, the site's kind from 0 to 5, acting and target, player IDs, and era. A player's playerName
--- is its leader's name, and favor its Diplomatic Favor. world.congress is the World Congress, with
--- inSession, turnsLeft, maxVotes, costs, the game's cost table from 0, resolutions, each with type,
--- targetType, targets, the game's possible targets, favored, and disfavored, proposals, each with the
--- game's TypeName, Name, Description, Sender, and Target, available, the same with Disabled and cost,
--- effects, each with type, targetType, and the game's ChosenLabel, ChosenOption, and ChosenThing, and
--- review, the same with PlayerSelections, each with OptionChosen and Votes. A player's emergencies
--- are in FakeGame/Emergencies.lua. A player's dedications is the era change it is making them for, with era, an
--- era type, age, heroic, golden, dark, or normal, allowed, the picks it needs, alwaysNormal, true for
--- a player always allowed the normal bonus too, and options, the category names, such as
--- "SCIENTIFIC", which give each its row in GameInfo.CommemorationTypes, with the keys
--- LOC_MOMENT_CATEGORY_<name>, with _BONUS_GOLDEN_AGE, _BONUS_NORMAL_AGE, and _BONUS_DARK_AGE. A
+-- is its leader's name, and favor its Diplomatic Favor. The World Congress, emergencies, eras, and
+-- dedications are in FakeGame/WorldCongress.lua, Emergencies.lua, Eras.lua, and Dedications.lua. A
 -- player's governors has points, spent, and appointed, each with type, city,
 -- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
 -- promotions, each with type, has, canEarn, base, true for the base ability, level, column, and
@@ -252,9 +243,6 @@ local END_TURN_BLOCKING_TYPES = {
 	ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE = 1385632321,
 	ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY = 2048525187,
 	ENDTURN_BLOCKING_ARTIFACT = -234935529,
-	ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE = 1215684001,
-	ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK = 1215684003,
-	ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION = 1215684004,
 }
 
 -- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
@@ -1677,8 +1665,6 @@ function FakeGame.Install(env, world)
 		GovernorPromotionPrereqs = {},
 		GovernorPromotionConditions = {},
 		GreatPersonIndividuals = {},
-		CommemorationTypes = {},
-		Resolutions = {},
 		Government_SlotCounts = {},
 		GovernmentModifiers = {},
 		ModifierArguments = {},
@@ -2007,64 +1993,6 @@ function FakeGame.Install(env, world)
 	for _, data in pairs(world.players or {}) do
 		if data.archaeologist ~= nil then
 			AddRow("Eras", "EraType", data.archaeologist.artifact.era)
-		end
-	end
-
-	-- Each resolution in the World Congress gets a row, with the text keys the screen reads.
-	local congress = world.congress or {}
-
-	for _, list in ipairs({ congress.resolutions or {}, congress.effects or {}, congress.review or {} }) do
-		for _, resolution in ipairs(list) do
-			AddRow("Resolutions", "ResolutionType", resolution.type)
-
-			local row = env.GameInfo.Resolutions[indexes[resolution.type]]
-
-			row.Name = "LOC_" .. resolution.type .. "_NAME"
-			row.Effect1Description = "LOC_" .. resolution.type .. "_A"
-			row.Effect2Description = "LOC_" .. resolution.type .. "_B"
-		end
-	end
-
-	-- The era and each player's active dedications get rows, with the text keys of the game's moments.
-	if world.era then
-		AddRow("Eras", "EraType", world.era.type)
-		env.GameInfo.Eras[indexes[world.era.type]].Name = "LOC_" .. world.era.type .. "_NAME"
-	end
-
-	for _, data in pairs(world.players or {}) do
-		for _, category in ipairs((data.era or {}).commemorations or {}) do
-			local type = "COMMEMORATION_" .. category
-
-			AddRow("CommemorationTypes", "CommemorationType", type)
-
-			local row = env.GameInfo.CommemorationTypes[indexes[type]]
-			local key = "LOC_MOMENT_CATEGORY_" .. category
-
-			row.GoldenAgeBonusDescription = key .. "_BONUS_GOLDEN_AGE"
-			row.NormalAgeBonusDescription = key .. "_BONUS_NORMAL_AGE"
-			row.DarkAgeBonusDescription = key .. "_BONUS_DARK_AGE"
-		end
-	end
-
-	-- Each dedication's era and options get rows, with the text keys of the game's moments.
-	for _, data in pairs(world.players or {}) do
-		if data.dedications ~= nil then
-			AddRow("Eras", "EraType", data.dedications.era)
-			env.GameInfo.Eras[indexes[data.dedications.era]].Name = "LOC_" .. data.dedications.era .. "_NAME"
-
-			for _, category in ipairs(data.dedications.options or {}) do
-				local type = "COMMEMORATION_" .. category
-
-				AddRow("CommemorationTypes", "CommemorationType", type)
-
-				local row = env.GameInfo.CommemorationTypes[indexes[type]]
-				local key = "LOC_MOMENT_CATEGORY_" .. category
-
-				row.CategoryDescription = key
-				row.GoldenAgeBonusDescription = key .. "_BONUS_GOLDEN_AGE"
-				row.NormalAgeBonusDescription = key .. "_BONUS_NORMAL_AGE"
-				row.DarkAgeBonusDescription = key .. "_BONUS_DARK_AGE"
-			end
 		end
 	end
 
@@ -2896,104 +2824,6 @@ function FakeGame.Install(env, world)
 			end
 		end
 	end
-	-- The era change of the first player with dedications, from its data.dedications. The ages are
-	-- the same for every player here, as the tests use one.
-	env.Game.GetEras = function()
-		local data
-
-		for _, playerData in pairs(world.players or {}) do
-			data = data or playerData.dedications
-		end
-
-		data = data or {}
-
-		-- A player's age, from its era.age, or the dedications' age.
-		local function AgeOf(id)
-			local era = ((world.players or {})[id] or {}).era
-
-			return era and era.age or data.age
-		end
-
-		local eras
-		eras = {
-			GetCurrentEra = function()
-				return indexes[world.era and world.era.type or data.era]
-			end,
-			HasHeroicGoldenAge = function(_, id)
-				return AgeOf(id) == "heroic"
-			end,
-			HasGoldenAge = function(_, id)
-				return AgeOf(id) == "heroic" or AgeOf(id) == "golden"
-			end,
-			HasDarkAge = function(_, id)
-				return AgeOf(id) == "dark"
-			end,
-			IsPlayerAlwaysAllowedCommemorationQuest = function()
-				return data.alwaysNormal == true
-			end,
-			GetPlayerNumAllowedCommemorations = function()
-				return data.allowed or 0
-			end,
-			GetPlayerCommemorateChoices = function()
-				local choices = {}
-
-				for i, category in ipairs(data.options or {}) do
-					choices[i] = indexes["COMMEMORATION_" .. category]
-				end
-
-				return choices
-			end,
-		}
-
-		-- The era's calls, from world.era with type, final, countdown, which is -1 when missing,
-		-- minEnd, maxEnd, and each player's era with score, age, dark, golden, previous and current,
-		-- the score's sources, each a table of its text to its points, and commemorations, such as
-		-- "ECONOMIC". Without world.era, as in a game without Rise and Fall, there are none.
-		if world.era then
-			local function Era(id)
-				return world.players[id].era or {}
-			end
-
-			eras.GetFinalEra = function()
-				return world.era.final and indexes[world.era.type] or -1
-			end
-			eras.GetPlayerCurrentScore = function(_, id)
-				return Era(id).score or 0
-			end
-			eras.GetPlayerDarkAgeThreshold = function(_, id)
-				return Era(id).dark or 0
-			end
-			eras.GetPlayerGoldenAgeThreshold = function(_, id)
-				return Era(id).golden or 0
-			end
-			eras.GetPlayerPreviousEraScoreBreakdown = function(_, id)
-				return Era(id).previous or {}
-			end
-			eras.GetPlayerCurrentEraScoreBreakdown = function(_, id)
-				return Era(id).current or {}
-			end
-			eras.GetNextEraCountdown = function()
-				return world.era.countdown or -1
-			end
-			eras.GetCurrentEraMinimumEndTurn = function()
-				return world.era.minEnd
-			end
-			eras.GetCurrentEraMaximumEndTurn = function()
-				return world.era.maxEnd
-			end
-			eras.GetPlayerActiveCommemorations = function(_, id)
-				local active = {}
-
-				for i, category in ipairs(Era(id).commemorations or {}) do
-					active[i] = indexes["COMMEMORATION_" .. category]
-				end
-
-				return active
-			end
-		end
-
-		return eras
-	end
 	-- The great people on offer, from world.greatPeople, by the GameInfo index of each individual.
 	env.Game.GetGreatPeople = function()
 		local byIndex = {}
@@ -3072,85 +2902,6 @@ function FakeGame.Install(env, world)
 			end,
 			GetActiveQuestReward = function(_, playerID, cityStateID, index)
 				return Find(playerID, cityStateID, index).reward
-			end,
-		}
-	end
-	-- The World Congress, from world.congress. The calls that take a player's ID give the voting
-	-- entries in a session, as the game does, and the chosen outcomes out of one.
-	env.Game.GetWorldCongress = function()
-		local congress = world.congress or {}
-
-		-- Returns proposals as the game groups them, each in a category with its cost.
-		local function Categories(list)
-			local categories = {}
-
-			for i, proposal in ipairs(list or {}) do
-				categories[i] = { FavorCost = proposal.cost, ProposalsOfType = { proposal } }
-			end
-
-			return { Proposals = categories }
-		end
-
-		-- Returns outcomes with the game's index for each resolution type.
-		local function Outcomes(list)
-			local outcomes = {}
-
-			for i, outcome in ipairs(list or {}) do
-				outcomes[i] = {}
-
-				for key, value in pairs(outcome) do
-					outcomes[i][key] = value
-				end
-
-				outcomes[i].Type = indexes[outcome.type]
-			end
-
-			return outcomes
-		end
-
-		return {
-			IsInSession = function()
-				return world.congressInSession == true or congress.inSession == true
-			end,
-			GetMeetingStatus = function()
-				return { TurnsLeft = congress.turnsLeft or 0 }
-			end,
-			GetVotesandFavorCost = function()
-				local costs = { MaxVotes = congress.maxVotes }
-
-				for votes, cost in pairs(congress.costs or {}) do
-					costs[votes] = cost
-				end
-
-				return costs
-			end,
-			GetResolutions = function()
-				if not congress.inSession then
-					return Outcomes(congress.effects)
-				end
-
-				local resolutions = { Stage = 1 }
-
-				for i, resolution in ipairs(congress.resolutions or {}) do
-					resolutions[i] = {
-						Type = indexes[resolution.type],
-						TargetType = resolution.targetType,
-						PossibleTargets = resolution.targets,
-						FavoredPlayerIDs = resolution.favored or {},
-						DisfavoredPlayerIDs = resolution.disfavored or {},
-					}
-				end
-
-				return resolutions
-			end,
-			GetProposals = function()
-				return Categories(congress.proposals)
-			end,
-			GetEmergencies = function()
-				return Categories(congress.available)
-			end,
-			GetReview = function()
-				return { Resolutions = Outcomes(congress.review), Discussions = {} }
 			end,
 		}
 	end
@@ -3289,5 +3040,8 @@ end
 -- One line for each feature in FakeGame/, in the order Install runs them. Each file returns its
 -- install function, as FakeGame.Register describes.
 FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
+FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"))
+FakeGame.Register("Eras", require("FakeGame/Eras"))
+FakeGame.Register("Dedications", require("FakeGame/Dedications"))
 
 return FakeGame
