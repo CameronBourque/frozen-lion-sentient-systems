@@ -31,7 +31,7 @@
 -- - World: Players for the player managers, leaders, visibility, and world.turn, Capabilities for
 --   world.legacyBonuses, rename, dramaticAges, offCapabilities, and unlockWithFaith, Plots for
 --   world.plots, Maintenance for world.maintenance and unitMaintenance, and Locale for world.text.
---   Diplomacy for the status of each pair of players. WorldCongress, Emergencies, Dedications, and Eras have their own data, and world.expansion2 adds
+--   Diplomacy for the status of each pair of players, and Proposals for the deals put to a player. WorldCongress, Emergencies, Dedications, and Eras have their own data, and world.expansion2 adds
 --   Gathering Storm's checks.
 
 local FakeGame = {}
@@ -467,5 +467,6 @@ FakeGame.Register("Placement", require("FakeGame/Placement"), { "Plots", "CityCo
 FakeGame.Register("Income", require("FakeGame/Income"), { "TopBar", "Stores" })
 FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings", "Units" })
 FakeGame.Register("Diplomacy", require("FakeGame/Diplomacy"), { "Players", "Rivals", "Capabilities", "Research" })
+FakeGame.Register("Proposals", require("FakeGame/Proposals"), { "Deals", "Research", "Diplomacy" })
 
 return FakeGame

@@ -20,6 +20,7 @@ SentientSystems_Include("SentientSystemsCore_StateEnvoys")
 SentientSystems_Include("SentientSystemsCore_StateGreatPeople")
 SentientSystems_Include("SentientSystemsCore_StateGovernors")
 SentientSystems_Include("SentientSystemsCore_StatePlayer")
+SentientSystems_Include("SentientSystemsCore_StateProposals")
 
 -- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -46,5 +47,6 @@ function SentientSystems_GetState(playerID)
 		greatPeople = SentientSystems_GetGreatPeopleState(player),
 		governors = SentientSystems_GetGovernorState(player),
 		player = SentientSystems_GetPlayerState(player),
+		proposals = SentientSystems_GetProposalState(player),
 	})
 end

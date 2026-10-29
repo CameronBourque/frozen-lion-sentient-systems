@@ -47,6 +47,7 @@ const STATE: State = {
 		{ x: 17, y: 14, terrain: "TERRAIN_PLAINS", owner: 0, district: "DISTRICT_CITY_CENTER", route: "ROUTE_ANCIENT_ROAD", visible: true },
 		{ x: 29, y: 17, terrain: "TERRAIN_GRASS", resource: "RESOURCE_CATTLE", owner: 1, visible: false },
 	],
+	proposals: [],
 	religion: { pantheon: "BELIEF_GOD_OF_THE_SEA", prophet: false },
 	diplomacy: [],
 	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 50, envoys: 1 }, cityStates: [] },

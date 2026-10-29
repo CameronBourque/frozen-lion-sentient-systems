@@ -14,6 +14,7 @@ import { ENVOYS } from "./envoys.js";
 import { GOVERNORS } from "./governors.js";
 import { GREAT_PEOPLE } from "./great-people.js";
 import { PLAYER } from "./player.js";
+import { PROPOSALS } from "./proposals.js";
 import { RELIGION } from "./religion.js";
 import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
 import { TILE } from "./tiles.js";
@@ -27,6 +28,7 @@ const STATE = z.object({
 	units: z.array(UNIT),
 	tiles: z.array(TILE),
 	rivals: z.object({ cities: z.array(RIVAL_CITY), units: z.array(RIVAL_UNIT) }),
+	proposals: PROPOSALS,
 	religion: RELIGION,
 	envoys: ENVOYS,
 	greatPeople: GREAT_PEOPLE,
