@@ -463,33 +463,7 @@ function FakeGame.Install(env, world)
 		})
 	end
 
-	-- GameInfo.GreatWork_YieldChanges() lists what each great work in a building gives, from the
-	-- building's greatWorks, each with type and yields, a YieldTypes name to the amount.
-	local greatWorkYields, wonderTypes = {}, {}
-
-	env.GameInfo.GreatWork_YieldChanges = function()
-		local i = 0
-
-		return function()
-			i = i + 1
-
-			return greatWorkYields[i]
-		end
-	end
-
 	for _, data in pairs(world.players or {}) do
-		for _, unit in ipairs(data.units or {}) do
-			AddRow("Units", "UnitType", unit.type)
-
-			if unit.experience ~= nil then
-				for _, list in ipairs({ unit.experience.promotions or {}, unit.experience.available or {} }) do
-					for _, typeName in ipairs(list) do
-						AddRow("UnitPromotions", "UnitPromotionType", typeName)
-					end
-				end
-			end
-		end
-
 		for _, city in ipairs(data.cities or {}) do
 			local typeName = city.production and city.production.type
 
@@ -561,24 +535,6 @@ function FakeGame.Install(env, world)
 				hashes[typeName] = hashes[typeName] or 1000000 + count
 				env.GameInfo.Types[hashes[typeName]] = { Type = typeName }
 			end
-
-			for _, district in ipairs(city.districts or {}) do
-				AddRow("Districts", "DistrictType", district.type)
-
-				for _, building in ipairs(district.buildings or {}) do
-					AddRow("Buildings", "BuildingType", building.type)
-					wonderTypes[building.type] = building.wonder == true or wonderTypes[building.type]
-
-					for _, work in ipairs(building.greatWorks or {}) do
-						AddRow("GreatWorks", "GreatWorkType", work.type)
-						env.GameInfo.GreatWorks[indexes[work.type]].Name = "LOC_" .. work.type .. "_NAME"
-
-						for name, amount in pairs(work.yields or {}) do
-							greatWorkYields[#greatWorkYields + 1] = { GreatWorkType = work.type, YieldType = "YIELD_" .. name, YieldChange = amount }
-						end
-					end
-				end
-			end
 		end
 	end
 
@@ -607,7 +563,6 @@ function FakeGame.Install(env, world)
 		end,
 		Formation = Formation,
 		PlotIndex = PlotIndex,
-		wonderTypes = wonderTypes,
 		MAP_WIDTH = MAP_WIDTH,
 		YIELD_TYPES = YIELD_TYPES,
 		YIELD_NAMES = YIELD_NAMES,
@@ -671,6 +626,6 @@ FakeGame.Register("Production", require("FakeGame/Production"))
 FakeGame.Register("Purchases", require("FakeGame/Purchases"))
 FakeGame.Register("Placement", require("FakeGame/Placement"), { "Plots" })
 FakeGame.Register("Income", require("FakeGame/Income"), { "TopBar", "Stores" })
-FakeGame.Register("Maintenance", require("FakeGame/Maintenance"))
+FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings" })
 
 return FakeGame

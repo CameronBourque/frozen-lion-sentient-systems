@@ -2,10 +2,49 @@
 -- true when missing, pillaged, yields, a YieldTypes name to an amount, and greatWorks, each with
 -- type. A slot's great work is numbered by its building and slot, and its type is that great work's
 -- GameInfo index. IsPillaged takes an index or a hash, and a building option in data.options.buildings
--- is found by its hash. The build queue's options are in FakeGame/Production.lua.
+-- is found by its hash. The build queue's options are in FakeGame/Production.lua. Each building, great
+-- work, and district gets a GameInfo row, and a building with wonder is a wonder, in ctx.wonderTypes,
+-- which FakeGame/Maintenance.lua reads.
 
 return function(env, world, ctx)
-	local hashes, indexes, Layout = ctx.hashes, ctx.indexes, ctx.Layout
+	local AddRow, hashes, indexes, Layout = ctx.AddRow, ctx.hashes, ctx.indexes, ctx.Layout
+
+	-- GameInfo.GreatWork_YieldChanges() lists what each great work in a building gives, from the
+	-- building's greatWorks, each with type and yields, a YieldTypes name to the amount.
+	local greatWorkYields, wonderTypes = {}, {}
+	ctx.wonderTypes = wonderTypes
+
+	env.GameInfo.GreatWork_YieldChanges = function()
+		local i = 0
+
+		return function()
+			i = i + 1
+
+			return greatWorkYields[i]
+		end
+	end
+
+	for _, data in pairs(world.players or {}) do
+		for _, city in ipairs(data.cities or {}) do
+			for _, district in ipairs(city.districts or {}) do
+				AddRow("Districts", "DistrictType", district.type)
+
+				for _, building in ipairs(district.buildings or {}) do
+					AddRow("Buildings", "BuildingType", building.type)
+					wonderTypes[building.type] = building.wonder == true or wonderTypes[building.type]
+
+					for _, work in ipairs(building.greatWorks or {}) do
+						AddRow("GreatWorks", "GreatWorkType", work.type)
+						env.GameInfo.GreatWorks[indexes[work.type]].Name = "LOC_" .. work.type .. "_NAME"
+
+						for name, amount in pairs(work.yields or {}) do
+							greatWorkYields[#greatWorkYields + 1] = { GreatWorkType = work.type, YieldType = "YIELD_" .. name, YieldChange = amount }
+						end
+					end
+				end
+			end
+		end
+	end
 
 	ctx.OnCity(function(city, data)
 		local layout = Layout(data)

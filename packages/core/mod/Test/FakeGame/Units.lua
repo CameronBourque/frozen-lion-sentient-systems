@@ -3,12 +3,27 @@
 -- hidden, which hides it from other players' IsUnitVisible, as a stealthy unit is, and formation,
 -- such as "CORPS_MILITARY_FORMATION", which is standard when missing. experience has points,
 -- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
--- unit has no experience. The units' rows are in FakeGame.lua, and a player's escaping spy and
--- digging archaeologist in FakeGame/Spies.lua and Artifacts.lua.
+-- unit has no experience. A unit and its promotions get GameInfo rows, which the upkeep pass in
+-- FakeGame/Maintenance.lua names and hashes. A player's escaping spy and digging archaeologist are
+-- in FakeGame/Spies.lua and Artifacts.lua.
 
 return function(env, world, ctx)
-	local indexes = ctx.indexes
+	local indexes, AddRow = ctx.indexes, ctx.AddRow
 	local MILITARY_FORMATION_TYPES = env.MilitaryFormationTypes
+
+	for _, data in pairs(world.players or {}) do
+		for _, unit in ipairs(data.units or {}) do
+			AddRow("Units", "UnitType", unit.type)
+
+			if unit.experience ~= nil then
+				for _, list in ipairs({ unit.experience.promotions or {}, unit.experience.available or {} }) do
+					for _, typeName in ipairs(list) do
+						AddRow("UnitPromotions", "UnitPromotionType", typeName)
+					end
+				end
+			end
+		end
+	end
 
 	ctx.OnUnit(function(unit, data)
 		local experience = data.experience
