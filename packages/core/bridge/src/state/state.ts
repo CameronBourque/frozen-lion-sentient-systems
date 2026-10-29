@@ -1,7 +1,7 @@
 // Reads one player's state from the core mod: what blocks their turn, their cities, units, revealed
-// tiles, the rivals they can see, their religion, their envoys, the great people on offer, and their
-// governors. The core mod builds the state as JSON, and the bridge reads it through the stash, in
-// stash.ts. docs/design/core/in-game-lua.md has the format.
+// tiles, the rivals they can see, their religion, their envoys, the great people on offer, their
+// governors, and the top bar's numbers. The core mod builds the state as JSON, and the bridge reads it
+// through the stash, in stash.ts. docs/design/core/in-game-lua.md has the format.
 // Each section's schema has its own file in this folder, as each section of the core mod's Lua does.
 
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { CITY } from "./cities.js";
 import { ENVOYS } from "./envoys.js";
 import { GOVERNORS } from "./governors.js";
 import { GREAT_PEOPLE } from "./great-people.js";
+import { PLAYER } from "./player.js";
 import { RELIGION } from "./religion.js";
 import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
 import { TILE } from "./tiles.js";
@@ -28,6 +29,7 @@ const STATE = z.object({
 	envoys: ENVOYS,
 	greatPeople: GREAT_PEOPLE,
 	governors: GOVERNORS,
+	player: PLAYER,
 });
 
 export type State = z.infer<typeof STATE>;

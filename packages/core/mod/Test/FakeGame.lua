@@ -61,6 +61,8 @@
 -- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
 -- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
 -- when a religion has too many of its class. world.rename turns on CAPABILITY_RENAME.
+-- A player's top bar numbers are science, culture, tourism, gold, upkeep, goldPerTurn, faith,
+-- faithPerTurn, favor, favorPerTurn, with Gathering Storm only, and trade, with active and capacity.
 -- world.expansion2 adds Gathering Storm's checks, world.unlockWithFaith makes
 -- the policy unlock cost faith, and world.congressInSession puts the World Congress in session. A
 -- player's met lists the IDs of the players it has met, and atWar the IDs of the players it is at
@@ -877,6 +879,9 @@ local function Player(id, data, hashes, indexes, env)
 		end,
 		GetStats = function()
 			return {
+				GetTourism = function()
+					return data.tourism or 0
+				end,
 				GetHasRevivedPlayer = function(_, otherID)
 					for _, revived in ipairs(data.revived or {}) do
 						if revived == otherID then
@@ -890,6 +895,9 @@ local function Player(id, data, hashes, indexes, env)
 		end,
 		GetTechs = function()
 			return {
+				GetScienceYield = function()
+					return data.science or 0
+				end,
 				GetResearchingTech = function()
 					return techData.current and indexes[techData.current] or -1
 				end,
@@ -921,6 +929,19 @@ local function Player(id, data, hashes, indexes, env)
 		end,
 		GetFavor = function()
 			return data.favor or 0
+		end,
+		-- The player's trade routes, from data.trade with active and capacity.
+		GetTrade = function()
+			local trade = data.trade or {}
+
+			return {
+				GetNumOutgoingRoutes = function()
+					return trade.active or 0
+				end,
+				GetOutgoingRouteCapacity = function()
+					return trade.capacity or 0
+				end,
+			}
 		end,
 		GetDiplomacy = function()
 			return {
@@ -958,6 +979,9 @@ local function Player(id, data, hashes, indexes, env)
 		end,
 		GetCulture = function()
 			return {
+				GetCultureYield = function()
+					return data.culture or 0
+				end,
 				GetProgressingCivic = function()
 					return civicData.current and indexes[civicData.current] or -1
 				end,
@@ -1092,6 +1116,15 @@ local function Player(id, data, hashes, indexes, env)
 				return data.gold or 0
 			end
 
+			-- The player's gold income and upkeep per turn, from data.goldPerTurn and data.upkeep.
+			function treasury.GetGoldYield()
+				return data.goldPerTurn or 0
+			end
+
+			function treasury.GetTotalMaintenance()
+				return data.upkeep or 0
+			end
+
 			return treasury
 		end,
 		-- The player's points toward each class of great person, from data.greatPeoplePoints by class
@@ -1181,6 +1214,10 @@ local function Player(id, data, hashes, indexes, env)
 			-- The player's faith, from data.faith, which is 0 when missing.
 			function religion.GetFaithBalance()
 				return data.faith or 0
+			end
+
+			function religion.GetFaithYield()
+				return data.faithPerTurn or 0
 			end
 
 			-- The index of the player's pantheon belief, from data.pantheon, or -1 for none.
@@ -2194,6 +2231,13 @@ function FakeGame.Install(env, world)
 
 	for id, data in pairs(world.players or {}) do
 		env.Players[id] = Player(id, data, hashes, indexes, env)
+
+		-- Gathering Storm's favor per turn, from data.favorPerTurn.
+		if world.expansion2 then
+			env.Players[id].GetFavorPerTurn = function()
+				return data.favorPerTurn or 0
+			end
+		end
 
 		-- The player's governors, from data.governors.
 		if data.governors ~= nil then

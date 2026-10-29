@@ -50,6 +50,13 @@ const STATE: State = {
 	religion: { pantheon: "BELIEF_GOD_OF_THE_SEA", prophet: false },
 	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 50, envoys: 1 }, cityStates: [] },
 	greatPeople: [],
+	player: {
+		gold: { balance: 100, perTurn: 5.5 },
+		faith: { balance: 10, perTurn: 1 },
+		science: 3,
+		culture: 2,
+		tourism: 0,
+	},
 	rivals: {
 		cities: [{
 			owner: 1,

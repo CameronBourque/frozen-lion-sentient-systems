@@ -4,7 +4,7 @@
 -- SentientSystems_GetState(0) returns
 -- '{"blockers":{"list":[...],"units":[...]},"cities":[{"id":65536,"name":"Rome",...}],
 -- "envoys":{"cityStates":[...],"influence":{...},"tokens":0},"governors":{...},"greatPeople":[...],
--- "religion":{"pantheon":"BELIEF_GOD_OF_THE_SEA"},"rivals":{"cities":[...],"units":[...]},"tiles":[...],
+-- "player":{...},"religion":{"pantheon":"BELIEF_GOD_OF_THE_SEA"},"rivals":{"cities":[...],"units":[...]},"tiles":[...],
 -- "units":[...]}', on one line.
 
 include("SentientSystemsCore_Common")
@@ -18,6 +18,7 @@ SentientSystems_Include("SentientSystemsCore_StateReligion")
 SentientSystems_Include("SentientSystemsCore_StateEnvoys")
 SentientSystems_Include("SentientSystemsCore_StateGreatPeople")
 SentientSystems_Include("SentientSystemsCore_StateGovernors")
+SentientSystems_Include("SentientSystemsCore_StatePlayer")
 
 -- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -42,5 +43,6 @@ function SentientSystems_GetState(playerID)
 		envoys = SentientSystems_GetEnvoyState(player),
 		greatPeople = SentientSystems_GetGreatPeopleState(player),
 		governors = SentientSystems_GetGovernorState(player),
+		player = SentientSystems_GetPlayerState(player),
 	})
 end
