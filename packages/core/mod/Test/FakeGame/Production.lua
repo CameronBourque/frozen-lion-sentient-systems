@@ -10,12 +10,67 @@
 -- which the queue returns when it allows the district. onePerCity, true when missing, and
 -- internalOnly go in its GameInfo row. data.options.projects lists each project the build queue
 -- knows, with type, cost, turns, progress, blocked, and hidden, and maxPlayerInstances, which goes in
--- its GameInfo row. The GameInfo rows of these options are in FakeGame.lua. Their tiles are in
--- FakeGame/Placement.lua.
+-- its GameInfo row. Each option gets a GameInfo row, with a hash, and a city's production type gets one in
+-- GameInfo.Types. Their tiles are in FakeGame/Placement.lua.
 
 return function(env, world, ctx)
 	local hashes, indexes, Formation = ctx.hashes, ctx.indexes, ctx.Formation
 	local CITY_COMMAND_RESULTS, CITY_OPERATION_RESULTS = env.CityCommandResults, env.CityOperationResults
+	local AddRow = ctx.AddRow
+
+	for _, data in pairs(world.players or {}) do
+		for _, city in ipairs(data.cities or {}) do
+			local typeName = city.production and city.production.type
+
+			for _, unit in ipairs((city.options or {}).units or {}) do
+				AddRow("Units", "UnitType", unit.type)
+
+				local row = env.GameInfo.Units[indexes[unit.type]]
+
+				ctx.NextHash(3000000, unit.type)
+				row.Hash = hashes[unit.type]
+				row.MustPurchase = unit.mustPurchase == true
+			end
+
+			for _, building in ipairs((city.options or {}).buildings or {}) do
+				AddRow("Buildings", "BuildingType", building.type)
+
+				local row = env.GameInfo.Buildings[indexes[building.type]]
+
+				ctx.NextHash(3000000, building.type)
+				row.Hash = hashes[building.type]
+				row.MustPurchase = building.mustPurchase == true
+				row.IsWonder = building.wonder == true
+				row.PrereqDistrict = building.district
+			end
+
+			for _, district in ipairs((city.options or {}).districts or {}) do
+				AddRow("Districts", "DistrictType", district.type)
+
+				local row = env.GameInfo.Districts[indexes[district.type]]
+
+				ctx.NextHash(3000000, district.type)
+				row.Hash = hashes[district.type]
+				row.OnePerCity = district.onePerCity ~= false
+				row.InternalOnly = district.internalOnly == true
+			end
+
+			for _, project in ipairs((city.options or {}).projects or {}) do
+				AddRow("Projects", "ProjectType", project.type)
+
+				local row = env.GameInfo.Projects[indexes[project.type]]
+
+				ctx.NextHash(3000000, project.type)
+				row.Hash = hashes[project.type]
+				row.MaxPlayerInstances = project.maxPlayerInstances
+			end
+
+			if typeName ~= nil then
+				ctx.NextHash(1000000, typeName)
+				env.GameInfo.Types[hashes[typeName]] = { Type = typeName }
+			end
+		end
+	end
 
 	ctx.OnCity(function(city, data)
 		local production = data.production

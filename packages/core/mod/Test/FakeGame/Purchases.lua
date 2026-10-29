@@ -1,13 +1,34 @@
 -- Purchases. data.purchases maps a yield name, such as YIELD_GOLD, to the units, buildings, and
 -- districts the city can buy with it. Each has type, cost, blocked, hidden, which the check refuses
 -- even when it only tests, and cantAfford, and a unit has corps and army, each with cost, blocked,
--- and cantAfford. A faith purchase has faithEnabled when the game marks it for another yield but the
--- city can buy it with faith. data.options.purchasable lists tiles to buy, each with x, y, and cost,
+-- and cantAfford. Each purchase gets a GameInfo row, with a hash and the yield that buys it, which
+-- is gold for a faithEnabled one. A faith purchase has faithEnabled when the game marks it for
+-- another yield but the city can buy it with faith. data.options.purchasable lists tiles to buy, each with x, y, and cost,
 -- its gold cost, and the player's gold and faith stores are in FakeGame/Stores.lua.
 
 return function(env, world, ctx)
-	local hashes, Formation, PlotIndex = ctx.hashes, ctx.Formation, ctx.PlotIndex
+	local hashes, indexes, Formation, PlotIndex = ctx.hashes, ctx.indexes, ctx.Formation, ctx.PlotIndex
 	local CITY_COMMAND_RESULTS, CITY_OPERATION_RESULTS, CITY_COMMAND_TYPES = env.CityCommandResults, env.CityOperationResults, env.CityCommandTypes
+	local AddRow = ctx.AddRow
+
+	for _, data in pairs(world.players or {}) do
+		for _, city in ipairs(data.cities or {}) do
+			for yieldName, purchases in pairs(city.purchases or {}) do
+				for _, kind in ipairs({ { "units", "Units", "UnitType" }, { "buildings", "Buildings", "BuildingType" }, { "districts", "Districts", "DistrictType" } }) do
+					for _, option in ipairs(purchases[kind[1]] or {}) do
+						AddRow(kind[2], kind[3], option.type)
+
+						local row = env.GameInfo[kind[2]][indexes[option.type]]
+
+						ctx.NextHash(3000000, option.type)
+						row.Hash = hashes[option.type]
+						row.PurchaseYield = option.faithEnabled and "YIELD_GOLD" or yieldName
+						row.OnePerCity = row.OnePerCity ~= false
+					end
+				end
+			end
+		end
+	end
 
 	-- GameInfo.Yields, by name.
 	local YIELD_ROWS = {}

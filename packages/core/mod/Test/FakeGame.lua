@@ -463,81 +463,6 @@ function FakeGame.Install(env, world)
 		})
 	end
 
-	for _, data in pairs(world.players or {}) do
-		for _, city in ipairs(data.cities or {}) do
-			local typeName = city.production and city.production.type
-
-			for _, unit in ipairs((city.options or {}).units or {}) do
-				AddRow("Units", "UnitType", unit.type)
-
-				local row = env.GameInfo.Units[indexes[unit.type]]
-
-				count = count + 1
-				hashes[unit.type] = hashes[unit.type] or 3000000 + count
-				row.Hash = hashes[unit.type]
-				row.MustPurchase = unit.mustPurchase == true
-			end
-
-			for _, building in ipairs((city.options or {}).buildings or {}) do
-				AddRow("Buildings", "BuildingType", building.type)
-
-				local row = env.GameInfo.Buildings[indexes[building.type]]
-
-				count = count + 1
-				hashes[building.type] = hashes[building.type] or 3000000 + count
-				row.Hash = hashes[building.type]
-				row.MustPurchase = building.mustPurchase == true
-				row.IsWonder = building.wonder == true
-				row.PrereqDistrict = building.district
-			end
-
-			for _, district in ipairs((city.options or {}).districts or {}) do
-				AddRow("Districts", "DistrictType", district.type)
-
-				local row = env.GameInfo.Districts[indexes[district.type]]
-
-				count = count + 1
-				hashes[district.type] = hashes[district.type] or 3000000 + count
-				row.Hash = hashes[district.type]
-				row.OnePerCity = district.onePerCity ~= false
-				row.InternalOnly = district.internalOnly == true
-			end
-
-			for yieldName, purchases in pairs(city.purchases or {}) do
-				for _, kind in ipairs({ { "units", "Units", "UnitType" }, { "buildings", "Buildings", "BuildingType" }, { "districts", "Districts", "DistrictType" } }) do
-					for _, option in ipairs(purchases[kind[1]] or {}) do
-						AddRow(kind[2], kind[3], option.type)
-
-						local row = env.GameInfo[kind[2]][indexes[option.type]]
-
-						count = count + 1
-						hashes[option.type] = hashes[option.type] or 3000000 + count
-						row.Hash = hashes[option.type]
-						row.PurchaseYield = option.faithEnabled and "YIELD_GOLD" or yieldName
-						row.OnePerCity = row.OnePerCity ~= false
-					end
-				end
-			end
-
-			for _, project in ipairs((city.options or {}).projects or {}) do
-				AddRow("Projects", "ProjectType", project.type)
-
-				local row = env.GameInfo.Projects[indexes[project.type]]
-
-				count = count + 1
-				hashes[project.type] = hashes[project.type] or 3000000 + count
-				row.Hash = hashes[project.type]
-				row.MaxPlayerInstances = project.maxPlayerInstances
-			end
-
-			if typeName ~= nil then
-				count = count + 1
-				hashes[typeName] = hashes[typeName] or 1000000 + count
-				env.GameInfo.Types[hashes[typeName]] = { Type = typeName }
-			end
-		end
-	end
-
 	-- What a feature gets from the core: the rows and their hashes and indexes, the plots by index,
 	-- and the shared helpers. NextHash(base, typeName) gives a type the hash base plus a running
 	-- count, once. OnPlayer(hook) and OnCity(hook) run hook(player, data, id) and hook(city, data,
@@ -623,7 +548,7 @@ FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"), { "TopBa
 FakeGame.Register("Research", require("FakeGame/Research"), { "TopBar" })
 FakeGame.Register("Governments", require("FakeGame/Governments"), { "TopBar" })
 FakeGame.Register("Production", require("FakeGame/Production"))
-FakeGame.Register("Purchases", require("FakeGame/Purchases"))
+FakeGame.Register("Purchases", require("FakeGame/Purchases"), { "Production" })
 FakeGame.Register("Placement", require("FakeGame/Placement"), { "Plots" })
 FakeGame.Register("Income", require("FakeGame/Income"), { "TopBar", "Stores" })
 FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings" })
