@@ -53,9 +53,9 @@ end
 
 -- Returns the emergency choice: the next emergency that needs the player's attention, with type,
 -- such as EMERGENCY_CAPTURE_CITY_STATE, name, description, and goal, the popup's texts, target, the
--- target's player ID, targetCity, its city's name, as the popup looks it up, left out with none, hostile, turnsLeft, negative
--- for a finished one, options, join and reject for one that hasn't begun, and acknowledge for any
--- other, members, their player IDs, goals, scoring, how to gain score, left out for the target,
+-- target's player ID, targetCity, its city's name, as the popup looks it up, left out with none,
+-- hostile, turnsLeft, negative for a finished one, succeeded, whether a finished one succeeded,
+-- options, join and reject for one that hasn't begun, and acknowledge for any other, members, their player IDs, goals, scoring, how to gain score, left out for the target,
 -- buffs, and rewards. Returns nil with none to look at. The popup reads the emergency only from the
 -- blocker's notification, so this reads it only while the blocker is up, as the spy choice must. See
 -- OnEmergencyAvailable in WorldCrisisPopup.lua, lines 31 to 61.
@@ -96,6 +96,12 @@ function SentientSystems_GetEmergencyChoices(player)
 		buffs[#buffs + 1] = entry.ExtraBuffs
 	end
 
+	local succeeded
+
+	if not ongoing then
+		succeeded = entry.bSuccess == true
+	end
+
 	return {
 		{
 			type = GameInfo.EmergencyAlliances[entry.EmergencyType].EmergencyType,
@@ -106,6 +112,7 @@ function SentientSystems_GetEmergencyChoices(player)
 			targetCity = entry.TargetCityName ~= "" and Locale.Lookup(entry.TargetCityName) or nil,
 			hostile = hostile,
 			turnsLeft = entry.TurnsLeft,
+			succeeded = succeeded,
 			options = entry.HasBegun and { "acknowledge" } or { "join", "reject" },
 			members = members,
 			goals = GetGoals(entry, playerID),

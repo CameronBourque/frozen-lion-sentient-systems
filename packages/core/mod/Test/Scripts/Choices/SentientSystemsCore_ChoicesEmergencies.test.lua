@@ -79,6 +79,8 @@ describe("SentientSystems_GetEmergencyChoices", function()
 		local choice = ChoicesWith({ Emergency({ TurnsLeft = -1 }) })
 
 		assert.truthy(choice:find("\"buffs\":[]", 1, true))
+		assert.truthy(choice:find("\"succeeded\":false", 1, true))
+		assert.truthy(ChoicesWith({ Emergency({ TurnsLeft = -2, bSuccess = true }) }):find("\"succeeded\":true", 1, true))
 		assert.is_nil(choice:find("\"scoring\"", 1, true))
 	end)
 
