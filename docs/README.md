@@ -9,6 +9,7 @@ Start here. Each folder has a README with one line per file. Open the index for 
 | [design/](design/README.md) | How each part works, and why. Each file ends with the decisions behind it | When the design changes |
 | [findings/](findings/README.md) | What is true about Civ VI, FireTuner, and our tools, and how we know | After each test |
 | [roadmap/](roadmap/README.md) | Phases, gates, scope, and steps | As work lands |
+| [tech-debt/](tech-debt/README.md) | Known debt in the code and docs, and the proposed fix for each | As debt is found or fixed |
 | [glossary.md](glossary.md) | The one name for each thing, and what it means | When a term is added or renamed |
 | [risks.md](risks.md) | What could go wrong, and the fallbacks | When a risk is settled or found |
 

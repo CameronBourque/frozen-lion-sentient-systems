@@ -25,6 +25,11 @@ const kinds = [
 		headings: ["Tasks", "Done when", "Record"],
 		lines: [{ label: "a Part of [phase N](...) link", pattern: /Part of \[phase \d+\]\(/ }],
 	},
+	{
+		name: "tech debt file",
+		matches: (p) => p.startsWith("docs/tech-debt/") && !isReadme(p),
+		headings: ["Now", "Proposal", "Questions", "Done when"],
+	},
 ];
 
 export function checkSections(repo) {
