@@ -11,18 +11,21 @@ Four scripts in `packages/core/bridge/scripts/` come from phase 0, and their que
 | `watch-states.ts` | 180 | The `## Method` of [state-list.md](../findings/state-list.md) |
 | `hello.ts` | 76 | The hello check in [tuner-commands.md](../findings/tuner-commands.md), and the `--` example in [code.md](../rules/code.md) |
 
-`npm run state` already checks the tuner client end to end, as `hello.ts` does.
+`npm run state` already checks the tuner client end to end, as `hello.ts` does. The [bridge README](../../packages/core/bridge/README.md) lists each script.
 
 ## Proposal
 
-1. Delete `hello.ts`, and move the `--` example in [code.md](../rules/code.md) to `npm run state -- 1`.
-2. Delete `probe.ts` and `watch-states.ts`, and their npm scripts.
-3. In each finding's `## Method`, link the script at the last commit that has it, so the finding can still be re-tested.
-4. Leave `gate.ts` to phase 1 step 9.
+Delete `hello.ts`, `probe.ts`, and `watch-states.ts`. The findings that use `probe.ts` and `watch-states.ts` run them from commit `2291dc3`, the last commit on `main` before this debt, so each finding can still be re-tested.
 
 ## Questions
 
-1. Will a finding need a re-test after a game patch? If so, keeping `probe.ts` and `watch-states.ts` may cost less than restoring them from git.
+1. Will a finding need a re-test after a game patch? Answered: maybe, so each `## Method` runs the script from commit `2291dc3` instead of from `main`.
+
+## Tasks
+
+1. **Pin the methods.** In the `## Method` of [tuner-commands.md](../findings/tuner-commands.md) and of [state-list.md](../findings/state-list.md), run the script from a worktree at `2291dc3`. Add the commands `git worktree add tmp/probe-scripts 2291dc3` and `npm ci`, then run the script from `tmp/probe-scripts`. Commit: `docs: run the probe scripts from a pinned commit`.
+2. **Hello.** Delete `scripts/hello.ts`, the `hello` npm script, and its row in the bridge README. In [code.md](../rules/code.md), change the `--` example to `npm run state -- 1`. Commit: `chore(core): remove the hello script`.
+3. **Probe and watch-states.** Delete `scripts/probe.ts` and `scripts/watch-states.ts`, their npm scripts, and their rows in the bridge README. Commit: `chore(core): remove the probe and watch-states scripts`.
 
 ## Done when
 

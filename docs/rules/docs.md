@@ -71,7 +71,7 @@ Where each kind of fact lives:
 - Each debt is its own file in [tech-debt/](../tech-debt/README.md), with a one-line summary and these sections: `## Now`, `## Proposal`, `## Questions`, and `## Done when`.
 - `## Now` says what the code or docs hold today, with paths and counts.
 - The index lists the files in the order to work on them.
-- When a debt is planned, answer its questions in the file and add `## Tasks`, one task per commit, as a roadmap step does.
+- When a debt is planned, answer its questions in the file and add `## Tasks`, one task per commit, as a roadmap step does. Cut `## Proposal` to a short summary of the approach, so the details live only in the tasks.
 - When a debt is fixed, move any decision into the design file it affects, then delete the debt file and its index row. Git keeps its history.
 
 ## Risks

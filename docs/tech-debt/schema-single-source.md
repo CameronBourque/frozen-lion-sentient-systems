@@ -21,7 +21,7 @@ The bridge has 19 schema files in `src/state/`, 15 in `src/choices/`, and 2 in `
 1. Put each field's note on the schema with zod's `.describe()`, in place of the prose comment above it.
 2. Generate the reference for the state, the choices, and the trees with zod 4's `z.toJSONSchema()`. Phase 1 step 10 needs the same output for the tool reference, and the MCP server needs it for output schemas.
 3. Cut the key tables in [in-game-lua.md](../design/core/in-game-lua.md) down to the mechanisms, such as tagged lines, the stash, errors, and JSON, and link to the generated reference.
-4. Cut the field lists from the Lua comments. [comment-cleanup.md](comment-cleanup.md) removes the `Example:` blocks.
+4. Cut the field lists and the `Example:` blocks from the Lua comments. 37 files in `packages/core/mod/Scripts/` and `UI/` have an `Example:` block. Where an example shows something a test doesn't, add the test.
 5. Trim the findings to the game calls, their quirks, and how they were checked.
 
 ## Questions
@@ -33,4 +33,4 @@ The bridge has 19 schema files in `src/state/`, 15 in `src/choices/`, and 2 in `
 
 - Each field is described once, in its zod schema.
 - [in-game-lua.md](../design/core/in-game-lua.md) has no key tables, and it is under 150 lines.
-- No Lua or TypeScript comment lists a schema's fields.
+- No Lua or TypeScript comment lists a schema's fields or has an `Example:` block.
