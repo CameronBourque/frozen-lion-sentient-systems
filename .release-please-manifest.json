@@ -1,5 +1,5 @@
 {
-  "packages/core": "0.5.0",
+  "packages/core": "0.6.0",
   "packages/agents": "0.0.0",
   "packages/advisors": "0.0.0"
 }

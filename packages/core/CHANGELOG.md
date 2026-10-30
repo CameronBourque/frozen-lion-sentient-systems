@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.5.0...core-v0.6.0) (2026-10-30)
+
+
+### Features
+
+* **core:** add blockers, choices, trees, and the scoreboard ([#34](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/34)) ([b4f5840](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/b4f5840630c654ad787fc6bd5d398dcaafecb5ca))
+
 ## [0.5.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.4.0...core-v0.5.0) (2026-10-25)
 
 
