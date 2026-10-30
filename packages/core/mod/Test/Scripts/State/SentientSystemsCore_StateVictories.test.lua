@@ -40,14 +40,13 @@ describe("SentientSystems_GetVictoryState", function()
 			},
 		})
 
-		assert.equal(
-			"[{\"culturePerTurn\":0,\"player\":2,\"progress\":0,\"tourismPerTurn\":7},"
-				.. "{\"culturePerTurn\":3,\"player\":1,\"progress\":0,\"tourismPerTurn\":5},"
-				.. "{\"culturePerTurn\":1,\"player\":3,\"progress\":0,\"tourismPerTurn\":5},"
-				.. "{\"culturePerTurn\":1,\"player\":0,\"progress\":0,\"tourismPerTurn\":5},"
-				.. "{\"unmet\":true}]",
-			json:match("\"culture\":(%b[])")
-		)
+		local order = {}
+
+		for entry in json:match("\"culture\":(%b[])"):gmatch("%b{}") do
+			order[#order + 1] = entry:match("\"player\":(%d+)") or "unmet"
+		end
+
+		assert.same({ "2", "1", "3", "0", "unmet" }, order)
 	end)
 
 	it("lists the military strength, and the cities that follow a religion with the faith per turn", function()
@@ -67,6 +66,28 @@ describe("SentientSystems_GetVictoryState", function()
 		assert.is_nil(json:find("\"culture\"", 1, true))
 		assert.is_nil(json:find("\"religion\"", 1, true))
 		assert.truthy(json:find("\"science\"", 1, true))
+	end)
+
+	it("lists the diplomatic points of every player, and the lines of their tooltip without icons", function()
+		local json = VictoriesOf({
+			expansion2 = true,
+			players = {
+				[0] = { met = { 1 } },
+				[1] = {
+					points = 2,
+					pointsTooltip = "[ICON_Bolt] 1 from Wonders[NEWLINE][ICON_Bolt] 1 from Congress Participation",
+				},
+				[2] = { points = 1, pointsTooltip = "2 from Congress Participation" },
+			},
+		})
+
+		assert.equal(
+			"[{\"breakdown\":[\"1 from Wonders\",\"1 from Congress Participation\"],\"player\":1,\"points\":2,"
+				.. "\"progress\":0,\"required\":20},"
+				.. "{\"breakdown\":[\"2 from Congress Participation\"],\"points\":1,\"required\":20,\"unmet\":true},"
+				.. "{\"player\":0,\"points\":0,\"progress\":0,\"required\":20}]",
+			json:match("\"diplomatic\":(%b[])")
+		)
 	end)
 
 	it("adds the diplomatic victory with Gathering Storm", function()

@@ -12,6 +12,14 @@
 -- and progress of 0. A player's techs are in Research.lua. With Gathering Storm, a player's
 -- lightYears and lightYearsPerTurn are 0 when missing, and world.lightYearsNeeded is 50 when
 -- missing.
+--
+-- For the culture victory, a player's domesticTourists, visitingTourists, and turnsToVictory
+-- are 0, 0, and -1 when missing. Its touristsFrom and touristsFromTooltip map a player's ID to
+-- the tourists it has from that player and the tooltip's text, and dominantOver lists the IDs of
+-- the players it dominates. For the domination victory, a city's originalOwner is its player
+-- when missing, and originalCapital is its capital when missing. For the religion victory, a
+-- player's majorityReligion is the type of the religion most of its cities follow. With
+-- Gathering Storm, a player's pointsTooltip is the text of its diplomatic points tooltip.
 
 return function(env, world, ctx)
 	local disabled, unwinnable = world.disabledVictories or {}, world.unwinnable or {}
@@ -54,8 +62,20 @@ return function(env, world, ctx)
 	end
 
 	-- A city's build queue answers a science project it doesn't list with a cost of 1 and progress of 0.
-	ctx.OnCity(function(city, data)
+	ctx.OnCity(function(city, data, ownerID)
 		local GetBuildQueue = city.GetBuildQueue
+
+		function city.GetOriginalOwner()
+			return data.originalOwner or ownerID
+		end
+
+		function city.IsOriginalCapital()
+			if data.originalCapital ~= nil then
+				return data.originalCapital
+			end
+
+			return data.capital == true
+		end
 
 		function city.GetBuildQueue()
 			local queue = GetBuildQueue()
@@ -85,6 +105,57 @@ return function(env, world, ctx)
 
 	ctx.OnPlayer(function(player, data, id)
 		local GetStats, GetDistricts = player.GetStats, player.GetDistricts
+		local GetCulture, GetReligion = player.GetCulture, player.GetReligion
+
+		function player.IsMajor()
+			return data.minor == nil
+		end
+
+		function player.GetCulture()
+			local culture = GetCulture()
+
+			function culture.GetStaycationers()
+				return data.domesticTourists or 0
+			end
+
+			function culture.GetTouristsTo()
+				return data.visitingTourists or 0
+			end
+
+			function culture.GetTurnsUntilVictory()
+				return data.turnsToVictory or -1
+			end
+
+			function culture.GetTouristsFrom(_, otherID)
+				return (data.touristsFrom or {})[otherID] or 0
+			end
+
+			function culture.GetTouristsFromTooltip(_, otherID)
+				return (data.touristsFromTooltip or {})[otherID] or ""
+			end
+
+			function culture.IsDominantOver(_, otherID)
+				for _, dominated in ipairs(data.dominantOver or {}) do
+					if dominated == otherID then
+						return true
+					end
+				end
+
+				return false
+			end
+
+			return culture
+		end
+
+		function player.GetReligion()
+			local religion = GetReligion()
+
+			function religion.GetReligionInMajorityOfCities()
+				return data.majorityReligion and ctx.indexes[data.majorityReligion] or -1
+			end
+
+			return religion
+		end
 
 		-- The player's districts that the science victory looks at: the Spaceport it has, if any.
 		function player.GetDistricts()
@@ -127,6 +198,10 @@ return function(env, world, ctx)
 
 			function stats.GetDiplomaticVictoryPoints()
 				return data.points or 0
+			end
+
+			function stats.GetDiplomaticVictoryPointsTooltip()
+				return data.pointsTooltip or ""
 			end
 
 			function stats.GetNumProjectsAdvanced(_, index)
