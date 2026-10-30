@@ -5,6 +5,9 @@
 -- "domination":[...],"religion":[...],"science":[{"player":0,"progress":0,"sciencePerTurn":2.7,
 -- "techs":3},{"unmet":true}]}', on one line. The order and values follow
 -- PopulateOverallInstance in WorldRankings.lua and g_victoryData in WorldRankings_Expansion2.lua.
+-- The science stages come from SentientSystemsCore_StateVictoriesScience.lua.
+
+SentientSystems_Include("SentientSystemsCore_StateVictoriesScience")
 
 -- Rounds to the nearest tenth, as the tooltips round.
 local function RoundNearest(number)
@@ -18,11 +21,13 @@ end
 
 -- The victories in the Overall tab's order. values returns the two numbers that the tooltip shows
 -- and that break a tie, the first one first, and what the section names them. A player is in the
--- section as { primary, secondary, values }.
+-- section as { primary, secondary, values }. details, if there is one, returns more keys for a
+-- player's entry.
 local VICTORIES = {
 	{
 		key = "science",
 		type = "VICTORY_TECHNOLOGY",
+		details = SentientSystems_GetScienceDetails,
 		values = function(other)
 			return other:GetStats():GetNumTechsResearched(), other:GetTechs():GetScienceYield(), "techs", "sciencePerTurn"
 		end,
@@ -85,6 +90,12 @@ local function GetRanked(player, other, victory)
 
 		if victory.expansion2 then
 			ranked.entry.required = GlobalParameters.DIPLOMATIC_VICTORY_POINTS_REQUIRED
+		end
+
+		if victory.details ~= nil then
+			for key, value in pairs(victory.details(player, other)) do
+				ranked.entry[key] = value
+			end
 		end
 	end
 

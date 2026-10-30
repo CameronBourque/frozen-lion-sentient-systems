@@ -8,7 +8,8 @@ local function VictoriesOf(world)
 	FakeGame.Install(env, world)
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
-	return env.SentientSystems_GetState(0):match("\"victories\":(%b{})")
+	-- The science stages have their own tests.
+	return (env.SentientSystems_GetState(0):match("\"victories\":(%b{})"):gsub("\"stages\":%b[],", ""))
 end
 
 describe("SentientSystems_GetVictoryState", function()

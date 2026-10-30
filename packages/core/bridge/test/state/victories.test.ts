@@ -3,14 +3,38 @@
 import { describe, expect, test } from "vitest";
 import { VICTORIES } from "../../src/state/victories.js";
 
+const STAGES = [
+	{
+		progress: 0.5,
+		done: false,
+		tasks: [
+			{ kind: "district" as const, type: "DISTRICT_SPACEPORT", done: true },
+			{ kind: "tech" as const, type: "TECH_ROCKETRY", done: true },
+			{ kind: "project" as const, type: "PROJECT_LAUNCH_EARTH_SATELLITE", done: false },
+		],
+	},
+];
+
 const SCIENCE = [
-	{ player: 1, progress: 0.5, techs: 20, sciencePerTurn: 8 },
+	{ player: 1, progress: 0.5, techs: 20, sciencePerTurn: 8, stages: STAGES },
 	{ unmet: true as const },
 ];
 
 describe("VICTORIES", () => {
 	test("accepts a player and one that has not been met", () => {
 		expect(VICTORIES.parse({ science: SCIENCE })).toEqual({ science: SCIENCE });
+	});
+
+	test("accepts the light years of the expedition", () => {
+		const science = [{ ...SCIENCE[0], lightYears: { current: 5, needed: 50, perTurn: 2.3 } }];
+
+		expect(VICTORIES.parse({ science })).toEqual({ science });
+	});
+
+	test("rejects a science task of a kind the tab doesn't have", () => {
+		const stages = [{ ...STAGES[0], tasks: [{ kind: "wonder", type: "WONDER_X", done: true }] }];
+
+		expect(VICTORIES.safeParse({ science: [{ ...SCIENCE[0], stages }] }).success).toBe(false);
 	});
 
 	test("accepts every victory", () => {
@@ -30,6 +54,6 @@ describe("VICTORIES", () => {
 	});
 
 	test("rejects a player without the tooltip's numbers", () => {
-		expect(VICTORIES.safeParse({ science: [{ player: 1, progress: 0.5 }] }).success).toBe(false);
+		expect(VICTORIES.safeParse({ science: [{ player: 1, progress: 0.5, stages: STAGES }] }).success).toBe(false);
 	});
 });

@@ -15,7 +15,7 @@ local function Load(world)
 end
 
 -- The victories of a world with one player, ID 0, who has not met anyone.
-local VICTORIES = "{\"culture\":[{\"culturePerTurn\":0,\"player\":0,\"progress\":0,\"tourismPerTurn\":0}],\"domination\":[{\"military\":0,\"player\":0,\"progress\":0}],\"religion\":[{\"cities\":0,\"faithPerTurn\":0,\"player\":0,\"progress\":0}],\"science\":[{\"player\":0,\"progress\":0,\"sciencePerTurn\":0,\"techs\":0}]}"
+local VICTORIES = "{\"culture\":[{\"culturePerTurn\":0,\"player\":0,\"progress\":0,\"tourismPerTurn\":0}],\"domination\":[{\"military\":0,\"player\":0,\"progress\":0}],\"religion\":[{\"cities\":0,\"faithPerTurn\":0,\"player\":0,\"progress\":0}],\"science\":[{\"player\":0,\"progress\":0,\"sciencePerTurn\":0,\"stages\":[{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"district\",\"type\":\"DISTRICT_SPACEPORT\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_EARTH_SATELLITE\"}]},{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MOON_LANDING\"}]},{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_REACTOR\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_HABITATION\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_HYDROPONICS\"}]}],\"techs\":0}]}"
 
 describe("SentientSystems_GetState", function()
 	it("gives empty lists for a player with no blockers, cities, tiles, or units", function()

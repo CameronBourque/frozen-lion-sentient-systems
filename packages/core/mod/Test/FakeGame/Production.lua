@@ -9,9 +9,9 @@
 -- district the build queue knows, with type, cost, turns, progress, blocked, hidden, and reasons,
 -- which the queue returns when it allows the district. onePerCity, true when missing, and
 -- internalOnly go in its GameInfo row. data.options.projects lists each project the build queue
--- knows, with type, cost, turns, progress, blocked, and hidden, and maxPlayerInstances, which goes in
--- its GameInfo row. Each option gets a GameInfo row, with a hash, and a city's production type gets one in
--- GameInfo.Types. Their tiles are in FakeGame/Placement.lua.
+-- knows, with type, cost, turns, progress, blocked, and hidden, and maxPlayerInstances and
+-- prereqTech, a tech type, which go in its GameInfo row as MaxPlayerInstances and PrereqTech. Each
+-- option gets a GameInfo row, with a hash, and a city's production type gets one in GameInfo.Types. Their tiles are in FakeGame/Placement.lua.
 
 return function(env, world, ctx)
 	local hashes, indexes, Formation = ctx.hashes, ctx.indexes, ctx.Formation
@@ -63,6 +63,7 @@ return function(env, world, ctx)
 				ctx.NextHash(3000000, project.type)
 				row.Hash = hashes[project.type]
 				row.MaxPlayerInstances = project.maxPlayerInstances
+				row.PrereqTech = project.prereqTech
 			end
 
 			if typeName ~= nil then

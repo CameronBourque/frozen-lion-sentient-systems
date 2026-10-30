@@ -53,6 +53,8 @@
 			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateScoreboard.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateVictories.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateVictoriesScience.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateVictoriesScience.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateVictories.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateUnits.lua</File>
