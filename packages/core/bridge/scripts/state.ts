@@ -1,11 +1,13 @@
 // Prints one player's state, choices, tech tree, and civic tree from the running game, as the agent
-// will see them, and their sizes in bytes. Run it with `npm run state`, with a game loaded. It reads
+// will see them, and their sizes in bytes, with the size of each section of the state and of the
+// choices. Run it with `npm run state`, with a game loaded. It reads
 // the local player's. An argument such as `npm run state -- 1` reads another player's. In
 // PowerShell, write the `--` as `'--'`, as docs/rules/code.md says. It exits with code 1 if any of
 // them can't be read.
 
 import { readChoices } from "../src/choices/choices.js";
 import { CORE_STATE } from "../src/connect.js";
+import { formatSectionSizes, sectionSizes } from "../src/state/sizes.js";
 import { readState } from "../src/state/state.js";
 import { readCivicTree, readTechTree } from "../src/trees/research.js";
 import { TunerClient } from "../src/tuner/client.js";
@@ -44,7 +46,8 @@ async function main(): Promise<void> {
 
 	if (state.ok) {
 		console.log(JSON.stringify(state.state, null, 2));
-		console.error(`Player ${playerID}'s state is ${state.bytes} bytes.`);
+		console.error(`Player ${playerID}'s state is ${state.bytes} bytes:`);
+		console.error(formatSectionSizes(sectionSizes(state.state, state.bytes)));
 	} else {
 		console.error(state.error);
 		process.exitCode = 1;
@@ -54,7 +57,8 @@ async function main(): Promise<void> {
 
 	if (choices.ok) {
 		console.log(JSON.stringify(choices.choices, null, 2));
-		console.error(`Player ${playerID}'s choices are ${choices.bytes} bytes.`);
+		console.error(`Player ${playerID}'s choices are ${choices.bytes} bytes:`);
+		console.error(formatSectionSizes(sectionSizes(choices.choices, choices.bytes)));
 	} else {
 		console.error(choices.error);
 		process.exitCode = 1;
