@@ -18,13 +18,23 @@ Rules for code in every package. Each architecture rule links to the design deci
 These conventions come from `scripts/check-docs/`, the first code in the repo. Expect them to change as the bridge and the mods add code.
 
 - **Use the standard library before a dependency.** Add a package only when the standard library can't do the job. Dev tools, such as the linter and the test runner, live in the root `package.json`.
-- **One file per concern.** Start each file with a comment that says what it does. An entry file reads the input, prints the output, and calls the other files.
+- **One file per concern.** Start each file with a short comment on its purpose. An entry file reads the input, prints the output, and calls the other files.
 - **Keep logic apart from input and output.** Functions take data and return results, so tests can pass in data without files or a network.
 - **Put rules in tables.** When code applies a list of similar rules, write each rule as one entry with a name, an example, and its logic. Then loop over the table.
-- **Name the parts of a long regex.** Build it from named strings, and comment it with an example that it matches.
+- **Name the parts of a long regex.** Build it from named strings, and test it with examples that it matches.
 - **Split a line only when it helps.** Break up a line that does several steps. Keep a short chain that reads top to bottom, and comment it.
-- **Comment the reason, not the action.** Say why a line exists or which case it handles.
+
+## Comments
+
+Most code should read without comments. Name things so they explain themselves.
+
+- **Start each file with a short comment on its purpose.** One to three lines.
+- **Comment the reason, not the action.** Say why a line exists or which case it handles, such as a quirk of a game call. Keep it to a line or two.
 - **Put each comment where its subject is.** A comment above a function describes the whole function. A comment about one step goes on the line before that step.
+- **Keep data shapes out of comments.** Describe them in a document under `docs/`, and link to it from the code.
+- **Keep examples out of comments.** Write them as tests.
+- **Don't repeat a document.** Link to it instead.
+- **Keep comment lines to 80 characters or fewer.**
 
 ## TypeScript
 

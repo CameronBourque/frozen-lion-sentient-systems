@@ -55,12 +55,45 @@ describe("SentientSystems_CatchErrors", function()
 		assert.same({ "[SENTIENTSYSTEMS] ERROR OnTest C:\\\\Mods\\nline two\\nline three" }, env.printed)
 	end)
 
+	it("escapes a percent sign as \\p, so the game's log doesn't read it as a format code", function()
+		env.SentientSystems_CatchErrors("OnTest", function()
+			error("invalid option '%s' at 50% done", 0)
+		end)()
+
+		assert.same({ "[SENTIENTSYSTEMS] ERROR OnTest invalid option '\\ps' at 50\\p done" }, env.printed)
+	end)
+
 	it("prints an error raised with a table", function()
 		env.SentientSystems_CatchErrors("OnTest", function()
 			error(setmetatable({}, { __tostring = function() return "a table" end }))
 		end)()
 
 		assert.same({ "[SENTIENTSYSTEMS] ERROR OnTest a table" }, env.printed)
+	end)
+end)
+
+describe("SentientSystems_HasExpansion2", function()
+	it("is true only when the game has Gathering Storm's government rows", function()
+		env.GameInfo = {}
+		assert.is_false(env.SentientSystems_HasExpansion2())
+
+		env.GameInfo.Governments_XP2 = {}
+		assert.is_true(env.SentientSystems_HasExpansion2())
+	end)
+end)
+
+describe("SentientSystems_HasBlocker", function()
+	it("is true when any of the blockers named blocks the player's turn", function()
+		env.EndTurnBlockingTypes = { ENDTURN_BLOCKING_ARTIFACT = 7, ENDTURN_BLOCKING_UNITS = 9 }
+		env.NotificationManager = {
+			GetAllEndTurnBlocking = function(playerID)
+				return playerID == 0 and { 9, 7 } or nil
+			end,
+		}
+
+		assert.is_true(env.SentientSystems_HasBlocker(0, "ENDTURN_BLOCKING_RESEARCH", "ENDTURN_BLOCKING_ARTIFACT"))
+		assert.is_false(env.SentientSystems_HasBlocker(0, "ENDTURN_BLOCKING_RESEARCH"))
+		assert.is_false(env.SentientSystems_HasBlocker(1, "ENDTURN_BLOCKING_ARTIFACT"))
 	end)
 end)
 

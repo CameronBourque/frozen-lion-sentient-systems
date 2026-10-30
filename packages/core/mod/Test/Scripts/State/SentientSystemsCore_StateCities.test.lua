@@ -1,12 +1,18 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
+-- The scoreboard of a world with one player, ID 0, who has not met anyone.
+local SCOREBOARD = "[{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":0,\"type\":\"CATEGORY_CIVICS\"},{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":0,\"type\":\"CATEGORY_EMPIRE\"},{\"name\":\"LOC_CATEGORY_GREAT_PEOPLE_NAME\",\"score\":0,\"type\":\"CATEGORY_GREAT_PEOPLE\"},{\"name\":\"LOC_CATEGORY_RELIGION_NAME\",\"score\":0,\"type\":\"CATEGORY_RELIGION\"},{\"name\":\"LOC_CATEGORY_TECH_NAME\",\"score\":0,\"type\":\"CATEGORY_TECH\"},{\"name\":\"LOC_CATEGORY_WONDER_NAME\",\"score\":0,\"type\":\"CATEGORY_WONDER\"},{\"name\":\"LOC_CATEGORY_ERA_SCORE_NAME\",\"score\":0,\"type\":\"CATEGORY_ERA_SCORE\"}],\"culture\":0,\"faith\":0,\"gold\":0,\"military\":0,\"player\":0,\"science\":0,\"score\":0}]"
+
+-- The scoreboard of player 1 in a world with players 0 and 1, who have not met.
+local SCOREBOARD_OF_1 = "[{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":0,\"type\":\"CATEGORY_CIVICS\"},{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":0,\"type\":\"CATEGORY_EMPIRE\"},{\"name\":\"LOC_CATEGORY_GREAT_PEOPLE_NAME\",\"score\":0,\"type\":\"CATEGORY_GREAT_PEOPLE\"},{\"name\":\"LOC_CATEGORY_RELIGION_NAME\",\"score\":0,\"type\":\"CATEGORY_RELIGION\"},{\"name\":\"LOC_CATEGORY_TECH_NAME\",\"score\":0,\"type\":\"CATEGORY_TECH\"},{\"name\":\"LOC_CATEGORY_WONDER_NAME\",\"score\":0,\"type\":\"CATEGORY_WONDER\"},{\"name\":\"LOC_CATEGORY_ERA_SCORE_NAME\",\"score\":0,\"type\":\"CATEGORY_ERA_SCORE\"}],\"score\":0},{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":0,\"type\":\"CATEGORY_CIVICS\"},{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":0,\"type\":\"CATEGORY_EMPIRE\"},{\"name\":\"LOC_CATEGORY_GREAT_PEOPLE_NAME\",\"score\":0,\"type\":\"CATEGORY_GREAT_PEOPLE\"},{\"name\":\"LOC_CATEGORY_RELIGION_NAME\",\"score\":0,\"type\":\"CATEGORY_RELIGION\"},{\"name\":\"LOC_CATEGORY_TECH_NAME\",\"score\":0,\"type\":\"CATEGORY_TECH\"},{\"name\":\"LOC_CATEGORY_WONDER_NAME\",\"score\":0,\"type\":\"CATEGORY_WONDER\"},{\"name\":\"LOC_CATEGORY_ERA_SCORE_NAME\",\"score\":0,\"type\":\"CATEGORY_ERA_SCORE\"}],\"culture\":0,\"faith\":0,\"gold\":0,\"military\":0,\"player\":1,\"science\":0,\"score\":0}]"
+
 -- The yields JSON for a city with every yield at 0.
 local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\"production\":0,\"science\":0}"
 
 -- The amenities, defense, districts, and growth JSON for a content city with no amenities,
 -- districts, or housing, that neither grows nor starves, and a garrison at full health.
-local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0},\"defense\":{\"garrison\":{\"max\":200,\"value\":200},\"strength\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0},"
+local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0,\"warWeariness\":0},\"defense\":{\"garrison\":{\"max\":200,\"value\":200},\"strength\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0,\"rate\":\"normal\"},"
 
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
@@ -18,6 +24,11 @@ local function Load(world)
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
 	return env
+end
+
+-- Returns a state without its player's income and resources, which have tests of their own.
+local function WithoutIncome(state)
+	return (state:gsub("\"income\":%b{},", ""):gsub("\"resources\":%b[],", ""))
 end
 
 -- Returns a copy of city with the fields in changes.
@@ -35,6 +46,12 @@ local function With(city, changes)
 	return copy
 end
 
+-- The victories of a world with one player, ID 0, who has not met anyone.
+local VICTORIES = "{\"culture\":[{\"culturePerTurn\":0,\"domesticTourists\":0,\"player\":0,\"progress\":0,\"requiredTourists\":0,\"tourismPerTurn\":0,\"visitingTourists\":0}],\"domination\":[{\"military\":0,\"player\":0,\"progress\":0}],\"religion\":[{\"cities\":0,\"faithPerTurn\":0,\"player\":0,\"progress\":0}],\"science\":[{\"player\":0,\"progress\":0,\"sciencePerTurn\":0,\"stages\":[{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"district\",\"type\":\"DISTRICT_SPACEPORT\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_EARTH_SATELLITE\"}]},{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MOON_LANDING\"}]},{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_REACTOR\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_HABITATION\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_HYDROPONICS\"}]}],\"techs\":0}]}"
+
+-- The victories of player 1 in a world with players 0 and 1, who have not met.
+local VICTORIES_OF_1 = "{\"culture\":[{\"domesticTourists\":0,\"requiredTourists\":1,\"touristsFromYou\":0,\"unmet\":true,\"visitingTourists\":0},{\"culturePerTurn\":0,\"domesticTourists\":0,\"player\":1,\"progress\":0,\"requiredTourists\":1,\"tourismPerTurn\":0,\"visitingTourists\":0}],\"domination\":[{\"unmet\":true},{\"military\":0,\"player\":1,\"progress\":0}],\"religion\":[{\"unmet\":true},{\"cities\":0,\"faithPerTurn\":0,\"player\":1,\"progress\":0}],\"science\":[{\"unmet\":true},{\"player\":1,\"progress\":0,\"sciencePerTurn\":0,\"stages\":[{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"district\",\"type\":\"DISTRICT_SPACEPORT\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_EARTH_SATELLITE\"}]},{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MOON_LANDING\"}]},{\"done\":false,\"progress\":0,\"tasks\":[{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_REACTOR\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_HABITATION\"},{\"done\":false,\"kind\":\"project\",\"type\":\"PROJECT_LAUNCH_MARS_HYDROPONICS\"}]}],\"techs\":0}]}"
+
 describe("SentientSystems_GetCityStates", function()
 	it("lists each city's ID, name, position, and population", function()
 		local env = Load({
@@ -43,9 +60,9 @@ describe("SentientSystems_GetCityStates", function()
 		})
 
 		assert.equal(
-			"{\"cities\":[{" .. NO_GROWTH .. "\"id\":65536,\"name\":\"Rome\",\"population\":3,\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
-				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}",
-			env.SentientSystems_GetState(0)
+			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65536,\"name\":\"Rome\",\"population\":3,\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
+				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"units\":[],\"victories\":" .. VICTORIES .. "}",
+			WithoutIncome(env.SentientSystems_GetState(0))
 		)
 	end)
 
@@ -54,7 +71,7 @@ describe("SentientSystems_GetCityStates", function()
 			players = { [0] = { cities = { ROME } }, [1] = { cities = { { id = 65537, name = "Uruk", x = 10, y = 10, population = 5 } } } },
 		})
 
-		assert.equal("{\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"rivals\":{\"cities\":[],\"units\":[]},\"tiles\":[],\"units\":[]}", env.SentientSystems_GetState(1))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD_OF_1 .. ",\"tiles\":[],\"units\":[],\"victories\":" .. VICTORIES_OF_1 .. "}", WithoutIncome(env.SentientSystems_GetState(1)))
 	end)
 
 	it("escapes a city name with quotes", function()
@@ -104,13 +121,13 @@ describe("SentientSystems_GetCityStates", function()
 	it("adds the food surplus and the turns until the city grows", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = 3.25, housing = 6, turnsUntilGrowth = 2 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":3.2,\"housing\":6,\"turnsUntilGrowth\":2}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":3.2,\"housing\":6,\"rate\":\"normal\",\"turnsUntilGrowth\":2}", 1, true))
 	end)
 
 	it("adds the turns until a starving city loses a citizen", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { foodSurplus = -2, turnsUntilStarvation = 4 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":-2,\"housing\":0,\"turnsUntilLoss\":4}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"growth\":{\"foodSurplus\":-2,\"housing\":0,\"rate\":\"normal\",\"turnsUntilLoss\":4}", 1, true))
 	end)
 
 	it("rounds housing down to one decimal place", function()
@@ -122,13 +139,45 @@ describe("SentientSystems_GetCityStates", function()
 	it("adds the amenities the city has and needs, and its mood", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { amenities = 1, amenitiesNeeded = 3, happiness = 2 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":1,\"mood\":\"HAPPINESS_UNHAPPY\",\"need\":3}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":1,\"mood\":\"HAPPINESS_UNHAPPY\",\"need\":3,\"warWeariness\":0}", 1, true))
 	end)
 
 	it("leaves out a mood that GameInfo.Happinesses doesn't have", function()
 		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { happiness = 9 } }) } } } })
 
-		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":0,\"need\":0}", 1, true))
+		assert.truthy(env.SentientSystems_GetState(0):find("\"amenities\":{\"have\":0,\"need\":0,\"warWeariness\":0}", 1, true))
+	end)
+
+	it("adds the growth rate status, halted, slowed, accelerated, or normal", function()
+		local function Rate(growth, occupied)
+			local env = Load({ players = { [0] = { cities = { With(ROME, { growth = growth, occupied = occupied }) } } } })
+
+			return env.SentientSystems_GetState(0):match("\"rate\":\"(%a+)\"")
+		end
+
+		assert.equal("normal", Rate({}))
+		assert.equal("halted", Rate({ housingModifier = 0 }))
+		assert.equal("halted", Rate({}, true))
+		assert.equal("slowed", Rate({ housingModifier = 0.5 }))
+		assert.equal("slowed", Rate({ housingModifier = 0.25, happinessModifier = 0.2 }))
+		assert.equal("accelerated", Rate({ housingModifier = 1, happinessModifier = 0.2 }))
+	end)
+
+	it("adds the amenities lost to war weariness", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { growth = { warWeariness = 2 } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"warWeariness\":2}", 1, true))
+	end)
+
+	it("adds the city's governor, and leaves it out for none or without Rise and Fall", function()
+		local function State(governor)
+			return Load({ players = { [0] = { cities = { With(ROME, { governor = governor }) } } } }).SentientSystems_GetState(0)
+		end
+
+		assert.truthy(State({ type = "GOVERNOR_THE_MERCHANT", established = true }):find("\"governor\":{\"established\":true,\"type\":\"GOVERNOR_THE_MERCHANT\"}", 1, true))
+		assert.truthy(State({ type = "GOVERNOR_THE_MERCHANT" }):find("\"governor\":{\"established\":false,", 1, true))
+		assert.falsy(State(false):find("\"governor\"", 1, true))
+		assert.falsy(State(nil):find("\"governor\"", 1, true))
 	end)
 
 	it("adds loyalty, its most, and its change per turn, rounded to the nearest tenth", function()

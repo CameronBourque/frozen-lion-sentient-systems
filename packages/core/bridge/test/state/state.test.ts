@@ -10,13 +10,14 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 // A state with one of each thing, in the shape the core mod sends.
 const STATE: State = {
+	blockers: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }], units: [196608] },
 	cities: [{
 		id: 65536,
 		name: "Rome",
 		x: 17,
 		y: 14,
 		population: 3,
-		amenities: { have: 2, need: 2, mood: "HAPPINESS_CONTENT" },
+		amenities: { have: 2, need: 2, mood: "HAPPINESS_CONTENT", warWeariness: 0 },
 		defense: { strength: 13, garrison: { value: 200, max: 200 } },
 		districts: [{
 			type: "DISTRICT_CITY_CENTER",
@@ -26,7 +27,7 @@ const STATE: State = {
 			pillaged: false,
 			buildings: [{ type: "BUILDING_MONUMENT", pillaged: false }],
 		}],
-		growth: { foodSurplus: 3, housing: 6, turnsUntilGrowth: 2 },
+		growth: { foodSurplus: 3, housing: 6, rate: "normal", turnsUntilGrowth: 2 },
 		loyalty: { value: 100, max: 100, perTurn: 21 },
 		production: { type: "UNIT_SLINGER", turnsLeft: 2 },
 		yields: { food: 9, production: 6, gold: 8, science: 3.5, culture: 3.8, faith: 0 },
@@ -46,6 +47,31 @@ const STATE: State = {
 		{ x: 17, y: 14, terrain: "TERRAIN_PLAINS", owner: 0, district: "DISTRICT_CITY_CENTER", route: "ROUTE_ANCIENT_ROAD", visible: true },
 		{ x: 29, y: 17, terrain: "TERRAIN_GRASS", resource: "RESOURCE_CATTLE", owner: 1, visible: false },
 	],
+	proposals: [],
+	scoreboard: [{ player: 0, score: 0, categories: [] }],
+	victories: { domination: [{ player: 0, progress: 0, military: 0 }] },
+	religion: { pantheon: "BELIEF_GOD_OF_THE_SEA", prophet: false },
+	diplomacy: [],
+	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 50, envoys: 1 }, cityStates: [] },
+	greatPeople: [],
+	player: {
+		gold: { balance: 100, perTurn: 5.5 },
+		faith: { balance: 10, perTurn: 1 },
+		science: 3,
+		culture: 2,
+		tourism: 0,
+		resources: [],
+		income: {
+			gold: { total: 5 },
+			faith: { total: 1 },
+			science: { total: 3 },
+			culture: { total: 2 },
+			expenses: { total: 0, cities: 0, units: 0, deals: 0 },
+			cities: [],
+			unitUpkeep: [],
+			deals: [],
+		},
+	},
 	rivals: {
 		cities: [{
 			owner: 1,
@@ -122,11 +148,11 @@ describe("readState", () => {
 	});
 
 	test("drops a field that the schema doesn't know", async () => {
-		stash([JSON.stringify({ ...STATE, scoreboard: [] })]);
+		stash([JSON.stringify({ ...STATE, wonders: [] })]);
 
 		const result = await readState(client, 0);
 
-		expect(result.ok && "scoreboard" in result.state).toBe(false);
+		expect(result.ok && "wonders" in result.state).toBe(false);
 	});
 
 	test("fails when the stash doesn't print a piece count", async () => {
@@ -147,7 +173,7 @@ describe("readState", () => {
 		const result = await readState(client, 0);
 
 		expect(result.ok).toBe(false);
-		expect(!result.ok && result.error).toMatch(/^The core mod's state isn't valid JSON: /);
+		expect(!result.ok && result.error).toMatch(/^The core mod's state JSON isn't valid: /);
 	});
 
 	test("fails with each field that doesn't match the schema", async () => {
@@ -155,13 +181,13 @@ describe("readState", () => {
 
 		const result = await readState(client, 0);
 
-		expect(!result.ok && result.error).toMatch(/^The core mod's state doesn't match the schema: cities\.0\.name: .*; tiles\.0\.terrain: .*; tiles\.0\.visible: /);
+		expect(!result.ok && result.error).toMatch(/^The core mod's state JSON doesn't match the schema: cities\.0\.name: .*; tiles\.0\.terrain: .*; tiles\.0\.visible: /);
 	});
 
 	test("fails when the state isn't an object", async () => {
 		stash(["[]"]);
 
-		expect(await readState(client, 0)).toEqual({ ok: false, error: "The core mod's state doesn't match the schema: the state: Invalid input: expected object, received array" });
+		expect(await readState(client, 0)).toEqual({ ok: false, error: "The core mod's state JSON doesn't match the schema: the state: Invalid input: expected object, received array" });
 	});
 
 	test("fails with the game's error when the core mod can't build the state", async () => {

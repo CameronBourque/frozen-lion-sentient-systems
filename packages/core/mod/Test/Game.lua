@@ -11,8 +11,8 @@ local Game = {}
 -- The mod folder, with a trailing slash, from this file's path.
 local MOD_ROOT = debug.getinfo(1, "S").source:match("^@(.*)Test[/\\][^/\\]*$")
 
--- The global functions and libraries a mod file can use. load, setfenv, and io are missing in the
--- game. debug is missing in UI states. Functions the game has that aren't checked yet, such as
+-- The global functions and libraries a mod file can use. load, setfenv, getfenv, _G, and io are
+-- missing in the game. debug is missing in UI states. Functions the game has that aren't checked yet, such as
 -- require, are left out until a test needs them.
 local GLOBALS = {
 	"_VERSION", "assert", "collectgarbage", "error", "getmetatable", "ipairs", "loadstring", "next",
@@ -61,7 +61,6 @@ function Game.new()
 		env[name] = _G[name]
 	end
 
-	env._G = env
 	env.string = Copy(string)
 	env.string.gfind = nil
 	env.table = Copy(table)

@@ -2,15 +2,29 @@
 -- visibility, never from the screen. Each section of the state comes from its own file in this
 -- folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
 -- SentientSystems_GetState(0) returns
--- '{"cities":[{"id":65536,"name":"Rome",...}],"rivals":{"cities":[...],"units":[...]},"tiles":[...],
+-- '{"blockers":{"list":[...],"units":[...]},"cities":[{"id":65536,"name":"Rome",...}],
+-- "envoys":{"cityStates":[...],"influence":{...},"tokens":0},"governors":{...},"greatPeople":[...],
+-- "player":{...},"religion":{"pantheon":"BELIEF_GOD_OF_THE_SEA"},"rivals":{"cities":[...],"units":[...]},"tiles":[...],
+-- "scoreboard":[{"player":0,"score":48,...}],
+-- "victories":{"science":[{"player":0,"progress":0.1,...},{"unmet":true}],...},
 -- "units":[...]}', on one line.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_StateCities")
+SentientSystems_Include("SentientSystemsCore_StateDiplomacy")
 SentientSystems_Include("SentientSystemsCore_StateUnits")
 SentientSystems_Include("SentientSystemsCore_StateTiles")
 SentientSystems_Include("SentientSystemsCore_StateRivals")
+SentientSystems_Include("SentientSystemsCore_StateBlockers")
+SentientSystems_Include("SentientSystemsCore_StateReligion")
+SentientSystems_Include("SentientSystemsCore_StateEnvoys")
+SentientSystems_Include("SentientSystemsCore_StateGreatPeople")
+SentientSystems_Include("SentientSystemsCore_StateGovernors")
+SentientSystems_Include("SentientSystemsCore_StatePlayer")
+SentientSystems_Include("SentientSystemsCore_StateProposals")
+SentientSystems_Include("SentientSystemsCore_StateScoreboard")
+SentientSystems_Include("SentientSystemsCore_StateVictories")
 
 -- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
 -- player. The bridge reads it through the stash, as
@@ -23,12 +37,22 @@ function SentientSystems_GetState(playerID)
 	end
 
 	return SentientSystems_EncodeJson({
+		blockers = SentientSystems_GetBlockerState(playerID),
 		cities = SentientSystems_GetCityStates(player),
+		diplomacy = SentientSystems_GetDiplomacyState(player),
 		units = SentientSystems_GetUnitStates(player),
 		tiles = SentientSystems_GetTileStates(playerID),
 		rivals = {
 			cities = SentientSystems_GetRivalCityStates(playerID),
 			units = SentientSystems_GetRivalUnitStates(playerID),
 		},
+		religion = SentientSystems_GetReligionState(player),
+		envoys = SentientSystems_GetEnvoyState(player),
+		greatPeople = SentientSystems_GetGreatPeopleState(player),
+		governors = SentientSystems_GetGovernorState(player),
+		player = SentientSystems_GetPlayerState(player),
+		proposals = SentientSystems_GetProposalState(player),
+		scoreboard = SentientSystems_GetScoreboardState(player),
+		victories = SentientSystems_GetVictoryState(player),
 	})
 end

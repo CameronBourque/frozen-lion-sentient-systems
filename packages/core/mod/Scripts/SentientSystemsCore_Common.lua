@@ -30,10 +30,40 @@ function SentientSystems_Include(name)
 	return loaded
 end
 
--- Escapes text for one tagged line: each backslash as \\ and each newline as \n. The tuner sends
--- each line of a print as its own line, and only the first one has the state's name in front.
+-- Returns whether Gathering Storm is on. Its screens, such as GovernmentScreen_Expansion2.lua, read
+-- rows from Governments_XP2, which only the expansion adds.
+function SentientSystems_HasExpansion2()
+	return GameInfo.Governments_XP2 ~= nil
+end
+
+-- Returns whether any of the end-turn blockers named, such as ENDTURN_BLOCKING_ARTIFACT, blocks the
+-- player's turn. Some of the game's calls for a blocker's screen crash the game when nothing is
+-- waiting, so a choice checks its blocker first. A name the game doesn't have never blocks. See
+-- docs/findings/game-spies.md.
+function SentientSystems_HasBlocker(playerID, ...)
+	local values = {}
+
+	for _, name in ipairs({ ... }) do
+		if EndTurnBlockingTypes[name] ~= nil then
+			values[EndTurnBlockingTypes[name]] = true
+		end
+	end
+
+	for _, value in ipairs(NotificationManager.GetAllEndTurnBlocking(playerID) or {}) do
+		if values[value] then
+			return true
+		end
+	end
+
+	return false
+end
+
+-- Escapes text for one tagged line: each backslash as \\, each newline as \n, and each percent sign as
+-- \p, because the game's log prints text as a printf format, where a raw % prints garbage or crashes
+-- the game. See docs/findings/tuner-commands.md. The tuner sends each line of a print as its own line,
+-- and only the first one has the state's name in front.
 local function EscapeLine(text)
-	return (text:gsub("\\", "\\\\"):gsub("\r?\n", "\\n"))
+	return (text:gsub("\\", "\\\\"):gsub("\r?\n", "\\n"):gsub("%%", "\\p"))
 end
 
 -- Returns a function that calls handler with the same arguments, and prints

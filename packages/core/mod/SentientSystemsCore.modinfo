@@ -17,9 +17,46 @@
 		<ImportFiles id="SentientSystemsCore_SharedScripts">
 			<File>Scripts/SentientSystemsCore_Common.lua</File>
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
+			<File>Scripts/SentientSystemsCore_Governors.lua</File>
+			<File>Scripts/SentientSystemsCore_Eras.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesCapturedCities.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesSpies.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernors.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesEmergencies.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesWorldCongress.lua</File>
+			<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
+			<File>Scripts/Trees/SentientSystemsCore_TreesResearch.lua</File>
+			<File>Scripts/Trees/SentientSystemsCore_TreesGovernors.lua</File>
 			<File>Scripts/State/SentientSystemsCore_State.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateDiplomacy.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateProposals.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StatePlayerEra.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateScoreboard.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateVictories.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateVictoriesScience.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateVictoriesCulture.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateVictoriesDomination.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateVictoriesReligion.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateUnits.lua</File>
 		</ImportFiles>
@@ -27,9 +64,46 @@
 	<Files>
 		<File>Scripts/SentientSystemsCore_Common.lua</File>
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
+		<File>Scripts/SentientSystemsCore_Governors.lua</File>
+		<File>Scripts/SentientSystemsCore_Eras.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesCapturedCities.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesSpies.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernors.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesEmergencies.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesWorldCongress.lua</File>
+		<File>Scripts/Placement/SentientSystemsCore_Placement.lua</File>
+		<File>Scripts/Trees/SentientSystemsCore_TreesResearch.lua</File>
+		<File>Scripts/Trees/SentientSystemsCore_TreesGovernors.lua</File>
 		<File>Scripts/State/SentientSystemsCore_State.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateBlockers.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateDiplomacy.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateProposals.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StatePlayerEra.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateScoreboard.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateVictories.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateVictoriesScience.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateVictoriesCulture.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateVictoriesDomination.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateVictoriesReligion.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateTiles.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateUnits.lua</File>
 		<File>UI/SentientSystemsCore_UI.lua</File>

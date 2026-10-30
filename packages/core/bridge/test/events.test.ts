@@ -98,6 +98,12 @@ describe("parseLine", () => {
 		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated a  b\tc")).toMatchObject({ event: { message: "a  b\tc" } });
 	});
 
+	test("turns \\p in an error back into a percent sign", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated invalid option '\\ps' at 50\\p done, with a \\\\p backslash")).toMatchObject({
+			event: { message: "invalid option '%s' at 50% done, with a \\p backslash" },
+		});
+	});
+
 	test("turns the escapes in an error back into a newline and a backslash", () => {
 		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated line one\\nline two with a \\\\ backslash")).toMatchObject({
 			event: { message: "line one\nline two with a \\ backslash" },

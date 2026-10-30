@@ -22,10 +22,12 @@ local ESCAPES = {
 	["\t"] = "\\t",
 }
 
--- Quotes text, and escapes the quote, the backslash, and each control character. Other bytes,
--- such as UTF-8 text, pass through.
+-- Quotes text, and escapes the quote, the backslash, each control character, and the percent sign.
+-- The game's log prints text as a printf format, so a raw % prints garbage, and a "% s" crashes the
+-- game, which it did for a governor's description. As \u0025 the bridge still reads a %. See
+-- docs/findings/tuner-commands.md. Other bytes, such as UTF-8 text, pass through.
 local function EncodeString(text)
-	return "\"" .. text:gsub("[%c\"\\]", function(char)
+	return "\"" .. text:gsub("[%c\"\\%%]", function(char)
 		return ESCAPES[char] or string.format("\\u%04x", char:byte())
 	end) .. "\""
 end

@@ -6,6 +6,8 @@ describe("Game.new", function()
 
 		assert.is_nil(env.load)
 		assert.is_nil(env.setfenv)
+		assert.is_nil(env.getfenv)
+		assert.is_nil(env._G)
 		assert.is_nil(env.io)
 		assert.is_nil(env.debug)
 		assert.is_nil(env.string.gfind)
