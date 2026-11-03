@@ -6,7 +6,6 @@ The table lists the files in the order to work on them. A later debt can depend 
 
 | File | Debt |
 | --- | --- |
-| [schema-contract-fixtures.md](schema-contract-fixtures.md) | The TypeScript schema tests copy fixtures by hand. Fixtures from the Lua tests replace them |
 | [schema-single-source.md](schema-single-source.md) | Each state and choice shape is written in up to five places. The zod schema becomes the only one |
 | [comment-cleanup.md](comment-cleanup.md) | Older comments break the comment rules, and no lint rule stops new ones |
-| [feature-touch-points.md](feature-touch-points.md) | A new state section or choice touches 13 places |
+| [feature-touch-points.md](feature-touch-points.md) | A new state section or choice touches 12 places |

@@ -1,6 +1,6 @@
 # Feature touch points
 
-A new state section or choice touches 13 places across Lua, TypeScript, and the docs. Each time, an agent must find all of them before it writes code. See the [tech debt index](README.md).
+A new state section or choice touches 12 places across Lua, TypeScript, and the docs. Each time, an agent must find all of them before it writes code. See the [tech debt index](README.md).
 
 ## Now
 
@@ -16,15 +16,14 @@ A new state section touches these places:
 8. The Lua test.
 9. The zod schema in `packages/core/bridge/src/state/`.
 10. Its import and key in `src/state/state.ts`.
-11. The TypeScript test.
-12. The key table in [in-game-lua.md](../design/core/in-game-lua.md).
-13. The finding for the screen, and its row in the [findings index](../findings/README.md).
+11. The key table in [in-game-lua.md](../design/core/in-game-lua.md).
+12. The finding for the screen, and its row in the [findings index](../findings/README.md).
 
 A choice touches the same places under `Choices/` and `src/choices/`.
 
-The earlier debts cut this list. [schema-contract-fixtures.md](schema-contract-fixtures.md) removes place 11, and [schema-single-source.md](schema-single-source.md) removes place 12. The fake game registry is already cut, so place 7 is one line. That leaves 11 places, and 5 of them are one-line edits.
+The earlier debts cut this list. The contract test checks each section against the JSON from its Lua test, so a new section needs no TypeScript test of its own, and [schema-single-source.md](schema-single-source.md) removes place 11. The fake game registry is already cut, so place 7 is one line. That leaves 11 places, and 5 of them are one-line edits.
 
-A missed place fails a test, except for three. A missing `<Files>` entry passes, which task 1 here fixes. A missing schema, or a missing key in `state.ts` or `choices.ts`, drops the section with no error, which task 3 of [schema-contract-fixtures.md](schema-contract-fixtures.md) fixes. A missing finding is a docs step, which review catches.
+A missed place fails a test, except for two. A missing `<Files>` entry passes, which task 1 here fixes. A missing finding is a docs step, which review catches.
 
 Nothing checks that the `<ImportFiles>` and `<Files>` lists in the `.modinfo` match. `Test/Game.lua` reads `<ImportFiles>` only, so a file missing from `<Files>` passes the tests.
 
