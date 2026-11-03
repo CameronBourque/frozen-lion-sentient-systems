@@ -5,28 +5,26 @@
 
 import { z } from "zod";
 
-// Left out of the choices with no emergency to look at. The game offers one at a time, so it holds
-// the next one: type, such as EMERGENCY_CAPTURE_CITY_STATE, name, description, and goal, the popup's
-// texts in the game's language, target, the target's player ID, targetCity, the target city's
-// name, left out with none, hostile, turnsLeft, negative for a finished emergency, succeeded, true or
-// false for a finished emergency and left out for one that is going, and options,
-// "join" and "reject" for one that hasn't begun, and "acknowledge" for any other. members lists the
-// players' IDs, goals the goals the popup lists, scoring how to gain score, left out for the
-// target, buffs the temporary buffs, and rewards the lines for members and, when hostile, the target.
 export const EMERGENCIES_CHOICE = z.array(z.object({
-	type: z.string(),
-	name: z.string(),
-	description: z.string(),
-	goal: z.string(),
-	target: z.number(),
-	targetCity: z.string().optional(),
+	type: z.string().describe("Such as EMERGENCY_CAPTURE_CITY_STATE."),
+	name: z.string().describe("In the game's language, as the popup shows it."),
+	description: z.string().describe("In the game's language, as the popup shows it."),
+	goal: z.string().describe("In the game's language, as the popup shows it."),
+	target: z.number().describe("The target's player ID."),
+	targetCity: z.string().optional().describe("The target city's name. Left out with none."),
 	hostile: z.boolean(),
-	turnsLeft: z.number(),
-	succeeded: z.boolean().optional(),
-	options: z.array(z.enum(["join", "reject", "acknowledge"])),
-	members: z.array(z.number()),
-	goals: z.array(z.string()),
-	scoring: z.array(z.string()).optional(),
-	buffs: z.array(z.string()),
-	rewards: z.object({ members: z.array(z.string()), target: z.array(z.string()) }),
-})).optional();
+	turnsLeft: z.number().describe("Negative for a finished emergency."),
+	succeeded: z.boolean().optional().describe("For a finished emergency. Left out for one that is going."),
+	options: z.array(z.enum(["join", "reject", "acknowledge"])).describe(
+		"join and reject for an emergency that hasn't begun, and acknowledge for any other.",
+	),
+	members: z.array(z.number()).describe("The players' IDs."),
+	goals: z.array(z.string()).describe("The goals the popup lists."),
+	scoring: z.array(z.string()).optional().describe("How to gain score. Left out for the target."),
+	buffs: z.array(z.string()).describe("The temporary buffs."),
+	rewards: z.object({ members: z.array(z.string()), target: z.array(z.string()) }).describe(
+		"The lines for members and, when hostile, the target.",
+	),
+})).optional().describe(
+	"Left out of the choices with no emergency to look at. The game offers one at a time, so it holds the next one, there only while the emergency blocker is up.",
+);
