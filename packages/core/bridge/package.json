@@ -8,10 +8,8 @@
   },
   "scripts": {
     "dev": "tsx src/main.ts --config ../../../tmp/sentient-systems.yaml",
-    "probe": "tsx scripts/probe.ts",
     "state": "tsx scripts/state.ts",
     "gate": "tsx scripts/gate.ts",
-    "watch-states": "tsx scripts/watch-states.ts",
     "typecheck": "tsc",
     "build:exe": "node scripts/build-exe.mjs"
   },
