@@ -1,14 +1,6 @@
--- The cities section of the state: the player's own cities, as the city panel shows them.
--- SentientSystemsCore_State.lua loads this file. Example: SentientSystems_GetCityStates(player)
--- returns a list with one table for each city, which encodes as
--- '{"amenities":{"have":2,"mood":"HAPPINESS_CONTENT","need":2,"warWeariness":0},
--- "defense":{"garrison":{"max":200,"value":200},"strength":13},"districts":[{"buildings":[{"pillaged":false,"type":"BUILDING_MONUMENT"},{"pillaged":false,"type":"BUILDING_PALACE"}],
--- "complete":true,"pillaged":false,"type":"DISTRICT_CITY_CENTER","x":17,"y":14}],
--- "governor":{"established":true,"type":"GOVERNOR_THE_MERCHANT"},
--- "growth":{"foodSurplus":3,"housing":6,"rate":"normal","turnsUntilGrowth":2},"id":65536,
--- "loyalty":{"max":100,"perTurn":21,"value":100},"name":"Rome","population":3,
--- "production":{"turnsLeft":2,"type":"UNIT_SLINGER"},"x":17,"y":14,
--- "yields":{"culture":3.8,"faith":0,"food":9,"gold":8,"production":6,"science":3.5}}', on one line.
+-- The cities section of the state: the player's own cities, as the city panel shows
+-- them. SentientSystemsCore_State.lua loads this file. The shape is in
+-- bridge/src/state/cities.ts.
 
 -- Each yield in the state, and its name in YieldTypes.
 local YIELDS = {
