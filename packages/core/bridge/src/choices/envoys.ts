@@ -1,6 +1,6 @@
-// The schema for the envoy choice: the city-states the player can send envoys to, as the City-States
-// screen's send mode offers them. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua.
+// The schema for the envoy choice: the city-states the player can send envoys
+// to, as the City-States screen's send mode offers them. The core mod builds it
+// in Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua.
 
 import { z } from "zod";
 

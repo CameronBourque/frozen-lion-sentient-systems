@@ -1,5 +1,5 @@
-// The schema for the resources part of the player section of the state, as the Resources tab of
-// Reports shows it. The core mod builds it in
+// The schema for the resources part of the player section of the state, as the
+// Resources tab of Reports shows it. The core mod builds it in
 // Scripts/State/SentientSystemsCore_StatePlayerResources.lua.
 
 import { z } from "zod";
@@ -32,8 +32,8 @@ const SOURCE = z.discriminatedUnion("kind", [
 	),
 ]);
 
-// Each resource the Resources tab lists, in the game's order. A resource with no sources and no
-// stockpile is left out.
+// Each resource the Resources tab lists, in the game's order. A resource with
+// no sources and no stockpile is left out.
 export const RESOURCES = z.array(z.object({
 	type: z.string().describe("Such as RESOURCE_IRON."),
 	name: z.string(),

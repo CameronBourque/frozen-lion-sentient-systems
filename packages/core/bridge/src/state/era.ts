@@ -1,5 +1,6 @@
-// The schema for the era part of the player section of the state, as the Era Progress panel shows
-// it. The core mod builds it in Scripts/State/SentientSystemsCore_StatePlayerEra.lua.
+// The schema for the era part of the player section of the state, as the Era
+// Progress panel shows it. The core mod builds it in
+// Scripts/State/SentientSystemsCore_StatePlayerEra.lua.
 
 import { z } from "zod";
 

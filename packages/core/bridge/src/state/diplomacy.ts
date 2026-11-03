@@ -1,6 +1,6 @@
-// The schema for the diplomacy section of the state: where the player stands with each player they
-// have met, as the Intel Report shows it. The core mod builds it in
-// Scripts/State/SentientSystemsCore_StateDiplomacy.lua.
+// The schema for the diplomacy section of the state: where the player stands
+// with each player they have met, as the Intel Report shows it. The core mod
+// builds it in Scripts/State/SentientSystemsCore_StateDiplomacy.lua.
 
 import { z } from "zod";
 

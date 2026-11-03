@@ -1,6 +1,6 @@
-// The schema for the purchase choice: what each of the player's cities can buy, by yield, as the
-// production panel's purchase tabs list it. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua.
+// The schema for the purchase choice: what each of the player's cities can buy,
+// by yield, as the production panel's purchase tabs list it. The core mod
+// builds it in Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua.
 
 import { z } from "zod";
 
@@ -8,7 +8,8 @@ const BLOCKED = z.array(z.string()).optional().describe(
 	"There when the tab greys the item out: the game's reasons, then the tab's own text when the player can't afford it, such as Not enough [ICON_Gold] Gold in treasury to purchase this. Can be empty, when the game gives no reason. Left out when the city can buy it.",
 );
 
-// A building, a district, or a unit trained as a corps or an army. cost is in the yield.
+// A building, a district, or a unit trained as a corps or an army. cost is in
+// the yield.
 const PURCHASE = z.object({ cost: z.number(), blocked: BLOCKED });
 
 const UNIT_PURCHASE = PURCHASE.extend({
@@ -19,8 +20,8 @@ const UNIT_PURCHASE = PURCHASE.extend({
 
 const TYPED_PURCHASE = PURCHASE.extend({ type: z.string() });
 
-// What a city can buy with one yield. A district's tiles come from readPlacement, in
-// src/placement/placement.ts.
+// What a city can buy with one yield. A district's tiles come from
+// readPlacement, in src/placement/placement.ts.
 const YIELD_PURCHASES = z.object({
 	units: z.array(UNIT_PURCHASE),
 	buildings: z.array(TYPED_PURCHASE),

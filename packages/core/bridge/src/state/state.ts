@@ -1,8 +1,10 @@
-// Reads one player's state from the core mod: what blocks their turn, their cities, units, revealed
-// tiles, the rivals they can see, their religion, their envoys, the great people on offer, their
-// governors, the top bar's numbers, the scores, and the victories. The core mod builds the state as
-// JSON, and the bridge reads it through the stash, in stash.ts. Each section's schema has its own
-// file in this folder, as each section of the core mod's Lua does, and holds the section's shape.
+// Reads one player's state from the core mod: what blocks their turn, their
+// cities, units, revealed tiles, the rivals they can see, their religion, their
+// envoys, the great people on offer, their governors, the top bar's numbers,
+// the scores, and the victories. The core mod builds the state as JSON, and the
+// bridge reads it through the stash, in stash.ts. Each section's schema has its
+// own file in this folder, as each section of the core mod's Lua does, and
+// holds the section's shape.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -22,7 +24,8 @@ import { TILE } from "./tiles.js";
 import { UNIT } from "./units.js";
 import { VICTORIES } from "./victories.js";
 
-// Not strict, so a field from a newer core mod is dropped instead of failing the whole state.
+// Not strict, so a field from a newer core mod is dropped instead of failing
+// the whole state.
 export const STATE = z.object({
 	blockers: BLOCKERS,
 	cities: z.array(CITY),
@@ -47,8 +50,8 @@ export const STATE = z.object({
 
 export type State = z.infer<typeof STATE>;
 
-// Reads the state of the player with ID playerID. Every failure comes back as an error that says what
-// went wrong, instead of an exception.
+// Reads the state of the player with ID playerID. Every failure comes back as
+// an error that says what went wrong, instead of an exception.
 export function readState(client: TunerClient, playerID: number): Promise<StashResult<State>> {
 	return readStash(client, `SentientSystems_GetState(${playerID})`, STATE, "state");
 }

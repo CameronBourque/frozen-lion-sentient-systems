@@ -1,12 +1,14 @@
-// The schemas for the government and policy choices: the player's government, its policy slots, and
-// the policy in each slot, as the government screen's My Government tab shows them, the policies the
-// player can slot, as its policy catalog shows them, and every government, as its View Governments
-// tab shows them. The core mod builds them in
+// The schemas for the government and policy choices: the player's government,
+// its policy slots, and the policy in each slot, as the government screen's My
+// Government tab shows them, the policies the player can slot, as its policy
+// catalog shows them, and every government, as its View Governments tab shows
+// them. The core mod builds them in
 // Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua.
 
 import { z } from "zod";
 
-// The government's bonuses are left out, as they don't change while it is in place.
+// The government's bonuses are left out, as they don't change while it is in
+// place.
 export const GOVERNMENT = z.object({
 	type: z.string().optional().describe(
 		"Such as GOVERNMENT_CHIEFDOM. Left out when the player has none, before Code of Laws or in anarchy.",

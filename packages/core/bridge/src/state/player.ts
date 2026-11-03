@@ -1,5 +1,6 @@
-// The schema for the player section of the state: what the top bar shows about the player as a
-// whole. The core mod builds it in Scripts/State/SentientSystemsCore_StatePlayer.lua.
+// The schema for the player section of the state: what the top bar shows about
+// the player as a whole. The core mod builds it in
+// Scripts/State/SentientSystemsCore_StatePlayer.lua.
 
 import { z } from "zod";
 import { ERA } from "./era.js";

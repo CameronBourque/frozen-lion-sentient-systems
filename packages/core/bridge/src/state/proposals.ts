@@ -1,6 +1,7 @@
-// The schema for the proposals section of the state: the deals that other players have put to the
-// player, in ID order, each for an open session that they started, as the deal screen shows it. The
-// core mod builds it in Scripts/State/SentientSystemsCore_StateProposals.lua.
+// The schema for the proposals section of the state: the deals that other
+// players have put to the player, in ID order, each for an open session that
+// they started, as the deal screen shows it. The core mod builds it in
+// Scripts/State/SentientSystemsCore_StateProposals.lua.
 
 import { z } from "zod";
 

@@ -1,13 +1,14 @@
-// The schema for the victories section of the state: how close each living major player is to each
-// victory, in the order the Overall tab of World Rankings ranks them, with the numbers its icon
-// tooltips show. The core mod builds it in Scripts/State/SentientSystemsCore_StateVictories.lua.
-// How each tab was checked: docs/findings/game-victories.md.
+// The schema for the victories section of the state: how close each living
+// major player is to each victory, in the order the Overall tab of World
+// Rankings ranks them, with the numbers its icon tooltips show. The core mod
+// builds it in Scripts/State/SentientSystemsCore_StateVictories.lua. How each
+// tab was checked: docs/findings/game-victories.md.
 
 import { z } from "zod";
 
-// A player that has been met has player and progress, and the keys of the victory's tooltip. One that
-// has not been met has unmet and no ID. Both have the keys that the victory's own tab shows for every
-// player.
+// A player that has been met has player and progress, and the keys of the
+// victory's tooltip. One that has not been met has unmet and no ID. Both have
+// the keys that the victory's own tab shows for every player.
 const entry = <M extends z.ZodRawShape, E extends z.ZodRawShape>(met: M, every: E) =>
 	z.union([
 		z.object({ unmet: z.literal(true), ...every }),
@@ -33,9 +34,9 @@ const STAGE = z.object({
 	),
 });
 
-// Each list has one entry for each player, ranked by progress and then the two numbers of the icon's
-// tooltip, best first. Teams aren't grouped. Numbers other than progress are rounded to the nearest
-// tenth.
+// Each list has one entry for each player, ranked by progress and then the two
+// numbers of the icon's tooltip, best first. Teams aren't grouped. Numbers
+// other than progress are rounded to the nearest tenth.
 export const VICTORIES = z.object({
 	science: z.array(entry({
 		techs: z.number(),

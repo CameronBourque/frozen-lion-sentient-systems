@@ -1,13 +1,13 @@
-// The schema for the income part of the player section of the state, as the Yields tab of Reports
-// shows it. The core mod builds it in
+// The schema for the income part of the player section of the state, as the
+// Yields tab of Reports shows it. The core mod builds it in
 // Scripts/State/SentientSystemsCore_StatePlayerIncome.lua.
 
 import { z } from "zod";
 
 const CITY = z.object({ owner: z.number(), id: z.number() });
 
-// One yield per turn. Each source is the one the game's tooltip for the yield names, and is left out
-// while it is 0.
+// One yield per turn. Each source is the one the game's tooltip for the yield
+// names, and is left out while it is 0.
 const YIELD = z.object({
 	total: z.number().describe("Gold's total is the income before the upkeep, which the top bar takes off."),
 	cities: z.number().optional(),

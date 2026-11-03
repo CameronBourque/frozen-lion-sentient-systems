@@ -1,6 +1,7 @@
-// The schemas for the religion choices: the pantheon beliefs the player can found a pantheon with, as
-// the pantheon chooser lists them, and the religions and beliefs the player can found a religion with
-// or add to it, as the religion screen lists them. The core mod builds them in
+// The schemas for the religion choices: the pantheon beliefs the player can
+// found a pantheon with, as the pantheon chooser lists them, and the religions
+// and beliefs the player can found a religion with or add to it, as the
+// religion screen lists them. The core mod builds them in
 // Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua.
 
 import { z } from "zod";
