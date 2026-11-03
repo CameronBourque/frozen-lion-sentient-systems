@@ -1,10 +1,11 @@
--- The blockers section of the state: what stops the end of the turn, as the Next Turn
--- button sees it, and the units that need orders. SentientSystemsCore_State.lua loads
--- this file. The shape is in bridge/src/state/blockers.ts.
+-- The blockers section of the state: what stops the end of the turn, as the
+-- Next Turn button sees it, and the units that need orders.
+-- SentientSystemsCore_State.lua loads this file. The shape is in
+-- bridge/src/state/blockers.ts.
 
--- The key in the choices that resolves each blocker. A blocker that isn't here gets no choice: the
--- unit blockers, which the units list resolves, and the values that no UI file names. See
--- docs/findings/game-state.md.
+-- The key in the choices that resolves each blocker. A blocker that isn't here
+-- gets no choice: the unit blockers, which the units list resolves, and the
+-- values that no UI file names. See docs/findings/game-state.md.
 local CHOICES = {
 	ENDTURN_BLOCKING_PRODUCTION = "production",
 	ENDTURN_BLOCKING_RESEARCH = "techs",
@@ -31,8 +32,9 @@ local CHOICES = {
 	ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION = "worldCongress",
 }
 
--- Returns the name of a blocker value. The values are hashes, so the name comes from searching
--- EndTurnBlockingTypes. A value the table doesn't hold keeps its number, as text.
+-- Returns the name of a blocker value. The values are hashes, so the name comes
+-- from searching EndTurnBlockingTypes. A value the table doesn't hold keeps its
+-- number, as text.
 local function BlockerName(value)
 	for name, candidate in pairs(EndTurnBlockingTypes) do
 		if candidate == value then
@@ -43,9 +45,9 @@ local function BlockerName(value)
 	return tostring(value)
 end
 
--- Returns each blocker once, in the game's order, with the choice that resolves it. The game lists a
--- blocker once for each of its notifications, so a blocker can repeat. The first one is the Next Turn
--- button's prompt.
+-- Returns each blocker once, in the game's order, with the choice that resolves
+-- it. The game lists a blocker once for each of its notifications, so a blocker
+-- can repeat. The first one is the Next Turn button's prompt.
 local function GetBlockerList(playerID)
 	local list, seen = {}, {}
 
@@ -61,10 +63,11 @@ local function GetBlockerList(playerID)
 	return list
 end
 
--- Returns the IDs of the player's units that need orders: those with moves left and no standing
--- order, such as fortify. The unit flags dim every other unit with IsReadyToSelect, in
--- UnitFlagManager.lua, line 380. The game updates the unit blockers only on its own events, so the
--- list comes from the units, not from the blockers.
+-- Returns the IDs of the player's units that need orders: those with moves left
+-- and no standing order, such as fortify. The unit flags dim every other unit
+-- with IsReadyToSelect, in UnitFlagManager.lua, line 380. The game updates the
+-- unit blockers only on its own events, so the list comes from the units, not
+-- from the blockers.
 local function GetUnitsNeedingOrders(player)
 	local ids = {}
 

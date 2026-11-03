@@ -1,7 +1,8 @@
--- Builds one player's view of the game as JSON for the bridge, from that player's own data and
--- visibility, never from the screen. Each section of the state comes from its own file in this
--- folder, and this file puts them together. See docs/design/core/in-game-lua.md. The shapes are
--- in bridge/src/state/.
+-- Builds one player's view of the game as JSON for the bridge, from that
+-- player's own data and visibility, never from the screen. Each section of the
+-- state comes from its own file in this folder, and this file puts them
+-- together. See docs/design/core/in-game-lua.md. The shapes are in
+-- bridge/src/state/.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -20,8 +21,8 @@ SentientSystems_Include("SentientSystemsCore_StateProposals")
 SentientSystems_Include("SentientSystemsCore_StateScoreboard")
 SentientSystems_Include("SentientSystemsCore_StateVictories")
 
--- Returns the state of the player with ID playerID as JSON. Raises an error for an ID with no
--- player. The bridge reads it through the stash, as
+-- Returns the state of the player with ID playerID as JSON. Raises an error for
+-- an ID with no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetState(playerID)).
 function SentientSystems_GetState(playerID)
 	local player = Players[playerID]

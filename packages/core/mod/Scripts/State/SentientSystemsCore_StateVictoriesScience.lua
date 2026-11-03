@@ -1,10 +1,12 @@
--- The science part of the victories section of the state: a player's stages toward the science
--- victory and the tasks of each, as the Science tab of World Rankings shows them. The numbers follow
--- PopulateScienceInstance and GetTooltipForScienceProject in WorldRankings.lua and
--- WorldRankings_Expansion2.lua. SentientSystemsCore_StateVictories.lua loads this file. The shape is in
--- bridge/src/state/victories.ts.
+-- The science part of the victories section of the state: a player's stages
+-- toward the science victory and the tasks of each, as the Science tab of World
+-- Rankings shows them. The numbers follow PopulateScienceInstance and
+-- GetTooltipForScienceProject in WorldRankings.lua and
+-- WorldRankings_Expansion2.lua. SentientSystemsCore_StateVictories.lua loads
+-- this file. The shape is in bridge/src/state/victories.ts.
 
--- The projects of each stage. Gathering Storm has four stages of one project, and the base game three.
+-- The projects of each stage. Gathering Storm has four stages of one project,
+-- and the base game three.
 local function GetStageProjects()
 	local stages = {
 		{ "PROJECT_LAUNCH_EARTH_SATELLITE" },
@@ -21,7 +23,8 @@ local function GetStageProjects()
 	return stages
 end
 
--- Rounds to the nearest thousandth, which the game's single precision floats leave long.
+-- Rounds to the nearest thousandth, which the game's single precision floats
+-- leave long.
 local function RoundProgress(progress)
 	return math.floor(progress * 1000 + 0.5) / 1000
 end
@@ -43,9 +46,9 @@ local function HasSpaceport(other)
 	return false
 end
 
--- Returns the progress of a stage over the player's cities, its total cost, and which of its projects
--- are finished, by the last city, as the tab counts them. The first two stages count only a city that
--- has progress.
+-- Returns the progress of a stage over the player's cities, its total cost, and
+-- which of its projects are finished, by the last city, as the tab counts them.
+-- The first two stages count only a city that has progress.
 local function GetStageProgress(other, projects, counted)
 	local stats = other:GetStats()
 	local total, progress, finished = 0, 0, {}
@@ -75,8 +78,9 @@ local function GetStageProgress(other, projects, counted)
 	return progress, total, finished
 end
 
--- Returns the tasks of a stage, in the tooltip's order: the Spaceport for the first stage, then for
--- each project the tech it needs, if any, and the project.
+-- Returns the tasks of a stage, in the tooltip's order: the Spaceport for the
+-- first stage, then for each project the tech it needs, if any, and the
+-- project.
 local function GetTasks(other, projects, finished, withSpaceport)
 	local tasks = {}
 	local techs = other:GetTechs()
@@ -98,8 +102,9 @@ local function GetTasks(other, projects, finished, withSpaceport)
 	return tasks
 end
 
--- Returns the player's stages. With Gathering Storm, once the player has launched the exoplanet
--- expedition, it adds lightYears, whose needed is the viewing player's, as the tab reads it.
+-- Returns the player's stages. With Gathering Storm, once the player has
+-- launched the exoplanet expedition, it adds lightYears, whose needed is the
+-- viewing player's, as the tab reads it.
 function SentientSystems_GetScienceDetails(player, other)
 	local details = { stages = {} }
 	local stats = other:GetStats()

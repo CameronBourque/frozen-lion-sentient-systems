@@ -1,16 +1,18 @@
--- The era part of the player section, as the Era Progress panel shows it. Rise and Fall adds
--- ages, so without it the part is left out. SentientSystemsCore_StatePlayer.lua loads this
--- file. The shape is in bridge/src/state/era.ts. The checks follow GetData, Refresh, and
--- PopulateCivilizationIcons in EraProgressPanel.lua in DLC/Expansion1 and DLC/Expansion2, which
--- are the same.
+-- The era part of the player section, as the Era Progress panel shows it. Rise
+-- and Fall adds ages, so without it the part is left out.
+-- SentientSystemsCore_StatePlayer.lua loads this file. The shape is in
+-- bridge/src/state/era.ts. The checks follow GetData, Refresh, and
+-- PopulateCivilizationIcons in EraProgressPanel.lua in DLC/Expansion1 and
+-- DLC/Expansion2, which are the same.
 
 SentientSystems_Include("SentientSystemsCore_Eras")
 
 -- The order the panel lists the other players' ages in.
 local AGE_ORDER = { "heroic", "golden", "normal", "dark" }
 
--- Returns what the player's era score is made of: the total of the earlier eras as one entry, when it
--- is above 0, then each source of this era that is above 0. See GetData, lines 70 to 96.
+-- Returns what the player's era score is made of: the total of the earlier eras
+-- as one entry, when it is above 0, then each source of this era that is above
+-- 0. See GetData, lines 70 to 96.
 local function GetScoreBreakdown(eras, playerID)
 	local list, previous = {}, 0
 
@@ -35,10 +37,11 @@ local function GetScoreBreakdown(eras, playerID)
 	return list
 end
 
--- Returns the least and the most turns until the next era. Once the countdown has started, it is one
--- number, counted so that its last turn is 1. Before it, the era can end at its earliest end turn at
--- the soonest, but not before the countdown would run out, and at its latest end turn. See GetData,
--- lines 98 to 112.
+-- Returns the least and the most turns until the next era. Once the countdown
+-- has started, it is one number, counted so that its last turn is 1. Before it,
+-- the era can end at its earliest end turn at the soonest, but not before the
+-- countdown would run out, and at its latest end turn. See GetData, lines 98 to
+-- 112.
 local function GetTurnsUntilNext(eras)
 	local countdown = eras:GetNextEraCountdown() + 1
 
@@ -54,8 +57,9 @@ local function GetTurnsUntilNext(eras)
 	}
 end
 
--- Returns the age the player earns for the next era at their score: golden at the golden threshold,
--- normal at the dark one, and dark below it. See GetData, lines 124 to 130.
+-- Returns the age the player earns for the next era at their score: golden at
+-- the golden threshold, normal at the dark one, and dark below it. See GetData,
+-- lines 124 to 130.
 local function GetNextAge(score, normalFrom, goldenFrom)
 	if score >= goldenFrom then
 		return "golden"
@@ -80,8 +84,9 @@ local function GetEffects(eras, player, age)
 	return { citizenLoyalty = player:GetCivilianLoyalty(), dedications = dedications }
 end
 
--- Returns the ages of the players the player has met, in the panel's order, and the number of players
--- it hasn't, which the panel shows with no age. See PopulateCivilizationIcons.
+-- Returns the ages of the players the player has met, in the panel's order, and
+-- the number of players it hasn't, which the panel shows with no age. See
+-- PopulateCivilizationIcons.
 local function GetCivilizations(eras, player)
 	local byAge, unmet = {}, 0
 
@@ -114,8 +119,8 @@ local function GetCivilizations(eras, player)
 	return civilizations, unmet
 end
 
--- Returns the era section, or nil without Rise and Fall, whose game has no ages. See Refresh in
--- EraProgressPanel.lua, lines 207 to 268.
+-- Returns the era section, or nil without Rise and Fall, whose game has no
+-- ages. See Refresh in EraProgressPanel.lua, lines 207 to 268.
 function SentientSystems_GetEraState(player)
 	local eras = Game.GetEras()
 

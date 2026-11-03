@@ -1,5 +1,5 @@
--- The cities section of the state: the player's own cities, as the city panel shows
--- them. SentientSystemsCore_State.lua loads this file. The shape is in
+-- The cities section of the state: the player's own cities, as the city panel
+-- shows them. SentientSystemsCore_State.lua loads this file. The shape is in
 -- bridge/src/state/cities.ts.
 
 -- Each yield in the state, and its name in YieldTypes.
@@ -12,9 +12,10 @@ local YIELDS = {
 	science = "SCIENCE",
 }
 
--- Returns what the city is producing, with the turns left, or nil when it produces nothing. A hash
--- of 0 means nothing. GameInfo reads 0 as a row index, so GameInfo.Types[0] is the first row, not
--- the production. See docs/findings/game-state.md.
+-- Returns what the city is producing, with the turns left, or nil when it
+-- produces nothing. A hash of 0 means nothing. GameInfo reads 0 as a row index,
+-- so GameInfo.Types[0] is the first row, not the production. See
+-- docs/findings/game-state.md.
 local function GetProduction(city)
 	local queue = city:GetBuildQueue()
 	local hash = queue:GetCurrentProductionTypeHash()
@@ -49,10 +50,11 @@ local function GetYields(city)
 	return yields
 end
 
--- Returns the city's growth rate status as the City Status tab of Reports shows it: halted without
--- room to grow or while the city is occupied, slowed at half the rate or less, accelerated when its
--- amenities speed it up, and normal otherwise. See CreateCityStatusInstance in ReportScreen.lua,
--- lines 1678 to 1689.
+-- Returns the city's growth rate status as the City Status tab of Reports shows
+-- it: halted without room to grow or while the city is occupied, slowed at half
+-- the rate or less, accelerated when its amenities speed it up, and normal
+-- otherwise. See CreateCityStatusInstance in ReportScreen.lua, lines 1678 to
+-- 1689.
 local function GetGrowthRate(city, growth)
 	local housingModifier = growth:GetHousingGrowthModifier()
 
@@ -67,9 +69,10 @@ local function GetGrowthRate(city, growth)
 	return "normal"
 end
 
--- Returns the food surplus per turn, the housing, the growth rate status, and the turns until the city
--- grows or, when it starves, until it loses a citizen. The game returns -1 for each count that doesn't
--- apply, and a city that neither grows nor starves has neither count, as in GetCityData in
+-- Returns the food surplus per turn, the housing, the growth rate status, and
+-- the turns until the city grows or, when it starves, until it loses a citizen.
+-- The game returns -1 for each count that doesn't apply, and a city that
+-- neither grows nor starves has neither count, as in GetCityData in
 -- CitySupport.lua.
 local function GetGrowth(city)
 	local growth = city:GetGrowth()
@@ -93,8 +96,9 @@ local function GetGrowth(city)
 	return result
 end
 
--- Returns the amenities the city has and needs, its mood, such as HAPPINESS_CONTENT, and the amenities
--- it loses to war weariness. The city panel shows have minus need.
+-- Returns the amenities the city has and needs, its mood, such as
+-- HAPPINESS_CONTENT, and the amenities it loses to war weariness. The city
+-- panel shows have minus need.
 local function GetAmenities(city)
 	local growth = city:GetGrowth()
 	local mood = GameInfo.Happinesses[growth:GetHappiness()]
@@ -107,9 +111,10 @@ local function GetAmenities(city)
 	}
 end
 
--- Returns the city's governor, with type, such as GOVERNOR_THE_MERCHANT, and established, whether they
--- have settled in, or nil for none, and in a game without Rise and Fall, which adds governors. See
--- CreateCityStatusInstance in ReportScreen_Expansion1.lua.
+-- Returns the city's governor, with type, such as GOVERNOR_THE_MERCHANT, and
+-- established, whether they have settled in, or nil for none, and in a game
+-- without Rise and Fall, which adds governors. See CreateCityStatusInstance in
+-- ReportScreen_Expansion1.lua.
 local function GetGovernor(city)
 	local governor = city.GetAssignedGovernor ~= nil and city:GetAssignedGovernor()
 
@@ -120,9 +125,10 @@ local function GetGovernor(city)
 	return { type = GameInfo.Governors[governor:GetType()].GovernorType, established = governor:IsEstablished() }
 end
 
--- Returns the city's loyalty, its most, and its change per turn, rounded as the city panel shows
--- them, or nil in a game without loyalty. Loyalty comes with the Rise and Fall expansion, which adds
--- GetCulturalIdentity. See CityPanelCulture.lua in DLC/Expansion1.
+-- Returns the city's loyalty, its most, and its change per turn, rounded as the
+-- city panel shows them, or nil in a game without loyalty. Loyalty comes with
+-- the Rise and Fall expansion, which adds GetCulturalIdentity. See
+-- CityPanelCulture.lua in DLC/Expansion1.
 local function GetLoyalty(city)
 	if city.GetCulturalIdentity == nil then
 		return nil
@@ -137,9 +143,9 @@ local function GetLoyalty(city)
 	}
 end
 
--- Returns the city's districts, each with its built buildings. A district that is placed but not
--- built yet has complete set to false. Wonders sit in their own DISTRICT_WONDER. GetCityData in
--- CitySupport.lua reads the same calls.
+-- Returns the city's districts, each with its built buildings. A district that
+-- is placed but not built yet has complete set to false. Wonders sit in their
+-- own DISTRICT_WONDER. GetCityData in CitySupport.lua reads the same calls.
 local function GetDistricts(city)
 	local buildings = city:GetBuildings()
 	local districts = {}
@@ -167,10 +173,11 @@ local function GetDistricts(city)
 	return districts
 end
 
--- Returns the defense that a city's banner shows: its strength, rounded as the banner rounds it, the
--- garrison's health, and the walls' health. walls is left out for a city with none. The banner reads
--- the city center district, in CityBanner:UpdateStats in CityBannerManager.lua. The rivals section
--- uses it too.
+-- Returns the defense that a city's banner shows: its strength, rounded as the
+-- banner rounds it, the garrison's health, and the walls' health. walls is left
+-- out for a city with none. The banner reads the city center district, in
+-- CityBanner:UpdateStats in CityBannerManager.lua. The rivals section uses it
+-- too.
 function SentientSystems_GetCityDefense(player, city)
 	local center = player:GetDistricts():FindID(city:GetDistrictID())
 	local garrison, walls = DefenseTypes.DISTRICT_GARRISON, DefenseTypes.DISTRICT_OUTER
@@ -186,7 +193,8 @@ function SentientSystems_GetCityDefense(player, city)
 	return defense
 end
 
--- Returns a list of the player's cities, with each city's name in the game's language.
+-- Returns a list of the player's cities, with each city's name in the game's
+-- language.
 function SentientSystems_GetCityStates(player)
 	local cities = {}
 
