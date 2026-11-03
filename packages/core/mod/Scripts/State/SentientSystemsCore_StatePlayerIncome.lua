@@ -1,12 +1,8 @@
--- The income part of the player section: the gold, faith, science, and culture the player makes each
--- turn and where it comes from, the gold the player pays and for what, the upkeep of each kind of
--- unit, and the gold deals, as the Yields tab of Reports shows them. SentientSystemsCore_StatePlayer.lua
--- loads this file. Example: SentientSystems_GetIncomeState(player) returns a table that encodes as
--- '{"culture":{"cities":216.6,"total":216.6},"deals":[{"gold":3,"player":4,"turnsLeft":18}],
--- "expenses":{"cities":117,"deals":5,"total":210,"units":88},"faith":{"cities":109,"total":109},
--- "gold":{"cities":420,"deals":22,"envoys":33,"total":475.1},"science":{"cities":123.5,"total":123.5},
--- "unitUpkeep":[{"count":10,"gold":30,"name":"Musketman","type":"UNIT_MUSKETMAN"}]}', on one line. The
--- checks follow GetData and ViewYieldsPage in ReportScreen.lua.
+-- The income part of the player section: what the player makes each turn and where it
+-- comes from, what the player pays, and the gold deals, as the Yields tab of Reports shows
+-- them. SentientSystemsCore_StatePlayer.lua loads this file. The shape is in
+-- bridge/src/state/income.ts. The checks follow GetData and ViewYieldsPage in
+-- ReportScreen.lua.
 
 -- The sources each yield's tooltip names, by the key they have in the state and the label that follows
 -- the amount in the game's English text, as in "+33 from [ICON_Envoy] Envoys". The game gives no
@@ -343,9 +339,8 @@ local function AddTileRows(player, city, sources)
 	return tourism
 end
 
--- Returns each of the player's cities with the tourism its tiles give, the gold its districts and
--- buildings cost, and its sources, in the order of the report's city table, and the cost of all of
--- them. A city's other yields are in cities[].yields.
+-- Returns each of the player's cities with its income rows, in the order of the report's city
+-- table, and the cost of all of them.
 local function GetCityIncomes(player)
 	local list, total = {}, 0
 
@@ -400,9 +395,8 @@ local function GetFormationName(formation)
 	return nil
 end
 
--- Returns the units that cost gold, grouped by type and formation, each with type, formation, name,
--- count, and gold, the gold they cost together, and their total. The report's own order is
--- arbitrary, so the groups are sorted by type and formation.
+-- Returns the units that cost gold, grouped by type and formation, and their total. The report's
+-- own order is arbitrary, so the groups are sorted by type and formation.
 local function GetUnitUpkeep(player, discount)
 	local groups, order, total = {}, {}, 0
 
@@ -436,9 +430,8 @@ local function GetUnitUpkeep(player, discount)
 	return list, total
 end
 
--- Returns the gold deals the player is in, each with player, the other player's ID, turnsLeft, and
--- gold, which is negative for gold the player pays, and the gold the player pays in all. A deal item
--- with no duration is left out. See GetData in ReportScreen.lua, lines 355 to 460.
+-- Returns the gold deals the player is in, and the gold the player pays in all. A deal item with
+-- no duration is left out. See GetData in ReportScreen.lua, lines 355 to 460.
 local function GetDeals(playerID)
 	local list, paid = {}, 0
 	local turn = Game.GetCurrentGameTurn()
@@ -470,9 +463,8 @@ local function GetDeals(playerID)
 	return list, paid
 end
 
--- Returns the gold the player pays each turn: total, as the top bar has it, and cities, the upkeep of
--- districts and buildings, units, and deals. What those don't cover is other, when it is at least
--- half a point.
+-- Returns the gold the player pays each turn. What the upkeep of the cities, the units, and the
+-- deals don't cover is other, when it is at least half a point.
 local function GetExpenses(treasury, units, deals, cities)
 	local total = treasury:GetTotalMaintenance()
 	local expenses = { total = total, cities = cities, units = units, deals = deals }
@@ -485,9 +477,7 @@ local function GetExpenses(treasury, units, deals, cities)
 	return expenses
 end
 
--- Returns the income section: gold, faith, science, and culture, each with its total per turn and its
--- sources, expenses, unitUpkeep, and deals. Gold's total is the income before the upkeep, which the
--- top bar's gold takes off.
+-- Returns the income section.
 function SentientSystems_GetIncomeState(player)
 	local treasury = player:GetTreasury()
 	local totals = {
