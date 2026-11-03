@@ -1,11 +1,8 @@
 -- The production choice: what each of the player's cities can produce, as the production panel
--- lists it. SentientSystemsCore_Choices.lua loads this file. Example:
--- SentientSystems_GetProductionChoices(player) returns a list with one table for each city, which
--- encodes as '{"buildings":[{"cost":32,"district":"DISTRICT_CITY_CENTER","turns":5,
--- "type":"BUILDING_GRANARY"}],"city":65536,"name":"Rome","units":[{"cost":40,"turns":6,
--- "type":"UNIT_SETTLER"}],...}', on one line, with districts, wonders, and projects too. The checks follow
--- GetData in ProductionPanel.lua. The checks count the tiles from SentientSystemsCore_Placement.lua,
--- and the bridge reads the tiles themselves with SentientSystems_GetPlacement.
+-- lists it. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/production.ts. The checks follow GetData in ProductionPanel.lua. The checks
+-- count the tiles from SentientSystemsCore_Placement.lua, and the bridge reads the tiles themselves
+-- with SentientSystems_GetPlacement.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
