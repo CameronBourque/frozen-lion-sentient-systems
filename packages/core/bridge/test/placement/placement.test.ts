@@ -11,11 +11,8 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetPlacement(0, 65536, \"DISTRICT_CAMPUS\"))";
 
-// A campus's tiles, in the shape the core mod sends.
-const PLACEMENT = {
-	tiles: [{ x: 17, y: 13, adjacency: { science: 1 } }, { x: 16, y: 14 }],
-	purchaseTiles: [{ x: 19, y: 14, adjacency: { science: 3 } }],
-};
+// The smallest placement the schema accepts. The schemas are checked in contract.test.ts.
+const PLACEMENT = { tiles: [{ x: 17, y: 13 }], purchaseTiles: [] };
 const JSON_TEXT = JSON.stringify(PLACEMENT);
 
 describe("readPlacement", () => {
@@ -58,14 +55,6 @@ describe("readPlacement", () => {
 			error: `${JSON.stringify(typeName)} isn't a type name, such as DISTRICT_CAMPUS`,
 		});
 		expect(game.commands).toEqual([]);
-	});
-
-	test("fails when a tile has no x", async () => {
-		answer({ [STASH]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify({ tiles: [{ y: 13 }], purchaseTiles: [] })] } });
-
-		const result = await readPlacement(client, 0, 65536, "DISTRICT_CAMPUS");
-
-		expect(!result.ok && result.error).toMatch(/^The core mod's placement JSON doesn't match the schema: tiles\.0\.x: /);
 	});
 
 	test("names the placement in the game's error", async () => {

@@ -1,4 +1,4 @@
-// Tests for state.ts, against the fake game. Each section's schema has its own tests beside this file.
+// Tests for state.ts, against the fake game. The schemas are tested in contract.test.ts, against the JSON from the Lua tests.
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -8,83 +8,39 @@ import { TunerClient } from "../../src/tuner/client.js";
 import type { CommandResult } from "../tuner/fake-game.js";
 import { FakeGame } from "../tuner/fake-game.js";
 
-// A state with one of each thing, in the shape the core mod sends.
+// The smallest state the schema accepts: every section, empty where it can be, with one blocker so
+// the text has a name to cut in the middle. The schemas are checked in contract.test.ts.
 const STATE: State = {
-	blockers: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }], units: [196608] },
-	cities: [{
-		id: 65536,
-		name: "Rome",
-		x: 17,
-		y: 14,
-		population: 3,
-		amenities: { have: 2, need: 2, mood: "HAPPINESS_CONTENT", warWeariness: 0 },
-		defense: { strength: 13, garrison: { value: 200, max: 200 } },
-		districts: [{
-			type: "DISTRICT_CITY_CENTER",
-			x: 17,
-			y: 14,
-			complete: true,
-			pillaged: false,
-			buildings: [{ type: "BUILDING_MONUMENT", pillaged: false }],
-		}],
-		growth: { foodSurplus: 3, housing: 6, rate: "normal", turnsUntilGrowth: 2 },
-		loyalty: { value: 100, max: 100, perTurn: 21 },
-		production: { type: "UNIT_SLINGER", turnsLeft: 2 },
-		yields: { food: 9, production: 6, gold: 8, science: 3.5, culture: 3.8, faith: 0 },
-	}],
-	units: [{
-		id: 196608,
-		type: "UNIT_SCOUT",
-		x: 24,
-		y: 15,
-		moves: { left: 3, max: 3 },
-		health: { value: 100, max: 100 },
-		experience: { points: 0, nextLevel: 15 },
-		promotions: [],
-		availablePromotions: [],
-	}],
-	tiles: [
-		{ x: 17, y: 14, terrain: "TERRAIN_PLAINS", owner: 0, district: "DISTRICT_CITY_CENTER", route: "ROUTE_ANCIENT_ROAD", visible: true },
-		{ x: 29, y: 17, terrain: "TERRAIN_GRASS", resource: "RESOURCE_CATTLE", owner: 1, visible: false },
-	],
+	blockers: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH" }], units: [] },
+	cities: [],
+	units: [],
+	tiles: [],
 	proposals: [],
-	scoreboard: [{ player: 0, score: 0, categories: [] }],
-	victories: { domination: [{ player: 0, progress: 0, military: 0 }] },
-	religion: { pantheon: "BELIEF_GOD_OF_THE_SEA", prophet: false },
+	scoreboard: [],
+	victories: {},
+	religion: {},
 	diplomacy: [],
-	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 50, envoys: 1 }, cityStates: [] },
+	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 0, envoys: 0 }, cityStates: [] },
 	greatPeople: [],
 	player: {
-		gold: { balance: 100, perTurn: 5.5 },
-		faith: { balance: 10, perTurn: 1 },
-		science: 3,
-		culture: 2,
+		gold: { balance: 0, perTurn: 0 },
+		faith: { balance: 0, perTurn: 0 },
+		science: 0,
+		culture: 0,
 		tourism: 0,
 		resources: [],
 		income: {
-			gold: { total: 5 },
-			faith: { total: 1 },
-			science: { total: 3 },
-			culture: { total: 2 },
+			gold: { total: 0 },
+			faith: { total: 0 },
+			science: { total: 0 },
+			culture: { total: 0 },
 			expenses: { total: 0, cities: 0, units: 0, deals: 0 },
 			cities: [],
 			unitUpkeep: [],
 			deals: [],
 		},
 	},
-	rivals: {
-		cities: [{
-			owner: 1,
-			id: 65536,
-			name: "Râ-Kedet",
-			x: 30,
-			y: 18,
-			population: 2,
-			capital: true,
-			defense: { strength: 13, garrison: { value: 200, max: 200 } },
-		}],
-		units: [{ owner: 1, id: 131073, type: "UNIT_WARRIOR", x: 25, y: 14, health: { value: 100, max: 100 } }],
-	},
+	rivals: { cities: [], units: [] },
 };
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetState(0))";
@@ -131,7 +87,7 @@ describe("readState", () => {
 
 	test("joins the pieces with nothing between them", async () => {
 		const json = JSON.stringify(STATE);
-		const cut = json.indexOf("Rome") + 2;
+		const cut = json.indexOf("RESEARCH") + 3;
 
 		stash([json.slice(0, cut), json.slice(cut)]);
 
@@ -145,14 +101,6 @@ describe("readState", () => {
 		answer({ "SentientSystems_Stash(SentientSystems_GetState(3))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify(STATE)] } });
 
 		expect((await readState(client, 3)).ok).toBe(true);
-	});
-
-	test("drops a field that the schema doesn't know", async () => {
-		stash([JSON.stringify({ ...STATE, wonders: [] })]);
-
-		const result = await readState(client, 0);
-
-		expect(result.ok && "wonders" in result.value).toBe(false);
 	});
 
 	test("fails when the stash doesn't print a piece count", async () => {
@@ -177,17 +125,11 @@ describe("readState", () => {
 	});
 
 	test("fails with each field that doesn't match the schema", async () => {
-		stash([JSON.stringify({ ...STATE, cities: [{ ...STATE.cities[0], name: 7 }], tiles: [{ x: 0, y: 0 }] })]);
+		stash([JSON.stringify({ ...STATE, cities: [{ name: 7 }], tiles: [{ x: 0, y: 0 }] })]);
 
 		const result = await readState(client, 0);
 
-		expect(!result.ok && result.error).toMatch(/^The core mod's state JSON doesn't match the schema: cities\.0\.name: .*; tiles\.0\.terrain: .*; tiles\.0\.visible: /);
-	});
-
-	test("fails when the state isn't an object", async () => {
-		stash(["[]"]);
-
-		expect(await readState(client, 0)).toEqual({ ok: false, error: "The core mod's state JSON doesn't match the schema: the state: Invalid input: expected object, received array" });
+		expect(!result.ok && result.error).toMatch(/^The core mod's state JSON doesn't match the schema: .*cities\.0\.name: .*tiles\.0\.terrain: /);
 	});
 
 	test("fails with the game's error when the core mod can't build the state", async () => {

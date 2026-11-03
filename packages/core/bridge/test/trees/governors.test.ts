@@ -12,41 +12,16 @@ import { FakeGame } from "../tuner/fake-game.js";
 const STASH = "SentientSystems_Stash(SentientSystems_GetGovernorTree(0))";
 const PIECE = "SentientSystems_PrintPiece(1)";
 
-// A governor tree with an appointed governor and a candidate, in the shape the core mod sends.
+// The smallest governor tree the schema accepts. The schemas are checked in contract.test.ts.
 const GOVERNOR_TREE = {
-	governors: [
-		{
-			type: "GOVERNOR_THE_MERCHANT",
-			name: "Reyna",
-			title: "The Financier",
-			description: "Shrewd and fiscally knowledgeable, Reyna strengthens the economic power of a city.",
-			status: "appointed" as const,
-			turnsToEstablish: 5,
-			loyalty: 8,
-			promotions: [
-				{ type: "GOVERNOR_PROMOTION_MERCHANT_LAND_ACQUISITION", name: "Land Acquisition", description: "Acquires tiles.", level: 0, column: 1, requires: [], status: "held" as const },
-				{
-					type: "GOVERNOR_PROMOTION_MERCHANT_HARBORMASTER",
-					name: "Harbormaster",
-					description: "Double adjacency bonuses from Commercial Hubs and Harbors in the city.",
-					level: 1,
-					column: 0,
-					requires: ["GOVERNOR_PROMOTION_MERCHANT_LAND_ACQUISITION"],
-					status: "available" as const,
-				},
-			],
-		},
-		{
-			type: "GOVERNOR_THE_DEFENDER",
-			name: "Victor",
-			title: "The Castellan",
-			description: "Military focused.",
-			status: "candidate" as const,
-			turnsToEstablish: 3,
-			loyalty: 8,
-			promotions: [{ type: "GOVERNOR_PROMOTION_REDOUBT", name: "Redoubt", description: "Defends.", level: 0, column: 1, requires: [], status: "held" as const }],
-		},
-	],
+	governors: [{
+		type: "GOVERNOR_THE_DEFENDER",
+		name: "Victor",
+		title: "The Castellan",
+		description: "Military focused.",
+		status: "candidate" as const,
+		promotions: [{ type: "GOVERNOR_PROMOTION_REDOUBT", name: "Redoubt", description: "Defends.", level: 0, column: 1, requires: [], status: "held" as const }],
+	}],
 };
 
 describe("readGovernorTree", () => {
@@ -89,53 +64,14 @@ describe("readGovernorTree", () => {
 	});
 
 	test("reads a percent sign that the core mod wrote as \\u0025, so the game's log never sees it", async () => {
-		const promotion = { ...GOVERNOR_TREE.governors[1].promotions[0], description: "30% science and +15% Production" };
-		const tree = { governors: [{ ...GOVERNOR_TREE.governors[1], promotions: [promotion] }] };
+		const promotion = { ...GOVERNOR_TREE.governors[0].promotions[0], description: "30% science and +15% Production" };
+		const tree = { governors: [{ ...GOVERNOR_TREE.governors[0], promotions: [promotion] }] };
 		const json = JSON.stringify(tree).replaceAll("%", "\\u0025");
 
 		expect(json).not.toContain("%");
 		stash(json);
 
 		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, value: tree, bytes: Buffer.byteLength(json) });
-	});
-
-	test("reads a Secret Society with no stats and a hidden promotion", async () => {
-		const owls = {
-			type: "GOVERNOR_OWLS_OF_MINERVA",
-			name: "Owls of Minerva",
-			title: "Secret Society",
-			description: "A secret group of wealthy individuals.",
-			status: "candidate" as const,
-			secret: true as const,
-			promotions: [
-				{ type: "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1", name: "Initiation", description: "Unlocked by sending an Envoy.", level: 0, column: 1, requires: [], status: "held" as const },
-				{
-					type: "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2",
-					name: "???",
-					description: "Not yet revealed.",
-					level: 1,
-					column: 1,
-					requires: ["GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1"],
-					status: "locked" as const,
-					hidden: true as const,
-				},
-			],
-		};
-		const json = JSON.stringify({ governors: [owls] });
-
-		stash(json);
-
-		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, value: { governors: [owls] }, bytes: Buffer.byteLength(json) });
-	});
-
-	test("fails for a promotion status the panel doesn't use", async () => {
-		const bad = { governors: [{ ...GOVERNOR_TREE.governors[1], promotions: [{ ...GOVERNOR_TREE.governors[1].promotions[0], status: "unlocked" }] }] };
-
-		stash(JSON.stringify(bad));
-
-		const result = await readGovernorTree(client, 0);
-
-		expect(!result.ok && result.error).toMatch(/^The core mod's governor tree JSON doesn't match the schema: governors\.0\.promotions\.0\.status: /);
 	});
 
 	test("names the governor tree in the game's error", async () => {
