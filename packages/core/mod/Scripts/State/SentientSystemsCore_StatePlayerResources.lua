@@ -1,12 +1,8 @@
--- The resources part of the player section: each strategic, luxury, and bonus resource the player has,
--- where it comes from, and, with Gathering Storm, the strategic stockpiles, as the Resources tab of
--- Reports shows them. SentientSystemsCore_StatePlayer.lua loads this file. Example:
--- SentientSystems_GetResourcesState(player) returns a list that encodes as '[{"class":"luxury",
--- "cities":[{"amount":1,"city":{"id":65536,"owner":0}}],"name":"Turtles","sources":[{"amount":1,
--- "city":{"id":196610,"owner":0},"kind":"city","name":"Ratumacos"},{"amount":-1,"kind":"deal",
--- "player":8,"turnsLeft":19},{"amount":1,"kind":"other"}],"total":1,"type":"RESOURCE_TURTLES"}]', on one
--- line. The checks follow GetData, AddResourceData, GetCityResourceData, and ViewResourcesPage in
--- ReportScreen.lua, and AppendXP2ResourceData and AddMiscResourceData in ReportScreen_Expansion2.lua.
+-- The resources part of the player section: each strategic, luxury, and bonus resource the
+-- player has, as the Resources tab of Reports shows them. SentientSystemsCore_StatePlayer.lua
+-- loads this file. The shape is in bridge/src/state/resources.ts. The checks follow GetData,
+-- AddResourceData, GetCityResourceData, and ViewResourcesPage in ReportScreen.lua, and
+-- AppendXP2ResourceData and AddMiscResourceData in ReportScreen_Expansion2.lua.
 
 -- The class each resource class type has in the state.
 local CLASSES = {

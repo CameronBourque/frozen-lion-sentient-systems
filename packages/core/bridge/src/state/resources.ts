@@ -1,37 +1,51 @@
-// The schema for the resources part of the player section of the state: each strategic, luxury, and
-// bonus resource the player has, where it comes from, and, with Gathering Storm, the strategic
-// stockpiles, as the Resources tab of Reports shows them. The core mod builds it in
+// The schema for the resources part of the player section of the state, as the Resources tab of
+// Reports shows it. The core mod builds it in
 // Scripts/State/SentientSystemsCore_StatePlayerResources.lua.
 
 import { z } from "zod";
 
 const CITY = z.object({ owner: z.number(), id: z.number() });
 
-// Where an amount of a resource comes from: a city, with city and name, that owns it, a deal, with the
-// other player and the turns left, which is negative for a resource the player sends, a suzerain, with
-// the city-state's player ID, whose export the player gets, and, with Gathering Storm, units and power
-// for what they use each turn, reserve for what is reserved, and cityStates for what city-states send.
-// other is the game's Gameplay Bonuses, the amount that no source explains. amount is negative for
-// what is used.
 const SOURCE = z.discriminatedUnion("kind", [
-	z.object({ kind: z.literal("city"), city: CITY, name: z.string(), amount: z.number() }),
-	z.object({ kind: z.literal("deal"), player: z.number(), turnsLeft: z.number(), amount: z.number() }),
-	z.object({ kind: z.literal("suzerain"), player: z.number(), amount: z.number() }),
-	z.object({ kind: z.enum(["units", "power", "reserve", "cityStates", "other"]), amount: z.number() }),
+	z.object({
+		kind: z.literal("city"),
+		city: CITY,
+		name: z.string(),
+		amount: z.number(),
+	}).describe("A city that owns the resource."),
+	z.object({
+		kind: z.literal("deal"),
+		player: z.number().describe("The other player."),
+		turnsLeft: z.number(),
+		amount: z.number().describe("Negative when the player sends the resource."),
+	}).describe("A resource traded."),
+	z.object({
+		kind: z.literal("suzerain"),
+		player: z.number().describe("The city-state's player ID."),
+		amount: z.number(),
+	}).describe("A city-state's export, which the player gets as its suzerain."),
+	z.object({
+		kind: z.enum(["units", "power", "reserve", "cityStates", "other"]),
+		amount: z.number().describe("Negative for what is used."),
+	}).describe(
+		"units and power are what they use each turn, reserve is what is reserved, and cityStates is what city-states send, all with Gathering Storm. other is the game's Gameplay Bonuses, the amount that no source explains.",
+	),
 ]);
 
-// Each resource has type, such as RESOURCE_IRON, name, class, sources, and cities, the cities that the
-// game gives it to, each with the amount, left out for none. total is the sum of the sources. With
-// Gathering Storm a strategic resource has perTurn, which is what it adds to the stockpile each turn,
-// in place of total, and stockpile and max, as the strip at the bottom of the screen shows them.
+// Each resource the Resources tab lists, in the game's order. A resource with no sources and no
+// stockpile is left out.
 export const RESOURCES = z.array(z.object({
-	type: z.string(),
+	type: z.string().describe("Such as RESOURCE_IRON."),
 	name: z.string(),
 	class: z.enum(["strategic", "luxury", "bonus"]),
 	sources: z.array(SOURCE),
-	cities: z.array(z.object({ city: CITY, amount: z.number() })).optional(),
-	total: z.number().optional(),
-	perTurn: z.number().optional(),
-	stockpile: z.number().optional(),
-	max: z.number().optional(),
+	cities: z.array(z.object({ city: CITY, amount: z.number() })).optional().describe(
+		"The cities the game gives the resource to. Left out for none.",
+	),
+	total: z.number().optional().describe(
+		"The sum of the sources. A strategic resource has perTurn in its place with Gathering Storm.",
+	),
+	perTurn: z.number().optional().describe("What the resource adds to the stockpile each turn."),
+	stockpile: z.number().optional().describe("As the strip at the bottom of the screen shows it."),
+	max: z.number().optional().describe("As the strip at the bottom of the screen shows it."),
 }));

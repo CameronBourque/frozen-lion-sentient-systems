@@ -6,19 +6,22 @@ import { ERA } from "./era.js";
 import { INCOME } from "./income.js";
 import { RESOURCES } from "./resources.js";
 
-// gold and faith have the balance and the income per turn, as the top bar shows them, and gold's
-// income is net of the upkeep. science, culture, and tourism are per turn, each to one decimal.
-// tradeRoutes is left out while the player has no capacity for routes. favor is left out without
-// Gathering Storm. income is in income.ts, resources in resources.ts, and era in era.ts.
 export const PLAYER = z.object({
-	gold: z.object({ balance: z.number(), perTurn: z.number() }),
+	gold: z.object({
+		balance: z.number().describe("Rounded down."),
+		perTurn: z.number().describe("Net of the upkeep."),
+	}),
 	faith: z.object({ balance: z.number(), perTurn: z.number() }),
-	science: z.number(),
-	culture: z.number(),
-	tourism: z.number(),
+	science: z.number().describe("Per turn, to one decimal."),
+	culture: z.number().describe("Per turn, to one decimal."),
+	tourism: z.number().describe("Per turn, to one decimal."),
 	income: INCOME,
 	resources: RESOURCES,
 	era: ERA,
-	tradeRoutes: z.object({ active: z.number(), capacity: z.number() }).optional(),
-	favor: z.object({ balance: z.number(), perTurn: z.number() }).optional(),
+	tradeRoutes: z.object({ active: z.number(), capacity: z.number() }).optional().describe(
+		"Left out while the player has no capacity for routes, as the top bar hides it.",
+	),
+	favor: z.object({ balance: z.number(), perTurn: z.number() }).optional().describe(
+		"Diplomatic favor. Left out without Gathering Storm.",
+	),
 });
