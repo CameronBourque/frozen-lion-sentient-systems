@@ -117,13 +117,13 @@ local function BuildCity(data, hashes, indexes, ownerID)
 			return data.id
 		end,
 		GetName = function()
-			return data.name
+			return data.name or "LOC_CITY_NAME_UNNAMED"
 		end,
 		GetX = function()
-			return data.x
+			return data.x or 0
 		end,
 		GetY = function()
-			return data.y
+			return data.y or 0
 		end,
 		GetPopulation = function()
 			return data.population

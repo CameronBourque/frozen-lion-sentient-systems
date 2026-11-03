@@ -100,11 +100,11 @@ return function(env, world, ctx)
 		end
 
 		function unit.GetMovesRemaining()
-			return data.moves
+			return data.moves or 0
 		end
 
 		function unit.GetMaxMoves()
-			return data.maxMoves
+			return data.maxMoves or 0
 		end
 
 		function unit.GetDamage()
