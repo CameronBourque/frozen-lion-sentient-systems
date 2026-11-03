@@ -1,8 +1,7 @@
 // Reads one player's choices from the core mod: the legal options for each discrete choice. The
 // core mod builds them as JSON in a call of its own, so the agent reads them only when it decides,
-// and the bridge reads them through the stash, in stash.ts. docs/design/core/in-game-lua.md has the
-// format. Each choice's schema has its own file in this folder, as each choice of the core mod's
-// Lua does.
+// and the bridge reads them through the stash, in stash.ts. Each choice's schema has its own file in
+// this folder, as each choice of the core mod's Lua does, and holds the choice's shape.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -24,8 +23,12 @@ import { WORLD_CONGRESS_CHOICE } from "./world-congress.js";
 
 // Not strict, so a choice from a newer core mod is dropped instead of failing all the choices.
 export const CHOICES = z.object({
-	production: z.array(PRODUCTION_CITY),
-	purchases: z.array(PURCHASE_CITY),
+	production: z.array(PRODUCTION_CITY).describe(
+		"One entry for each of the player's cities, in the game's order.",
+	),
+	purchases: z.array(PURCHASE_CITY).describe(
+		"One entry for each of the player's cities, in the game's order.",
+	),
 	techs: z.array(RESEARCH_OPTION),
 	civics: z.array(RESEARCH_OPTION),
 	government: GOVERNMENT,

@@ -4,19 +4,17 @@
 
 import { z } from "zod";
 
-// The reasons the panel greys an item out: the game's, then the panel's own text when the player
-// can't afford it. Left out when the city can buy it. The list can be empty, when the game gives no
-// reason.
-const BLOCKED = z.array(z.string()).optional();
+const BLOCKED = z.array(z.string()).optional().describe(
+	"There when the tab greys the item out: the game's reasons, then the tab's own text when the player can't afford it, such as Not enough [ICON_Gold] Gold in treasury to purchase this. Can be empty, when the game gives no reason. Left out when the city can buy it.",
+);
 
-// A building, a district, or a unit trained as a corps or an army.
+// A building, a district, or a unit trained as a corps or an army. cost is in the yield.
 const PURCHASE = z.object({ cost: z.number(), blocked: BLOCKED });
 
 const UNIT_PURCHASE = PURCHASE.extend({
 	type: z.string(),
-	// Each is left out when the city can't buy that formation.
-	corps: PURCHASE.optional(),
-	army: PURCHASE.optional(),
+	corps: PURCHASE.optional().describe("There when the city can buy the unit as a corps."),
+	army: PURCHASE.optional().describe("There when the city can buy the unit as an army."),
 });
 
 const TYPED_PURCHASE = PURCHASE.extend({ type: z.string() });
@@ -29,14 +27,15 @@ const YIELD_PURCHASES = z.object({
 	districts: z.array(TYPED_PURCHASE),
 });
 
-// A tile the city can buy with gold. blocked holds the purchase lens's tooltip when the player
-// can't afford it.
-const TILE_PURCHASE = PURCHASE.extend({ x: z.number(), y: z.number() });
+const TILE_PURCHASE = PURCHASE.extend({ x: z.number(), y: z.number() }).describe(
+	"blocked is there when the cost is more than the player's gold, with the purchase lens's tooltip, such as You need 18 more [ICON_Gold] in order to purchase this plot.",
+);
 
 export const PURCHASE_CITY = z.object({
-	city: z.number(),
-	name: z.string(),
-	// Only gold buys tiles.
-	gold: YIELD_PURCHASES.extend({ tiles: z.array(TILE_PURCHASE) }),
-	faith: YIELD_PURCHASES,
+	city: z.number().describe("The city's ID."),
+	name: z.string().describe("In the game's language."),
+	gold: YIELD_PURCHASES.extend({
+		tiles: z.array(TILE_PURCHASE).describe("The tiles the city can buy, in plot index order."),
+	}).describe("What the gold purchase tab lists. Only gold buys tiles."),
+	faith: YIELD_PURCHASES.describe("What the faith purchase tab lists."),
 });

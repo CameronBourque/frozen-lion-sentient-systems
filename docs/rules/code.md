@@ -31,7 +31,7 @@ Most code should read without comments. Name things so they explain themselves.
 - **Start each file with a short comment on its purpose.** One to three lines.
 - **Comment the reason, not the action.** Say why a line exists or which case it handles, such as a quirk of a game call. Keep it to a line or two.
 - **Put each comment where its subject is.** A comment above a function describes the whole function. A comment about one step goes on the line before that step.
-- **Keep data shapes out of comments.** Describe them in a document under `docs/`, and link to it from the code.
+- **Keep data shapes out of comments.** The zod schemas in `packages/core/bridge/src/` are the home of the core mod's JSON shapes. Give a field a `.describe()` note when its name doesn't say what it means, such as how it is rounded or which screen it matches. Link to the schema from the code.
 - **Keep examples out of comments.** Write them as tests.
 - **Don't repeat a document.** Link to it instead.
 - **Keep comment lines to 80 characters or fewer.**

@@ -5,22 +5,23 @@
 import { z } from "zod";
 
 export const RELIGION = z.object({
-	// The player's pantheon belief, such as BELIEF_GOD_OF_THE_SEA. Left out before they have one.
-	pantheon: z.string().optional(),
-	// The faith the next pantheon needs. There only before the player has a pantheon.
-	pantheonFaith: z.number().optional(),
-	// Whether the player has a Great Prophet. There only between their pantheon and their first
-	// belief.
-	prophet: z.boolean().optional(),
-	// The religion the player founded. Left out before they found one. holyCity is a city ID, left
-	// out once no city holds it. majority counts the cities where it is the majority religion, and
-	// cities lists each city of any player with followers of it.
+	pantheon: z.string().optional().describe(
+		"The player's pantheon belief, such as BELIEF_GOD_OF_THE_SEA. Left out before they have one.",
+	),
+	pantheonFaith: z.number().optional().describe(
+		"The faith the next pantheon needs. There only before the player has a pantheon.",
+	),
+	prophet: z.boolean().optional().describe(
+		"Whether the player has a Great Prophet. There only between their pantheon and their first belief.",
+	),
 	founded: z.object({
-		type: z.string(),
+		type: z.string().describe("Such as RELIGION_CATHOLICISM."),
 		name: z.string(),
-		beliefs: z.array(z.string()),
-		holyCity: z.number().optional(),
-		majority: z.number(),
-		cities: z.array(z.object({ owner: z.number(), city: z.number(), followers: z.number() })),
-	}).optional(),
+		beliefs: z.array(z.string()).describe("By type."),
+		holyCity: z.number().optional().describe("A city ID. Left out once no city holds it."),
+		majority: z.number().describe("The count of cities where it is the majority religion."),
+		cities: z.array(z.object({ owner: z.number(), city: z.number(), followers: z.number() })).describe(
+			"Each city of any player with followers of it.",
+		),
+	}).optional().describe("The religion the player founded. Left out before they found one."),
 });

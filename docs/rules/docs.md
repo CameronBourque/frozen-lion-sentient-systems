@@ -21,6 +21,7 @@ Where each kind of fact lives:
 | Kind of fact | Home |
 | --- | --- |
 | How something works | [design/](../design/README.md) |
+| The fields of the core mod's JSON | The zod schemas in `packages/core/bridge/src/` |
 | Why it works that way | The `## Decisions` table of that design file |
 | What is true about the game or our tools, and how we checked | [findings/](../findings/README.md) |
 | How to test a finding | That finding's `## Method` section |

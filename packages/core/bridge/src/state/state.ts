@@ -1,9 +1,8 @@
 // Reads one player's state from the core mod: what blocks their turn, their cities, units, revealed
 // tiles, the rivals they can see, their religion, their envoys, the great people on offer, their
 // governors, the top bar's numbers, the scores, and the victories. The core mod builds the state as
-// JSON, and the bridge reads it through the stash, in stash.ts. docs/design/core/in-game-lua.md has
-// the format.
-// Each section's schema has its own file in this folder, as each section of the core mod's Lua does.
+// JSON, and the bridge reads it through the stash, in stash.ts. Each section's schema has its own
+// file in this folder, as each section of the core mod's Lua does, and holds the section's shape.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -28,9 +27,14 @@ export const STATE = z.object({
 	blockers: BLOCKERS,
 	cities: z.array(CITY),
 	diplomacy: DIPLOMACY,
-	units: z.array(UNIT),
-	tiles: z.array(TILE),
-	rivals: z.object({ cities: z.array(RIVAL_CITY), units: z.array(RIVAL_UNIT) }),
+	units: z.array(UNIT).describe(
+		"The player's units on the map. A unit at X -9999, or one that is dead or about to die, is left out.",
+	),
+	tiles: z.array(TILE).describe("The tiles the player has revealed, in plot index order."),
+	rivals: z.object({
+		cities: z.array(RIVAL_CITY).describe("Other players' cities on tiles the player has revealed."),
+		units: z.array(RIVAL_UNIT).describe("Other players' units that the player can see now."),
+	}),
 	proposals: PROPOSALS,
 	religion: RELIGION,
 	envoys: ENVOYS,

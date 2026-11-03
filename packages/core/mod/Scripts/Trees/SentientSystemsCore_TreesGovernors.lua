@@ -1,13 +1,9 @@
 -- Builds one player's governor tree as JSON for the bridge, in a call of its own, as the Governors
 -- panel and its details panel show it, so the agent can choose which governor to appoint and which
 -- promotion to give. It reads the tree from the running game. Rise and Fall adds governors, so
--- without it the tree is empty. See docs/design/core/in-game-lua.md. Example:
--- SentientSystems_GetGovernorTree(0) returns '{"governors":[{"description":"Shrewd and fiscally
--- knowledgeable, ...","loyalty":8,"name":"Reyna","promotions":[{"column":1,"description":"...",
--- "level":0,"name":"Land Acquisition","requires":[],"status":"held","type":
--- "GOVERNOR_PROMOTION_MERCHANT_LAND_ACQUISITION"},...],"status":"appointed","title":"The Financier",
--- "turnsToEstablish":5,"type":"GOVERNOR_THE_MERCHANT"},...]}', on one line. The checks follow Refresh
--- and AddGovernorCandidate in GovernorPanel.lua, and CreatePromotionTree in GovernorDetailsPanel.lua.
+-- without it the tree is empty. See docs/design/core/in-game-lua.md. The shape is in
+-- bridge/src/trees/governors.ts. The checks follow Refresh and AddGovernorCandidate in
+-- GovernorPanel.lua, and CreatePromotionTree in GovernorDetailsPanel.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -28,12 +24,8 @@ local function GetPrerequisites()
 	return prerequisites
 end
 
--- Returns the promotions of a governor, in the game's order, each with type, name,
--- description, level, column, requires, the promotions it follows, any one of which it needs, and
--- status: held, for one the governor has, available, for one they can earn now, and locked, for one
--- that needs a prerequisite first. A promotion the panel hides has hidden, true, and the game's own
--- text in place of its name and description. A governor of nil is a candidate, whose card shows only
--- the base ability as held. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230,
+-- Returns the promotions of a governor, in the game's order. A governor of nil is a candidate,
+-- whose card shows only the base ability as held. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230,
 -- CreateSecretPromotionTree, lines 270 to 328, and AddGovernorCandidate in GovernorPanel.lua, lines
 -- 198 to 207.
 local function GetPromotions(governors, governor, definition, prerequisites)
@@ -68,9 +60,7 @@ local function GetPromotions(governors, governor, definition, prerequisites)
 	return promotions
 end
 
--- Returns one governor with their tree: type, name, title, description, status, appointed or
--- candidate, turnsToEstablish, the turns they take to settle in a city, loyalty, the loyalty pressure
--- they give, and promotions. A Secret Society has secret, true, and neither turns nor loyalty, as its
+-- Returns one governor with their tree. A Secret Society has neither turns nor loyalty, as its
 -- card shows no stats.
 local function GetGovernor(governors, governor, definition, prerequisites)
 	local secret = SentientSystems_IsCannotAssign(definition)
@@ -88,9 +78,7 @@ local function GetGovernor(governors, governor, definition, prerequisites)
 	}
 end
 
--- Returns the governor tree of the player with ID playerID as JSON: each appointed governor in the
--- panel's order, then each governor the player could still appoint, which includes the Secret
--- Societies they have discovered. Raises an error for an ID with
+-- Returns the governor tree of the player with ID playerID as JSON. Raises an error for an ID with
 -- no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetGovernorTree(playerID)). See Refresh in GovernorPanel.lua,
 -- lines 39 to 122.

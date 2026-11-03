@@ -1,37 +1,39 @@
-// The schema for the era part of the player section of the state: the era, the player's era score and
-// age, the scores for the next age, the turns until the next era, and the other players' ages, as the
-// Era Progress panel shows them. The core mod builds it in
-// Scripts/State/SentientSystemsCore_StatePlayerEra.lua.
+// The schema for the era part of the player section of the state, as the Era Progress panel shows
+// it. The core mod builds it in Scripts/State/SentientSystemsCore_StatePlayerEra.lua.
 
 import { z } from "zod";
 
 const AGE = z.enum(["dark", "normal", "golden", "heroic"]);
 
-// Left out in a game without the Rise and Fall expansion, which adds ages. type is the era, such as
-// ERA_RENAISSANCE, and name its name in the game's language. score is the player's era score and age
-// the age they are in. scoreBreakdown is what the score is made of, the earlier eras as one entry,
-// each with the game's text for the source. effects has citizenLoyalty, the loyalty pressure each of
-// the player's citizens exerts in their city, and the active dedications, each with the text of its
-// bonus for the age. civilizations lists the players the player has met with their ages, in the
-// panel's order, and unmet counts the others, which the panel shows with no age.
-// Until the final era, nextAge is the age the score earns for the next era, thresholds has the score
-// the next normal and golden age need, with normal left out in the Dramatic Ages mode, and
-// turnsUntilNext is the least and the most turns until the era ends, the same once its countdown has
-// started. The final era has final, true, instead.
 export const ERA = z.object({
-	type: z.string(),
-	name: z.string(),
-	score: z.number(),
-	age: AGE,
-	scoreBreakdown: z.array(z.object({ source: z.string(), points: z.number() })),
+	type: z.string().describe("The era, such as ERA_RENAISSANCE."),
+	name: z.string().describe("In the game's language."),
+	score: z.number().describe("The player's era score."),
+	age: AGE.describe("The age the player is in."),
+	scoreBreakdown: z.array(z.object({
+		source: z.string().describe("The game's text."),
+		points: z.number(),
+	})).describe("What the score is made of, with the earlier eras as one entry."),
 	effects: z.object({
-		citizenLoyalty: z.number(),
-		dedications: z.array(z.object({ type: z.string(), text: z.string() })),
+		citizenLoyalty: z.number().describe("The loyalty pressure each of the player's citizens exerts in their city."),
+		dedications: z.array(z.object({
+			type: z.string(),
+			text: z.string().describe("The text of its bonus for the age."),
+		})).describe("The active dedications."),
 	}),
-	civilizations: z.array(z.object({ player: z.number(), age: AGE })),
-	unmet: z.number(),
-	final: z.literal(true).optional(),
-	nextAge: z.enum(["dark", "normal", "golden"]).optional(),
-	thresholds: z.object({ normal: z.number().optional(), golden: z.number() }).optional(),
-	turnsUntilNext: z.object({ min: z.number(), max: z.number() }).optional(),
-}).optional();
+	civilizations: z.array(z.object({ player: z.number(), age: AGE })).describe(
+		"The players the player has met, with their ages, in the panel's order.",
+	),
+	unmet: z.number().describe("The number of other players the player hasn't met, which the panel shows with no age."),
+	final: z.literal(true).optional().describe("There in the final era, which has no next era."),
+	nextAge: z.enum(["dark", "normal", "golden"]).optional().describe(
+		"The age the score earns for the next era. Left out in the final era.",
+	),
+	thresholds: z.object({
+		normal: z.number().optional().describe("Left out in the Dramatic Ages mode."),
+		golden: z.number(),
+	}).optional().describe("The score the next normal and golden age need. Left out in the final era."),
+	turnsUntilNext: z.object({ min: z.number(), max: z.number() }).optional().describe(
+		"The least and the most turns until the era ends, the same once its countdown has started. Left out in the final era.",
+	),
+}).optional().describe("Left out in a game without the Rise and Fall expansion, which adds ages.");

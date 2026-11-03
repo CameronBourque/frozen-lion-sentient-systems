@@ -1,11 +1,8 @@
 -- The science part of the victories section of the state: a player's stages toward the science
 -- victory and the tasks of each, as the Science tab of World Rankings shows them. The numbers follow
 -- PopulateScienceInstance and GetTooltipForScienceProject in WorldRankings.lua and
--- WorldRankings_Expansion2.lua. SentientSystemsCore_StateVictories.lua loads this file. Example:
--- SentientSystems_GetScienceDetails(player, other) returns a table that encodes as '{"stages":
--- [{"done":false,"progress":0.4,"tasks":[{"done":true,"kind":"district","type":"DISTRICT_SPACEPORT"},
--- {"done":false,"kind":"tech","type":"TECH_SATELLITES"},{"done":false,"kind":"project","type":
--- "PROJECT_LAUNCH_EARTH_SATELLITE"}]}]}', on one line.
+-- WorldRankings_Expansion2.lua. SentientSystemsCore_StateVictories.lua loads this file. The shape is in
+-- bridge/src/state/victories.ts.
 
 -- The projects of each stage. Gathering Storm has four stages of one project, and the base game three.
 local function GetStageProjects()
@@ -101,10 +98,8 @@ local function GetTasks(other, projects, finished, withSpaceport)
 	return tasks
 end
 
--- Returns the player's stages, each with progress, from 0 to 1, done, and tasks, each with kind, such
--- as project, type, and done. With Gathering Storm, once the player has launched the exoplanet
--- expedition, lightYears has the light years travelled, the needed, and perTurn. needed is the
--- viewing player's, as the tab reads it.
+-- Returns the player's stages. With Gathering Storm, once the player has launched the exoplanet
+-- expedition, it adds lightYears, whose needed is the viewing player's, as the tab reads it.
 function SentientSystems_GetScienceDetails(player, other)
 	local details = { stages = {} }
 	local stats = other:GetStats()

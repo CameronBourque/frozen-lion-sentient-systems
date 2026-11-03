@@ -4,14 +4,15 @@
 
 import { z } from "zod";
 
-// Left out of the choices with no dedication to make. era is the name of the era that began, age is
-// the player's age for the one that ended, picks is how many dedications the player must make, which
-// is several in a heroic age, and options lists the dedications on offer, each with type, the
-// dedication the choice sends, name, the popup's category text, and description, its bonus for the
-// age, in the game's language.
 export const DEDICATIONS_CHOICE = z.object({
-	era: z.string(),
-	age: z.enum(["heroic", "golden", "dark", "normal"]),
-	picks: z.number(),
-	options: z.array(z.object({ type: z.string(), name: z.string(), description: z.string() })),
-}).optional();
+	era: z.string().describe("The name of the era that began."),
+	age: z.enum(["heroic", "golden", "dark", "normal"]).describe("The player's age for the era that ended."),
+	picks: z.number().describe("How many dedications the player must make, which is several in a heroic age."),
+	options: z.array(z.object({
+		type: z.string().describe("The dedication the choice sends, such as COMMEMORATION_SCIENTIFIC."),
+		name: z.string().describe("The popup's category text."),
+		description: z.string().describe("Its bonus for the age, in the game's language, with its markup."),
+	})),
+}).optional().describe(
+	"Left out of the choices with no dedication to make: there only while the dedication blocker is up.",
+);

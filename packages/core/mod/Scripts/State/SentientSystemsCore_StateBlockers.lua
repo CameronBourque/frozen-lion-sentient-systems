@@ -1,7 +1,6 @@
--- The blockers section of the state: what stops the end of the turn, as the Next Turn button sees it,
--- and the units that need orders. SentientSystemsCore_State.lua loads this file. Example:
--- SentientSystems_GetBlockerState(0) returns a table that encodes as
--- '{"list":[{"choice":"techs","type":"ENDTURN_BLOCKING_RESEARCH"}],"units":[196608]}', on one line.
+-- The blockers section of the state: what stops the end of the turn, as the Next Turn
+-- button sees it, and the units that need orders. SentientSystemsCore_State.lua loads
+-- this file. The shape is in bridge/src/state/blockers.ts.
 
 -- The key in the choices that resolves each blocker. A blocker that isn't here gets no choice: the
 -- unit blockers, which the units list resolves, and the values that no UI file names. See

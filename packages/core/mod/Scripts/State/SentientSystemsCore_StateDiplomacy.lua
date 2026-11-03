@@ -1,6 +1,6 @@
 -- The diplomacy section of the state: where the player stands with each
--- player they have met. Format: docs/design/core/in-game-lua.md. The checks
--- follow the Intel Report in DiplomacyActionView.lua.
+-- player they have met. The shape is in bridge/src/state/diplomacy.ts. The
+-- checks follow the Intel Report in DiplomacyActionView.lua.
 
 -- The alliance level at which the screen shows MAX in place of points.
 local MAX_ALLIANCE_LEVEL = 3

@@ -1,7 +1,7 @@
 -- The domination part of the victories section of the state: the original
 -- capitals a player holds, as the Domination tab of World Rankings shows
--- them. SentientSystemsCore_StateVictories.lua loads this file. Format:
--- docs/findings/game-victories.md.
+-- them. SentientSystemsCore_StateVictories.lua loads this file. The shape is in
+-- bridge/src/state/victories.ts.
 
 -- Returns the domination keys of a player's entry, none for a player with no
 -- capital, whom the tab leaves out. An owner that the viewing player has not

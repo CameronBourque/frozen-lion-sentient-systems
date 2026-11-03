@@ -1,7 +1,7 @@
 -- The religion part of the victories section of the state: the religion a
 -- player founded and the civs it has converted, as the Religion tab of World
 -- Rankings shows them. SentientSystemsCore_StateVictories.lua loads this
--- file. Format: docs/findings/game-victories.md.
+-- file. The shape is in bridge/src/state/victories.ts.
 
 -- Returns the religion keys of a player's entry, none for a player with no
 -- religion, whom the tab leaves out. A civ that the viewing player has not

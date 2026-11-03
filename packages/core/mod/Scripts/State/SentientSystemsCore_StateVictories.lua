@@ -1,10 +1,8 @@
 -- The victories section of the state: how close each living major player is to each victory, in the
 -- order the Overall tab of World Rankings ranks them, with the values its icon tooltips show.
--- SentientSystemsCore_State.lua loads this file. Format: docs/design/core/in-game-lua.md. Example:
--- SentientSystems_GetVictoryState(player) returns a table that encodes as '{"culture":[...],
--- "domination":[...],"religion":[...],"science":[{"player":0,"progress":0,"sciencePerTurn":2.7,
--- "techs":3},{"unmet":true}]}', on one line. The order and values follow
--- PopulateOverallInstance in WorldRankings.lua and g_victoryData in WorldRankings_Expansion2.lua.
+-- SentientSystemsCore_State.lua loads this file. The shape is in bridge/src/state/victories.ts.
+-- The order and values follow PopulateOverallInstance in WorldRankings.lua and g_victoryData in
+-- WorldRankings_Expansion2.lua.
 -- The details of each victory come from SentientSystemsCore_StateVictories*.lua.
 
 -- Returns whether the player is the other player or has met them. The tabs
@@ -174,11 +172,8 @@ local function GetRanking(player, victory)
 	return entries
 end
 
--- Returns a table with a list for each victory that is on and that a player can win, science,
--- culture, domination, religion, and, with Gathering Storm, diplomatic. Each list has one entry for
--- each living major player, best first. The player and each player they have met have player, their
--- ID, progress, from 0 to 1, and the tooltip's two numbers. Every other player has unmet, true, and
--- no ID. The keys that the tabs show for every player are in the details of each victory.
+-- Returns a table with a list for each victory that is on and that a player can win. The keys
+-- that the tabs show for every player are in the details of each victory.
 function SentientSystems_GetVictoryState(player)
 	local victories = {}
 

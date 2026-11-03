@@ -1,10 +1,7 @@
 -- The World Congress choice: what the player decides in a session of the World Congress, and looks
 -- at when one has ended, as the congress screen shows it. SentientSystemsCore_Choices.lua loads this
--- file. Example: SentientSystems_GetWorldCongressChoices(player) returns a table that encodes as
--- '{"favor":196,"proposals":[{"description":"...","name":"Aid Request","sender":11,"target":11,
--- "type":"WC_EMERGENCY_REQUEST_AID"}],"resolutions":[],"session":"special",
--- "voteCosts":[0,4,12,24,40,60,84,112,144,180]}', on one line. The checks follow PopulateResolutions,
--- PopulateProposals, PopulateReview, PopulateActiveEffects, and PopulateEmergencyProposals in
+-- file. The shape is in bridge/src/choices/world-congress.ts. The checks follow
+-- PopulateResolutions, PopulateProposals, PopulateReview, PopulateActiveEffects, and PopulateEmergencyProposals in
 -- WorldCongressPopup.lua. Checked in a running game for a Special Session only.
 
 -- Returns a player's name as the game shows it: the leader's name once the player has met them, and
@@ -61,9 +58,7 @@ local function GetChosenTarget(data, localPlayerID)
 end
 
 -- Returns the resolutions in effect or just decided, from a call that returns the chosen outcome of
--- each, each with name, elected, the label of the outcome, A or B, text, the outcome, and target. Adds
--- turnsLeft when given, and, from the review's player selections, votes, the votes for A and B, and
--- voters, each with player, name, option, A or B, target, what they chose it for, and votes.
+-- each. Adds turnsLeft when given, and the votes and voters from the review's player selections.
 local function GetOutcomes(data, localPlayerID, turnsLeft)
 	local outcomes = {}
 
@@ -112,11 +107,7 @@ local function GetOutcomes(data, localPlayerID, turnsLeft)
 	return outcomes
 end
 
--- Returns the resolutions to vote on in a regular session, each with type, such as
--- RESOLUTION_LUXURY_POLICY, name, options, with A and B, the text of each outcome, targetType, the
--- kind of target, such as ResourceType or PlayerType, targets, each with index, the number the vote
--- sends, name, and player, the player's ID, for a player target, and favored and disfavored, the
--- player IDs the game says favor or oppose it. See PopulateResolutions, lines 569 to 686.
+-- Returns the resolutions to vote on in a regular session. See PopulateResolutions, lines 569 to 686.
 local function GetResolutions(data, localPlayerID)
 	local resolutions = {}
 
@@ -154,9 +145,7 @@ local function GetResolutions(data, localPlayerID)
 	return resolutions
 end
 
--- Returns the proposals on the floor to vote for or against, each with type, such as
--- WC_EMERGENCY_BACKSTAB, name, description, sender, the proposing player's ID, and target, the
--- target player's ID. See PopulateProposalStack, lines 1227 to 1325.
+-- Returns the proposals on the floor to vote for or against. See PopulateProposalStack, lines 1227 to 1325.
 local function GetProposals(data)
 	local proposals = {}
 
@@ -175,8 +164,7 @@ local function GetProposals(data)
 	return proposals
 end
 
--- Returns the proposals the player could call a Special Session for, each with type, name,
--- description, target, cost, in Favor, and disabled, true for one the game won't take. See
+-- Returns the proposals the player could call a Special Session for. See
 -- PopulateEmergencyProposals, lines 1763 to 1786.
 local function GetAvailable(data)
 	local available = {}
@@ -197,13 +185,7 @@ local function GetAvailable(data)
 	return available
 end
 
--- Returns the World Congress choice: favor, the player's Diplomatic Favor, and, in a session, session,
--- regular for one with resolutions, and special for one without, voteCosts, the Favor for 1, 2, and so
--- on up to the most votes, in total, resolutions, and proposals. Out of a session, it has available,
--- the proposals the player could call a Special Session for, left out with none, and, while the
--- look-at-results blocker is up, session, review, results, the last session's resolutions, each with
--- name, elected, text, target, votes, and voters, and effects, the resolutions in effect, with turnsLeft.
--- Returns nil with nothing to show. The congress screen opens only from its notification, so the
+-- Returns the World Congress choice. Returns nil with nothing to show. The congress screen opens only from its notification, so the
 -- session and the results read only while their blocker is up. See SetStage in
 -- WorldCongressPopup.lua, lines 164 to 246.
 function SentientSystems_GetWorldCongressChoices(player)

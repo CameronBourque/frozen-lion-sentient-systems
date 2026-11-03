@@ -1,10 +1,6 @@
 -- Loads core mod files for tests, into an environment that matches the game's Lua. The game runs
 -- Havok Script, which matches Lua 5.1.5 except for five functions it doesn't have. See
--- docs/findings/lua-contexts.md#lua-51-comparison. Example:
--- local env = Game.new()
--- Game.run(env, "Scripts/SentientSystemsCore_Common.lua")
--- env.SentientSystems_Print("AGENT_TURN", 0)
--- env.printed[1] is "[SENTIENTSYSTEMS] AGENT_TURN 0".
+-- docs/findings/lua-contexts.md#lua-51-comparison.
 
 local Game = {}
 

@@ -1,9 +1,6 @@
--- The units section of the state: the player's own units, as the unit panel shows them.
--- SentientSystemsCore_State.lua loads this file. Example: SentientSystems_GetUnitStates(player)
--- returns a list with one table for each unit, which encodes as
--- '{"availablePromotions":[],"experience":{"nextLevel":15,"points":0},"health":{"max":100,"value":100},
--- "id":196608,"moves":{"left":3,"max":3},"promotions":[],"type":"UNIT_SCOUT","x":24,"y":15}', on one
--- line.
+-- The units section of the state: the player's own units, as the unit panel shows
+-- them. SentientSystemsCore_State.lua loads this file. The shape is in
+-- bridge/src/state/units.ts.
 
 -- The X position of a unit that isn't on the map. civ6-mcp skips these units. See
 -- docs/findings/game-api.md.
@@ -11,8 +8,7 @@ local OFF_MAP = -9999
 
 -- Returns health as the game shows it: the most damage less the damage taken, out of the most
 -- damage. The unit panel shows a unit's health this way, and the city banner a garrison's and walls'.
--- The cities and rivals sections use it too. Example: SentientSystems_GetHealth(100, 35) returns
--- { value = 65, max = 100 }.
+-- The cities and rivals sections use it too.
 function SentientSystems_GetHealth(maxDamage, damage)
 	return { value = maxDamage - damage, max = maxDamage }
 end

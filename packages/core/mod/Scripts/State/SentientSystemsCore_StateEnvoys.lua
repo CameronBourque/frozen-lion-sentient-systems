@@ -1,15 +1,7 @@
 -- The envoys section of the state: the player's envoy tokens and influence, the bonuses of each kind
--- of city-state, and each met city-state's envoys, suzerain, suzerain bonus, resources, quests, and
--- the players with envoys there, as the City-States screen shows them.
--- SentientSystemsCore_State.lua loads this file. Example: SentientSystems_GetEnvoyState(player)
--- returns a table that encodes as '{"bonuses":{"TRADE":["+2 [ICON_Gold] Gold in the ...",...]},
--- "cityStates":[{"envoys":2,"influencedBy":[{"envoys":3,"player":1},{"envoys":2,"player":0}],
--- "name":"Samarkand","player":12,"quests":[{"description":"Recruit one [ICON_GreatGeneral] Great
--- General.","name":"Recruit a Great General.","reward":"[ICON_Envoy] 1 Envoy",
--- "type":"QUEST_RECRUIT_GREAT_PERSON_CLASS"}],"suzerain":1,"suzerainBonus":"Your Builders can now
--- make Trading Dome improvements. ...","suzerainNeeds":4,"type":"TRADE"}],"influence":{"envoys":1,
--- "perTurn":0,"points":0,"threshold":50},"tokens":4}', on one line. The checks follow GetData in
--- CityStates.lua.
+-- of city-state, and each met city-state, as the City-States screen shows them.
+-- SentientSystemsCore_State.lua loads this file. The shape is in bridge/src/state/envoys.ts. The
+-- checks follow GetData in CityStates.lua.
 
 -- The fewest envoys that make a suzerain, which CityStates.lua also sets by hand.
 local MIN_SUZERAIN_ENVOYS = 3
@@ -89,8 +81,7 @@ local function GetResources(cityState)
 	return #list > 0 and list or nil
 end
 
--- Returns the quests a city-state gives the player, each with type, name, description, and reward,
--- or nil for none. See GetQuests in CityStates.lua, lines 255 to 275.
+-- Returns the quests a city-state gives the player, or nil for none. See GetQuests in CityStates.lua, lines 255 to 275.
 local function GetQuests(playerID, cityStateID)
 	local manager = Game.GetQuestsManager()
 	local quests = {}
@@ -110,8 +101,7 @@ local function GetQuests(playerID, cityStateID)
 end
 
 -- Returns the players with envoys at a city-state, most envoys first, as the Influenced By tab lists
--- them, each with envoys and player, its ID, when it is the player or a player they have met, or
--- unmet, true for a player they haven't met. Ties keep the game's order. See ViewCityState in
+-- them. Ties keep the game's order. See ViewCityState in
 -- CityStates.lua, lines 1235 to 1275, and AddInfluenceRow, lines 1314 to 1333.
 local function GetInfluencedBy(player, influence)
 	local list = {}
@@ -141,12 +131,8 @@ local function GetInfluencedBy(player, influence)
 	return list
 end
 
--- Returns one city-state as the screen's list shows it: player, its ID, name, type, envoys, the
--- player's envoys there, suzerain, the suzerain's ID when it is the player or a player they have
--- met, or suzerainUnmet, true for a player they haven't met, and suzerainNeeds, the envoys the
--- player needs to be suzerain, at least 3, and one more than the most any other player has. It adds
--- suzerainBonus, and suzerainBonusDisabled, true when Gathering Storm turns it off, resources,
--- quests, and influencedBy. See GetData in CityStates.lua, lines 1411 to 1530.
+-- Returns one city-state as the screen's list shows it. See GetData in CityStates.lua, lines 1411
+-- to 1530.
 local function GetCityState(player, cityState)
 	local playerID = player:GetID()
 	local cityStateID = cityState:GetID()
@@ -183,11 +169,7 @@ local function IsMetCityState(player, minor)
 		and player:GetDiplomacy():HasMet(minor:GetID())
 end
 
--- Returns the envoys section: tokens, the envoys the player can send now, influence, with points,
--- perTurn, threshold, and envoys, the envoys each threshold gives, as the screen's header shows
--- them, bonuses, the bonuses at 1, 3, and 6 envoys of each kind of city-state met, left out with
--- none, and cityStates, each met city-state in the game's order. See RealizeListHeader in
--- CityStates.lua, lines 609 to 662.
+-- Returns the envoys section. See RealizeListHeader in CityStates.lua, lines 609 to 662.
 function SentientSystems_GetEnvoyState(player)
 	local influence = player:GetInfluence()
 	local cityStates = {}

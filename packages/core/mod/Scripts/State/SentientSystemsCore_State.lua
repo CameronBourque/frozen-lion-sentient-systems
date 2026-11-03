@@ -1,13 +1,7 @@
 -- Builds one player's view of the game as JSON for the bridge, from that player's own data and
 -- visibility, never from the screen. Each section of the state comes from its own file in this
--- folder, and this file puts them together. See docs/design/core/in-game-lua.md. Example:
--- SentientSystems_GetState(0) returns
--- '{"blockers":{"list":[...],"units":[...]},"cities":[{"id":65536,"name":"Rome",...}],
--- "envoys":{"cityStates":[...],"influence":{...},"tokens":0},"governors":{...},"greatPeople":[...],
--- "player":{...},"religion":{"pantheon":"BELIEF_GOD_OF_THE_SEA"},"rivals":{"cities":[...],"units":[...]},"tiles":[...],
--- "scoreboard":[{"player":0,"score":48,...}],
--- "victories":{"science":[{"player":0,"progress":0.1,...},{"unmet":true}],...},
--- "units":[...]}', on one line.
+-- folder, and this file puts them together. See docs/design/core/in-game-lua.md. The shapes are
+-- in bridge/src/state/.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")

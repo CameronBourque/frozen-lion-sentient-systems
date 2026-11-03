@@ -1,8 +1,6 @@
 -- The purchase choice: what each of the player's cities can buy, as the production panel's purchase
--- tabs list it. SentientSystemsCore_Choices.lua loads this file. Example:
--- SentientSystems_GetPurchaseChoices(player) returns a list with one table for each city, which
--- encodes as '{"city":65536,"faith":{...},"gold":{"buildings":[...],"districts":[],"units":[{"cost":100,
--- "type":"UNIT_BUILDER"}]},"name":"Rome"}', on one line, with faith in the same form as gold. The checks follow ComposeUnitForPurchase,
+-- tabs list it. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/purchases.ts. The checks follow ComposeUnitForPurchase,
 -- ComposeBldgForPurchase, and ComposeDistrictForPurchase in ProductionPanel.lua, lines 1632 to 1827.
 -- The tiles to buy with gold follow ShowPurchases in PlotInfo.lua.
 
@@ -143,9 +141,9 @@ end
 -- The text key of the tooltip on a tile the player can't afford, which takes the gold still needed.
 local NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
 
--- Returns the tiles the city can buy with gold, in plot index order, each with x, y, and cost. A
--- tile that costs more than the player's gold has blocked, with the text of the tooltip the purchase
--- lens shows on it, as its button is disabled. See ShowPurchases in PlotInfo.lua, lines 282 to 326.
+-- Returns the tiles the city can buy with gold, in plot index order. A tile that costs more than
+-- the player's gold has the text of the tooltip the purchase lens shows on it, as its button is
+-- disabled. See ShowPurchases in PlotInfo.lua, lines 282 to 326.
 local function GetTilePurchases(city)
 	local gold = Players[city:GetOwner()]:GetTreasury():GetGoldBalance()
 	local cityGold = city:GetGold()

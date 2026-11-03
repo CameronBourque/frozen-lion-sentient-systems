@@ -1,10 +1,8 @@
 -- Builds one player's tech tree or civic tree as JSON for the bridge, in a call of its own, as the
--- tree screen shows it, so the agent can plan a route through the tree. It reads the tree from the running game,
--- because the Tech and Civic Shuffle mode changes it. See docs/design/core/in-game-lua.md. Example:
--- SentientSystems_GetTechTree(0) returns '{"nodes":[{"cost":25,"era":"ERA_ANCIENT",
--- "prerequisites":[],"status":"ready","type":"TECH_MINING",...}],"players":[{"player":0,...}]}', on
--- one line. SentientSystems_GetCivicTree(0) returns the civic tree in the same form. The checks
--- follow GetCurrentData and PopulateNode in TechTree.lua and CivicsTree.lua.
+-- tree screen shows it, so the agent can plan a route through the tree. It reads the tree from the
+-- running game, because the Tech and Civic Shuffle mode changes it. See
+-- docs/design/core/in-game-lua.md. The shape is in bridge/src/trees/research.ts. The checks follow
+-- GetCurrentData and PopulateNode in TechTree.lua and CivicsTree.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
