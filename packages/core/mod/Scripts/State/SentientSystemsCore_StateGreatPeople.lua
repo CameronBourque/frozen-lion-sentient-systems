@@ -1,14 +1,8 @@
 -- The great people section of the state: each great person on offer, with their era, cost, effects,
 -- patronage costs, and each major player's progress toward them, as the Great People screen shows
--- them. SentientSystemsCore_State.lua loads this file. Example:
--- SentientSystems_GetGreatPeopleState(player) returns a table that encodes as
--- '[{"action":{"effect":"The Art of War ([ICON_GreatWork_Writing] Writing).","name":"Retire",
--- "usage":"Activate at a district or wonder with an available Great Work slot."},
--- "class":"GREAT_PERSON_CLASS_GENERAL","cost":30,"era":"ERA_CLASSICAL","name":"Sun Tzu",
--- "passive":"+5 [ICON_Strength] Combat Strength ...","patronage":{"faith":{"can":false,"cost":450},
--- "gold":{"can":false,"cost":650}},"progress":[{"perTurn":0,"player":0,"points":0},...],
--- "type":"GREAT_PERSON_INDIVIDUAL_SUN_TZU"},...]', on one line. The checks follow PopulateData and
--- AddRecruit in GreatPeoplePopup.lua.
+-- them. SentientSystemsCore_State.lua loads this file. The shape is in
+-- bridge/src/state/great-people.ts. The checks follow PopulateData and AddRecruit in
+-- GreatPeoplePopup.lua.
 
 -- The screen hides a patronage cost at or above this, which the game gives a great person the player
 -- can't earn.
@@ -25,8 +19,7 @@ local function RoundTenth(number)
 	return math.floor(number * 10 + 0.5) / 10
 end
 
--- Returns the patronage costs of a great person, gold and faith, each with cost and can, true when the
--- screen's button is on. The screen shows a button only while the player can neither recruit nor pass
+-- Returns the patronage costs of a great person, gold and faith. The screen shows a button only while the player can neither recruit nor pass
 -- the person, and turns it off while Gathering Storm's World Congress is in session. Returns nil when
 -- it shows neither. See AddRecruit in GreatPeoplePopup.lua, lines 241 to 262, and IsReadOnly in
 -- GreatPeoplePopup_Expansion2.lua.
@@ -51,9 +44,8 @@ local function GetPatronage(greatPeople, playerID, individual)
 	return patronage
 end
 
--- Returns each major player's progress toward a class of great person: points and perTurn, each
--- rounded to the nearest tenth, and player, its ID, when it is the player or a player they have met,
--- or unmet, true for one they haven't met. The most points come first, then the lowest ID. See
+-- Returns each major player's progress toward a class of great person. The most points come
+-- first, then the lowest ID. See
 -- PopulateData in GreatPeoplePopup.lua, lines 780 to 814, and AddRecruit, lines 296 to 321.
 local function GetProgress(player, classIndex)
 	local progress = {}
@@ -87,9 +79,7 @@ local function GetProgress(player, classIndex)
 	return progress
 end
 
--- Returns one great person on offer: class, type, name, era, cost, the points to recruit them,
--- passive, the passive effect, action, the action's name, usage, effect, and charges, above 0 only,
--- patronage, cantEarn, the reason the player can't earn them, and progress. See PopulateData in
+-- Returns one great person on offer. See PopulateData in
 -- GreatPeoplePopup.lua, lines 708 to 777, and AddRecruit, lines 153 to 330.
 local function GetGreatPerson(player, greatPeople, entry)
 	local playerID = player:GetID()
