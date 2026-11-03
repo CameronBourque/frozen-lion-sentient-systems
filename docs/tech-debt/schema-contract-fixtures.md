@@ -10,11 +10,13 @@ The reader tests in `state.test.ts`, `choices.test.ts`, `test/trees/`, and `test
 
 The hand-written fixture and the JSON that the Lua builds can drift apart. Nothing checks that the two match.
 
+The schemas aren't strict, so parsing drops a field or a whole section that the schema doesn't name, with no error. A section built and tested in the Lua, but missing from its schema or from `state.ts`, never reaches the agent, and no test fails.
+
 Every Lua test of the state, the choices, the trees, and the placement reads its JSON through the top-level call, such as `SentientSystems_GetState(0)`, often in a helper at the top of the test file.
 
 ## Proposal
 
-`Test/Game.lua` records the JSON that each top-level call returns during the Lua tests, in `packages/core/bridge/test/lua-fixtures/`, which `.gitignore` lists. The bridge tests are the only reader. One Vitest file parses each recorded JSON with its schema. The hand-written schema tests go, and the reader tests keep only reader behavior.
+`Test/Game.lua` records the JSON that each top-level call returns during the Lua tests, in `packages/core/bridge/test/lua-fixtures/`, which `.gitignore` lists. The bridge tests are the only reader. One Vitest file parses each recorded JSON with its schema, and checks that parsing dropped nothing. The hand-written schema tests go, and the reader tests keep only reader behavior.
 
 ## Questions
 
@@ -25,11 +27,13 @@ Every Lua test of the state, the choices, the trees, and the placement reads its
 
 1. **Record.** In `Test/Game.lua`, wrap `SentientSystems_GetState`, `SentientSystems_GetChoices`, `SentientSystems_GetTechTree`, `SentientSystems_GetCivicTree`, `SentientSystems_GetGovernorTree`, and `SentientSystems_GetPlacement` after a file defines them. Write each JSON they return to `packages/core/bridge/test/lua-fixtures/<call>/`, named by the test file and the call's order in it. Add the folder to `.gitignore`. Make `npm run test:lua` and `npm run coverage:lua` empty the folder first. Commit: `test(core): record the Lua JSON as fixtures`.
 2. **Contract test.** Export the schemas that the readers use. Add `test/contract.test.ts`, which parses each fixture with its call's schema, and fails with a message that names `npm run test:lua` when the folder is empty. Make `npm run coverage` run the Lua tests first. Describe the fixtures under **Lint and test** in [code.md](../rules/code.md#lint-and-test). If the test finds a mismatch, fix it first in its own `fix(core):` commit. Commit: `test(core): check the Lua fixtures against the bridge schemas`.
-3. **Schema tests.** Delete the 31 schema test files in `test/state/` and `test/choices/`. Keep `state.test.ts`, `sizes.test.ts`, and `choices.test.ts`. Commit: `test(core): drop the hand-written schema tests`.
-4. **Reader tests.** In `state.test.ts`, `choices.test.ts`, `test/trees/research.test.ts`, `test/trees/governors.test.ts`, and `test/placement/placement.test.ts`, keep the tests of the call, the errors, and the type name check. Delete the tests of schema shapes, and cut each fixture to the smallest one the remaining tests need. Commit: `test(core): cut the reader tests to reader behavior`.
+3. **Drop check.** In `test/contract.test.ts`, check that each parsed fixture equals the raw JSON, so a field or a section that the schema doesn't name fails the test. The schemas have no defaults or transforms, so a parse that drops nothing returns the same value. Add each field the check finds missing to its schema first, in its own `fix(core):` commit. Commit: `test(core): fail when a schema drops a field from the Lua JSON`.
+4. **Schema tests.** Delete the 31 schema test files in `test/state/` and `test/choices/`. Keep `state.test.ts`, `sizes.test.ts`, and `choices.test.ts`. Commit: `test(core): drop the hand-written schema tests`.
+5. **Reader tests.** In `state.test.ts`, `choices.test.ts`, `test/trees/research.test.ts`, `test/trees/governors.test.ts`, and `test/placement/placement.test.ts`, keep the tests of the call, the errors, and the type name check. Delete the tests of schema shapes, and cut each fixture to the smallest one the remaining tests need. Commit: `test(core): cut the reader tests to reader behavior`.
 
 ## Done when
 
 - `npm run coverage` parses every fixture that the Lua tests write.
 - A schema change that the Lua doesn't match fails a test.
+- A field or a section that the Lua sends and no schema names fails a test.
 - The bridge tests have no hand-copied fixture larger than a reader test needs.

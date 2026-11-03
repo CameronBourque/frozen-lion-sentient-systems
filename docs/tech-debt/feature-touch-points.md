@@ -22,16 +22,25 @@ A new state section touches these places:
 
 A choice touches the same places under `Choices/` and `src/choices/`.
 
+The earlier debts cut this list. [schema-contract-fixtures.md](schema-contract-fixtures.md) removes place 11, [schema-single-source.md](schema-single-source.md) removes place 12, and [fake-game-registry.md](fake-game-registry.md) cuts place 7 to one line. That leaves 11 places, and 5 of them are one-line edits.
+
+A missed place fails a test, except for three. A missing `<Files>` entry passes, which task 1 here fixes. A missing schema, or a missing key in `state.ts` or `choices.ts`, drops the section with no error, which task 3 of [schema-contract-fixtures.md](schema-contract-fixtures.md) fixes. A missing finding is a docs step, which review catches.
+
+Nothing checks that the `<ImportFiles>` and `<Files>` lists in the `.modinfo` match. `Test/Game.lua` reads `<ImportFiles>` only, so a file missing from `<Files>` passes the tests.
+
 ## Proposal
 
-1. [schema-single-source.md](schema-single-source.md) removes place 12. [schema-contract-fixtures.md](schema-contract-fixtures.md) removes place 11. [fake-game-registry.md](fake-game-registry.md) shortens place 7.
-2. Add a script, such as `npm run new-section <name>`, that creates the files and adds the lines in places 1 to 10.
-3. Add a test that the `<ImportFiles>` and `<Files>` lists in the `.modinfo` match.
+List the parts of a state section and a choice in the [core README](../../packages/core/README.md), so an agent reads one list instead of searching. Test that the two `.modinfo` lists match. No script creates the files.
 
 ## Questions
 
-1. Is a script worth it, or is a short list of the places in [code.md](../rules/code.md) enough?
-2. Does the action API in [phase 1 step 7](../roadmap/phase-1/07-action-api.md) add its own places, which the script must also cover?
+1. Is a script worth it, or is a short list of the places in [code.md](../rules/code.md) enough? Answered: a list, in the [core README](../../packages/core/README.md), because the parts span the mod and the bridge. Phase 1's remaining steps add actions, lookups, and tools, not sections, and later phases add a few. A script would be about as long as the code it writes, would need tests of its own, and would need a change each time the layout changes.
+2. Does the action API in [phase 1 step 7](../roadmap/phase-1/07-action-api.md) add its own places, which the script must also cover? Answered: yes, an action has its own parts, such as its Lua function, `src/actions.ts`, and their tests. Step 7 adds them to the same list.
+
+## Tasks
+
+1. **`.modinfo` check.** In `Test/Game.test.lua`, test that each file in `<ImportFiles>` is also in `<Files>`, and that each file under `Scripts/` in `<Files>` is also in `<ImportFiles>`. Commit: `test(core): check that the .modinfo file lists match`.
+2. **Parts list.** Add a section to the [core README](../../packages/core/README.md) that lists the parts of a state section and of a choice, with the path of each. In the `## Record` of [step 7](../roadmap/phase-1/07-action-api.md), add the parts of an action to that list. Commit: `docs(core): list the parts of a state section and a choice`.
 
 ## Done when
 
