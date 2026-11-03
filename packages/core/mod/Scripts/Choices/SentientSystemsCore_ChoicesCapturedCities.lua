@@ -1,12 +1,8 @@
 -- The captured city choice: what the player can do with the next city they captured, as the raze
 -- screen offers it, and with the next city that rebelled to join them, as Rise and Fall's disloyal
--- city screen offers it. SentientSystemsCore_Choices.lua loads this file. Example:
--- SentientSystems_GetCapturedCityChoices(player) returns a table that encodes as
--- '[{"city":131073,"districts":0,"kind":"captured","name":"Caguana","options":[{"description":
--- "Keeping this opponent's final city will give all major powers 100 ...","type":"KEEP"},
--- {"description":"Razing this opponent's final city will give ...","type":"RAZE"}],"population":1,
--- "x":47,"y":40}]', on one line. The checks follow OnOpen in RazeCity.lua and its replacement in
--- RazeCity_Expansion2.lua, and OnOpen in DisloyalCityChooser.lua.
+-- city screen offers it. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/captured-cities.ts. The checks follow OnOpen in RazeCity.lua and its
+-- replacement in RazeCity_Expansion2.lua, and OnOpen in DisloyalCityChooser.lua.
 
 -- Returns the name of a CityDestroyDirectives value, such as KEEP, which is how the choice names an
 -- option.
@@ -18,8 +14,7 @@ local function DirectiveName(directive)
 	end
 end
 
--- Returns a city as the screens show it: city, its ID, name, x, y, population, and districts, the
--- districts that count toward its population limit.
+-- Returns a city as the screens show it.
 local function GetCity(city, kind)
 	return {
 		kind = kind,
@@ -93,9 +88,8 @@ end
 
 -- Returns the next city the player captured with its options, in the raze screen's order: liberate
 -- to the founder, when the city has changed hands since and the player can liberate it to them,
--- liberate to the owner before the war, when the player can liberate it to them, keep, and raze, with
--- blocked, the screen's reason, when the city can't be razed. A liberate option has player, the ID of
--- the player who gets the city. Returns nil with no captured city. See OnOpen in RazeCity.lua, lines
+-- liberate to the owner before the war, when the player can liberate it to them, keep, and raze.
+-- Returns nil with no captured city. See OnOpen in RazeCity.lua, lines
 -- 64 to 145.
 local function GetCapturedCity(player)
 	local city = player:GetCities():GetNextCapturedCity()
@@ -168,9 +162,7 @@ local function GetDisloyalCity(player)
 	return entry
 end
 
--- Returns the captured city choice: the next captured city, then the next city that rebelled to join
--- the player, each there when there is one, as the game offers one at a time. Returns nil when there
--- are none.
+-- Returns the captured city choice. Returns nil when there are none.
 function SentientSystems_GetCapturedCityChoices(player)
 	local list = {}
 	local captured = GetCapturedCity(player)

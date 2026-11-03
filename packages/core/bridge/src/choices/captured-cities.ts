@@ -5,13 +5,6 @@
 
 import { z } from "zod";
 
-// Left out of the choices with no captured or rebelled city. The game offers one city at a time, so
-// it holds the next captured city, then the next rebelled one, each when there is one. kind is
-// captured or disloyal. districts counts those toward the population limit. Each option's type is a
-// CityDestroyDirectives name: LIBERATE_FOUNDER, LIBERATE_PREVIOUS_OWNER, KEEP, or RAZE for a
-// captured city, and KEEP or REJECT for a disloyal one. A liberate option has player, the ID of who
-// gets the city. description is the button's tooltip, in the game's language, and blocked is the
-// screen's reason when the city can't be razed.
 export const CAPTURED_CITIES_CHOICE = z.array(z.object({
 	kind: z.enum(["captured", "disloyal"]),
 	city: z.number(),
@@ -19,11 +12,15 @@ export const CAPTURED_CITIES_CHOICE = z.array(z.object({
 	x: z.number(),
 	y: z.number(),
 	population: z.number(),
-	districts: z.number(),
+	districts: z.number().describe("Those toward the population limit."),
 	options: z.array(z.object({
-		type: z.string(),
-		player: z.number().optional(),
-		description: z.string().optional(),
-		blocked: z.array(z.string()).optional(),
+		type: z.string().describe(
+			"A CityDestroyDirectives name: LIBERATE_FOUNDER, LIBERATE_PREVIOUS_OWNER, KEEP, or RAZE for a captured city, and KEEP or REJECT for a disloyal one.",
+		),
+		player: z.number().optional().describe("For a liberate option, the ID of who gets the city."),
+		description: z.string().optional().describe("The button's tooltip, in the game's language."),
+		blocked: z.array(z.string()).optional().describe("The screen's reason when the city can't be razed."),
 	})),
-})).optional();
+})).optional().describe(
+	"Left out of the choices with no captured or rebelled city. The game offers one city at a time, so it holds the next captured city, then the next rebelled one, each when there is one.",
+);

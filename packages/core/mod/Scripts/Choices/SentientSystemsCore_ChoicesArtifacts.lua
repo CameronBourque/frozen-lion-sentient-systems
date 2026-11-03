@@ -1,10 +1,6 @@
 -- The artifact choice: whose artifact the player's next digging archaeologist uncovers, as the
--- artifact screen offers it. SentientSystemsCore_Choices.lua loads this file. Example:
--- SentientSystems_GetArtifactChoices(player) returns a table that encodes as
--- '[{"archaeologist":2686995,"description":"Your Archaeologist Remo has discovered an ancient
--- battlefield littered with items from Trajan and Free Cities.","era":"ERA_INDUSTRIAL","name":"Remo",
--- "options":[{"name":"Trajan","player":0},{"name":"Free Cities","player":62}],"x":48,"y":25}]', on
--- one line. The checks follow OnOpen in ChooseArtifact.lua.
+-- artifact screen offers it. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/artifacts.ts. The checks follow OnOpen in ChooseArtifact.lua.
 
 -- The explanation for each type of site, and whether it offers both players. A tribal village, a
 -- barbarian camp, and a heroic relic come from one player.
@@ -22,10 +18,8 @@ local function Option(playerID)
 	return { player = playerID, name = Locale.Lookup(PlayerConfigurations[playerID]:GetPlayerName()) }
 end
 
--- Returns the artifact choice: the next digging archaeologist's artifact, with archaeologist, its
--- unit ID, name, x, y, era, the era the site is from, description, the screen's explanation, and
--- options, the players whose artifact it can be: the one player for a site with one, and the two
--- players for a battle or a shipwreck. Returns nil with no archaeologist digging, or no artifact. The
+-- Returns the artifact choice: the next digging archaeologist's artifact. Returns nil with no
+-- archaeologist digging, or no artifact. The
 -- screen opens only from the blocker's notification, so this reads the artifact only while the
 -- blocker is up, as the spy choice must. See OnOpen in ChooseArtifact.lua, lines 4 to 77.
 function SentientSystems_GetArtifactChoices(player)
