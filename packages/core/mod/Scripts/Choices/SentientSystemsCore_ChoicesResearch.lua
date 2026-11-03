@@ -1,12 +1,7 @@
 -- The tech and civic choices: the techs and civics the player can research now, as the research and
--- civics choosers list them. SentientSystemsCore_Choices.lua loads this file. Example:
--- SentientSystems_GetTechChoices(player) returns a list with one table for each tech, which encodes
--- as '{"boost":{"percent":40,"trigger":"Found a city on the Coast.","triggered":false},"cost":25,
--- "description":"Allows Builders to embark.","turns":1,"type":"TECH_SAILING",
--- "unlocks":["UNIT_GALLEY","IMPROVEMENT_FISHING_BOATS"]}', on one line.
--- SentientSystems_GetCivicChoices(player) returns civics in the same form. The checks follow GetData
--- in ResearchChooser.lua and CivicsChooser.lua, and GetResearchData and GetCivicData in
--- TechAndCivicSupport.lua.
+-- civics choosers list them. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/research.ts. The checks follow GetData in ResearchChooser.lua and
+-- CivicsChooser.lua, and GetResearchData and GetCivicData in TechAndCivicSupport.lua.
 
 -- The game's calls for techs and for civics. Each reads from the player's store: GetTechs for techs,
 -- and GetCulture for civics.
@@ -139,8 +134,7 @@ end
 
 -- Returns a reader of the player's techs or civics, by kind, "tech" or "civic". reader.store is the
 -- player's store, reader.current the index of the one in research, or -1, and reader.Option(row)
--- returns a row's type, cost, turns, progress, boost, unlocks, description, and recommended, as the
--- choosers show them. The tech and civic trees use it too.
+-- returns a row's option, as the choosers show it. The tech and civic trees use it too.
 function SentientSystems_GetResearchReader(kindName, player)
 	local kind = KINDS[kindName]
 	local store = kind.store(player)
