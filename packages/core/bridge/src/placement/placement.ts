@@ -24,7 +24,7 @@ const TILE = z.object({
 	}).optional(),
 });
 
-const PLACEMENT = z.object({
+export const PLACEMENT = z.object({
 	tiles: z.array(TILE),
 	purchaseTiles: z.array(TILE),
 });

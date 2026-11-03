@@ -41,7 +41,7 @@ const GOVERNOR = z.object({
 });
 
 // Empty without Rise and Fall.
-const GOVERNOR_TREE = z.object({ governors: z.array(GOVERNOR) });
+export const GOVERNOR_TREE = z.object({ governors: z.array(GOVERNOR) });
 
 export type GovernorTree = z.infer<typeof GOVERNOR_TREE>;
 

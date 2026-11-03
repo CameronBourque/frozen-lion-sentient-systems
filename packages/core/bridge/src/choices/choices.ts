@@ -23,7 +23,7 @@ import { SPIES_CHOICE } from "./spies.js";
 import { WORLD_CONGRESS_CHOICE } from "./world-congress.js";
 
 // Not strict, so a choice from a newer core mod is dropped instead of failing all the choices.
-const CHOICES = z.object({
+export const CHOICES = z.object({
 	production: z.array(PRODUCTION_CITY),
 	purchases: z.array(PURCHASE_CITY),
 	techs: z.array(RESEARCH_OPTION),

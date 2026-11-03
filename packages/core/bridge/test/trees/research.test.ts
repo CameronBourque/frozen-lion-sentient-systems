@@ -11,25 +11,10 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetTechTree(0))";
 
-// A tree with a researched node, a ready one, and an unrevealed one, in the shape the core mod sends.
+// The smallest tree the schema accepts. The schemas are checked in contract.test.ts.
 const TREE = {
-	nodes: [
-		{ type: "TECH_POTTERY", era: "ERA_ANCIENT", status: "researched" as const, cost: 25, prerequisites: [], unlocks: ["BUILDING_GRANARY"] },
-		{
-			type: "TECH_IRRIGATION",
-			era: "ERA_ANCIENT",
-			status: "ready" as const,
-			cost: 50,
-			turns: 8,
-			prerequisites: ["TECH_POTTERY"],
-			boost: { percent: 40, trigger: "Farm a resource.", triggered: false },
-			unlocks: ["IMPROVEMENT_PLANTATION"],
-			description: "Allows clearing of Marsh.",
-			recommended: true as const,
-		},
-		{ type: "?1", era: "ERA_CLASSICAL", status: "blocked" as const, turns: 20, prerequisites: ["TECH_IRRIGATION"] },
-	],
-	players: [{ player: 0, researched: 1, era: "ERA_ANCIENT" }, { player: 1, researched: 0 }],
+	nodes: [{ type: "TECH_POTTERY", era: "ERA_ANCIENT", status: "researched" as const, prerequisites: [] }],
+	players: [{ player: 0, researched: 1 }],
 };
 const JSON_TEXT = JSON.stringify(TREE);
 
@@ -68,20 +53,6 @@ describe("readTechTree and readCivicTree", () => {
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },
 		]);
-	});
-
-	test("fails for a status the screen doesn't use", async () => {
-		stash(JSON.stringify({ ...TREE, nodes: [{ ...TREE.nodes[0], status: "unknown" }] }));
-
-		const result = await readTechTree(client, 0);
-
-		expect(!result.ok && result.error).toMatch(/^The core mod's tech tree JSON doesn't match the schema: nodes\.0\.status: /);
-	});
-
-	test("fails for a player without a researched count", async () => {
-		stash(JSON.stringify({ ...TREE, players: [{ player: 0 }] }));
-
-		expect((await readTechTree(client, 0)).ok).toBe(false);
 	});
 
 	test("names the tech tree in the game's error", async () => {

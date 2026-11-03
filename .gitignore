@@ -1,8 +1,10 @@
 .venv/
 node_modules/
 coverage/
+.vitest/
 *.pcap
 *.pcapng
 build/
 dist/
 tmp/
+packages/core/bridge/test/lua-fixtures/

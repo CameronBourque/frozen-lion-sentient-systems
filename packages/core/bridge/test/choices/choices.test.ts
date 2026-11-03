@@ -11,16 +11,16 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetChoices(0))";
 
-// Choices with one city that can train one unit, build nothing else, and buy one unit with gold, and
-// one tech to research, in the shape the core mod sends.
+// The smallest choices the schema accepts, which have no choice to make. The schemas are checked in
+// contract.test.ts.
 const CHOICES = {
-	production: [{ city: 65536, name: "Rome", units: [{ type: "UNIT_SCOUT", cost: 15, turns: 2 }], buildings: [], districts: [], wonders: [], projects: [] }],
-	purchases: [{ city: 65536, name: "Rome", gold: { units: [{ type: "UNIT_SCOUT", cost: 60 }], buildings: [], districts: [], tiles: [] }, faith: { units: [], buildings: [], districts: [] } }],
-	techs: [{ type: "TECH_MINING", cost: 12, turns: 1, unlocks: ["IMPROVEMENT_MINE"] }],
+	production: [],
+	purchases: [],
+	techs: [],
 	civics: [],
-	government: { type: "GOVERNMENT_CHIEFDOM", slots: [{ slot: 0, type: "SLOT_MILITARY" }] },
-	governments: { canChange: false, options: [{ type: "GOVERNMENT_CHIEFDOM", current: true, influence: { perTurn: 1, threshold: 100, envoys: 1 } }] },
-	policies: { canChange: true, options: { SLOT_MILITARY: [{ type: "POLICY_SURVEY", description: "Double experience for recon units." }] } },
+	government: { type: "GOVERNMENT_CHIEFDOM", slots: [] },
+	governments: { canChange: false, options: [] },
+	policies: { canChange: false, options: {} },
 };
 const JSON_TEXT = JSON.stringify(CHOICES);
 
@@ -60,14 +60,6 @@ describe("readChoices", () => {
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },
 		]);
-	});
-
-	test("drops a choice that the schema doesn't know", async () => {
-		stash(JSON.stringify({ ...CHOICES, pantheon: [] }));
-
-		const result = await readChoices(client, 0);
-
-		expect(result.ok && "pantheon" in result.value).toBe(false);
 	});
 
 	test("asks for the given player's choices", async () => {

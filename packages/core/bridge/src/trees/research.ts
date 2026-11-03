@@ -36,7 +36,7 @@ const PLAYER = z.object({
 });
 
 // Not strict, so a field from a newer core mod is dropped instead of failing the whole tree.
-const TREE = z.object({
+export const TREE = z.object({
 	nodes: z.array(NODE),
 	players: z.array(PLAYER),
 });
