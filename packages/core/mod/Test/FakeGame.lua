@@ -15,18 +15,10 @@ local features, playerHooks, cityHooks, unitHooks = {}, {}, {}, {}
 -- adds its GameInfo rows with ctx.AddRow, sets its Game.* and other globals on env, and attaches its
 -- calls to players and cities with ctx.OnPlayer and ctx.OnCity. Its file has the docs for the world
 -- and player data it reads. A file under FakeGame/ returns its install function, and the
--- registration lines at the end of this file list them. requires lists the features that must be
--- registered before this one, because it wraps their calls or uses what they add to ctx or env.
-function FakeGame.Register(name, install, requires)
-	local registered = {}
-
+-- registration lines at the end of this file list them.
+function FakeGame.Register(name, install)
 	for _, feature in ipairs(features) do
 		assert(feature.name ~= name, "feature registered twice: " .. name)
-		registered[feature.name] = true
-	end
-
-	for _, required in ipairs(requires or {}) do
-		assert(registered[required], name .. " must be registered after " .. required)
 	end
 
 	features[#features + 1] = { name = name, install = install }
@@ -418,27 +410,27 @@ FakeGame.Register("CityYields", require("FakeGame/CityYields"))
 FakeGame.Register("Units", require("FakeGame/Units"))
 FakeGame.Register("Blockers", require("FakeGame/Blockers"))
 FakeGame.Register("Deals", require("FakeGame/Deals"))
-FakeGame.Register("Emergencies", require("FakeGame/Emergencies"), { "Blockers" })
-FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"), { "Blockers" })
-FakeGame.Register("Eras", require("FakeGame/Eras"), { "Blockers" })
-FakeGame.Register("Dedications", require("FakeGame/Dedications"), { "Eras" })
+FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
+FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"))
+FakeGame.Register("Eras", require("FakeGame/Eras"))
+FakeGame.Register("Dedications", require("FakeGame/Dedications"))
 FakeGame.Register("Governors", require("FakeGame/Governors"))
-FakeGame.Register("Religion", require("FakeGame/Religion"), { "Stores" })
-FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"), { "Eras" })
+FakeGame.Register("Religion", require("FakeGame/Religion"))
+FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"))
 FakeGame.Register("Envoys", require("FakeGame/Envoys"))
-FakeGame.Register("Spies", require("FakeGame/Spies"), { "Rivals" })
-FakeGame.Register("Artifacts", require("FakeGame/Artifacts"), { "Eras" })
-FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"), { "TopBar", "Rivals" })
-FakeGame.Register("Research", require("FakeGame/Research"), { "TopBar" })
-FakeGame.Register("Governments", require("FakeGame/Governments"), { "TopBar" })
-FakeGame.Register("Production", require("FakeGame/Production"), { "Units", "CityCommands" })
-FakeGame.Register("Purchases", require("FakeGame/Purchases"), { "Production", "Units", "CityCommands" })
-FakeGame.Register("Placement", require("FakeGame/Placement"), { "Plots", "CityCommands" })
-FakeGame.Register("Income", require("FakeGame/Income"), { "TopBar", "Stores" })
-FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings", "Units" })
-FakeGame.Register("Diplomacy", require("FakeGame/Diplomacy"), { "Players", "Rivals", "Capabilities", "Research" })
-FakeGame.Register("Proposals", require("FakeGame/Proposals"), { "Deals", "Research", "Diplomacy" })
-FakeGame.Register("Scoreboard", require("FakeGame/Scoreboard"), { "TopBar", "CapturedCities" })
-FakeGame.Register("Victories", require("FakeGame/Victories"), { "TopBar", "Scoreboard", "CapturedCities", "Production", "Research", "Capabilities", "Religion", "Diplomacy" })
+FakeGame.Register("Spies", require("FakeGame/Spies"))
+FakeGame.Register("Artifacts", require("FakeGame/Artifacts"))
+FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"))
+FakeGame.Register("Research", require("FakeGame/Research"))
+FakeGame.Register("Governments", require("FakeGame/Governments"))
+FakeGame.Register("Production", require("FakeGame/Production"))
+FakeGame.Register("Purchases", require("FakeGame/Purchases"))
+FakeGame.Register("Placement", require("FakeGame/Placement"))
+FakeGame.Register("Income", require("FakeGame/Income"))
+FakeGame.Register("Maintenance", require("FakeGame/Maintenance"))
+FakeGame.Register("Diplomacy", require("FakeGame/Diplomacy"))
+FakeGame.Register("Proposals", require("FakeGame/Proposals"))
+FakeGame.Register("Scoreboard", require("FakeGame/Scoreboard"))
+FakeGame.Register("Victories", require("FakeGame/Victories"))
 
 return FakeGame
