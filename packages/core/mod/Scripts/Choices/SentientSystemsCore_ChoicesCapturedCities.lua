@@ -1,11 +1,13 @@
--- The captured city choice: what the player can do with the next city they captured, as the raze
--- screen offers it, and with the next city that rebelled to join them, as Rise and Fall's disloyal
--- city screen offers it. SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/captured-cities.ts. The checks follow OnOpen in RazeCity.lua and its
--- replacement in RazeCity_Expansion2.lua, and OnOpen in DisloyalCityChooser.lua.
+-- The captured city choice: what the player can do with the next city they
+-- captured, as the raze screen offers it, and with the next city that rebelled
+-- to join them, as Rise and Fall's disloyal city screen offers it.
+-- SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/captured-cities.ts. The checks follow OnOpen in
+-- RazeCity.lua and its replacement in RazeCity_Expansion2.lua, and OnOpen in
+-- DisloyalCityChooser.lua.
 
--- Returns the name of a CityDestroyDirectives value, such as KEEP, which is how the choice names an
--- option.
+-- Returns the name of a CityDestroyDirectives value, such as KEEP, which is how
+-- the choice names an option.
 local function DirectiveName(directive)
 	for name, value in pairs(CityDestroyDirectives) do
 		if value == directive then
@@ -27,9 +29,9 @@ local function GetCity(city, kind)
 	}
 end
 
--- Returns the favor that liberating a city gives with Gathering Storm: more for a major player's city
--- than a city-state's, and more again for bringing a major player back. See OnOpen in
--- RazeCity_Expansion2.lua, lines 33 to 45.
+-- Returns the favor that liberating a city gives with Gathering Storm: more for
+-- a major player's city than a city-state's, and more again for bringing a
+-- major player back. See OnOpen in RazeCity_Expansion2.lua, lines 33 to 45.
 local function GetLiberationFavor(player, originalOwner)
 	local isMinor = PlayerConfigurations[originalOwner]:GetCivilizationLevelTypeID() ~= CivilizationLevelTypes.CIVILIZATION_LEVEL_FULL_CIV
 	local favor = isMinor and GlobalParameters.FAVOR_FOR_LIBERATE_CITY_STATE or GlobalParameters.FAVOR_FOR_LIBERATE_PLAYER_CITY
@@ -41,17 +43,19 @@ local function GetLiberationFavor(player, originalOwner)
 	return favor
 end
 
--- Returns the tooltips of the raze screen's Keep and Raze buttons, and nil for Raze when the city
--- can't be razed. Each names what the choice costs: warmonger points in the base game, and
--- grievances with Gathering Storm, with their own text for a gifted city, a Free City, and the last
--- city of the player it was taken from. See OnOpen in RazeCity.lua, lines 64 to 145, and in
+-- Returns the tooltips of the raze screen's Keep and Raze buttons, and nil for
+-- Raze when the city can't be razed. Each names what the choice costs:
+-- warmonger points in the base game, and grievances with Gathering Storm, with
+-- their own text for a gifted city, a Free City, and the last city of the
+-- player it was taken from. See OnOpen in RazeCity.lua, lines 64 to 145, and in
 -- RazeCity_Expansion2.lua, lines 9 to 107.
 local function GetKeepAndRaze(player, city, conqueredFrom, wipedOut)
 	local expansion2 = SentientSystems_HasExpansion2()
 	local diplomacy = player:GetDiplomacy()
 	local freeCity = expansion2 and Players[conqueredFrom]:IsFreeCities()
 
-	-- The text for the warmonger points of keeping or razing, as each version of the screen words it.
+	-- The text for the warmonger points of keeping or razing, as each version
+	-- of the screen words it.
 	local function Cost(raze)
 		local points = diplomacy:ComputeCityWarmongerPoints(city, conqueredFrom, raze)
 		local verb = raze and "RAZE" or "KEEP"
@@ -86,11 +90,11 @@ local function GetKeepAndRaze(player, city, conqueredFrom, wipedOut)
 	return keep, raze
 end
 
--- Returns the next city the player captured with its options, in the raze screen's order: liberate
--- to the founder, when the city has changed hands since and the player can liberate it to them,
--- liberate to the owner before the war, when the player can liberate it to them, keep, and raze.
--- Returns nil with no captured city. See OnOpen in RazeCity.lua, lines
--- 64 to 145.
+-- Returns the next city the player captured with its options, in the raze
+-- screen's order: liberate to the founder, when the city has changed hands
+-- since and the player can liberate it to them, liberate to the owner before
+-- the war, when the player can liberate it to them, keep, and raze. Returns nil
+-- with no captured city. See OnOpen in RazeCity.lua, lines 64 to 145.
 local function GetCapturedCity(player)
 	local city = player:GetCities():GetNextCapturedCity()
 
@@ -140,10 +144,10 @@ local function GetCapturedCity(player)
 	return entry
 end
 
--- Returns the next city that rebelled to join the player, with its options, keep and refuse, as Rise
--- and Fall's disloyal city screen offers them. Returns nil with no such city, or without Rise and
--- Fall, whose cities have no GetNextRebelledCity. See OnOpen in DisloyalCityChooser.lua, lines 27 to
--- 56.
+-- Returns the next city that rebelled to join the player, with its options,
+-- keep and refuse, as Rise and Fall's disloyal city screen offers them. Returns
+-- nil with no such city, or without Rise and Fall, whose cities have no
+-- GetNextRebelledCity. See OnOpen in DisloyalCityChooser.lua, lines 27 to 56.
 local function GetDisloyalCity(player)
 	local cities = player:GetCities()
 	local city = cities.GetNextRebelledCity and cities:GetNextRebelledCity()

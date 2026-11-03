@@ -1,12 +1,14 @@
--- The government and policy choices: the player's government, its policy slots, and the policy in
--- each slot, as the government screen's My Government tab shows them, the policies the player can
--- slot, as its policy catalog shows them, and every government, as its View Governments tab shows
--- them. SentientSystemsCore_Choices.lua loads this file. The shapes are in
--- bridge/src/choices/government.ts. The checks follow
--- GovernmentScreen.lua and its replacements in DLC/Expansion1 and DLC/Expansion2. The dark age
--- policies that the Expansion1 screen marks as new at the start of an era aren't marked.
+-- The government and policy choices: the player's government, its policy slots,
+-- and the policy in each slot, as the government screen's My Government tab
+-- shows them, the policies the player can slot, as its policy catalog shows
+-- them, and every government, as its View Governments tab shows them.
+-- SentientSystemsCore_Choices.lua loads this file. The shapes are in
+-- bridge/src/choices/government.ts. The checks follow GovernmentScreen.lua and
+-- its replacements in DLC/Expansion1 and DLC/Expansion2. The dark age policies
+-- that the Expansion1 screen marks as new at the start of an era aren't marked.
 
--- Returns the player's government and its policy slots. See PopulateLivePlayerData in GovernmentScreen.lua, lines 2250 to 2318.
+-- Returns the player's government and its policy slots. See
+-- PopulateLivePlayerData in GovernmentScreen.lua, lines 2250 to 2318.
 function SentientSystems_GetGovernmentChoices(player)
 	local culture = player:GetCulture()
 	local governmentIndex = culture:GetCurrentGovernment()
@@ -29,8 +31,9 @@ function SentientSystems_GetGovernmentChoices(player)
 	}
 end
 
--- Returns whether the policy catalog shows a policy, active or not. See IsPolicyAvailable in
--- GovernmentScreen.lua, lines 2224 to 2229, and its replacement in GovernmentScreen_Expansion2.lua.
+-- Returns whether the policy catalog shows a policy, active or not. See
+-- IsPolicyAvailable in GovernmentScreen.lua, lines 2224 to 2229, and its
+-- replacement in GovernmentScreen_Expansion2.lua.
 local function IsPolicyAvailable(culture, hash)
 	if SentientSystems_HasExpansion2() then
 		return not culture:IsPolicyBanned(hash) and culture:CanPolicyBeSlotted(hash) and not culture:IsPolicyObsolete(hash)
@@ -39,9 +42,11 @@ local function IsPolicyAvailable(culture, hash)
 	return culture:IsPolicyUnlocked(hash) and not culture:IsPolicyObsolete(hash)
 end
 
--- Returns the policies the catalog shows, by slot type, each list in type order, as the catalog
--- sorts them, or nil for none. A slotted policy is left out, as the catalog leaves it out. See RealizePolicyCatalog in GovernmentScreen.lua, lines 1057 to
--- 1119, and PopulateLivePlayerData, lines 2257 to 2276.
+-- Returns the policies the catalog shows, by slot type, each list in type
+-- order, as the catalog sorts them, or nil for none. A slotted policy is left
+-- out, as the catalog leaves it out. See RealizePolicyCatalog in
+-- GovernmentScreen.lua, lines 1057 to 1119, and PopulateLivePlayerData, lines
+-- 2257 to 2276.
 local function GetPolicyOptions(culture)
 	local civicThisTurn = culture:CivicCompletedThisTurn() and GameInfo.Civics[culture:GetCivicCompletedThisTurn()]
 	local options = {}
@@ -66,15 +71,17 @@ local function GetPolicyOptions(culture)
 		end)
 	end
 
-	-- The JSON encoder writes an empty table as a list, so no policy at all leaves options out.
+	-- The JSON encoder writes an empty table as a list, so no policy at all
+	-- leaves options out.
 	return next(options) ~= nil and options or nil
 end
 
--- Returns the button to pay to change policies and governments, as the screen shows it, or nil when
--- hidden is true or the cost is 0. blocked lists the screen's text when the player can't afford it,
--- and is empty while the World Congress is in session. See RealizeActivePoliciesRows in
--- GovernmentScreen.lua, lines 1380 to 1428, RealizeGovernmentsPage, lines 585 to 627, and
--- IsReadOnly in GovernmentScreen_Expansion2.lua.
+-- Returns the button to pay to change policies and governments, as the screen
+-- shows it, or nil when hidden is true or the cost is 0. blocked lists the
+-- screen's text when the player can't afford it, and is empty while the World
+-- Congress is in session. See RealizeActivePoliciesRows in
+-- GovernmentScreen.lua, lines 1380 to 1428, RealizeGovernmentsPage, lines 585
+-- to 627, and IsReadOnly in GovernmentScreen_Expansion2.lua.
 local function GetUnlock(player, culture, hidden)
 	local cost = culture:GetCostToUnlockPolicies()
 
@@ -95,9 +102,9 @@ local function GetUnlock(player, culture, hidden)
 	return unlock
 end
 
--- Returns the policy choice. The policies tab hides the unlock button after a policy change this
--- turn. See IsAbleToChangePolicies
--- in GovernmentScreen.lua, lines 842 to 853.
+-- Returns the policy choice. The policies tab hides the unlock button after a
+-- policy change this turn. See IsAbleToChangePolicies in GovernmentScreen.lua,
+-- lines 842 to 853.
 function SentientSystems_GetPolicyChoices(player)
 	local culture = player:GetCulture()
 
@@ -110,8 +117,9 @@ function SentientSystems_GetPolicyChoices(player)
 	}
 end
 
--- Returns the slot counts of a government by slot type, as its card shows them, or nil for none.
--- See PopulateStaticData in GovernmentScreen.lua, lines 2431 to 2445.
+-- Returns the slot counts of a government by slot type, as its card shows them,
+-- or nil for none. See PopulateStaticData in GovernmentScreen.lua, lines 2431
+-- to 2445.
 local function GetSlotCounts(governmentType)
 	local counts = {}
 
@@ -121,13 +129,15 @@ local function GetSlotCounts(governmentType)
 		end
 	end
 
-	-- The JSON encoder writes an empty table as a list, so no slots leaves them out.
+	-- The JSON encoder writes an empty table as a list, so no slots leaves them
+	-- out.
 	return next(counts) ~= nil and counts or nil
 end
 
--- Returns the percent a government's legacy bonus starts at, as its card shows it: the Amount of
--- the government's modifier whose BonusType is the government's. See
--- GetGovernmentFlatBonusPreview in GovernmentScreen.lua, lines 2465 to 2505.
+-- Returns the percent a government's legacy bonus starts at, as its card shows
+-- it: the Amount of the government's modifier whose BonusType is the
+-- government's. See GetGovernmentFlatBonusPreview in GovernmentScreen.lua,
+-- lines 2465 to 2505.
 local function GetLegacyPercent(row)
 	for modifier in GameInfo.GovernmentModifiers() do
 		if modifier.GovernmentType == row.GovernmentType then
@@ -152,8 +162,9 @@ local function GetLegacyPercent(row)
 	return 0
 end
 
--- Returns a government's diplomatic favor per turn, from Gathering Storm's Governments_XP2, or nil
--- without it. See GetGovernmentStatsText in GovernmentScreen_Expansion2.lua.
+-- Returns a government's diplomatic favor per turn, from Gathering Storm's
+-- Governments_XP2, or nil without it. See GetGovernmentStatsText in
+-- GovernmentScreen_Expansion2.lua.
 local function GetFavor(governmentType)
 	if not SentientSystems_HasExpansion2() then
 		return nil
@@ -166,9 +177,10 @@ local function GetFavor(governmentType)
 	end
 end
 
--- Returns one government as its card on the View Governments tab shows it. Rise and Fall and
--- Gathering Storm remove the legacy bonuses. See RealizeGovernmentInstance
--- in GovernmentScreen.lua, lines 646 to 805, and OnGovernmentSelected, lines 879 to 902.
+-- Returns one government as its card on the View Governments tab shows it. Rise
+-- and Fall and Gathering Storm remove the legacy bonuses. See
+-- RealizeGovernmentInstance in GovernmentScreen.lua, lines 646 to 805, and
+-- OnGovernmentSelected, lines 879 to 902.
 local function GetGovernmentOption(culture, row, currentIndex)
 	local option = {
 		type = row.GovernmentType,
@@ -196,15 +208,16 @@ local function GetGovernmentOption(culture, row, currentIndex)
 	end
 
 	if not culture:IsGovernmentUnlocked(row.Hash) then
-		-- true for a locked government with no civic, such as one a scenario adds.
+		-- true for a locked government with no civic, such as one a scenario
+		-- adds.
 		option.locked = row.PrereqCivic or true
 	end
 
 	return option
 end
 
--- Returns the government options. The tab shows the unlock button only with a government in
--- place and another unlocked. See IsAbleToChangeGovernment in
+-- Returns the government options. The tab shows the unlock button only with a
+-- government in place and another unlocked. See IsAbleToChangeGovernment in
 -- GovernmentScreen.lua, lines 859 to 873.
 function SentientSystems_GetGovernmentOptions(player)
 	local culture = player:GetCulture()

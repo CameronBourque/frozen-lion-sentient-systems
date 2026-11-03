@@ -1,14 +1,16 @@
--- The production choice: what each of the player's cities can produce, as the production panel
--- lists it. SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/production.ts. The checks follow GetData in ProductionPanel.lua. The checks
--- count the tiles from SentientSystemsCore_Placement.lua, and the bridge reads the tiles themselves
+-- The production choice: what each of the player's cities can produce, as the
+-- production panel lists it. SentientSystemsCore_Choices.lua loads this file.
+-- The shape is in bridge/src/choices/production.ts. The checks follow GetData
+-- in ProductionPanel.lua. The checks count the tiles from
+-- SentientSystemsCore_Placement.lua, and the bridge reads the tiles themselves
 -- with SentientSystems_GetPlacement.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
--- Sets option.blocked to the game's reasons when the city can't produce what params names now, as
--- the panel greys it out. params is a building's, district's, or project's hash, or a table that
--- names a unit and its formation. Returns the CanProduce results.
+-- Sets option.blocked to the game's reasons when the city can't produce what
+-- params names now, as the panel greys it out. params is a building's,
+-- district's, or project's hash, or a table that names a unit and its
+-- formation. Returns the CanProduce results.
 local function CheckBlocked(buildQueue, params, option)
 	local canProduce, results = buildQueue:CanProduce(params, false, true)
 
@@ -28,9 +30,10 @@ local function FormationOption(buildQueue, row, formation, cost)
 	return option
 end
 
--- Returns the units the city's production panel lists. The panel lists each unit whose MustPurchase
--- is false and that CanProduce allows when it only tests. It greys out a listed unit that CanProduce
--- refuses with results, and offers a corps or an army when the results allow one. See GetData in
+-- Returns the units the city's production panel lists. The panel lists each
+-- unit whose MustPurchase is false and that CanProduce allows when it only
+-- tests. It greys out a listed unit that CanProduce refuses with results, and
+-- offers a corps or an army when the results allow one. See GetData in
 -- ProductionPanel.lua, lines 2113 to 2202.
 local function GetUnitOptions(city)
 	local buildQueue = city:GetBuildQueue()
@@ -64,9 +67,10 @@ local function GetUnitOptions(city)
 	return units
 end
 
--- Returns the hash and the type of what the city is producing. The hash is 0, and the type nil, when
--- it produces nothing. GameInfo.Types reads 0 as its first row, so 0 is checked first. A hash that
--- GameInfo.Types doesn't know has no type.
+-- Returns the hash and the type of what the city is producing. The hash is 0,
+-- and the type nil, when it produces nothing. GameInfo.Types reads 0 as its
+-- first row, so 0 is checked first. A hash that GameInfo.Types doesn't know has
+-- no type.
 local function CurrentProduction(buildQueue)
 	local hash = buildQueue:GetCurrentProductionTypeHash()
 	local row = hash ~= 0 and GameInfo.Types[hash] or nil
@@ -74,10 +78,11 @@ local function CurrentProduction(buildQueue)
 	return hash, row and row.Type
 end
 
--- The failure reason that the panel ignores for a district when it has a tile to place it on, and
--- the key of the one that greys out a district to repair whose tile is flooded. The panel compares
--- the reasons with the first key itself and with the second one's text, in GetData in
--- ProductionPanel.lua, lines 1950 and 1934.
+-- The failure reason that the panel ignores for a district when it has a tile
+-- to place it on, and the key of the one that greys out a district to repair
+-- whose tile is flooded. The panel compares the reasons with the first key
+-- itself and with the second one's text, in GetData in ProductionPanel.lua,
+-- lines 1950 and 1934.
 local NO_SUITABLE_LOCATION_KEY = "LOC_DISTRICT_ZONE_NO_SUITABLE_LOCATION"
 local FLOODED_KEY = "LOC_DISTRICT_REPAIR_LOCATION_FLOODED"
 
@@ -114,20 +119,23 @@ local function HasPlaced(city, districtIndex)
 	return false
 end
 
--- Returns whether the panel shows the district as built, with a checkmark in place of turns: one
--- per city, complete, not pillaged or contaminated, and with no progress. See
--- PopulateDistrictsWithNestedBuildings in ProductionPanel.lua, line 953.
+-- Returns whether the panel shows the district as built, with a checkmark in
+-- place of turns: one per city, complete, not pillaged or contaminated, and
+-- with no progress. See PopulateDistrictsWithNestedBuildings in
+-- ProductionPanel.lua, line 953.
 local function IsBuilt(row, cityDistricts, progress)
 	return row.OnePerCity and cityDistricts:HasDistrict(row.Index) and cityDistricts:IsComplete(row.Index)
 		and not cityDistricts:IsPillaged(row.Index) and not cityDistricts:IsContaminated(row.Index) and progress == 0
 end
 
--- Returns the districts the city's production panel lists, built ones left out. The panel lists a district that CanProduce allows when it only tests, or that the city has.
--- It leaves out one marked InternalOnly, and a one-per-city district in production. It greys out a
--- district that CanProduce refuses, with two changes from the tiles. A district with no tile is
--- greyed out unless it is placed already and its tile isn't flooded. One with a tile isn't greyed
--- out when its only reason is NO_SUITABLE_LOCATION_KEY. See GetData in ProductionPanel.lua, lines
--- 1898 to 2018.
+-- Returns the districts the city's production panel lists, built ones left out.
+-- The panel lists a district that CanProduce allows when it only tests, or that
+-- the city has. It leaves out one marked InternalOnly, and a one-per-city
+-- district in production. It greys out a district that CanProduce refuses, with
+-- two changes from the tiles. A district with no tile is greyed out unless it
+-- is placed already and its tile isn't flooded. One with a tile isn't greyed
+-- out when its only reason is NO_SUITABLE_LOCATION_KEY. See GetData in
+-- ProductionPanel.lua, lines 1898 to 2018.
 local function GetDistrictOptions(city, purchasable)
 	local buildQueue = city:GetBuildQueue()
 	local cityDistricts = city:GetDistricts()
@@ -171,7 +179,8 @@ local function GetDistrictOptions(city, purchasable)
 	return districts
 end
 
--- Returns the building or wonder option for a row, with its cost, turns, progress, and repair.
+-- Returns the building or wonder option for a row, with its cost, turns,
+-- progress, and repair.
 local function BuildingOption(buildQueue, row, pillaged)
 	local option = { type = row.BuildingType, cost = buildQueue:GetBuildingCost(row.Index), turns = buildQueue:GetTurnsLeft(row.Hash) }
 	local progress = buildQueue:GetBuildingProgress(row.Index)
@@ -187,10 +196,12 @@ local function BuildingOption(buildQueue, row, pillaged)
 	return option
 end
 
--- Returns the buildings and the wonders the city's production panel lists. The panel leaves out the building in production, and one whose district is in production,
--- as when the district is being repaired. It lists a building that must be bought only when it is
--- pillaged, to repair it. It greys out a listed building that CanProduce refuses with results, but
--- not a wonder whose result is NO_SUITABLE_LOCATION and that has a tile. See GetData in
+-- Returns the buildings and the wonders the city's production panel lists. The
+-- panel leaves out the building in production, and one whose district is in
+-- production, as when the district is being repaired. It lists a building that
+-- must be bought only when it is pillaged, to repair it. It greys out a listed
+-- building that CanProduce refuses with results, but not a wonder whose result
+-- is NO_SUITABLE_LOCATION and that has a tile. See GetData in
 -- ProductionPanel.lua, lines 2020 to 2081.
 local function GetBuildingAndWonderOptions(city, purchasable)
 	local buildQueue = city:GetBuildQueue()
@@ -228,10 +239,11 @@ local function GetBuildingAndWonderOptions(city, purchasable)
 	return buildings, wonders
 end
 
--- Returns the projects the city's production panel lists. The panel lists a project that
--- CanProduce allows when it only tests, and greys out one that CanProduce refuses with results. A
--- project is repeatable when its MaxPlayerInstances isn't 1. See GetData in ProductionPanel.lua,
--- lines 2208 to 2239.
+-- Returns the projects the city's production panel lists. The panel lists a
+-- project that CanProduce allows when it only tests, and greys out one that
+-- CanProduce refuses with results. A project is repeatable when its
+-- MaxPlayerInstances isn't 1. See GetData in ProductionPanel.lua, lines 2208 to
+-- 2239.
 local function GetProjectOptions(city)
 	local buildQueue = city:GetBuildQueue()
 	local projects = {}
@@ -257,7 +269,8 @@ local function GetProjectOptions(city)
 	return projects
 end
 
--- Returns a list with what each of the player's cities can produce, in the game's order of cities.
+-- Returns a list with what each of the player's cities can produce, in the
+-- game's order of cities.
 function SentientSystems_GetProductionChoices(player)
 	local production = {}
 

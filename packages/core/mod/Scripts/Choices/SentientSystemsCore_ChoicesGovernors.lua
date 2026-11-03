@@ -1,18 +1,21 @@
--- The governor choice: the governors the player can appoint, the promotions they can give their
--- governors, and the cities they can assign them to, as the Governors panel, its details panel, and
--- its assignment chooser offer them. Rise and Fall adds governors, so without it there is no choice.
+-- The governor choice: the governors the player can appoint, the promotions
+-- they can give their governors, and the cities they can assign them to, as the
+-- Governors panel, its details panel, and its assignment chooser offer them.
+-- Rise and Fall adds governors, so without it there is no choice.
 -- SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/governors.ts. A Secret Society the player has discovered can be appointed and
--- promoted, but not assigned. The checks follow GovernorPanel.lua, GovernorDetailsPanel.lua, and
+-- bridge/src/choices/governors.ts. A Secret Society the player has discovered
+-- can be appointed and promoted, but not assigned. The checks follow
+-- GovernorPanel.lua, GovernorDetailsPanel.lua, and
 -- GovernorAssignmentChooser.lua.
 
 SentientSystems_Include("SentientSystemsCore_Governors")
 
--- Returns the governors the player can appoint. A Secret Society the player has discovered is there
--- too, without the loyalty and turns that its card doesn't show. Returns nil without a title to
--- spend, as the
--- panel turns every Appoint button off then. See Refresh in GovernorPanel.lua, lines 39 to 122,
--- AddGovernorCandidate, lines 198 to 242, and AddSecretGovernorCandidate, lines 271 to 311.
+-- Returns the governors the player can appoint. A Secret Society the player has
+-- discovered is there too, without the loyalty and turns that its card doesn't
+-- show. Returns nil without a title to spend, as the panel turns every Appoint
+-- button off then. See Refresh in GovernorPanel.lua, lines 39 to 122,
+-- AddGovernorCandidate, lines 198 to 242, and AddSecretGovernorCandidate, lines
+-- 271 to 311.
 local function GetAppointments(governors)
 	if not governors:CanAppoint() then
 		return nil
@@ -41,7 +44,8 @@ local function GetAppointments(governors)
 	return #list > 0 and list or nil
 end
 
--- Returns the promotions a governor can earn now, in the game's order. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230, and
+-- Returns the promotions a governor can earn now, in the game's order. See
+-- CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230, and
 -- CreateSecretPromotionTree, lines 270 to 328.
 local function GetPromotions(governors, governor, definition)
 	local promotions = {}
@@ -66,10 +70,11 @@ local function GetTarget(city, reasons)
 	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()), blocked = reasons }
 end
 
--- Returns the game's reasons a governor can't be assigned to a city, as text, or nil when they can.
--- The chooser checks the cities of city-states and the capitals of other players this way, and
--- shows the reasons with the city turned off. See RefreshBottomPanel in GovernorAssignmentChooser.lua,
--- lines 153 to 226.
+-- Returns the game's reasons a governor can't be assigned to a city, as text,
+-- or nil when they can. The chooser checks the cities of city-states and the
+-- capitals of other players this way, and shows the reasons with the city
+-- turned off. See RefreshBottomPanel in GovernorAssignmentChooser.lua, lines
+-- 153 to 226.
 local function GetBlockedReasons(governors, definition, city)
 	local allowed, results = governors:CanAssignGovernor(definition.Hash, city, true)
 
@@ -86,10 +91,11 @@ local function GetBlockedReasons(governors, definition, city)
 	return reasons
 end
 
--- Returns the places a governor can go, in the chooser's order: each of the player's cities but the
--- one they are in, then for an Ambassador the cities of the city-states the player has met, then for
--- a governor that can govern abroad the capitals of the players they have met. See
--- RefreshBottomPanel in GovernorAssignmentChooser.lua, lines 153 to 226, and AddCityInstance, lines
+-- Returns the places a governor can go, in the chooser's order: each of the
+-- player's cities but the one they are in, then for an Ambassador the cities of
+-- the city-states the player has met, then for a governor that can govern
+-- abroad the capitals of the players they have met. See RefreshBottomPanel in
+-- GovernorAssignmentChooser.lua, lines 153 to 226, and AddCityInstance, lines
 -- 228 to 262.
 local function GetAssignments(player, governors, governor, definition)
 	local current = governor:GetAssignedCity()
@@ -130,10 +136,12 @@ local function GetAssignments(player, governors, governor, definition)
 	return targets
 end
 
--- Returns the governor choice, each key left out with nothing to offer. A neutralized governor
--- can't be assigned, as the panel turns its Assign button off. Returns nil without Rise and Fall, with
--- nothing to do, and while Gathering Storm's World Congress is in session, which turns every button
--- off. See Refresh in GovernorPanel.lua, lines 39 to 122, and IsReadOnly, lines 722 to 726.
+-- Returns the governor choice, each key left out with nothing to offer. A
+-- neutralized governor can't be assigned, as the panel turns its Assign button
+-- off. Returns nil without Rise and Fall, with nothing to do, and while
+-- Gathering Storm's World Congress is in session, which turns every button off.
+-- See Refresh in GovernorPanel.lua, lines 39 to 122, and IsReadOnly, lines 722
+-- to 726.
 function SentientSystems_GetGovernorChoices(player)
 	if player.GetGovernors == nil or (SentientSystems_HasExpansion2() and Game.GetWorldCongress():IsInSession()) then
 		return nil

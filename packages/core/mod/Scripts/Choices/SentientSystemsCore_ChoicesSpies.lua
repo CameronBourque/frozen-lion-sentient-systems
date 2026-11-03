@@ -1,14 +1,14 @@
--- The spy choice: the escape routes for the player's next escaping spy, as the escape screen offers
--- them. The game opens the same screen to choose a dragnet priority. SentientSystemsCore_Choices.lua
--- loads this file. The shape is in bridge/src/choices/spies.ts. The checks follow OnOpen in
--- EspionageEscape.lua.
+-- The spy choice: the escape routes for the player's next escaping spy, as the
+-- escape screen offers them. The game opens the same screen to choose a dragnet
+-- priority. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/spies.ts. The checks follow OnOpen in EspionageEscape.lua.
 
--- The routes in the screen's order, each with the district it leaves by. Every city has a city
--- center, so the screen always allows the last.
+-- The routes in the screen's order, each with the district it leaves by. Every
+-- city has a city center, so the screen always allows the last.
 local ROUTES = { "DISTRICT_AERODROME", "DISTRICT_HARBOR", "DISTRICT_COMMERCIAL_HUB", "DISTRICT_CITY_CENTER" }
 
--- Returns the escape routes from a city, as the screen shows them. See OnOpen in
--- EspionageEscape.lua, lines 71 to 106.
+-- Returns the escape routes from a city, as the screen shows them. See OnOpen
+-- in EspionageEscape.lua, lines 71 to 106.
 local function GetRoutes(city)
 	local routes = {}
 
@@ -28,10 +28,12 @@ local function GetRoutes(city)
 	return routes
 end
 
--- Returns the spy choice: the next escaping spy. Returns nil with no escaping spy. The screen opens
--- only from a blocker's notification, and its calls are safe only then: GetNextEscapingSpyID crashed
--- the game with no spy escaping, as GetNextPursuedSpyID did with none pursued, so this reads the spy
--- only while a blocker for it is up. See OnOpen in EspionageEscape.lua, lines 36 to 113.
+-- Returns the spy choice: the next escaping spy. Returns nil with no escaping
+-- spy. The screen opens only from a blocker's notification, and its calls are
+-- safe only then: GetNextEscapingSpyID crashed the game with no spy escaping,
+-- as GetNextPursuedSpyID did with none pursued, so this reads the spy only
+-- while a blocker for it is up. See OnOpen in EspionageEscape.lua, lines 36 to
+-- 113.
 function SentientSystems_GetSpyChoices(player)
 	if not SentientSystems_HasBlocker(player:GetID(), "ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE", "ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY") then
 		return nil

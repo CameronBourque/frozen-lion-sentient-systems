@@ -1,15 +1,17 @@
--- Builds the legal options for each of one player's discrete choices as JSON for the bridge, in a
--- call of its own, so the agent reads them only when it decides. Each choice comes from its own file
--- in this folder, and this file puts them together. See docs/design/core/in-game-lua.md. The
--- shapes are in bridge/src/choices/. A choice that the player can't make now, such as the pantheon,
--- is left out.
+-- Builds the legal options for each of one player's discrete choices as JSON
+-- for the bridge, in a call of its own, so the agent reads them only when it
+-- decides. Each choice comes from its own file in this folder, and this file
+-- puts them together. See docs/design/core/in-game-lua.md. The shapes are in
+-- bridge/src/choices/. A choice that the player can't make now, such as the
+-- pantheon, is left out.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 
--- Returns the game's reasons from the results of a check, such as CanProduce or CanStartCommand, as
--- text. The game gives each reason as text already, and the production panel passes it through
--- Locale.Lookup, as this does. The choice files use it.
+-- Returns the game's reasons from the results of a check, such as CanProduce or
+-- CanStartCommand, as text. The game gives each reason as text already, and the
+-- production panel passes it through Locale.Lookup, as this does. The choice
+-- files use it.
 function SentientSystems_GetFailureReasons(results)
 	local reasons = {}
 
@@ -35,8 +37,8 @@ SentientSystems_Include("SentientSystemsCore_ChoicesDedications")
 SentientSystems_Include("SentientSystemsCore_ChoicesEmergencies")
 SentientSystems_Include("SentientSystemsCore_ChoicesWorldCongress")
 
--- Returns the choices of the player with ID playerID as JSON. Raises an error for an ID with no
--- player. The bridge reads it through the stash, as
+-- Returns the choices of the player with ID playerID as JSON. Raises an error
+-- for an ID with no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetChoices(playerID)).
 function SentientSystems_GetChoices(playerID)
 	local player = Players[playerID]
