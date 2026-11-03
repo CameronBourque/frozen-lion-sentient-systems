@@ -31,7 +31,7 @@ The zod schemas hold the shape of the core mod's JSON. A field whose name doesn'
 
 ## Tasks
 
-Each move task does the same four things for its files:
+Each move task changes, for each of its sections, the schema file in `packages/core/bridge/src/`, the Lua file that builds it in `packages/core/mod/Scripts/`, and [in-game-lua.md](../design/core/in-game-lua.md). That is 3 to 7 files per commit. It does the same four things for its files:
 
 1. Move each note from the [in-game-lua.md](../design/core/in-game-lua.md) rows and from the comment above the schema into a `.describe()` on the field it is about, when the field's name doesn't already say it.
 2. Delete those rows. When a table has no rows left, replace it with a link to the schema folder.
@@ -41,15 +41,26 @@ Each move task does the same four things for its files:
 The tasks:
 
 1. **Rule.** In [code.md](../rules/code.md#comments), make the zod schemas in `packages/core/bridge/src/` the home of the core mod's JSON shapes, with `.describe()` for a field whose name doesn't say what it means. Add the row to the "Where each kind of fact lives" table in [docs.md](../rules/docs.md#no-repetition). Commit: `docs: make the zod schemas the home of the JSON shapes`.
-2. **Map state.** The `blockers`, `cities`, `units`, `tiles`, and `rivals` sections: `blockers.ts`, `cities.ts`, `units.ts`, `tiles.ts`, `rivals.ts`, and `state.ts`, and their Lua files in `Scripts/State/`, with `SentientSystemsCore_State.lua`. Commit: `refactor(core): move the map state shapes into the schemas`.
-3. **Player state.** The `player` section: `player.ts`, `income.ts`, `era.ts`, and `resources.ts`, and `SentientSystemsCore_StatePlayer*.lua`. Commit: `refactor(core): move the player state shapes into the schemas`.
-4. **Rival state.** The `diplomacy`, `proposals`, `scoreboard`, and `victories` sections, and `SentientSystemsCore_StateVictories*.lua`. Commit: `refactor(core): move the rival state shapes into the schemas`.
-5. **Other state.** The `envoys`, `governors`, `greatPeople`, and `religion` sections. This empties the state table. Commit: `refactor(core): move the other state shapes into the schemas`.
-6. **City choices.** `production`, `purchases`, `techs`, `civics`, `government`, `policies`, and `governments`: `production.ts`, `purchases.ts`, `research.ts`, `government.ts`, and `choices.ts`, and their Lua files in `Scripts/Choices/`, with `SentientSystemsCore_Choices.lua`. Commit: `refactor(core): move the city choice shapes into the schemas`.
-7. **Player choices.** `pantheon`, `religion`, `envoys`, `greatPeople`, `governors`, and `dedications`. Commit: `refactor(core): move the player choice shapes into the schemas`.
-8. **Event choices.** `capturedCities`, `spies`, `artifacts`, `emergencies`, and `worldCongress`. This empties the choices table. Commit: `refactor(core): move the event choice shapes into the schemas`.
-9. **Placement and trees.** `src/placement/placement.ts`, `src/trees/research.ts`, and `src/trees/governors.ts`, and their Lua files in `Scripts/Placement/` and `Scripts/Trees/`. This empties the last tables. Commit: `refactor(core): move the placement and tree shapes into the schemas`.
-10. **Other examples.** Delete the `Example:` blocks in `SentientSystemsCore_Common.lua` and `SentientSystemsCore_Json.lua`, as step 4 of the list above says. Commit: `refactor(core): drop the examples from the shared Lua comments`.
+2. **Blockers and units.** The state's `blockers` and `units`. Commit: `refactor(core): move the blocker and unit shapes into the schemas`.
+3. **Cities.** The state's `cities`. Commit: `refactor(core): move the city shapes into the schemas`.
+4. **Tiles and rivals.** The state's `tiles` and `rivals`, with `state.ts` and `SentientSystemsCore_State.lua`. Commit: `refactor(core): move the tile and rival shapes into the schemas`.
+5. **Player and resources.** `player`, with `player.ts`, `resources.ts`, `SentientSystemsCore_StatePlayer.lua`, and `SentientSystemsCore_StatePlayerResources.lua`. Commit: `refactor(core): move the player and resource shapes into the schemas`.
+6. **Income.** `player.income`. Commit: `refactor(core): move the income shapes into the schemas`.
+7. **Era.** `player.era`. Commit: `refactor(core): move the era shapes into the schemas`.
+8. **Diplomacy and proposals.** The state's `diplomacy` and `proposals`. Commit: `refactor(core): move the diplomacy and proposal shapes into the schemas`.
+9. **Scoreboard.** The state's `scoreboard`. Commit: `refactor(core): move the scoreboard shapes into the schemas`.
+10. **Victories.** The state's `victories`, with the five `SentientSystemsCore_StateVictories*.lua` files. Commit: `refactor(core): move the victory shapes into the schemas`.
+11. **State envoys and religion.** The state's `envoys` and `religion`. Commit: `refactor(core): move the state envoy and religion shapes into the schemas`.
+12. **State governors and great people.** The state's `governors` and `greatPeople`. This empties the state table. Commit: `refactor(core): move the state governor and great people shapes into the schemas`.
+13. **Production and purchases.** The choices' `production` and `purchases`, with `choices.ts` and `SentientSystemsCore_Choices.lua`. Commit: `refactor(core): move the production and purchase shapes into the schemas`.
+14. **Research and government.** The choices' `techs`, `civics`, `government`, `policies`, and `governments`. Commit: `refactor(core): move the research and government shapes into the schemas`.
+15. **Religion, envoy, and great people choices.** The choices' `pantheon`, `religion`, `envoys`, and `greatPeople`. Commit: `refactor(core): move the religion, envoy, and great people choice shapes into the schemas`.
+16. **Governor and dedication choices.** The choices' `governors` and `dedications`. Commit: `refactor(core): move the governor and dedication choice shapes into the schemas`.
+17. **Captured city, spy, and artifact choices.** The choices' `capturedCities`, `spies`, and `artifacts`. Commit: `refactor(core): move the captured city, spy, and artifact shapes into the schemas`.
+18. **Emergency and World Congress choices.** The choices' `emergencies` and `worldCongress`. This empties the choices table. Commit: `refactor(core): move the emergency and World Congress shapes into the schemas`.
+19. **Placement.** `src/placement/placement.ts` and `Scripts/Placement/`. Commit: `refactor(core): move the placement shapes into the schemas`.
+20. **Trees.** `src/trees/research.ts`, `src/trees/governors.ts`, and `Scripts/Trees/`. This empties the last tables. Commit: `refactor(core): move the tree shapes into the schemas`.
+21. **Other examples.** Delete the `Example:` blocks in `SentientSystemsCore_Common.lua` and `SentientSystemsCore_Json.lua`, as step 4 of the list above says. Commit: `refactor(core): drop the examples from the shared Lua comments`.
 
 ## Done when
 
