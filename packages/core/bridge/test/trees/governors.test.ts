@@ -81,7 +81,7 @@ describe("readGovernorTree", () => {
 
 		stash(json);
 
-		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, tree: GOVERNOR_TREE, bytes: Buffer.byteLength(json) });
+		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, value: GOVERNOR_TREE, bytes: Buffer.byteLength(json) });
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: PIECE },
@@ -96,7 +96,7 @@ describe("readGovernorTree", () => {
 		expect(json).not.toContain("%");
 		stash(json);
 
-		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, tree, bytes: Buffer.byteLength(json) });
+		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, value: tree, bytes: Buffer.byteLength(json) });
 	});
 
 	test("reads a Secret Society with no stats and a hidden promotion", async () => {
@@ -125,7 +125,7 @@ describe("readGovernorTree", () => {
 
 		stash(json);
 
-		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, tree: { governors: [owls] }, bytes: Buffer.byteLength(json) });
+		expect(await readGovernorTree(client, 0)).toEqual({ ok: true, value: { governors: [owls] }, bytes: Buffer.byteLength(json) });
 	});
 
 	test("fails for a promotion status the panel doesn't use", async () => {

@@ -68,7 +68,7 @@ async function main(): Promise<void> {
 		const tree = await read(client, playerID);
 
 		if (tree.ok) {
-			console.log(JSON.stringify(tree.tree, null, 2));
+			console.log(JSON.stringify(tree.value, null, 2));
 			console.error(`Player ${playerID}'s ${name} is ${tree.bytes} bytes.`);
 		} else {
 			console.error(tree.error);

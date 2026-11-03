@@ -4,7 +4,7 @@
 // stash.ts. docs/design/core/in-game-lua.md has the format.
 
 import { z } from "zod";
-import { readStash } from "../stash.js";
+import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 
 // A node of the tree. A node the player hasn't revealed, in the Tech and Civic Shuffle mode, has a
@@ -43,21 +43,13 @@ const TREE = z.object({
 
 export type Tree = z.infer<typeof TREE>;
 
-export type TreeResult =
-	| { ok: true; tree: Tree; bytes: number }
-	| { ok: false; error: string };
-
 // Reads the tech tree of the player with ID playerID. Every failure comes back as an error that says
 // what went wrong, instead of an exception.
-export async function readTechTree(client: TunerClient, playerID: number): Promise<TreeResult> {
-	const result = await readStash(client, `SentientSystems_GetTechTree(${playerID})`, TREE, "tech tree");
-
-	return result.ok ? { ok: true, tree: result.value, bytes: result.bytes } : result;
+export function readTechTree(client: TunerClient, playerID: number): Promise<StashResult<Tree>> {
+	return readStash(client, `SentientSystems_GetTechTree(${playerID})`, TREE, "tech tree");
 }
 
 // Reads the civic tree of the player with ID playerID, in the same form as the tech tree.
-export async function readCivicTree(client: TunerClient, playerID: number): Promise<TreeResult> {
-	const result = await readStash(client, `SentientSystems_GetCivicTree(${playerID})`, TREE, "civic tree");
-
-	return result.ok ? { ok: true, tree: result.value, bytes: result.bytes } : result;
+export function readCivicTree(client: TunerClient, playerID: number): Promise<StashResult<Tree>> {
+	return readStash(client, `SentientSystems_GetCivicTree(${playerID})`, TREE, "civic tree");
 }

@@ -63,7 +63,7 @@ describe("readTechTree and readCivicTree", () => {
 	test("reads the tree through the stash from the core mod's state", async () => {
 		stash(JSON_TEXT);
 
-		expect(await readTechTree(client, 0)).toEqual({ ok: true, tree: TREE, bytes: Buffer.byteLength(JSON_TEXT) });
+		expect(await readTechTree(client, 0)).toEqual({ ok: true, value: TREE, bytes: Buffer.byteLength(JSON_TEXT) });
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },
@@ -93,7 +93,7 @@ describe("readTechTree and readCivicTree", () => {
 	test("reads the civic tree with its own call", async () => {
 		answer({ "SentientSystems_Stash(SentientSystems_GetCivicTree(0))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON_TEXT] } });
 
-		expect(await readCivicTree(client, 0)).toEqual({ ok: true, tree: TREE, bytes: Buffer.byteLength(JSON_TEXT) });
+		expect(await readCivicTree(client, 0)).toEqual({ ok: true, value: TREE, bytes: Buffer.byteLength(JSON_TEXT) });
 	});
 
 	test("names the civic tree in the game's error", async () => {
