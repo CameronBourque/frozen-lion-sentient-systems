@@ -1,7 +1,7 @@
 -- The culture part of the victories section of the state: the tourists of
 -- each player, as the Culture tab of World Rankings shows them.
--- SentientSystemsCore_StateVictories.lua loads this file. Format:
--- docs/findings/game-victories.md.
+-- SentientSystemsCore_StateVictories.lua loads this file. The shape is in
+-- bridge/src/state/victories.ts.
 
 -- Returns the tourists a player needs: one more than the most domestic
 -- tourists of any player on another team, as GatherCultureData counts them.
