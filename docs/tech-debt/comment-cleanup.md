@@ -18,7 +18,7 @@ Comment lines over 80 columns, counting a tab as 4, on 2026-11-02:
 | `packages/core/mod/Test/FakeGame/`, `FakeGame.lua`, and `Game.lua` | 354 |
 | The rest of `packages/core/mod/Test/` | 65 |
 
-[schema-single-source.md](schema-single-source.md) and [fake-game-registry.md](fake-game-registry.md) delete many of these comments first, so this debt rewraps only the ones that remain. Count again before each task.
+[schema-single-source.md](schema-single-source.md) deletes many of these comments first, so this debt rewraps only the ones that remain. Count again before each task.
 
 `npm run lint` runs ESLint only. The CI `lint` job installs Node and no Lua.
 

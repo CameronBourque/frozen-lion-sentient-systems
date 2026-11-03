@@ -6,7 +6,6 @@ The table lists the files in the order to work on them. A later debt can depend 
 
 | File | Debt |
 | --- | --- |
-| [fake-game-registry.md](fake-game-registry.md) | `FakeGame.lua` has a header index and a dependency check that each new feature must update |
 | [stash-readers.md](stash-readers.md) | Six readers wrap `readStash` only to rename its result |
 | [schema-contract-fixtures.md](schema-contract-fixtures.md) | The TypeScript schema tests copy fixtures by hand. Fixtures from the Lua tests replace them |
 | [schema-single-source.md](schema-single-source.md) | Each state and choice shape is written in up to five places. The zod schema becomes the only one |
