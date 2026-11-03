@@ -1,14 +1,8 @@
--- The era part of the player section: the era, the player's era score and age, the scores for the next
--- age, the turns until the next era, what the score is made of, the effects of the age, and the other
--- players' ages, as the Era Progress panel shows them. Rise and Fall adds ages, so without it the part
--- is left out. SentientSystemsCore_StatePlayer.lua loads this file. Example:
--- SentientSystems_GetEraState(player) returns a table that encodes as '{"age":"normal",
--- "civilizations":[{"age":"golden","player":1}],"effects":{"citizenLoyalty":1,"dedications":[{"text":
--- "Reform the Coinage Dedication Bonus: ...","type":"COMMEMORATION_ECONOMIC"}]},"name":"Renaissance Era",
--- "nextAge":"dark","score":200,"scoreBreakdown":[{"points":36,"source":"Previous era total"}],
--- "thresholds":{"golden":239,"normal":228},"turnsUntilNext":{"max":26,"min":16},"type":"ERA_RENAISSANCE",
--- "unmet":0}', on one line. The checks follow GetData, Refresh, and PopulateCivilizationIcons in
--- EraProgressPanel.lua in DLC/Expansion1 and DLC/Expansion2, which are the same.
+-- The era part of the player section, as the Era Progress panel shows it. Rise and Fall adds
+-- ages, so without it the part is left out. SentientSystemsCore_StatePlayer.lua loads this
+-- file. The shape is in bridge/src/state/era.ts. The checks follow GetData, Refresh, and
+-- PopulateCivilizationIcons in EraProgressPanel.lua in DLC/Expansion1 and DLC/Expansion2, which
+-- are the same.
 
 SentientSystems_Include("SentientSystemsCore_Eras")
 
@@ -16,8 +10,7 @@ SentientSystems_Include("SentientSystemsCore_Eras")
 local AGE_ORDER = { "heroic", "golden", "normal", "dark" }
 
 -- Returns what the player's era score is made of: the total of the earlier eras as one entry, when it
--- is above 0, then each source of this era that is above 0, each with source, the game's text, and
--- points. See GetData, lines 70 to 96.
+-- is above 0, then each source of this era that is above 0. See GetData, lines 70 to 96.
 local function GetScoreBreakdown(eras, playerID)
 	local list, previous = {}, 0
 
@@ -73,9 +66,7 @@ local function GetNextAge(score, normalFrom, goldenFrom)
 	return "dark"
 end
 
--- Returns the effects of the player's age: citizenLoyalty, the loyalty pressure each of their citizens
--- exerts in their city, and dedications, each active dedication with its type and the text of its
--- bonus for the age. See GetData, lines 133 to 202.
+-- Returns the effects of the player's age. See GetData, lines 133 to 202.
 local function GetEffects(eras, player, age)
 	local playerID = player:GetID()
 	local dedications = {}
@@ -123,12 +114,8 @@ local function GetCivilizations(eras, player)
 	return civilizations, unmet
 end
 
--- Returns the era section: type, such as ERA_RENAISSANCE, name, score, age, dark, normal, golden, or
--- heroic, scoreBreakdown, effects, civilizations, and unmet. Until the final era it adds nextAge, the
--- age the score earns, thresholds, with the score the next normal age and golden age need, normal left
--- out in the Dramatic Ages mode, which has none, and turnsUntilNext, with min and max. In the final
--- era it has final, true, instead. Returns nil without Rise and Fall, whose game has no ages. See
--- Refresh in EraProgressPanel.lua, lines 207 to 268.
+-- Returns the era section, or nil without Rise and Fall, whose game has no ages. See Refresh in
+-- EraProgressPanel.lua, lines 207 to 268.
 function SentientSystems_GetEraState(player)
 	local eras = Game.GetEras()
 
