@@ -21,7 +21,7 @@ A new state section touches these places:
 
 A choice touches the same places under `Choices/` and `src/choices/`.
 
-The earlier debts cut this list. The contract test checks each section against the JSON from its Lua test, so a new section needs no TypeScript test of its own, and [schema-single-source.md](schema-single-source.md) removes place 11. The fake game registry is already cut, so place 7 is one line. That leaves 11 places, and 5 of them are one-line edits.
+The earlier debts cut this list. The contract test checks each section against the JSON from its Lua test, so a new section needs no TypeScript test of its own, and moving the shapes into the zod schemas removed place 11. The fake game registry is already cut, so place 7 is one line. That leaves 11 places, and 5 of them are one-line edits.
 
 A missed place fails a test, except for two. A missing `<Files>` entry passes, which task 1 here fixes. A missing finding is a docs step, which review catches.
 

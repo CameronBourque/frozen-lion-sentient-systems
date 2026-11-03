@@ -18,7 +18,7 @@ Comment lines over 80 columns, counting a tab as 4, on 2026-11-02:
 | `packages/core/mod/Test/FakeGame/`, `FakeGame.lua`, and `Game.lua` | 354 |
 | The rest of `packages/core/mod/Test/` | 65 |
 
-[schema-single-source.md](schema-single-source.md) deletes many of these comments first, so this debt rewraps only the ones that remain. Count again before each task.
+Moving the shapes into the zod schemas deleted many of these comments first, so this debt rewraps only the ones that remain. Count again before each task.
 
 `npm run lint` runs ESLint only. The CI `lint` job installs Node and no Lua.
 
@@ -28,7 +28,7 @@ Rewrap every comment to 80 columns, one folder group per commit, with no change 
 
 ## Questions
 
-1. Does this run before or with [schema-single-source.md](schema-single-source.md)? Answered: after it, because that debt deletes many of the comments this one would rewrap.
+1. Does this run before or with the move of the shapes into the zod schemas? Answered: after it, because that move deleted many of the comments this one would rewrap.
 2. Is `luacheck` worth a new dev tool, or is a short script enough? Answered: a short script. The CI `lint` job has no Lua, so `luacheck` would need Lua installed there. `luacheck` would also need its other checks turned off, because the game's globals, such as `Players`, would fail them.
 
 ## Tasks
