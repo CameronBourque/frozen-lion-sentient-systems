@@ -24,7 +24,7 @@ import { UNIT } from "./units.js";
 import { VICTORIES } from "./victories.js";
 
 // Not strict, so a field from a newer core mod is dropped instead of failing the whole state.
-const STATE = z.object({
+export const STATE = z.object({
 	blockers: BLOCKERS,
 	cities: z.array(CITY),
 	diplomacy: DIPLOMACY,
