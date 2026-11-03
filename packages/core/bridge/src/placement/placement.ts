@@ -2,7 +2,7 @@
 // the tiles it could buy where it could go, with each district's adjacency bonus on each tile, as
 // the placement view shows them. The core mod builds them as JSON in
 // Scripts/Placement/SentientSystemsCore_Placement.lua, and the bridge reads them through the stash,
-// in stash.ts. docs/design/core/in-game-lua.md has the format.
+// in stash.ts.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -12,8 +12,6 @@ import type { TunerClient } from "../tuner/client.js";
 const TILE = z.object({
 	x: z.number(),
 	y: z.number(),
-	// A district's adjacency bonus on the tile, by yield, as the placement view shows it. Left out
-	// for a wonder, and for a tile with no bonus.
 	adjacency: z.object({
 		food: z.number().optional(),
 		production: z.number().optional(),
@@ -21,12 +19,16 @@ const TILE = z.object({
 		science: z.number().optional(),
 		culture: z.number().optional(),
 		faith: z.number().optional(),
-	}).optional(),
+	}).optional().describe(
+		"A district's adjacency bonus on the tile, by yield, such as science 3, as the placement view shows it. Left out for a wonder, and for a tile with no bonus.",
+	),
 });
 
 export const PLACEMENT = z.object({
-	tiles: z.array(TILE),
-	purchaseTiles: z.array(TILE),
+	tiles: z.array(TILE).describe("The tiles the city owns where the district or wonder can go now."),
+	purchaseTiles: z.array(TILE).describe(
+		"The tiles the city could buy where it could go. It lists every tile to buy, while the panel counts a district's tile to buy only when it has a bonus. Neighborhood housing isn't included.",
+	),
 });
 
 export type Placement = z.infer<typeof PLACEMENT>;

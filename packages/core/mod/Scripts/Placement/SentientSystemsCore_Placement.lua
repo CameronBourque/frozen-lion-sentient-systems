@@ -2,9 +2,8 @@
 -- with each district's adjacency bonus on each tile, as the placement view shows them when the
 -- player picks one. The bridge reads them for one district or wonder at a time, in a call of their
 -- own, and the production choice counts them. The UI script and the production choice load this
--- file. Example: SentientSystems_GetPlacement(0, 65536, "DISTRICT_CAMPUS") returns
--- '{"purchaseTiles":[{"adjacency":{"science":3},"x":19,"y":14}],"tiles":[{"adjacency":{"science":1},
--- "x":17,"y":13},{"x":16,"y":14}]}', on one line. The calls follow AdjacencyBonusSupport.lua.
+-- file. The shape is in bridge/src/placement/placement.ts. The calls follow
+-- AdjacencyBonusSupport.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
