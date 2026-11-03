@@ -10,6 +10,12 @@ import tseslint from "typescript-eslint";
 const stylisticRules = {
 	"@stylistic/indent": ["error", "tab"],
 	"@stylistic/no-trailing-spaces": "error",
+	// Only comment lines are limited. The code limit is above the longest
+	// code line, so no code line fails.
+	"@stylistic/max-len": [
+		"error",
+		{ code: 300, comments: 80, tabWidth: 4 },
+	],
 	"@stylistic/no-multiple-empty-lines": ["error", { max: 1 }],
 	"@stylistic/padding-line-between-statements": [
 		"error",
