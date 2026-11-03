@@ -66,7 +66,8 @@ describe("writing", () => {
 		expect(rulesHit(`# Tuner Client Protocol\n${body}`)).toEqual(["heading-case"]);
 		expect(rulesHit(`# Tuner client protocol\n${body}`)).toEqual([]);
 		expect(rulesHit(`# Phase 0: Prove the client\n${body}`)).toEqual([]);
-		// "Lua" and "FireTuner" never appear in lowercase, so they are proper nouns.
+		// "Lua" and "FireTuner" never appear in lowercase, so they are proper
+		// nouns.
 		expect(rulesHit(`# Lua and FireTuner\n${body}`)).toEqual([]);
 	});
 

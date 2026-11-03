@@ -1,6 +1,7 @@
-// Empties the folder that Test/Game.lua records the Lua JSON in, and makes one folder per call.
-// Usage: npm run test:lua and npm run coverage:lua run it first. A leftover fixture from a deleted
-// test would otherwise stay, and the bridge tests would still read it.
+// Empties the folder that Test/Game.lua records the Lua JSON in, and makes one
+// folder per call. Usage: npm run test:lua and npm run coverage:lua run it
+// first. A leftover fixture from a deleted test would otherwise stay, and the
+// bridge tests would still read it.
 
 import fs from "node:fs";
 import path from "node:path";

@@ -1,6 +1,6 @@
-// Links the core mod into the game's user mods folder with a directory junction, or
-// removes that link, and returns the lines to print and the exit code. A junction needs
-// no administrator prompt.
+// Links the core mod into the game's user mods folder with a directory
+// junction, or removes that link, and returns the lines to print and the exit
+// code. A junction needs no administrator prompt.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -23,11 +23,12 @@ export function linkMod({ documents, target }) {
 	const game = gameFolder(documents);
 	const link = linkPath(documents);
 
-	// A missing game folder most likely means the wrong Documents folder, so don't guess.
+	// A missing game folder most likely means the wrong Documents folder, so
+	// don't guess.
 	if (!fs.existsSync(game)) return { lines: [`${game} doesn't exist. Start the game once, then run this again.`], exitCode: 1 };
 
-	// lstat sees the link itself, so a junction to a missing folder still counts. Node
-	// reports a junction as a symbolic link.
+	// lstat sees the link itself, so a junction to a missing folder still
+	// counts. Node reports a junction as a symbolic link.
 	const stat = fs.lstatSync(link, { throwIfNoEntry: false });
 
 	if (stat?.isSymbolicLink()) {
@@ -47,7 +48,8 @@ export function linkMod({ documents, target }) {
 	return { lines: [`Linked ${link} to ${target}.`], exitCode: 0 };
 }
 
-// Removes only a link, so a real folder with someone's files in it is never deleted.
+// Removes only a link, so a real folder with someone's files in it is never
+// deleted.
 export function unlinkMod({ documents }) {
 	const link = linkPath(documents);
 	const stat = fs.lstatSync(link, { throwIfNoEntry: false });

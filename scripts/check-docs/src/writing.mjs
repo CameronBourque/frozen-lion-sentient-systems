@@ -1,5 +1,6 @@
-// Check 4: the writing patterns from docs/rules/writing.md. The rules themselves
-// are in writing-rules.mjs. writing.md is skipped, because it quotes the patterns.
+// Check 4: the writing patterns from docs/rules/writing.md. The rules
+// themselves are in writing-rules.mjs. writing.md is skipped, because it quotes
+// the patterns.
 
 import { problem } from "./parse.mjs";
 import { buildLineRules } from "./writing-rules.mjs";
@@ -62,8 +63,8 @@ function proseOnly(line) {
 
 const smallWords = new Set(["a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "into", "nor", "of", "on", "or", "over", "per", "the", "to", "up", "via", "vs", "with"]);
 
-// Every word that the docs write in lowercase somewhere. A capitalized word that
-// is never written in lowercase, such as "Lua", is a proper noun.
+// Every word that the docs write in lowercase somewhere. A capitalized word
+// that is never written in lowercase, such as "Lua", is a proper noun.
 function lowercaseWords(repo) {
 	const words = new Set();
 
@@ -83,7 +84,8 @@ function isTitleCase(heading, lowercase) {
 		.replace(/`[^`]*`/g, " ")
 		.replace(/[*_]+/g, "");
 
-	// After a colon or a period, a new part starts with a capital, as in "Phase 0: Prove the bridge".
+	// After a colon or a period, a new part starts with a capital, as in "Phase
+	// 0: Prove the bridge".
 	for (const part of plain.split(/[:.?!]\s+/)) {
 		const laterWords = part.split(/\s+/).filter(Boolean).slice(1);
 		const ordinary = laterWords.filter(

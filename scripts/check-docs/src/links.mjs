@@ -1,5 +1,5 @@
-// Check 1: every relative link points to a file or folder in the repo, and every
-// #anchor matches a heading in the file it points to.
+// Check 1: every relative link points to a file or folder in the repo, and
+// every #anchor matches a heading in the file it points to.
 
 import path from "node:path";
 import { problem, resolveLink } from "./parse.mjs";
@@ -22,7 +22,8 @@ export function checkLinks(repo) {
 
 			if (target.anchor === undefined) continue;
 
-			// A link to a folder shows its README, so the anchor is in the README.
+			// A link to a folder shows its README, so the anchor is in the
+			// README.
 			const anchorDoc = repo.docs.get(isFolder ? path.posix.join(target.path, "README.md") : target.path);
 
 			if (!anchorDoc) continue; // Only Markdown headings are checked.

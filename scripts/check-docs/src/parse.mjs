@@ -1,5 +1,5 @@
-// Turns the repo's files into the view every check works from. Nothing here reads
-// the disk, so tests can pass in Markdown as strings.
+// Turns the repo's files into the view every check works from. Nothing here
+// reads the disk, so tests can pass in Markdown as strings.
 
 import path from "node:path";
 
@@ -98,7 +98,8 @@ function anchorsFor(headings) {
 }
 
 // GitHub's heading anchor: the rendered text, lowercased, with punctuation
-// removed and spaces turned into hyphens. "Step 2: Turn on" becomes "step-2-turn-on".
+// removed and spaces turned into hyphens. "Step 2: Turn on" becomes
+// "step-2-turn-on".
 export function slug(heading) {
 	return heading
 		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1") // A link keeps only its text.
@@ -125,8 +126,8 @@ function findLinks(text) {
 }
 
 // Returns the repo path and anchor that a link points to, or null for an
-// external link such as https: or mailto:. A folder's path has no trailing slash,
-// and the repo root is "".
+// external link such as https: or mailto:. A folder's path has no trailing
+// slash, and the repo root is "".
 export function resolveLink(fromPath, target) {
 	if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith("//")) return null;
 

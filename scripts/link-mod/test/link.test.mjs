@@ -1,5 +1,5 @@
-// Tests for link.mjs, on real folders in a temp folder. Off Windows, Node makes a
-// symlink in place of a junction, so the same tests run in CI.
+// Tests for link.mjs, on real folders in a temp folder. Off Windows, Node makes
+// a symlink in place of a junction, so the same tests run in CI.
 
 import fs from "node:fs";
 import os from "node:os";

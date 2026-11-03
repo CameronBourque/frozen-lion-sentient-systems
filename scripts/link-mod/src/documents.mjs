@@ -1,5 +1,6 @@
-// Finds the user's Documents folder from the registry, so a Documents folder that
-// OneDrive moved works too. index.mjs runs `reg query` and passes in its output.
+// Finds the user's Documents folder from the registry, so a Documents folder
+// that OneDrive moved works too. index.mjs runs `reg query` and passes in its
+// output.
 
 import path from "node:path";
 
@@ -15,9 +16,10 @@ export function parseRegQuery(output) {
 	return output.match(valueRow)?.[1] ?? null;
 }
 
-// Replaces each %NAME% with its environment variable. The value is REG_EXPAND_SZ, so it
-// can hold %USERPROFILE%. Windows names are case-insensitive, but a plain object's keys
-// aren't, so the lookup ignores case. An unknown name stays as it is.
+// Replaces each %NAME% with its environment variable. The value is
+// REG_EXPAND_SZ, so it can hold %USERPROFILE%. Windows names are
+// case-insensitive, but a plain object's keys aren't, so the lookup ignores
+// case. An unknown name stays as it is.
 export function expandVariables(value, env) {
 	const names = new Map(Object.keys(env).map((name) => [name.toUpperCase(), name]));
 
@@ -28,8 +30,8 @@ export function expandVariables(value, env) {
 	});
 }
 
-// Returns the Documents folder and any warnings. When the registry can't be read, it
-// warns and falls back to Documents in the home folder.
+// Returns the Documents folder and any warnings. When the registry can't be
+// read, it warns and falls back to Documents in the home folder.
 export function findDocuments({ readRegistry, env, homedir }) {
 	const fallback = path.join(homedir, "Documents");
 	let output;

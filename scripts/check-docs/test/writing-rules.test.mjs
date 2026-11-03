@@ -1,4 +1,5 @@
-// Tests for writing-rules.mjs, the rule table, against the real docs/rules/writing.md.
+// Tests for writing-rules.mjs, the rule table, against the real
+// docs/rules/writing.md.
 
 import fs from "node:fs";
 import path from "node:path";
