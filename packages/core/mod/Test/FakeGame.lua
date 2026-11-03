@@ -1,38 +1,8 @@
--- A fake of the game's Lua API for tests. It has only the calls the core mod makes. The core here
--- builds the shared GameInfo tables, a player's cities and units, and the fake env, and each area of
--- the game is a feature in FakeGame/, which holds the docs for the world and player data it reads. A
--- feature registers with one line at the end of this file. Example:
--- local env = Game.new()
--- FakeGame.Install(env, {
--- 	players = { [0] = { cities = { {
--- 		id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3,
--- 		growth = { foodSurplus = 3, housing = 6, turnsUntilGrowth = 2, amenities = 2, amenitiesNeeded = 2, happiness = 4 },
--- 		production = { type = "UNIT_SLINGER", turnsLeft = 2 },
--- 		yields = { FOOD = 9, PRODUCTION = 6 },
--- 		districts = { { type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" } } } },
--- 	} }, units = { { id = 196608, type = "UNIT_SCOUT", x = 24, y = 15, moves = 3, maxMoves = 3 } } } },
--- 	text = { LOC_CITY_NAME_ROME = "Rome" },
--- 	plots = { {
--- 		x = 17, y = 14, terrain = "TERRAIN_GRASS", feature = "FEATURE_FOREST", resource = "RESOURCE_DEER",
--- 		owner = 0, district = "DISTRICT_CITY_CENTER", improvement = "IMPROVEMENT_CAMP", improvementPillaged = false,
--- 		route = "ROUTE_ANCIENT_ROAD", routePillaged = false,
--- 	} },
--- })
--- env.Players[0]:GetCities():Members() then lists the one city.
---
--- Where the data is documented:
--- - City: CityDistricts, CityBuildings, CityGrowth, and CityYields. Its build queue, purchases,
---   and placement tiles are in Production, Purchases, and Placement. Its governor is in Governors,
---   and its religion in Religion.
--- - Unit: Units, with a player's escaping spy in Spies and digging archaeologist in Artifacts.
--- - Player: TopBar for the numbers on the top bar, Stores and Income for gold and faith, Research
---   and Governments for techs, civics, governments, and policies, Resources, Rivals, Deals, Blockers,
---   Envoys, CapturedCities, GreatPeople, and Eras.
--- - World: Players for the player managers, leaders, visibility, and world.turn, Capabilities for
---   world.legacyBonuses, rename, dramaticAges, offCapabilities, and unlockWithFaith, Plots for
---   world.plots, Maintenance for world.maintenance and unitMaintenance, and Locale for world.text.
---   Diplomacy for the status of each pair of players, and Proposals for the deals put to a player. WorldCongress, Emergencies, Dedications, and Eras have their own data, and world.expansion2 adds
---   Gathering Storm's checks.
+-- A fake of the game's Lua API for tests. It has only the calls the core mod
+-- makes. The core here builds the shared GameInfo tables, a player's cities and
+-- units, and the fake env. Each area of the game is a feature in FakeGame/,
+-- which holds the docs for the world and player data it reads. A feature
+-- registers with one line at the end of this file.
 
 local FakeGame = {}
 
