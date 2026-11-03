@@ -45,9 +45,9 @@ async function main(): Promise<void> {
 	const state = await readState(client, playerID);
 
 	if (state.ok) {
-		console.log(JSON.stringify(state.state, null, 2));
+		console.log(JSON.stringify(state.value, null, 2));
 		console.error(`Player ${playerID}'s state is ${state.bytes} bytes:`);
-		console.error(formatSectionSizes(sectionSizes(state.state, state.bytes)));
+		console.error(formatSectionSizes(sectionSizes(state.value, state.bytes)));
 	} else {
 		console.error(state.error);
 		process.exitCode = 1;
@@ -56,9 +56,9 @@ async function main(): Promise<void> {
 	const choices = await readChoices(client, playerID);
 
 	if (choices.ok) {
-		console.log(JSON.stringify(choices.choices, null, 2));
+		console.log(JSON.stringify(choices.value, null, 2));
 		console.error(`Player ${playerID}'s choices are ${choices.bytes} bytes:`);
-		console.error(formatSectionSizes(sectionSizes(choices.choices, choices.bytes)));
+		console.error(formatSectionSizes(sectionSizes(choices.value, choices.bytes)));
 	} else {
 		console.error(choices.error);
 		process.exitCode = 1;

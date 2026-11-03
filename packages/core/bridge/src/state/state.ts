@@ -6,7 +6,7 @@
 // Each section's schema has its own file in this folder, as each section of the core mod's Lua does.
 
 import { z } from "zod";
-import { readStash } from "../stash.js";
+import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
@@ -43,14 +43,8 @@ const STATE = z.object({
 
 export type State = z.infer<typeof STATE>;
 
-export type StateResult =
-	| { ok: true; state: State; bytes: number }
-	| { ok: false; error: string };
-
 // Reads the state of the player with ID playerID. Every failure comes back as an error that says what
 // went wrong, instead of an exception.
-export async function readState(client: TunerClient, playerID: number): Promise<StateResult> {
-	const result = await readStash(client, `SentientSystems_GetState(${playerID})`, STATE, "state");
-
-	return result.ok ? { ok: true, state: result.value, bytes: result.bytes } : result;
+export function readState(client: TunerClient, playerID: number): Promise<StashResult<State>> {
+	return readStash(client, `SentientSystems_GetState(${playerID})`, STATE, "state");
 }
