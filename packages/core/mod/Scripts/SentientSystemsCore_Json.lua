@@ -1,6 +1,5 @@
 -- Encodes Lua values as JSON on one line, and keeps long text in pieces that the bridge reads one
--- command at a time. Example: SentientSystems_EncodeJson({ cities = { { id = 65536, name = "Aduatuca" } } })
--- returns '{"cities":[{"id":65536,"name":"Aduatuca"}]}'.
+-- command at a time.
 
 -- A command whose output is longer than about 2 MiB gets no reply from the tuner, so each piece
 -- stays well under it. See docs/findings/tuner-commands.md.
@@ -184,7 +183,6 @@ end
 
 -- Keeps text in pieces, in place of any earlier stash, and prints and returns how many there are.
 -- The bridge then reads each piece with its own SentientSystems_PrintPiece command and joins them.
--- Example: SentientSystems_Stash(SentientSystems_EncodeJson(value)) prints "3".
 function SentientSystems_Stash(text)
 	stash = Split(text)
 	print(#stash)

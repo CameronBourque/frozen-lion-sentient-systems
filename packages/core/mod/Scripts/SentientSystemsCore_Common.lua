@@ -1,7 +1,6 @@
 -- Helpers that every core mod script loads first: tagged lines for the bridge, error catching for
 -- event handlers, and a checked include. Each tagged line starts with the tag, so the bridge can
--- tell it apart from other game output. Example: SentientSystems_Print("AGENT_TURN", 0) prints
--- "[SENTIENTSYSTEMS] AGENT_TURN 0".
+-- tell it apart from other game output.
 
 SENTIENTSYSTEMS_TAG = "[SENTIENTSYSTEMS]"
 
@@ -18,8 +17,7 @@ end
 -- Loads an imported file by name, as include does, and returns the paths it loaded. When no file has
 -- the name, include returns an empty list and raises no error, so this prints
 -- "[SENTIENTSYSTEMS] ERROR include <message>" for the bridge to log. The game finds a file added to
--- the .modinfo only after a restart. See docs/findings/lua-contexts.md. Example:
--- SentientSystems_Include("SentientSystemsCore_State")
+-- the .modinfo only after a restart. See docs/findings/lua-contexts.md.
 function SentientSystems_Include(name)
 	local loaded = include(name)
 
@@ -70,8 +68,6 @@ end
 -- "[SENTIENTSYSTEMS] ERROR <name> <message>" in place of a Lua error, so the bridge logs it. name
 -- is the handler's name, because a Lua function doesn't know its own. The game's Lua puts the stack
 -- trace in the error message, so pcall gets it with no debug library, which UI states don't have.
--- Example:
--- Events.PlayerTurnActivated.Add(SentientSystems_CatchErrors("OnPlayerTurnActivated", OnPlayerTurnActivated))
 function SentientSystems_CatchErrors(name, handler)
 	return function(...)
 		local ok, err = pcall(handler, ...)
