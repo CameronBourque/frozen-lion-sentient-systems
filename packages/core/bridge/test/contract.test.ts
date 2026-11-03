@@ -1,4 +1,4 @@
-// Contract test: the JSON that the Lua tests record parses with the schema the bridge reads it with.
+// Contract test: the JSON that the Lua tests record parses with the schema the bridge reads it with, and loses nothing.
 // npm run test:lua writes the fixtures, in test/lua-fixtures/, with one folder for each call.
 
 import fs from "node:fs";
@@ -38,10 +38,12 @@ describe.each(Object.entries(CALLS))("%s fixtures", (call, schema) => {
 		expect(names.length, `No ${call} fixtures. Run npm run test:lua to write them.`).toBeGreaterThan(0);
 	});
 
-	test.each(names)("%s parses", (name) => {
+	test.each(names)("%s parses with nothing dropped", (name) => {
 		const json: unknown = JSON.parse(fs.readFileSync(path.join(FIXTURES, call, name), "utf8"));
 		const result = schema.safeParse(json);
 
 		expect(result.error?.message).toBeUndefined();
+		// The schemas have no defaults or transforms, so a parse that drops nothing returns the same value.
+		expect(result.data).toEqual(json);
 	});
 });
