@@ -29,7 +29,15 @@ The Lua states the tuner lists in a running game, and how the list changes when 
 ## Method
 
 1. Connect FireTuner to a running game and copy the full state list here.
-2. Close FireTuner, and run `npm run watch-states --workspace packages/core/bridge`. Open a few in-game menus. Save, quit to the main menu, and load the save. Click the loading screen's button to start the game, then stop the script.
+2. Check out the watch-states script from commit `2291dc3`, the last commit on `main` that has it, and install its dependencies:
+
+   ```sh
+   git worktree add tmp/probe-scripts 2291dc3
+   cd tmp/probe-scripts
+   npm ci
+   ```
+
+   Close FireTuner, and run `npm run watch-states --workspace packages/core/bridge` from `tmp/probe-scripts`. Open a few in-game menus. Save, quit to the main menu, and load the save. Click the loading screen's button to start the game, then stop the script.
 3. To see what a client gets at the loading screen, load a save and wait at the loading screen's button without clicking it. Check whether the client lists the in-game states. Do it four times: with `watch-states` and with FireTuner, each with the core mod off and on.
 4. To find when the loading screen's events fire, add these temporary probes to the end of `SentientSystemsCore_UI.lua`:
 
