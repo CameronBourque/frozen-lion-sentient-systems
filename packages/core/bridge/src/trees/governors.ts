@@ -4,7 +4,7 @@
 // the stash, in stash.ts. docs/design/core/in-game-lua.md has the format.
 
 import { z } from "zod";
-import { readStash } from "../stash.js";
+import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 
 // A promotion in a governor's tree: type, name, description, level and column, its place in the
@@ -45,13 +45,7 @@ const GOVERNOR_TREE = z.object({ governors: z.array(GOVERNOR) });
 
 export type GovernorTree = z.infer<typeof GOVERNOR_TREE>;
 
-export type GovernorTreeResult =
-	| { ok: true; tree: GovernorTree; bytes: number }
-	| { ok: false; error: string };
-
 // Reads the governor tree of the player with ID playerID.
-export async function readGovernorTree(client: TunerClient, playerID: number): Promise<GovernorTreeResult> {
-	const result = await readStash(client, `SentientSystems_GetGovernorTree(${playerID})`, GOVERNOR_TREE, "governor tree");
-
-	return result.ok ? { ok: true, tree: result.value, bytes: result.bytes } : result;
+export function readGovernorTree(client: TunerClient, playerID: number): Promise<StashResult<GovernorTree>> {
+	return readStash(client, `SentientSystems_GetGovernorTree(${playerID})`, GOVERNOR_TREE, "governor tree");
 }

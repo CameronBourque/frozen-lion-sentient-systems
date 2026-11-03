@@ -55,7 +55,7 @@ describe("readChoices", () => {
 	test("reads the choices through the stash from the core mod's state", async () => {
 		stash(JSON_TEXT);
 
-		expect(await readChoices(client, 0)).toEqual({ ok: true, choices: CHOICES, bytes: Buffer.byteLength(JSON_TEXT) });
+		expect(await readChoices(client, 0)).toEqual({ ok: true, value: CHOICES, bytes: Buffer.byteLength(JSON_TEXT) });
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },
@@ -67,7 +67,7 @@ describe("readChoices", () => {
 
 		const result = await readChoices(client, 0);
 
-		expect(result.ok && "pantheon" in result.choices).toBe(false);
+		expect(result.ok && "pantheon" in result.value).toBe(false);
 	});
 
 	test("asks for the given player's choices", async () => {

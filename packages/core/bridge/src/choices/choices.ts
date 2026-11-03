@@ -5,7 +5,7 @@
 // Lua does.
 
 import { z } from "zod";
-import { readStash } from "../stash.js";
+import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 import { ARTIFACTS_CHOICE } from "./artifacts.js";
 import { CAPTURED_CITIES_CHOICE } from "./captured-cities.js";
@@ -46,14 +46,8 @@ const CHOICES = z.object({
 
 export type Choices = z.infer<typeof CHOICES>;
 
-export type ChoicesResult =
-	| { ok: true; choices: Choices; bytes: number }
-	| { ok: false; error: string };
-
 // Reads the choices of the player with ID playerID. Every failure comes back as an error that says
 // what went wrong, instead of an exception.
-export async function readChoices(client: TunerClient, playerID: number): Promise<ChoicesResult> {
-	const result = await readStash(client, `SentientSystems_GetChoices(${playerID})`, CHOICES, "choices");
-
-	return result.ok ? { ok: true, choices: result.value, bytes: result.bytes } : result;
+export function readChoices(client: TunerClient, playerID: number): Promise<StashResult<Choices>> {
+	return readStash(client, `SentientSystems_GetChoices(${playerID})`, CHOICES, "choices");
 }

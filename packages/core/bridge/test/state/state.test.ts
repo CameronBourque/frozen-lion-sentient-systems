@@ -122,7 +122,7 @@ describe("readState", () => {
 
 		stash([json]);
 
-		expect(await readState(client, 0)).toEqual({ ok: true, state: STATE, bytes: Buffer.byteLength(json) });
+		expect(await readState(client, 0)).toEqual({ ok: true, value: STATE, bytes: Buffer.byteLength(json) });
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },
@@ -137,7 +137,7 @@ describe("readState", () => {
 
 		const result = await readState(client, 0);
 
-		expect(result).toEqual({ ok: true, state: STATE, bytes: Buffer.byteLength(json) });
+		expect(result).toEqual({ ok: true, value: STATE, bytes: Buffer.byteLength(json) });
 		expect(game.commands.map(({ lua }) => lua)).toEqual([STASH, "SentientSystems_PrintPiece(1)", "SentientSystems_PrintPiece(2)"]);
 	});
 
@@ -152,7 +152,7 @@ describe("readState", () => {
 
 		const result = await readState(client, 0);
 
-		expect(result.ok && "wonders" in result.state).toBe(false);
+		expect(result.ok && "wonders" in result.value).toBe(false);
 	});
 
 	test("fails when the stash doesn't print a piece count", async () => {
