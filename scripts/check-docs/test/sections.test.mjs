@@ -29,6 +29,17 @@ describe("sections", () => {
 		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/01-x.md": "# Step 1\n" })).length).toBe(4);
 	});
 
+	test("a tech debt file needs its sections, and Tasks is optional", () => {
+		const debt = lines("# D", "## Now", "## Proposal", "## Questions", "## Done when");
+
+		expect(checkSections(buildRepo({ "docs/tech-debt/d.md": debt }))).toEqual([]);
+		expect(messages(checkSections(buildRepo({ "docs/tech-debt/d.md": lines("# D", "## Now", "## Tasks") })))).toEqual([
+			"docs/tech-debt/d.md:1: sections: tech debt file is missing ## Proposal",
+			"docs/tech-debt/d.md:1: sections: tech debt file is missing ## Questions",
+			"docs/tech-debt/d.md:1: sections: tech debt file is missing ## Done when",
+		]);
+	});
+
 	test("a design file must end with a Decision | Reason table", () => {
 		const good = lines("# D", "## Decisions", "", "| Decision | Reason |", "| --- | --- |");
 		const wrongHeader = lines("# D", "## Decisions", "", "| Choice | Why |");
@@ -53,6 +64,6 @@ describe("sections", () => {
 	});
 
 	test("READMEs are exempt", () => {
-		expect(checkSections(buildRepo({ "docs/design/README.md": "# Design\n", "docs/findings/README.md": "# Findings\n" }))).toEqual([]);
+		expect(checkSections(buildRepo({ "docs/design/README.md": "# Design\n", "docs/findings/README.md": "# Findings\n", "docs/tech-debt/README.md": "# Tech debt\n" }))).toEqual([]);
 	});
 });

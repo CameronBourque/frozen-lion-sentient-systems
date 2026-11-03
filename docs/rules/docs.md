@@ -25,6 +25,7 @@ Where each kind of fact lives:
 | What is true about the game or our tools, and how we checked | [findings/](../findings/README.md) |
 | How to test a finding | That finding's `## Method` section |
 | What to do next, and in what order | [roadmap/](../roadmap/README.md) |
+| Known debt in the code and docs, and the proposed fix | [tech-debt/](../tech-debt/README.md) |
 | What could go wrong, and the fallback | [risks.md](../risks.md) |
 | Rules | [rules/](README.md) |
 | What a term means | [glossary.md](../glossary.md) |
@@ -65,6 +66,14 @@ Where each kind of fact lives:
   4. Move what it proved into findings or design.
   5. Delete any step files that remain. In the phase README, replace the step table with links to the findings and design files that now hold the results.
 
+## Tech debt
+
+- Each debt is its own file in [tech-debt/](../tech-debt/README.md), with a one-line summary and these sections: `## Now`, `## Proposal`, `## Questions`, and `## Done when`.
+- `## Now` says what the code or docs hold today, with paths and counts.
+- The index lists the files in the order to work on them.
+- When a debt is planned, answer its questions in the file and add `## Tasks`, one task per commit, as a roadmap step does. Cut `## Proposal` to a short summary of the approach, so the details live only in the tasks.
+- When a debt is fixed, move any decision into the design file it affects, then delete the debt file and its index row. Git keeps its history.
+
 ## Risks
 
 - [risks.md](../risks.md) lists each risk with its impact and fallback.
@@ -73,7 +82,7 @@ Where each kind of fact lives:
 
 ## Automated check
 
-`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, indexes, required sections, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes.
+`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes.
 
 The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there. Files over 150 lines get a warning, not a failure.
 
