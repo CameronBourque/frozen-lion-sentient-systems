@@ -1,21 +1,16 @@
 -- The governor choice: the governors the player can appoint, the promotions they can give their
 -- governors, and the cities they can assign them to, as the Governors panel, its details panel, and
 -- its assignment chooser offer them. Rise and Fall adds governors, so without it there is no choice.
--- SentientSystemsCore_Choices.lua loads this file. Example: SentientSystems_GetGovernorChoices(player)
--- returns a table that encodes as '{"appoint":[{"description":"Military focused, ...","loyalty":8,
--- "name":"Victor","title":"The Castellan","turnsToEstablish":3,"type":"GOVERNOR_THE_DEFENDER"}],
--- "assign":[{"cities":[{"id":65536,"name":"Rome","owner":0},...],"governor":"GOVERNOR_THE_MERCHANT"}],
--- "promote":[{"governor":"GOVERNOR_THE_MERCHANT","promotions":[{"description":"Double adjacency
--- bonuses ...","name":"Harbormaster","type":"GOVERNOR_PROMOTION_MERCHANT_HARBORMASTER"}]}]}', on one
--- line. A Secret Society the player has discovered can be appointed and promoted, but not assigned. The checks follow GovernorPanel.lua, GovernorDetailsPanel.lua, and
+-- SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/governors.ts. A Secret Society the player has discovered can be appointed and
+-- promoted, but not assigned. The checks follow GovernorPanel.lua, GovernorDetailsPanel.lua, and
 -- GovernorAssignmentChooser.lua.
 
 SentientSystems_Include("SentientSystemsCore_Governors")
 
--- Returns the governors the player can appoint, each with type, name, title, description, loyalty,
--- the loyalty pressure on their card, and turnsToEstablish, the turns they take to settle in a
--- city. A Secret Society the player has discovered is there too, with secret, true, and neither
--- loyalty nor turns, which its card doesn't show. Returns nil without a title to spend, as the
+-- Returns the governors the player can appoint. A Secret Society the player has discovered is there
+-- too, without the loyalty and turns that its card doesn't show. Returns nil without a title to
+-- spend, as the
 -- panel turns every Appoint button off then. See Refresh in GovernorPanel.lua, lines 39 to 122,
 -- AddGovernorCandidate, lines 198 to 242, and AddSecretGovernorCandidate, lines 271 to 311.
 local function GetAppointments(governors)
@@ -46,9 +41,7 @@ local function GetAppointments(governors)
 	return #list > 0 and list or nil
 end
 
--- Returns the promotions a governor can earn now, each with type, name, and description, in the
--- game's order, and hidden, true, with the game's own text in place of the name and description, for
--- one the panel hides. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230, and
+-- Returns the promotions a governor can earn now, in the game's order. See CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230, and
 -- CreateSecretPromotionTree, lines 270 to 328.
 local function GetPromotions(governors, governor, definition)
 	local promotions = {}
@@ -68,8 +61,7 @@ local function GetPromotions(governors, governor, definition)
 	return promotions
 end
 
--- Returns the city as an assignment target: owner, id, and name, with blocked, the game's reasons,
--- when the city can't take the governor.
+-- Returns the city as an assignment target.
 local function GetTarget(city, reasons)
 	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()), blocked = reasons }
 end
@@ -138,10 +130,8 @@ local function GetAssignments(player, governors, governor, definition)
 	return targets
 end
 
--- Returns the governor choice: appoint, the governors to appoint, promote, each governor that can be
--- promoted, with governor, its type, and promotions, assign, each governor that can be assigned,
--- with governor and cities, each key left out with nothing to offer. A neutralized governor can't be
--- assigned, as the panel turns its Assign button off. Returns nil without Rise and Fall, with
+-- Returns the governor choice, each key left out with nothing to offer. A neutralized governor
+-- can't be assigned, as the panel turns its Assign button off. Returns nil without Rise and Fall, with
 -- nothing to do, and while Gathering Storm's World Congress is in session, which turns every button
 -- off. See Refresh in GovernorPanel.lua, lines 39 to 122, and IsReadOnly, lines 722 to 726.
 function SentientSystems_GetGovernorChoices(player)
