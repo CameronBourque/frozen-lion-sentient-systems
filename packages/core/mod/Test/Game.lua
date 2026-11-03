@@ -20,6 +20,18 @@ local GLOBALS = {
 	"tostring", "type", "unpack", "xpcall", "coroutine", "math", "os",
 }
 
+-- The folder that records the JSON of each top-level call, for the bridge tests. npm run test:lua
+-- makes it, with one folder per call.
+local FIXTURES = MOD_ROOT .. "../bridge/test/lua-fixtures/"
+
+-- The top-level calls to record.
+local RECORDED = {
+	"GetState", "GetChoices", "GetTechTree", "GetCivicTree", "GetGovernorTree", "GetPlacement",
+}
+
+-- How many JSON strings each test file has recorded for each call, by "call/file".
+local recorded = {}
+
 -- Returns each imported file's path in the mod folder, by its name without the extension, from the
 -- ImportFiles actions in the .modinfo. The game's include finds only these files.
 local function ReadImports()
@@ -48,6 +60,61 @@ local function Copy(source)
 	end
 
 	return copy
+end
+
+-- Returns the name of the test file that is running, without .test.lua.
+local function TestName()
+	local level = 3
+
+	while debug.getinfo(level, "S") do
+		local name = debug.getinfo(level, "S").source:match("([^/\\]+)%.test%.lua$")
+
+		if name then
+			return name
+		end
+
+		level = level + 1
+	end
+
+	return "unknown"
+end
+
+-- Writes the JSON that a top-level call returned, named by the test file and the call's order in it.
+-- Without the folder, as when busted runs on its own, it writes nothing.
+local function Record(call, json)
+	local name = TestName()
+	local key = call .. "/" .. name
+	local count = (recorded[key] or 0) + 1
+	local file = io.open(FIXTURES .. call .. "/" .. name .. "-" .. count .. ".json", "w")
+
+	recorded[key] = count
+
+	if file then
+		file:write(json)
+		file:close()
+	end
+end
+
+-- Replaces each top-level call that the file defined with one that records its JSON.
+local function WrapRecorded(env)
+	for _, call in ipairs(RECORDED) do
+		local original = env["SentientSystems_" .. call]
+
+		if original and not recorded[original] then
+			local wrapper = function(...)
+				local json = original(...)
+
+				if type(json) == "string" then
+					Record(call, json)
+				end
+
+				return json
+			end
+
+			recorded[wrapper] = true
+			env["SentientSystems_" .. call] = wrapper
+		end
+	end
 end
 
 -- Returns a new environment. env.printed lists each line that print printed. env.include(name)
@@ -98,6 +165,7 @@ function Game.run(env, path)
 
 	setfenv(chunk, env)
 	chunk()
+	WrapRecorded(env)
 end
 
 return Game

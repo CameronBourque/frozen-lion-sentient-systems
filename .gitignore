@@ -6,3 +6,4 @@ coverage/
 build/
 dist/
 tmp/
+packages/core/bridge/test/lua-fixtures/
