@@ -1,6 +1,7 @@
-// Starts the bridge. It reads the config file, connects to the game's tuner, logs the core mod's
-// version and any active turn on each connect, and logs each event the core mod prints, until you
-// press Ctrl+C. Each game gets its own log file.
+// Starts the bridge. It reads the config file, connects to the game's tuner,
+// logs the core mod's version and any active turn on each connect, and logs
+// each event the core mod prints, until you press Ctrl+C. Each game gets its
+// own log file.
 
 import { isSea } from "node:sea";
 import { onConnect } from "./connect.js";
@@ -10,8 +11,8 @@ import { startConfig } from "./load-config.js";
 import { logFilePath, Logger } from "./log.js";
 import { TunerClient } from "./tuner/client.js";
 
-// The default level until the config file sets one. Lines before then go to the console only,
-// because the log folder is next to the config file.
+// The default level until the config file sets one. Lines before then go to the
+// console only, because the log folder is next to the config file.
 const logger = new Logger();
 
 // Start by loading the configuration.

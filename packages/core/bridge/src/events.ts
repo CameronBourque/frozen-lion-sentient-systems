@@ -1,6 +1,7 @@
-// Turns the core mod's tagged lines into typed events. A tagged line is "[SENTIENTSYSTEMS] <KIND>
-// <args>", joined with spaces, such as "[SENTIENTSYSTEMS] AGENT_TURN 0". docs/design/core/in-game-lua.md
-// has the format.
+// Turns the core mod's tagged lines into typed events. A tagged line is
+// "[SENTIENTSYSTEMS] <KIND> <args>", joined with spaces, such as
+// "[SENTIENTSYSTEMS] AGENT_TURN 0". docs/design/core/in-game-lua.md has the
+// format.
 
 import type { LogFields, Logger, LogLevel } from "./log.js";
 
@@ -12,13 +13,15 @@ export type CoreEvent =
 	| { type: "loaded"; context: string }
 	// The loading screen shows its button. Commands don't run until the click.
 	| { type: "load_ready" }
-	// The loading screen's button was clicked, by the player or the game, so commands run from now on.
+	// The loading screen's button was clicked, by the player or the game, so
+	// commands run from now on.
 	| { type: "game_ready"; turn: number }
-	// A Lua error that SentientSystems_CatchErrors caught in a core mod event handler.
+	// A Lua error that SentientSystems_CatchErrors caught in a core mod event
+	// handler.
 	| { type: "error"; handler: string; message: string; traceback?: string };
 
-// "untagged" is a line from the game or another mod. "invalid" is a tagged line the bridge can't
-// read, such as a kind from a newer core mod, with the reason.
+// "untagged" is a line from the game or another mod. "invalid" is a tagged line
+// the bridge can't read, such as a kind from a newer core mod, with the reason.
 export type ParseResult =
 	| { result: "event"; event: CoreEvent }
 	| { result: "untagged" }
@@ -34,33 +37,36 @@ interface Kind {
 const PLAYER_ID = /^\d+$/;
 // A game turn, from Game.GetCurrentGameTurn().
 const TURN = /^\d+$/;
-// A release version such as "0.1.0", with an optional suffix such as "-beta.1". A mod with no
-// version prints "nil".
+// A release version such as "0.1.0", with an optional suffix such as "-beta.1".
+// A mod with no version prints "nil".
 const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
-// A Lua state's name, from ContextPtr:GetID(), such as "SentientSystemsCore_UI".
+// A Lua state's name, from ContextPtr:GetID(), such as
+// "SentientSystemsCore_UI".
 const CONTEXT = /^\w+$/;
 // An event handler's name, such as "OnPlayerTurnActivated".
 const HANDLER = /^\w+$/;
-// The escapes SentientSystems_CatchErrors writes, so an error with newlines fits on one line: "\\"
-// for a backslash, "\n" for a newline, and "\p" for a percent sign, which the game's log would read
-// as a printf format code.
+// The escapes SentientSystems_CatchErrors writes, so an error with newlines
+// fits on one line: "\\" for a backslash, "\n" for a newline, and "\p" for a
+// percent sign, which the game's log would read as a printf format code.
 const ESCAPE = /\\([\\np])/g;
 const ESCAPED = { n: "\n", p: "%", "\\": "\\" } as const;
 // The line the game's Lua puts between an error and its stack trace.
 const TRACEBACK = "\nstack traceback:\n";
-// The game's folder, in both the My Games folder and the install folder. A Lua error's paths are cut
-// to start here, so they're shorter and don't hold the user's name.
-// The name has no regex special characters, so the pattern below uses it as it is.
+// The game's folder, in both the My Games folder and the install folder. A Lua
+// error's paths are cut to start here, so they're shorter and don't hold the
+// user's name. The name has no regex special characters, so the pattern below
+// uses it as it is.
 const GAME_NAME = "Sid Meier's Civilization VI";
 const GAME_FOLDER = `${GAME_NAME}\\`;
-// A path from its drive to the game's folder, such as
-// "C:\Users\me\Documents\My Games\Sid Meier's Civilization VI\". Each folder is one name and a
-// backslash, so the lazy match stops at the first game folder.
+// A path from its drive to the game's folder, such as "C:\Users\me\Documents\My
+// Games\Sid Meier's Civilization VI\". Each folder is one name and a backslash,
+// so the lazy match stops at the first game folder.
 const DRIVE = String.raw`[A-Za-z]:\\`;
 const FOLDER = String.raw`[^\\\n]*\\`;
 const GAME_PATH = new RegExp(String.raw`${DRIVE}(?:${FOLDER})*?${GAME_NAME}\\`, "g");
 
-// Reads "ERROR <handler> <message>". The message is the rest of the line, spaces and tabs included.
+// Reads "ERROR <handler> <message>". The message is the rest of the line,
+// spaces and tabs included.
 function parseError(args: string[]): CoreEvent | string {
 	const [handler = "", ...words] = args;
 	const text = words.join(" ")
@@ -121,16 +127,19 @@ export const KINDS: Kind[] = [
 	},
 ];
 
-// The name and colon the tuner puts before a state's prints, such as "SentientSystemsCore_UI: ".
+// The name and colon the tuner puts before a state's prints, such as
+// "SentientSystemsCore_UI: ".
 const STATE_PREFIX = /^\w+: /;
 
-// Removes the state prefix from a line of the client's output events. Main State's prints have no
-// prefix, and neither do the later lines of a print with a newline, so those come back unchanged.
+// Removes the state prefix from a line of the client's output events. Main
+// State's prints have no prefix, and neither do the later lines of a print with
+// a newline, so those come back unchanged.
 export function stripState(line: string): string {
 	return line.replace(STATE_PREFIX, "");
 }
 
-// What the bridge logs for an event: its level, its event name, a message, and its fields.
+// What the bridge logs for an event: its level, its event name, a message, and
+// its fields.
 export interface EventLog {
 	level: LogLevel;
 	event: string;
@@ -179,10 +188,11 @@ export function parseLine(line: string): ParseResult {
 	return typeof parsed === "string" ? { result: "invalid", reason: parsed } : { result: "event", event: parsed };
 }
 
-// Reads one line from the game, from an output event or from a command's result. Logs the event
-// and returns it, warns about a tagged line that doesn't parse, and ignores an untagged line.
-// onEvent runs before the event is logged, so a handler that starts a new log file puts the
-// event's own line in the new file.
+// Reads one line from the game, from an output event or from a command's
+// result. Logs the event and returns it, warns about a tagged line that doesn't
+// parse, and ignores an untagged line. onEvent runs before the event is logged,
+// so a handler that starts a new log file puts the event's own line in the new
+// file.
 export function readLine(line: string, logger: Logger, onEvent?: (event: CoreEvent) => void): CoreEvent | undefined {
 	const parsed = parseLine(stripState(line));
 

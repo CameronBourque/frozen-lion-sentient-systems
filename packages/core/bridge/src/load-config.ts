@@ -1,6 +1,7 @@
-// Finds and reads the config file. The bridge looks for sentient-systems.yaml next to its
-// executable, or reads the path in --config. A missing file gets a commented example, so the user
-// has something to fill in. docs/design/core/settings.md has the design.
+// Finds and reads the config file. The bridge looks for sentient-systems.yaml
+// next to its executable, or reads the path in --config. A missing file gets a
+// commented example, so the user has something to fill in.
+// docs/design/core/settings.md has the design.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -10,7 +11,8 @@ import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
 
-// What the bridge writes when the file is missing. It must pass parseConfig, and a test checks it.
+// What the bridge writes when the file is missing. It must pass parseConfig,
+// and a test checks it.
 export const EXAMPLE_CONFIG = `# Settings for the Sentient Systems bridge. Agent slots, personalities, and sweat levels are
 # chosen in the game's setup screen and saved with the game, so they aren't here.
 
@@ -29,8 +31,8 @@ providers:
 ${PROVIDERS.map((provider) => `  ${provider}:\n    apiKey: ""`).join("\n")}
 `;
 
-// Where the bridge runs from. In development, tsx runs the bridge with node.exe, so the folder of
-// the executable would be Node's install folder.
+// Where the bridge runs from. In development, tsx runs the bridge with
+// node.exe, so the folder of the executable would be Node's install folder.
 export interface Runtime {
 	args: string[];
 	cwd: string;
@@ -42,15 +44,17 @@ export type FindResult =
 	| { ok: true; path: string }
 	| { ok: false; error: string };
 
-// Returns the config file's path from --config, or the default for how the bridge runs: next to
-// the executable, or in the current folder when tsx runs it.
+// Returns the config file's path from --config, or the default for how the
+// bridge runs: next to the executable, or in the current folder when tsx runs
+// it.
 export function findConfigPath(runtime: Runtime): FindResult {
 	let config: string | undefined;
 
 	try {
 		({ values: { config } } = parseArgs({ args: runtime.args, options: { config: { type: "string" } } }));
 	} catch (error) {
-		// parseArgs throws for an unknown or incomplete option, such as a misspelled "--confg".
+		// parseArgs throws for an unknown or incomplete option, such as a
+		// misspelled "--confg".
 		return { ok: false, error: (error as Error).message };
 	}
 
@@ -68,7 +72,8 @@ export type LoadResult =
 	| { result: "created" }
 	| { result: "invalid"; errors: string[] };
 
-// Reads the config file at a path. A missing file gets the example, in a new folder if needed.
+// Reads the config file at a path. A missing file gets the example, in a new
+// folder if needed.
 export function loadConfig(file: string): LoadResult {
 	if (!fs.existsSync(file)) {
 		fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -82,20 +87,22 @@ export function loadConfig(file: string): LoadResult {
 	return parsed.ok ? { result: "loaded", config: parsed.config } : { result: "invalid", errors: parsed.errors };
 }
 
-// A warning when no provider has a key, since agents can't call a model without one.
+// A warning when no provider has a key, since agents can't call a model without
+// one.
 export function keyWarning(config: Config, file: string): string | undefined {
 	const hasKey = Object.values(config.providers).some((provider) => provider.apiKey !== "");
 
 	return hasKey ? undefined : `No provider has an API key, so agents can't play yet. Add one in ${file}`;
 }
 
-// What the bridge does with its config when it starts: run with the config and print the
-// warnings, or print the error and exit.
+// What the bridge does with its config when it starts: run with the config and
+// print the warnings, or print the error and exit.
 export type StartResult =
 	| { ok: true; config: Config; path: string; warnings: string[] }
 	| { ok: false; error: string };
 
-// Finds and loads the config file, and says what the user should do about each problem.
+// Finds and loads the config file, and says what the user should do about each
+// problem.
 export function startConfig(runtime: Runtime): StartResult {
 	const found = findConfigPath(runtime);
 

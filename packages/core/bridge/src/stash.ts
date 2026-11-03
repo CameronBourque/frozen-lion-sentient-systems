@@ -1,7 +1,8 @@
-// Reads JSON that the core mod builds and keeps in pieces, such as the state and the choices. The
-// tuner gives no reply to a command whose output passes about 2 MiB, so the core mod's
-// SentientSystems_Stash keeps the JSON in pieces, and the bridge reads one piece per command and
-// joins them. docs/design/core/in-game-lua.md describes the stash.
+// Reads JSON that the core mod builds and keeps in pieces, such as the state
+// and the choices. The tuner gives no reply to a command whose output passes
+// about 2 MiB, so the core mod's SentientSystems_Stash keeps the JSON in
+// pieces, and the bridge reads one piece per command and joins them.
+// docs/design/core/in-game-lua.md describes the stash.
 
 import type { z } from "zod";
 import { CORE_STATE } from "./connect.js";
@@ -11,10 +12,11 @@ export type StashResult<T> =
 	| { ok: true; value: T; bytes: number }
 	| { ok: false; error: string };
 
-// Runs the Lua call that builds the JSON, such as SentientSystems_GetState(0), reads the JSON through
-// the stash, and checks it against the schema. what names the JSON in errors, such as "state". Every
-// failure, from the tuner, the game, the JSON, or the schema, comes back as an error that says what
-// went wrong, instead of an exception.
+// Runs the Lua call that builds the JSON, such as SentientSystems_GetState(0),
+// reads the JSON through the stash, and checks it against the schema. what
+// names the JSON in errors, such as "state". Every failure, from the tuner, the
+// game, the JSON, or the schema, comes back as an error that says what went
+// wrong, instead of an exception.
 export async function readStash<T>(client: TunerClient, call: string, schema: z.ZodType<T>, what: string): Promise<StashResult<T>> {
 	let json: string;
 
@@ -41,8 +43,9 @@ export async function readStash<T>(client: TunerClient, call: string, schema: z.
 	return { ok: true, value: parsed.data, bytes: Buffer.byteLength(json) };
 }
 
-// Asks the core mod to build and keep the JSON, then reads each piece with its own command and
-// joins them. The core mod escapes each newline in the JSON, so the pieces join with nothing between.
+// Asks the core mod to build and keep the JSON, then reads each piece with its
+// own command and joins them. The core mod escapes each newline in the JSON, so
+// the pieces join with nothing between.
 async function readPieces(client: TunerClient, call: string): Promise<string> {
 	const { lines } = await client.run(CORE_STATE, `SentientSystems_Stash(${call})`);
 	const count = Number(lines.at(-1));
@@ -62,7 +65,8 @@ async function readPieces(client: TunerClient, call: string): Promise<string> {
 	return pieces.join("");
 }
 
-// The text for one schema issue, with the field's path in front, such as "cities.0.name: Invalid input".
+// The text for one schema issue, with the field's path in front, such as
+// "cities.0.name: Invalid input".
 function describeIssue(issue: z.core.$ZodIssue, what: string): string {
 	return `${issue.path.join(".") || `the ${what}`}: ${issue.message}`;
 }
