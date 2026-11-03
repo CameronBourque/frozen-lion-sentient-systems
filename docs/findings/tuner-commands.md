@@ -25,8 +25,16 @@ How the game runs a `CMD:` command and sends back its output. The wire format, m
 
 1. Turn on the tuner and start a game, as steps 1 and 2 of the [tuner protocol method](tuner-protocol.md#method) describe.
 2. Close FireTuner, because the game takes one client at a time.
-3. Run `npm run probe --workspace packages/core/bridge`.
-4. When the probe prints `Listening for 60 s`, select a city, open and close the full-screen map, and end a turn.
+3. Check out the probe script from commit `2291dc3`, the last commit on `main` that has it, and install its dependencies:
+
+   ```sh
+   git worktree add tmp/probe-scripts 2291dc3
+   cd tmp/probe-scripts
+   npm ci
+   ```
+
+4. From `tmp/probe-scripts`, run `npm run probe --workspace packages/core/bridge`.
+5. When the probe prints `Listening for 60 s`, select a city, open and close the full-screen map, and end a turn.
 
 ## Results
 
