@@ -1,38 +1,8 @@
--- A fake of the game's Lua API for tests. It has only the calls the core mod makes. The core here
--- builds the shared GameInfo tables, a player's cities and units, and the fake env, and each area of
--- the game is a feature in FakeGame/, which holds the docs for the world and player data it reads. A
--- feature registers with one line at the end of this file. Example:
--- local env = Game.new()
--- FakeGame.Install(env, {
--- 	players = { [0] = { cities = { {
--- 		id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3,
--- 		growth = { foodSurplus = 3, housing = 6, turnsUntilGrowth = 2, amenities = 2, amenitiesNeeded = 2, happiness = 4 },
--- 		production = { type = "UNIT_SLINGER", turnsLeft = 2 },
--- 		yields = { FOOD = 9, PRODUCTION = 6 },
--- 		districts = { { type = "DISTRICT_CITY_CENTER", x = 17, y = 14, buildings = { { type = "BUILDING_MONUMENT" } } } },
--- 	} }, units = { { id = 196608, type = "UNIT_SCOUT", x = 24, y = 15, moves = 3, maxMoves = 3 } } } },
--- 	text = { LOC_CITY_NAME_ROME = "Rome" },
--- 	plots = { {
--- 		x = 17, y = 14, terrain = "TERRAIN_GRASS", feature = "FEATURE_FOREST", resource = "RESOURCE_DEER",
--- 		owner = 0, district = "DISTRICT_CITY_CENTER", improvement = "IMPROVEMENT_CAMP", improvementPillaged = false,
--- 		route = "ROUTE_ANCIENT_ROAD", routePillaged = false,
--- 	} },
--- })
--- env.Players[0]:GetCities():Members() then lists the one city.
---
--- Where the data is documented:
--- - City: CityDistricts, CityBuildings, CityGrowth, and CityYields. Its build queue, purchases,
---   and placement tiles are in Production, Purchases, and Placement. Its governor is in Governors,
---   and its religion in Religion.
--- - Unit: Units, with a player's escaping spy in Spies and digging archaeologist in Artifacts.
--- - Player: TopBar for the numbers on the top bar, Stores and Income for gold and faith, Research
---   and Governments for techs, civics, governments, and policies, Resources, Rivals, Deals, Blockers,
---   Envoys, CapturedCities, GreatPeople, and Eras.
--- - World: Players for the player managers, leaders, visibility, and world.turn, Capabilities for
---   world.legacyBonuses, rename, dramaticAges, offCapabilities, and unlockWithFaith, Plots for
---   world.plots, Maintenance for world.maintenance and unitMaintenance, and Locale for world.text.
---   Diplomacy for the status of each pair of players, and Proposals for the deals put to a player. WorldCongress, Emergencies, Dedications, and Eras have their own data, and world.expansion2 adds
---   Gathering Storm's checks.
+-- A fake of the game's Lua API for tests. It has only the calls the core mod
+-- makes. The core here builds the shared GameInfo tables, a player's cities and
+-- units, and the fake env. Each area of the game is a feature in FakeGame/,
+-- which holds the docs for the world and player data it reads. A feature
+-- registers with one line at the end of this file.
 
 local FakeGame = {}
 
@@ -45,18 +15,10 @@ local features, playerHooks, cityHooks, unitHooks = {}, {}, {}, {}
 -- adds its GameInfo rows with ctx.AddRow, sets its Game.* and other globals on env, and attaches its
 -- calls to players and cities with ctx.OnPlayer and ctx.OnCity. Its file has the docs for the world
 -- and player data it reads. A file under FakeGame/ returns its install function, and the
--- registration lines at the end of this file list them. requires lists the features that must be
--- registered before this one, because it wraps their calls or uses what they add to ctx or env.
-function FakeGame.Register(name, install, requires)
-	local registered = {}
-
+-- registration lines at the end of this file list them.
+function FakeGame.Register(name, install)
 	for _, feature in ipairs(features) do
 		assert(feature.name ~= name, "feature registered twice: " .. name)
-		registered[feature.name] = true
-	end
-
-	for _, required in ipairs(requires or {}) do
-		assert(registered[required], name .. " must be registered after " .. required)
 	end
 
 	features[#features + 1] = { name = name, install = install }
@@ -448,27 +410,27 @@ FakeGame.Register("CityYields", require("FakeGame/CityYields"))
 FakeGame.Register("Units", require("FakeGame/Units"))
 FakeGame.Register("Blockers", require("FakeGame/Blockers"))
 FakeGame.Register("Deals", require("FakeGame/Deals"))
-FakeGame.Register("Emergencies", require("FakeGame/Emergencies"), { "Blockers" })
-FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"), { "Blockers" })
-FakeGame.Register("Eras", require("FakeGame/Eras"), { "Blockers" })
-FakeGame.Register("Dedications", require("FakeGame/Dedications"), { "Eras" })
+FakeGame.Register("Emergencies", require("FakeGame/Emergencies"))
+FakeGame.Register("WorldCongress", require("FakeGame/WorldCongress"))
+FakeGame.Register("Eras", require("FakeGame/Eras"))
+FakeGame.Register("Dedications", require("FakeGame/Dedications"))
 FakeGame.Register("Governors", require("FakeGame/Governors"))
-FakeGame.Register("Religion", require("FakeGame/Religion"), { "Stores" })
-FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"), { "Eras" })
+FakeGame.Register("Religion", require("FakeGame/Religion"))
+FakeGame.Register("GreatPeople", require("FakeGame/GreatPeople"))
 FakeGame.Register("Envoys", require("FakeGame/Envoys"))
-FakeGame.Register("Spies", require("FakeGame/Spies"), { "Rivals" })
-FakeGame.Register("Artifacts", require("FakeGame/Artifacts"), { "Eras" })
-FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"), { "TopBar", "Rivals" })
-FakeGame.Register("Research", require("FakeGame/Research"), { "TopBar" })
-FakeGame.Register("Governments", require("FakeGame/Governments"), { "TopBar" })
-FakeGame.Register("Production", require("FakeGame/Production"), { "Units", "CityCommands" })
-FakeGame.Register("Purchases", require("FakeGame/Purchases"), { "Production", "Units", "CityCommands" })
-FakeGame.Register("Placement", require("FakeGame/Placement"), { "Plots", "CityCommands" })
-FakeGame.Register("Income", require("FakeGame/Income"), { "TopBar", "Stores" })
-FakeGame.Register("Maintenance", require("FakeGame/Maintenance"), { "CityBuildings", "Units" })
-FakeGame.Register("Diplomacy", require("FakeGame/Diplomacy"), { "Players", "Rivals", "Capabilities", "Research" })
-FakeGame.Register("Proposals", require("FakeGame/Proposals"), { "Deals", "Research", "Diplomacy" })
-FakeGame.Register("Scoreboard", require("FakeGame/Scoreboard"), { "TopBar", "CapturedCities" })
-FakeGame.Register("Victories", require("FakeGame/Victories"), { "TopBar", "Scoreboard", "CapturedCities", "Production", "Research", "Capabilities", "Religion", "Diplomacy" })
+FakeGame.Register("Spies", require("FakeGame/Spies"))
+FakeGame.Register("Artifacts", require("FakeGame/Artifacts"))
+FakeGame.Register("CapturedCities", require("FakeGame/CapturedCities"))
+FakeGame.Register("Research", require("FakeGame/Research"))
+FakeGame.Register("Governments", require("FakeGame/Governments"))
+FakeGame.Register("Production", require("FakeGame/Production"))
+FakeGame.Register("Purchases", require("FakeGame/Purchases"))
+FakeGame.Register("Placement", require("FakeGame/Placement"))
+FakeGame.Register("Income", require("FakeGame/Income"))
+FakeGame.Register("Maintenance", require("FakeGame/Maintenance"))
+FakeGame.Register("Diplomacy", require("FakeGame/Diplomacy"))
+FakeGame.Register("Proposals", require("FakeGame/Proposals"))
+FakeGame.Register("Scoreboard", require("FakeGame/Scoreboard"))
+FakeGame.Register("Victories", require("FakeGame/Victories"))
 
 return FakeGame

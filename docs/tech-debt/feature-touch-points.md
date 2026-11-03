@@ -22,7 +22,7 @@ A new state section touches these places:
 
 A choice touches the same places under `Choices/` and `src/choices/`.
 
-The earlier debts cut this list. [schema-contract-fixtures.md](schema-contract-fixtures.md) removes place 11, [schema-single-source.md](schema-single-source.md) removes place 12, and [fake-game-registry.md](fake-game-registry.md) cuts place 7 to one line. That leaves 11 places, and 5 of them are one-line edits.
+The earlier debts cut this list. [schema-contract-fixtures.md](schema-contract-fixtures.md) removes place 11, and [schema-single-source.md](schema-single-source.md) removes place 12. The fake game registry is already cut, so place 7 is one line. That leaves 11 places, and 5 of them are one-line edits.
 
 A missed place fails a test, except for three. A missing `<Files>` entry passes, which task 1 here fixes. A missing schema, or a missing key in `state.ts` or `choices.ts`, drops the section with no error, which task 3 of [schema-contract-fixtures.md](schema-contract-fixtures.md) fixes. A missing finding is a docs step, which review catches.
 
