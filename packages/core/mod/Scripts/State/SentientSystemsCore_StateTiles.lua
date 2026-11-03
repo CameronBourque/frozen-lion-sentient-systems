@@ -1,10 +1,7 @@
 -- The tiles section of the state: each tile the player has revealed, from the player's own
 -- visibility data, never from the screen. A tile under fog reads as it is now, as the game's tooltip
 -- shows it. See docs/findings/tile-visibility.md. SentientSystemsCore_State.lua loads this file.
--- Example: SentientSystems_GetTileStates(playerID) returns a list with one table for each tile,
--- which encodes as
--- '{"feature":"FEATURE_FOREST","improvement":"IMPROVEMENT_CAMP","owner":0,"resource":"RESOURCE_DEER",
--- "route":"ROUTE_ANCIENT_ROAD","terrain":"TERRAIN_GRASS_HILLS","visible":true,"x":17,"y":15}', on one line.
+-- The shape is in bridge/src/state/tiles.ts.
 
 -- Returns the type of the plot's resource, such as RESOURCE_IRON, or nil when the plot has none or
 -- the player can't see it yet. Some resources, such as iron, stay hidden until the player has a
@@ -33,9 +30,7 @@ local function TrueOrNil(value)
 end
 
 -- Returns a list of the tiles that the player with ID playerID has revealed, in plot index order.
--- Each field but x, y, terrain, and visible is left out for a tile with none. owner is a player ID.
--- improvementPillaged and routePillaged are there only when true. The tooltip shows the same values,
--- in PlotToolTip.lua.
+-- The tooltip shows the same values, in PlotToolTip.lua.
 function SentientSystems_GetTileStates(playerID)
 	local visibility = PlayersVisibility[playerID]
 	local resources = Players[playerID]:GetResources()

@@ -1,11 +1,7 @@
 -- The rivals section of the state: other players' cities and units that the player can know about,
 -- as their city banners and unit flags show them. See docs/findings/tile-visibility.md.
--- SentientSystemsCore_State.lua loads this file, after the cities and units files. Example:
--- SentientSystems_GetRivalCityStates(playerID) returns a list with one table for each city, which
--- encodes as '{"capital":true,"defense":{"garrison":{"max":200,"value":200},"strength":13},"id":65536,
--- "name":"Râ-Kedet","owner":1,"population":2,"x":30,"y":18}', on one line.
--- SentientSystems_GetRivalUnitStates(playerID) returns one table for each unit, which encodes as
--- '{"health":{"max":100,"value":100},"id":131073,"owner":1,"type":"UNIT_WARRIOR","x":25,"y":14}'.
+-- SentientSystemsCore_State.lua loads this file, after the cities and units files. The shape is in
+-- bridge/src/state/rivals.ts.
 
 -- Returns a list of the other living players' cities on tiles that the player with ID playerID has
 -- revealed. A city's banner shows on a revealed tile, fogged or not. City IDs repeat across players,
