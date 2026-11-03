@@ -43,7 +43,7 @@ describe("readPlacement", () => {
 	test("reads a district's tiles through the stash from the core mod's state", async () => {
 		answer({ [STASH]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON_TEXT] } });
 
-		expect(await readPlacement(client, 0, 65536, "DISTRICT_CAMPUS")).toEqual({ ok: true, placement: PLACEMENT, bytes: Buffer.byteLength(JSON_TEXT) });
+		expect(await readPlacement(client, 0, 65536, "DISTRICT_CAMPUS")).toEqual({ ok: true, value: PLACEMENT, bytes: Buffer.byteLength(JSON_TEXT) });
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },

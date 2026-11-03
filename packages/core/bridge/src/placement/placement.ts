@@ -5,7 +5,7 @@
 // in stash.ts. docs/design/core/in-game-lua.md has the format.
 
 import { z } from "zod";
-import { readStash } from "../stash.js";
+import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 
 // A tile where a district or a wonder can go.
@@ -31,10 +31,6 @@ const PLACEMENT = z.object({
 
 export type Placement = z.infer<typeof PLACEMENT>;
 
-export type PlacementResult =
-	| { ok: true; placement: Placement; bytes: number }
-	| { ok: false; error: string };
-
 // A district's or a wonder's type, such as DISTRICT_CAMPUS. It goes into the Lua call as a string,
 // so it must hold nothing that needs escaping.
 const TYPE_NAME = /^[A-Z0-9_]+$/;
@@ -42,12 +38,10 @@ const TYPE_NAME = /^[A-Z0-9_]+$/;
 // Reads where the city with ID cityID, of the player with ID playerID, can place the district or
 // wonder typeName. Every failure comes back as an error that says what went wrong, instead of an
 // exception.
-export async function readPlacement(client: TunerClient, playerID: number, cityID: number, typeName: string): Promise<PlacementResult> {
+export async function readPlacement(client: TunerClient, playerID: number, cityID: number, typeName: string): Promise<StashResult<Placement>> {
 	if (!TYPE_NAME.test(typeName)) {
 		return { ok: false, error: `${JSON.stringify(typeName)} isn't a type name, such as DISTRICT_CAMPUS` };
 	}
 
-	const result = await readStash(client, `SentientSystems_GetPlacement(${playerID}, ${cityID}, "${typeName}")`, PLACEMENT, "placement");
-
-	return result.ok ? { ok: true, placement: result.value, bytes: result.bytes } : result;
+	return readStash(client, `SentientSystems_GetPlacement(${playerID}, ${cityID}, "${typeName}")`, PLACEMENT, "placement");
 }
