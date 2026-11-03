@@ -1,5 +1,5 @@
-// Tests for governors.ts, against the fake game. The stash's failures are tested in state.test.ts,
-// through readState.
+// Tests for governors.ts, against the fake game. The stash's failures are
+// tested in state.test.ts, through readState.
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -12,7 +12,8 @@ import { FakeGame } from "../tuner/fake-game.js";
 const STASH = "SentientSystems_Stash(SentientSystems_GetGovernorTree(0))";
 const PIECE = "SentientSystems_PrintPiece(1)";
 
-// The smallest governor tree the schema accepts. The schemas are checked in contract.test.ts.
+// The smallest governor tree the schema accepts. The schemas are checked in
+// contract.test.ts.
 const GOVERNOR_TREE = {
 	governors: [{
 		type: "GOVERNOR_THE_DEFENDER",
@@ -41,7 +42,8 @@ describe("readGovernorTree", () => {
 		await game.close();
 	});
 
-	// Answers each command with the result given for it. Other Lua prints nothing.
+	// Answers each command with the result given for it. Other Lua prints
+	// nothing.
 	function answer(results: Record<string, CommandResult | undefined>): void {
 		game.onCommand = (_stateIndex, lua) => (lua in results ? results[lua] : {});
 	}

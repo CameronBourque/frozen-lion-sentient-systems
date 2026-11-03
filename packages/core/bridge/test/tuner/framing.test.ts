@@ -26,7 +26,8 @@ const capturedFrames = [
 		strings: ["CMD:119:print(\"hello\")"],
 		bytes: "17000000 03000000 434d443a3131393a7072696e74282268656c6c6f222900",
 	},
-	// Output frames hold two strings, and their tag of -1 is all four header bytes set.
+	// Output frames hold two strings, and their tag of -1 is all four header
+	// bytes set.
 	{ name: "output", tag: Tag.Output, strings: ["O", "hello"], bytes: "08000000 ffffffff 4f0068656c6c6f00" },
 	// A command that succeeds ends with one empty string.
 	{ name: "command success", tag: Tag.Command, strings: [""], bytes: "01000000 03000000 00" },
@@ -38,7 +39,8 @@ describe("encodeFrame", () => {
 	});
 
 	test("matches the captured connect reply's header", () => {
-		// The findings give this reply as strings and a length of 113, and list only its first bytes.
+		// The findings give this reply as strings and a length of 113, and list
+		// only its first bytes.
 		expect(encodeFrame(Tag.App, appReply).subarray(0, 13)).toEqual(hex("71000000 04000000 4369763600"));
 	});
 
@@ -57,7 +59,8 @@ describe("encodeFrame", () => {
 });
 
 describe("FrameDecoder", () => {
-	// All the captured frames back to back, as if they arrived on one connection.
+	// All the captured frames back to back, as if they arrived on one
+	// connection.
 	const stream = Buffer.concat(capturedFrames.map(({ bytes }) => hex(bytes)));
 	const expected = capturedFrames.map(({ tag, strings }) => ({ tag, strings }));
 
@@ -71,7 +74,8 @@ describe("FrameDecoder", () => {
 	});
 
 	test("decodes frames that arrive one byte at a time", () => {
-		// One byte per read splits every header, every payload, and every boundary between frames.
+		// One byte per read splits every header, every payload, and every
+		// boundary between frames.
 		const decoder = new FrameDecoder();
 		const frames = [...stream].flatMap((byte) => decoder.push(Buffer.from([byte])));
 
@@ -93,7 +97,8 @@ describe("FrameDecoder", () => {
 		const decoder = new FrameDecoder();
 		const bytes = encodeFrame(Tag.Output, ["O", "é"]);
 
-		// Byte 10 is the first byte of "é", so this read ends inside the character.
+		// Byte 10 is the first byte of "é", so this read ends inside the
+		// character.
 		expect(decoder.push(bytes.subarray(0, 11))).toEqual([]);
 		expect(decoder.push(bytes.subarray(11))).toEqual([{ tag: Tag.Output, strings: ["O", "é"] }]);
 	});

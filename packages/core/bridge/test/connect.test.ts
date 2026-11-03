@@ -39,7 +39,8 @@ describe("onConnect", () => {
 		return String(warned.mock.calls[0][0]).replace(/^.*? {2}warning: /, "");
 	}
 
-	// Answers each core mod call with the lines given for it. Other Lua prints nothing.
+	// Answers each core mod call with the lines given for it. Other Lua prints
+	// nothing.
 	function answer(lines: Record<string, string[]>): void {
 		game.onCommand = (_stateIndex, lua) => ({ output: lines[lua] ?? [] });
 	}

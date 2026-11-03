@@ -214,7 +214,8 @@ describe("Logger files", () => {
 
 	beforeEach(() => {
 		folder = fs.mkdtempSync(path.join(os.tmpdir(), "sentient-systems-"));
-		// No home folder, so the temp folder's paths stay whole in the messages.
+		// No home folder, so the temp folder's paths stay whole in the
+		// messages.
 		logger = new Logger("debug", "");
 		vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.spyOn(console, "error").mockImplementation(() => {});

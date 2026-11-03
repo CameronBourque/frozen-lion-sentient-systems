@@ -1,4 +1,5 @@
-// Tests for state.ts, against the fake game. The schemas are tested in contract.test.ts, against the JSON from the Lua tests.
+// Tests for state.ts, against the fake game. The schemas are tested in
+// contract.test.ts, against the JSON from the Lua tests.
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -8,8 +9,9 @@ import { TunerClient } from "../../src/tuner/client.js";
 import type { CommandResult } from "../tuner/fake-game.js";
 import { FakeGame } from "../tuner/fake-game.js";
 
-// The smallest state the schema accepts: every section, empty where it can be, with one blocker so
-// the text has a name to cut in the middle. The schemas are checked in contract.test.ts.
+// The smallest state the schema accepts: every section, empty where it can be,
+// with one blocker so the text has a name to cut in the middle. The schemas are
+// checked in contract.test.ts.
 const STATE: State = {
 	blockers: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH" }], units: [] },
 	cities: [],
@@ -63,12 +65,14 @@ describe("readState", () => {
 		await game.close();
 	});
 
-	// Answers the stash with the number of pieces, and each piece with its text.
+	// Answers the stash with the number of pieces, and each piece with its
+	// text.
 	function stash(pieces: string[]): void {
 		answer({ [STASH]: { output: [String(pieces.length)] }, ...Object.fromEntries(pieces.map((piece, i) => [`SentientSystems_PrintPiece(${i + 1})`, { output: [piece] }])) });
 	}
 
-	// Answers each command with the result given for it. Other Lua prints nothing.
+	// Answers each command with the result given for it. Other Lua prints
+	// nothing.
 	function answer(results: Record<string, CommandResult | undefined>): void {
 		game.onCommand = (_stateIndex, lua) => (lua in results ? results[lua] : {});
 	}

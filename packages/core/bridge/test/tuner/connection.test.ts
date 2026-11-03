@@ -92,7 +92,8 @@ describe("TunerConnection", () => {
 	});
 
 	test("emits disconnected with the error when nothing is listening", async () => {
-		// A port that was free a moment ago, like the game's port while the game isn't running.
+		// A port that was free a moment ago, like the game's port while the
+		// game isn't running.
 		await game.close();
 		connection.connect();
 
@@ -141,7 +142,8 @@ describe("TunerConnection", () => {
 	});
 
 	test("defaults to the game's tuner port and retry waits", () => {
-		// Reads the private fields, because a connection with no options would reach for the real game.
+		// Reads the private fields, because a connection with no options would
+		// reach for the real game.
 		expect(new TunerConnection()).toMatchObject({
 			host: "127.0.0.1",
 			port: 4318,
@@ -151,7 +153,8 @@ describe("TunerConnection", () => {
 	});
 
 	describe("reconnect", () => {
-		// Stops the fake, so the port is free, like the game's port while the game isn't running.
+		// Stops the fake, so the port is free, like the game's port while the
+		// game isn't running.
 		async function stopGame(): Promise<number> {
 			const port = game.port;
 
@@ -211,7 +214,8 @@ describe("TunerConnection", () => {
 			connection.connect();
 			await next("retrying");
 			connection.close();
-			// Longer than the 10 ms wait, so a retry that wasn't cancelled would have run.
+			// Longer than the 10 ms wait, so a retry that wasn't cancelled
+			// would have run.
 			await new Promise((resolve) => setTimeout(resolve, 30));
 
 			expect(opened).toHaveBeenCalledOnce();

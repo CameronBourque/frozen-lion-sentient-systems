@@ -1,5 +1,5 @@
-// Tests for research.ts, against the fake game. The stash's failures are tested in state.test.ts,
-// through readState.
+// Tests for research.ts, against the fake game. The stash's failures are tested
+// in state.test.ts, through readState.
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -11,7 +11,8 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetTechTree(0))";
 
-// The smallest tree the schema accepts. The schemas are checked in contract.test.ts.
+// The smallest tree the schema accepts. The schemas are checked in
+// contract.test.ts.
 const TREE = {
 	nodes: [{ type: "TECH_POTTERY", era: "ERA_ANCIENT", status: "researched" as const, prerequisites: [] }],
 	players: [{ player: 0, researched: 1 }],
@@ -35,7 +36,8 @@ describe("readTechTree and readCivicTree", () => {
 		await game.close();
 	});
 
-	// Answers each command with the result given for it. Other Lua prints nothing.
+	// Answers each command with the result given for it. Other Lua prints
+	// nothing.
 	function answer(results: Record<string, CommandResult | undefined>): void {
 		game.onCommand = (_stateIndex, lua) => (lua in results ? results[lua] : {});
 	}

@@ -121,13 +121,15 @@ describe("TunerClient", () => {
 		await game.dropClient();
 		await once(client, "connected");
 
-		// The first socket never finished the handshake, so the client was never connected.
+		// The first socket never finished the handshake, so the client was
+		// never connected.
 		expect(disconnected).not.toHaveBeenCalled();
 		expect(sent(Tag.App)).toBe(2);
 	});
 
 	test("defaults to a 10 s timeout", () => {
-		// Reads the private field, because a client with no options would reach for the real game.
+		// Reads the private field, because a client with no options would reach
+		// for the real game.
 		expect(new TunerClient()).toMatchObject({ timeoutMs: 10_000 });
 	});
 
@@ -147,7 +149,8 @@ describe("TunerClient.run", () => {
 
 	beforeEach(async () => {
 		game = await FakeGame.start();
-		// Long enough for a test to answer by hand, and short enough for the timeout tests.
+		// Long enough for a test to answer by hand, and short enough for the
+		// timeout tests.
 		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 300 });
 		output = [];
 		client.on("output", (line) => output.push(line));
@@ -169,7 +172,8 @@ describe("TunerClient.run", () => {
 		return encodeFrame(Tag.Output, ["O", `InGame: ${text}`]);
 	}
 
-	// What the game sends back for a wrapped command in InGame that printed these lines.
+	// What the game sends back for a wrapped command in InGame that printed
+	// these lines.
 	function answer(id: number | undefined, lines: string[], ending = "ok"): Buffer {
 		return Buffer.concat([
 			inGame(`@@ss:begin:${id}`),
@@ -300,7 +304,8 @@ describe("TunerClient.run", () => {
 	test("rejects when the state moves again after a fresh list", async () => {
 		await client.run("InGame", "print(1)");
 		game.states = [{ index: 120, name: "InGame" }];
-		// The fake answers the fresh list with index 120, then moves InGame before the retry arrives.
+		// The fake answers the fresh list with index 120, then moves InGame
+		// before the retry arrives.
 		game.on("frame", ({ tag }: { tag: number }) => {
 			if (tag === Tag.StateList) {
 				game.states = [{ index: 121, name: "InGame" }];
@@ -349,7 +354,8 @@ describe("TunerClient.run", () => {
 		const next = client.run("InGame", "next");
 
 		await commandCount(2);
-		// The game runs commands in order, so the slow command's output and reply come first.
+		// The game runs commands in order, so the slow command's output and
+		// reply come first.
 		await game.send(Buffer.concat([answer(game.commands[0].id, ["late"]), answer(game.commands[1].id, ["on time"])]));
 
 		expect(await next).toEqual({ lines: ["on time"] });
