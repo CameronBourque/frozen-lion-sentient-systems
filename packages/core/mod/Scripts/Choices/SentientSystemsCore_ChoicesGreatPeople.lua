@@ -1,12 +1,10 @@
 -- The great person choice: the great people the player can recruit or pass now, as the Great People
--- screen offers them. SentientSystemsCore_Choices.lua loads this file. Example:
--- SentientSystems_GetGreatPeopleChoices(player) returns a table that encodes as
--- '[{"passCost":6,"recruit":true,"type":"GREAT_PERSON_INDIVIDUAL_ARYABHATA"}]', on one line. The
--- checks follow PopulateData and AddRecruit in GreatPeoplePopup.lua.
+-- screen offers them. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/great-people.ts. The checks follow PopulateData and AddRecruit in
+-- GreatPeoplePopup.lua.
 
--- Returns the great people the player can recruit or pass, in the screen's order, each with type,
--- recruit, true when the player can recruit them, and passCost, the points passing costs, there when
--- the player can pass. Returns nil when there are none. See AddRecruit in GreatPeoplePopup.lua,
+-- Returns the great people the player can recruit or pass, in the screen's order. Returns nil when
+-- there are none. See AddRecruit in GreatPeoplePopup.lua,
 -- lines 265 to 287.
 function SentientSystems_GetGreatPeopleChoices(player)
 	local playerID = player:GetID()

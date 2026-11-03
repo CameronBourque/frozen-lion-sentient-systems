@@ -5,22 +5,30 @@
 
 import { z } from "zod";
 
-// Left out of the choices unless the player can found a pantheon now. beliefs lists the pantheon
-// beliefs no player has taken, in the game's order, each with its description in the game's
-// language.
 export const PANTHEON = z.object({
-	beliefs: z.array(z.object({ type: z.string(), description: z.string() })),
-}).optional();
+	beliefs: z.array(z.object({
+		type: z.string().describe("Such as BELIEF_GOD_OF_THE_SEA."),
+		description: z.string().describe("In the game's language."),
+	})).describe("The pantheon beliefs no player has taken, in the game's order."),
+}).optional().describe("Left out of the choices unless the player can found a pantheon now.");
 
-// Left out of the choices unless the religion screen offers a religion or beliefs: after the
-// pantheon, with more beliefs earned than the religion has. religions lists the religions no player
-// has founded, there only before the player founds one, and customName is true for one the player
-// must name. picks is the number of beliefs to choose now: at most one of each class, and a follower
-// belief first for a new religion. beliefs lists those on offer, ordered by class as the screen
-// orders them, each with its class, such as BELIEF_CLASS_FOLLOWER, and its description in the game's
-// language.
 export const RELIGION_CHOICE = z.object({
-	religions: z.array(z.object({ type: z.string(), customName: z.literal(true).optional() })).optional(),
-	picks: z.number(),
-	beliefs: z.array(z.object({ type: z.string(), class: z.string(), description: z.string() })),
-}).optional();
+	religions: z.array(z.object({
+		type: z.string().describe("Such as RELIGION_BUDDHISM."),
+		customName: z.literal(true).optional().describe("True for one the player must name."),
+	})).optional().describe(
+		"The religions no player has founded. There only before the player founds one.",
+	),
+	picks: z.number().describe(
+		"The number of beliefs to choose now: at most one of each class, and a follower belief first for a new religion.",
+	),
+	beliefs: z.array(z.object({
+		type: z.string(),
+		class: z.string().describe("Such as BELIEF_CLASS_FOLLOWER."),
+		description: z.string().describe("In the game's language."),
+	})).describe(
+		"The beliefs on offer, sorted by class as the screen sorts them. The order within a class means nothing, as the screen's own order within a class is left to chance.",
+	),
+}).optional().describe(
+	"Left out of the choices unless the religion screen offers a religion or beliefs: after the pantheon, with more beliefs earned than the religion has.",
+);

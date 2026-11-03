@@ -1,12 +1,10 @@
 -- The envoy choice: the city-states the player can send envoys to, as the City-States screen's
--- send mode offers them. SentientSystemsCore_Choices.lua loads this file. Example:
--- SentientSystems_GetEnvoyChoices(player) returns a table that encodes as
--- '{"cityStates":[12,13,14,15],"tokens":4}', on one line. The checks follow GetData and
--- RealizeEnvoyChangeButtons in CityStates.lua.
+-- send mode offers them. SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/envoys.ts. The checks follow GetData and RealizeEnvoyChangeButtons in
+-- CityStates.lua.
 
--- Returns the envoy choice: tokens, the envoys the player can send, and cityStates, the IDs of the
--- city-states that can take one now, in the game's order. The screen's buttons allow a city-state
--- the player has met and isn't at war with. Returns nil unless the player can send envoys and some
+-- Returns the envoy choice. The screen's buttons allow a city-state the player has met and isn't
+-- at war with. Returns nil unless the player can send envoys and some
 -- city-state can take one. See GetData in CityStates.lua, lines 1411 to 1500, and
 -- RealizeEnvoyChangeButtons, lines 667 to 701.
 function SentientSystems_GetEnvoyChoices(player)
