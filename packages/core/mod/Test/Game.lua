@@ -31,20 +31,32 @@ local RECORDED = {
 -- "call/file".
 local recorded = {}
 
+-- Returns the paths in the mod folder from the File lines of each block that
+-- the pattern matches in the .modinfo.
+local function ReadPaths(pattern)
+	local file = assert(io.open(MOD_ROOT .. "SentientSystemsCore.modinfo"))
+	local text = file:read("*a")
+	local paths = {}
+
+	file:close()
+
+	for block in text:gmatch(pattern) do
+		for path in block:gmatch("<File>(.-)</File>") do
+			paths[#paths + 1] = path
+		end
+	end
+
+	return paths
+end
+
 -- Returns each imported file's path in the mod folder, by its name without the
 -- extension, from the ImportFiles actions in the .modinfo. The game's include
 -- finds only these files.
 local function ReadImports()
-	local file = assert(io.open(MOD_ROOT .. "SentientSystemsCore.modinfo"))
-	local text = file:read("*a")
 	local imports = {}
 
-	file:close()
-
-	for action in text:gmatch("<ImportFiles.-</ImportFiles>") do
-		for path in action:gmatch("<File>(.-)</File>") do
-			imports[path:match("([^/]+)%.lua$")] = path
-		end
+	for _, path in ipairs(ReadPaths("<ImportFiles.-</ImportFiles>")) do
+		imports[path:match("([^/]+)%.lua$")] = path
 	end
 
 	return imports
@@ -160,6 +172,15 @@ function Game.new()
 	end
 
 	return env
+end
+
+-- Returns the paths in the mod folder from the .modinfo's ImportFiles actions
+-- as imports, and from its Files list as files.
+function Game.fileLists()
+	return {
+		imports = ReadPaths("<ImportFiles.-</ImportFiles>"),
+		files = ReadPaths("<Files>.-</Files>"),
+	}
 end
 
 -- Runs a mod file in env.

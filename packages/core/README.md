@@ -8,3 +8,41 @@ Core is the bridge and the core mod. They share one version and release together
 | [mod/](mod/README.md) | The in-game Lua and `.modinfo` |
 
 Design: [docs/design/core/](../../docs/design/core/README.md).
+
+## Parts of a state section
+
+A state section is one key of the table that `SentientSystems_GetState` returns. Paths are relative to this folder, and `<Name>` is the section's name. A missed part fails a test, except for the `.modinfo` lists, which a test only checks against each other, and the finding.
+
+| Part | Where |
+| --- | --- |
+| Lua file | `mod/Scripts/State/SentientSystemsCore_State<Name>.lua` |
+| Include line | `SentientSystems_Include` in `mod/Scripts/State/SentientSystemsCore_State.lua` |
+| Key | The table in the same file |
+| Import | `<ImportFiles>` in `mod/SentientSystemsCore.modinfo` |
+| File entry | `<Files>` in the same file |
+| Fake game feature | `mod/Test/FakeGame/<Name>.lua` |
+| Register line | `FakeGame.Register` in `mod/Test/FakeGame.lua` |
+| Lua test | `mod/Test/Scripts/State/SentientSystemsCore_State<Name>.test.lua` |
+| Schema | `bridge/src/state/<name>.ts` |
+| Schema key | The import and the key in `bridge/src/state/state.ts` |
+| Key table | The key table in [in-game-lua.md](../../docs/design/core/in-game-lua.md) |
+| Finding | The finding for the screen, and its row in the [findings index](../../docs/findings/README.md) |
+
+The contract test checks the schema against the JSON that the Lua test records, so a section needs no TypeScript test.
+
+## Parts of a choice
+
+A choice is one key of the table that `SentientSystems_GetChoices` returns. It has the same parts as a state section, in other folders.
+
+| Part | Where |
+| --- | --- |
+| Lua file | `mod/Scripts/Choices/SentientSystemsCore_Choices<Name>.lua` |
+| Include line | `SentientSystems_Include` in `mod/Scripts/Choices/SentientSystemsCore_Choices.lua` |
+| Key | The table in the same file |
+| Import, file entry | The `<ImportFiles>` and `<Files>` lists in `mod/SentientSystemsCore.modinfo` |
+| Fake game feature | `mod/Test/FakeGame/<Name>.lua`, and its `FakeGame.Register` line in `mod/Test/FakeGame.lua` |
+| Lua test | `mod/Test/Scripts/Choices/SentientSystemsCore_Choices<Name>.test.lua` |
+| Schema | `bridge/src/choices/<name>.ts` |
+| Schema key | The import and the key in `bridge/src/choices/choices.ts` |
+| Key table | The key table in [in-game-lua.md](../../docs/design/core/in-game-lua.md) |
+| Finding | The finding for the screen, and its row in the [findings index](../../docs/findings/README.md) |
