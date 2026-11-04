@@ -1,4 +1,4 @@
-# Step 10: Tool reference
+# Tool reference
 
 Generate `docs/reference/tools.md` from the MCP tool schemas, and add the workflow that keeps it current. The design is under **Tool reference** in [toolchain.md](../../design/core/toolchain.md). Part of [phase 1](README.md).
 

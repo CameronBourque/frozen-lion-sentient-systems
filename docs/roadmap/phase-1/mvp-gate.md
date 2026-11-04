@@ -1,4 +1,4 @@
-# Step 17: MVP gate
+# MVP gate
 
 Pass the gate: one agent plays a full single-player game on the MVP gate preset with no manual help. Measure the state size and the cost of the game. Part of [phase 1](README.md).
 

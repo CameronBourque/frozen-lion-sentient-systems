@@ -1,4 +1,4 @@
-# Step 18: Close out phase 1
+# Close out phase 1
 
 Close the phase in the docs, and release core and the agent players mod. Part of [phase 1](README.md).
 
@@ -12,7 +12,7 @@ Close the phase in the docs, and release core and the agent players mod. Part of
 
 All of these hold, and core and the agent players mod each have a release:
 
-- The released executable passes the "Done when" check of [step 14](14-agent-loop.md).
+- The released executable passes the "Done when" check of [agent loop step](agent-loop.md).
 - Every step's status is Done.
 
 ## Record

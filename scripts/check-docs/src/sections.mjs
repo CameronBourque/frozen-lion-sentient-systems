@@ -21,7 +21,7 @@ const kinds = [
 	},
 	{
 		name: "roadmap step",
-		matches: (p) => /^docs\/roadmap\/phase-\d+\/\d\d-[^/]+\.md$/.test(p),
+		matches: (p) => /^docs\/roadmap\/phase-\d+\/[^/]+\.md$/.test(p) && !isReadme(p),
 		headings: ["Tasks", "Done when", "Record"],
 		lines: [{ label: "a Part of [phase N](...) link", pattern: /Part of \[phase \d+\]\(/ }],
 	},

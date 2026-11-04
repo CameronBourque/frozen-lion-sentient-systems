@@ -1,4 +1,4 @@
-# Step 11: Model client
+# Model client
 
 Add the model client, which calls the configured provider through the Vercel AI SDK, and `models.yaml`, which maps each provider and operation to a model. This step doesn't need the game. Part of [phase 1](README.md).
 

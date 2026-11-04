@@ -1,4 +1,4 @@
-# Step 16: Smoke test
+# Smoke test
 
 Run one agent through the smoke test preset to find the bugs that stop a game before the MVP gate costs a full game. Part of [phase 1](README.md).
 
