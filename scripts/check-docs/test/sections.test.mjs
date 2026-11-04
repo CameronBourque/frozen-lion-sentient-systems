@@ -23,10 +23,11 @@ describe("sections", () => {
 	});
 
 	test("a roadmap step needs its phase link and sections", () => {
-		const step = lines("# Step 1", "Part of [phase 0](README.md).", "## Tasks", "## Done when", "## Record");
+		const step = lines("# One", "Part of [phase 0](README.md).", "## Tasks", "## Done when", "## Record");
 
-		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/01-x.md": step }))).toEqual([]);
-		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/01-x.md": "# Step 1\n" })).length).toBe(4);
+		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/x.md": step }))).toEqual([]);
+		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/x.md": "# One\n" })).length).toBe(4);
+		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/README.md": "# Phase 0\n" }))).toEqual([]);
 	});
 
 	test("a tech debt file needs its sections, and Tasks is optional", () => {

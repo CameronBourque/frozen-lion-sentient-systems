@@ -51,12 +51,15 @@ Where each kind of fact lives:
 
 - Each phase is a folder, `roadmap/phase-N/`, with a `README.md` that holds the summary, the gate as one sentence, and a step table.
 - **The step table's Status column is the only progress tracker.** Don't add checklists that repeat it. What each step must achieve lives in its "Done when".
+- **The step table's `#` column is the only place that sets the order.** Step files have no number in their names, and docs refer to a step by its name and a link, never by its number, so inserting a step renumbers one table and no link.
+- **One step is one pull request.** Split a phase into steps by what can be reviewed and released together. The step table has a PR title column, and a step's tasks are its commits. Two small steps can share a pull request, and the table says so.
 - Before a phase is broken down, its README has a `## Scope` list of planned work. When work on the phase starts, the scope items become steps and the list is removed.
-- Each step is its own file, `NN-short-name.md`, with:
+- Each step is its own file, `short-name.md`, in the phase folder, with:
   - a one-line summary and a link back to the phase,
   - `## Tasks`,
   - `## Done when`,
   - `## Record`, which says which findings or design files to update.
+- A step's tasks are small: one commit each, described in a sentence or two. Don't give a task its own file or a step its own folder. The details live in findings and design. Turn a step into a folder only if its file passes 150 lines.
 - Steps link to a finding's `## Method` instead of restating a test procedure.
 - A step file exists only to get its results into findings and design. When a step is done and its `## Record` items are written, delete its file. Git keeps its history. In the step table, set its status to "Done" and link the files that hold its results.
 - If a step that isn't done yet links to a done step's file, copy what it needs from that file into the linking step, with whether and when each check passed. Then delete the done step's file.

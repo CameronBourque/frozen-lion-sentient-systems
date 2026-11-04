@@ -1,4 +1,4 @@
-# Step 8: Civilopedia lookup
+# Civilopedia lookup
 
 Add the core mod's lookup, which answers questions about game facts from the `GameInfo` tables and localized text at runtime, so DLC and other mods are included. Part of [phase 1](README.md).
 

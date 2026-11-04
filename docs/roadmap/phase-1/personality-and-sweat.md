@@ -1,4 +1,4 @@
-# Step 12: Personality and sweat level
+# Personality and sweat level
 
 Write one default personality and the balanced sweat level, and build the prompt from them. This step doesn't need the game. Part of [phase 1](README.md).
 
