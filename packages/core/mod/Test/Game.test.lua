@@ -40,6 +40,47 @@ describe("Game.new", function()
 	end)
 end)
 
+describe("the .modinfo file lists", function()
+	-- Returns the paths in a that b doesn't have.
+	local function Missing(a, b)
+		local have = {}
+		local missing = {}
+
+		for _, path in ipairs(b) do
+			have[path] = true
+		end
+
+		for _, path in ipairs(a) do
+			if not have[path] then
+				missing[#missing + 1] = path
+			end
+		end
+
+		return missing
+	end
+
+	it("has every ImportFiles file in Files", function()
+		local lists = Game.fileLists()
+
+		assert.is_true(#lists.imports > 0)
+		assert.same({}, Missing(lists.imports, lists.files))
+	end)
+
+	it("has every script in Files in ImportFiles", function()
+		local lists = Game.fileLists()
+		local scripts = {}
+
+		for _, path in ipairs(lists.files) do
+			if path:find("^Scripts/") then
+				scripts[#scripts + 1] = path
+			end
+		end
+
+		assert.is_true(#scripts > 0)
+		assert.same({}, Missing(scripts, lists.imports))
+	end)
+end)
+
 describe("Game.run", function()
 	it("runs a mod file in the environment, where include loads files from Scripts", function()
 		local env = Game.new()
