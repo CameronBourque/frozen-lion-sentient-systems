@@ -1,19 +1,13 @@
--- The player managers. Game.GetPlayers, with Major = true, and PlayerManager.GetAlive, GetAliveMajorIDs,
--- GetAliveMajors, and GetAliveMinors list the players in ID order, a player being a minor when it has
--- data.minor. Game.IsAllowStrategicCommands is false while a player's noStrategicCommands is true.
--- Game.GetCurrentGameTurn is world.turn, or 1. A player's playerName is its leader's name, and a
--- city-state's minor has name, leader, inherit, the leader it inherits from, and traits, the text keys
--- of its suzerain bonus, which get GameInfo.Leaders and GameInfo.LeaderTraits rows. A player's revealed
--- and visible lists name plots by x and y, such as revealed = { { 17, 14 } }, and a visible plot is
--- revealed too. Each of PlayersVisibility's calls takes a plot index, or x and y. A unit with hidden
--- is not visible to IsUnitVisible. A player's freeCities is true for the Free Cities.
+-- The player managers. Fakes which players are alive, major or minor, what each
+-- has revealed and sees, and the game turn.
 
 return function(env, world, ctx)
 	local PlotIndex = ctx.PlotIndex
 
 	ctx.Callable(env.GameInfo.LeaderTraits)
 
-	-- The IDs of the living players, in ID order, that pass a filter on world.players.
+	-- The IDs of the living players, in ID order, that pass a filter on
+	-- world.players.
 	local function Living(isWanted)
 		local living = {}
 
@@ -49,7 +43,8 @@ return function(env, world, ctx)
 		return (world.players or {})[playerID].noStrategicCommands ~= true
 	end
 
-	-- The major players, in ID order, as Game.GetPlayers({ Major = true }) lists them.
+	-- The major players, in ID order, as Game.GetPlayers({ Major = true })
+	-- lists them.
 	env.Game.GetPlayers = function(filter)
 		assert(filter.Major == true, "no fake for this filter")
 
@@ -79,7 +74,8 @@ return function(env, world, ctx)
 		GetAliveMajors = function()
 			return Of(Living(Major))
 		end,
-		-- The living city-states and Free Cities, the players with data.minor, in ID order.
+		-- The living city-states and Free Cities, the players with data.minor,
+		-- in ID order.
 		GetAliveMinors = function()
 			return Of(Living(Minor))
 		end,
@@ -90,7 +86,8 @@ return function(env, world, ctx)
 			return data.freeCities == true
 		end
 
-		-- A city-state's name and leader, and its leader's row, with the leader it inherits from.
+		-- A city-state's name and leader, and its leader's row, with the leader
+		-- it inherits from.
 		local minor = data.minor or {}
 
 		env.PlayerConfigurations[id] = {
@@ -119,7 +116,8 @@ return function(env, world, ctx)
 			env.GameInfo.Traits[traitType] = { TraitType = traitType, Description = description }
 		end
 
-		-- Each listed plot's index: revealed, or visible, which is revealed too.
+		-- Each listed plot's index: revealed, or visible, which is revealed
+		-- too.
 		local revealed, visible = {}, {}
 
 		for _, position in ipairs(data.revealed or {}) do

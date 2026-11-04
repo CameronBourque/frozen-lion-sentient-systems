@@ -1,7 +1,8 @@
--- The resources part of the player section: each strategic, luxury, and bonus resource the
--- player has, as the Resources tab of Reports shows them. SentientSystemsCore_StatePlayer.lua
--- loads this file. The shape is in bridge/src/state/resources.ts. The checks follow GetData,
--- AddResourceData, GetCityResourceData, and ViewResourcesPage in ReportScreen.lua, and
+-- The resources part of the player section: each strategic, luxury, and bonus
+-- resource the player has, as the Resources tab of Reports shows them.
+-- SentientSystemsCore_StatePlayer.lua loads this file. The shape is in
+-- bridge/src/state/resources.ts. The checks follow GetData, AddResourceData,
+-- GetCityResourceData, and ViewResourcesPage in ReportScreen.lua, and
 -- AppendXP2ResourceData and AddMiscResourceData in ReportScreen_Expansion2.lua.
 
 -- The class each resource class type has in the state.
@@ -11,9 +12,9 @@ local CLASSES = {
 	RESOURCECLASS_BONUS = "bonus",
 }
 
--- Adds an amount to a resource's entry, and a source for it unless source is nil, which only makes
--- sure the resource has an entry. The report leaves out artifacts. See AddResourceData in
--- ReportScreen.lua, lines 506 to 536.
+-- Adds an amount to a resource's entry, and a source for it unless source is
+-- nil, which only makes sure the resource has an entry. The report leaves out
+-- artifacts. See AddResourceData in ReportScreen.lua.
 local function Add(entries, index, source, amount)
 	local row = GameInfo.Resources[index]
 	local class = CLASSES[row.ResourceClassType]
@@ -34,9 +35,10 @@ local function Add(entries, index, source, amount)
 	entries[index].total = entries[index].total + amount
 end
 
--- Adds what each city owns, as GetResourcesExtractedByCity gives it with Gathering Storm, and
--- otherwise as the count of the city's extractable resource tiles, in the order of the resources. See
--- GetCityResourceData in ReportScreen.lua, lines 541 to 562, and in ReportScreen_Expansion2.lua.
+-- Adds what each city owns, as GetResourcesExtractedByCity gives it with
+-- Gathering Storm, and otherwise as the count of the city's extractable
+-- resource tiles, in the order of the resources. See GetCityResourceData in
+-- ReportScreen.lua, and in ReportScreen_Expansion2.lua.
 local function AddOwned(player, entries, stockpiles)
 	local resources = player:GetResources()
 
@@ -74,8 +76,9 @@ local function AddOwned(player, entries, stockpiles)
 	end
 end
 
--- Adds the resources the player trades in deals that haven't ended, as exports, which are negative,
--- and imports, with the turns left. See GetData in ReportScreen.lua, lines 355 to 460.
+-- Adds the resources the player trades in deals that haven't ended, as exports,
+-- which are negative, and imports, with the turns left. See GetData in
+-- ReportScreen.lua.
 local function AddDeals(player, entries)
 	local playerID = player:GetID()
 	local turn = Game.GetCurrentGameTurn()
@@ -101,8 +104,8 @@ local function AddDeals(player, entries)
 	end
 end
 
--- Adds the resources the city-states that the player is Suzerain of export to the player. See GetData
--- in ReportScreen.lua, lines 462 to 478.
+-- Adds the resources the city-states that the player is Suzerain of export to
+-- the player. See GetData in ReportScreen.lua.
 local function AddSuzerain(player, entries)
 	for _, minor in ipairs(PlayerManager.GetAliveMinors()) do
 		local influence = minor:GetInfluence()
@@ -119,9 +122,10 @@ local function AddSuzerain(player, entries)
 	end
 end
 
--- Adds the Gathering Storm sources: what units and power plants use each turn, what is reserved, and
--- what city-states send, and the stockpile a resource has that no source explains. See
--- AppendXP2ResourceData in ReportScreen_Expansion2.lua, lines 8 to 54.
+-- Adds the Gathering Storm sources: what units and power plants use each turn,
+-- what is reserved, and what city-states send, and the stockpile a resource has
+-- that no source explains. See AppendXP2ResourceData in
+-- ReportScreen_Expansion2.lua.
 local function AddGatheringStorm(player, entries)
 	local resources = player:GetResources()
 
@@ -152,8 +156,9 @@ local function AddGatheringStorm(player, entries)
 	end
 end
 
--- Returns the amount the game holds for a resource that the sources should reach: with Gathering Storm
--- a strategic resource's accumulation less its use each turn, and otherwise the amount the player has.
+-- Returns the amount the game holds for a resource that the sources should
+-- reach: with Gathering Storm a strategic resource's accumulation less its use
+-- each turn, and otherwise the amount the player has.
 local function GetHeld(resources, row, stockpiles)
 	if stockpiles and row.ResourceClassType == "RESOURCECLASS_STRATEGIC" then
 		return resources:GetResourceAccumulationPerTurn(row.ResourceType)
@@ -164,10 +169,10 @@ local function GetHeld(resources, row, stockpiles)
 	return resources:GetResourceAmount(row.Index)
 end
 
--- Adds the rest of what the game holds as a source named other, which the report calls Gameplay
--- Bonuses, and with Gathering Storm gives each resource in the stockpile an entry. See
--- AddMiscResourceData in ReportScreen.lua, lines 485 to 502, and in ReportScreen_Expansion2.lua,
--- lines 91 to 123.
+-- Adds the rest of what the game holds as a source named other, which the
+-- report calls Gameplay Bonuses, and with Gathering Storm gives each resource
+-- in the stockpile an entry. See AddMiscResourceData in ReportScreen.lua, and
+-- in ReportScreen_Expansion2.lua.
 local function AddOther(player, entries, stockpiles)
 	local resources = player:GetResources()
 
@@ -189,8 +194,8 @@ local function AddOther(player, entries, stockpiles)
 	end
 end
 
--- Returns the cities the game allocates a luxury to, each with the amount, or nil for none. See
--- ViewResourcesPage in ReportScreen.lua, lines 1224 to 1244.
+-- Returns the cities the game allocates a luxury to, each with the amount, or
+-- nil for none. See ViewResourcesPage in ReportScreen.lua.
 local function GetAllocation(player, index)
 	local cities = {}
 
@@ -201,12 +206,14 @@ local function GetAllocation(player, index)
 	return #cities > 0 and cities or nil
 end
 
--- Returns the resources section: a list of the resources the report lists, in the game's order. Each
--- has type, name, class, which is strategic, luxury, or bonus, sources, each with kind, one of city,
--- with city and name, deal, with player and turnsLeft, suzerain, with player, units, power, reserve,
--- cityStates, and other, and amount, cities, the cities it is allocated to, left out for none, and
--- total, the sum of the sources. With Gathering Storm a strategic resource has perTurn in place of
--- total, for what it adds to the stockpile each turn, and stockpile and max.
+-- Returns the resources section: a list of the resources the report lists, in
+-- the game's order. Each has type, name, class, which is strategic, luxury, or
+-- bonus, sources, each with kind, one of city, with city and name, deal, with
+-- player and turnsLeft, suzerain, with player, units, power, reserve,
+-- cityStates, and other, and amount, cities, the cities it is allocated to,
+-- left out for none, and total, the sum of the sources. With Gathering Storm a
+-- strategic resource has perTurn in place of total, for what it adds to the
+-- stockpile each turn, and stockpile and max.
 function SentientSystems_GetResourcesState(player)
 	local resources = player:GetResources()
 	local stockpiles = resources.GetResourceStockpileCap ~= nil

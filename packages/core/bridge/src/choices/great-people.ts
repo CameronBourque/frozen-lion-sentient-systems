@@ -1,7 +1,7 @@
-// The schema for the great person choice: the great people the player can recruit or pass now, as the
-// Great People screen offers them. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua. Patronage, which isn't a blocker, is in
-// the state.
+// The schema for the great person choice: the great people the player can
+// recruit or pass now, as the Great People screen offers them. The core mod
+// builds it in Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua.
+// Patronage, which isn't a blocker, is in the state.
 
 import { z } from "zod";
 

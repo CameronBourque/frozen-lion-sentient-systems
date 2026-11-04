@@ -6,7 +6,8 @@ local function CityState(name)
 	return { minor = { name = name, leader = "LEADER_MINOR_CIV_" .. name } }
 end
 
--- Returns the envoy choice JSON for player 0, whose data is given, or nil when it is left out.
+-- Returns the envoy choice JSON for player 0, whose data is given, or nil when
+-- it is left out.
 local function EnvoysWith(player)
 	local env = Game.new()
 	local freeCities = CityState("FREE_CITIES")

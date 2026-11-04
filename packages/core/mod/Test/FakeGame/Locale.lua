@@ -1,11 +1,11 @@
--- Locale. world.text maps each LOC_ key to its text. Locale.Lookup returns any other key as it is.
+-- Locale. Fakes Locale.Lookup, which returns a key with no text as it is.
 
 return function(env, world, ctx)
 	local text = world.text or {}
 
 	env.Locale = {
-		-- With arguments, the text is followed by them in parentheses, such as "KEY(5)", so a test
-		-- can check them.
+		-- With arguments, the text is followed by them in parentheses, so a
+		-- test can check them.
 		Lookup = function(key, ...)
 			local arguments = { ... }
 

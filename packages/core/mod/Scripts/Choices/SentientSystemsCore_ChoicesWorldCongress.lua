@@ -1,11 +1,14 @@
--- The World Congress choice: what the player decides in a session of the World Congress, and looks
--- at when one has ended, as the congress screen shows it. SentientSystemsCore_Choices.lua loads this
--- file. The shape is in bridge/src/choices/world-congress.ts. The checks follow
--- PopulateResolutions, PopulateProposals, PopulateReview, PopulateActiveEffects, and PopulateEmergencyProposals in
--- WorldCongressPopup.lua. Checked in a running game for a Special Session only.
+-- The World Congress choice: what the player decides in a session of the World
+-- Congress, and looks at when one has ended, as the congress screen shows it.
+-- SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/world-congress.ts. The checks follow PopulateResolutions,
+-- PopulateProposals, PopulateReview, PopulateActiveEffects, and
+-- PopulateEmergencyProposals in WorldCongressPopup.lua. Checked in a running
+-- game for a Special Session only.
 
--- Returns a player's name as the game shows it: the leader's name once the player has met them, and
--- the unmet player text before. See GetVisiblePlayerNameAndIcons in PlayerSupport.lua, lines 39 to 90.
+-- Returns a player's name as the game shows it: the leader's name once the
+-- player has met them, and the unmet player text before. See
+-- GetVisiblePlayerNameAndIcons in PlayerSupport.lua.
 local function GetPlayerName(playerID, localPlayerID)
 	if playerID ~= localPlayerID and not Players[localPlayerID]:GetDiplomacy():HasMet(playerID) then
 		return Locale.Lookup("LOC_DIPLOPANEL_UNMET_PLAYER")
@@ -27,7 +30,7 @@ local function Numbers(list)
 	return numbers
 end
 
--- Returns the proposals of a call such as GetProposals, each with its category's cost, sorted by
+-- Returns the proposals of a call, each with its category's cost, sorted by
 -- type so the order doesn't depend on the game's hashes.
 local function GetProposalEntries(categories)
 	local entries = {}
@@ -45,8 +48,8 @@ local function GetProposalEntries(categories)
 	return entries
 end
 
--- Returns the target of a resolution that passed, as the review shows it: a player's name for a player
--- target, and the game's text for anything else.
+-- Returns the target of a resolution that passed, as the review shows it: a
+-- player's name for a player target, and the game's text for anything else.
 local function GetChosenTarget(data, localPlayerID)
 	if data.TargetType == "PlayerType" then
 		local playerID = tonumber(data.ChosenThing)
@@ -57,8 +60,9 @@ local function GetChosenTarget(data, localPlayerID)
 	return Locale.Lookup(data.ChosenThing)
 end
 
--- Returns the resolutions in effect or just decided, from a call that returns the chosen outcome of
--- each. Adds turnsLeft when given, and the votes and voters from the review's player selections.
+-- Returns the resolutions in effect or just decided, from a call that returns
+-- the chosen outcome of each. Adds turnsLeft when given, and the votes and
+-- voters from the review's player selections.
 local function GetOutcomes(data, localPlayerID, turnsLeft)
 	local outcomes = {}
 
@@ -107,7 +111,8 @@ local function GetOutcomes(data, localPlayerID, turnsLeft)
 	return outcomes
 end
 
--- Returns the resolutions to vote on in a regular session. See PopulateResolutions, lines 569 to 686.
+-- Returns the resolutions to vote on in a regular session. See
+-- PopulateResolutions.
 local function GetResolutions(data, localPlayerID)
 	local resolutions = {}
 
@@ -145,7 +150,8 @@ local function GetResolutions(data, localPlayerID)
 	return resolutions
 end
 
--- Returns the proposals on the floor to vote for or against. See PopulateProposalStack, lines 1227 to 1325.
+-- Returns the proposals on the floor to vote for or against. See
+-- PopulateProposalStack.
 local function GetProposals(data)
 	local proposals = {}
 
@@ -165,7 +171,7 @@ local function GetProposals(data)
 end
 
 -- Returns the proposals the player could call a Special Session for. See
--- PopulateEmergencyProposals, lines 1763 to 1786.
+-- PopulateEmergencyProposals.
 local function GetAvailable(data)
 	local available = {}
 
@@ -185,9 +191,10 @@ local function GetAvailable(data)
 	return available
 end
 
--- Returns the World Congress choice. Returns nil with nothing to show. The congress screen opens only from its notification, so the
--- session and the results read only while their blocker is up. See SetStage in
--- WorldCongressPopup.lua, lines 164 to 246.
+-- Returns the World Congress choice. Returns nil with nothing to show. The
+-- congress screen opens only from its notification, so the session and the
+-- results read only while their blocker is up. See SetStage in
+-- WorldCongressPopup.lua.
 function SentientSystems_GetWorldCongressChoices(player)
 	local playerID = player:GetID()
 	local congress = Game.GetWorldCongress()

@@ -10,8 +10,9 @@ local TEXT = {
 	LOC_MOMENT_CATEGORY_CULTURAL = "Pen, Brush, and Voice",
 }
 
--- Returns the dedication choice JSON for player 0, or nil when it is left out, with the era change
--- given as the player's dedications and its blockers, the dedication blocker when missing.
+-- Returns the dedication choice JSON for player 0, or nil when it is left out,
+-- with the era change given as the player's dedications and its blockers, the
+-- dedication blocker when missing.
 local function ChoicesWith(dedications, blockers)
 	local env = Game.new()
 
@@ -24,7 +25,8 @@ local function ChoicesWith(dedications, blockers)
 	return env.SentientSystems_GetChoices(0):match("\"dedications\":(%b{})")
 end
 
--- Returns the dedications of an era change with the age and any other field given.
+-- Returns the dedications of an era change with the age and any other field
+-- given.
 local function Change(age, extra)
 	local change = { era = "ERA_CLASSICAL", age = age, allowed = 1, options = { "SCIENTIFIC", "CULTURAL" } }
 

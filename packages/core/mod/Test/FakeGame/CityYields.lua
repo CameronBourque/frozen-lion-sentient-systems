@@ -1,7 +1,5 @@
--- A city's yields. data.yields maps a YieldTypes name to its amount, and a missing yield is 0. data.tiles
--- lists the tiles the city owns, each with x, y, worked, yields, and tourism, which FakeGame/Plots.lua
--- and Income.lua read too. data.routes lists the routes the city sends out, each with player, id, the
--- destination city, and yields, a YieldTypes name to the amount it gives this city.
+-- A city's yields. Fakes its yields, owned tiles, and trade routes.
+-- FakeGame/Plots.lua and Income.lua read the tiles too.
 
 return function(env, world, ctx)
 	local YIELD_TYPES = ctx.YIELD_TYPES

@@ -15,7 +15,7 @@
     "dev": "npm run dev --workspace packages/core/bridge",
     "link-mod": "node scripts/link-mod/src/index.mjs",
     "state": "npm run state --workspace packages/core/bridge --",
-    "lint": "eslint .",
+    "lint": "eslint . && node scripts/lua-comments/src/index.mjs",
     "test": "vitest run",
     "test:lua": "node scripts/clean-lua-fixtures/src/index.mjs && busted",
     "typecheck": "npm run typecheck --workspaces --if-present"

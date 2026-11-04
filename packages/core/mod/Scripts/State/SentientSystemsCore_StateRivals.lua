@@ -1,11 +1,13 @@
--- The rivals section of the state: other players' cities and units that the player can know about,
--- as their city banners and unit flags show them. See docs/findings/tile-visibility.md.
--- SentientSystemsCore_State.lua loads this file, after the cities and units files. The shape is in
+-- The rivals section of the state: other players' cities and units that the
+-- player can know about, as their city banners and unit flags show them. See
+-- docs/findings/tile-visibility.md. SentientSystemsCore_State.lua loads this
+-- file, after the cities and units files. The shape is in
 -- bridge/src/state/rivals.ts.
 
--- Returns a list of the other living players' cities on tiles that the player with ID playerID has
--- revealed. A city's banner shows on a revealed tile, fogged or not. City IDs repeat across players,
--- so owner and id together name a city.
+-- Returns a list of the other living players' cities on tiles that the player
+-- with ID playerID has revealed. A city's banner shows on a revealed tile,
+-- fogged or not. City IDs repeat across players, so owner and id together name
+-- a city.
 function SentientSystems_GetRivalCityStates(playerID)
 	local visibility = PlayersVisibility[playerID]
 	local cities = {}
@@ -34,10 +36,11 @@ function SentientSystems_GetRivalCityStates(playerID)
 	return cities
 end
 
--- Returns a list of the other living players' units that the player with ID playerID can see now:
--- each on a tile that is visible now, and seen by IsUnitVisible, which leaves out units such as a
--- stealthy one on a visible tile. A unit on a fogged tile is never listed. Unit IDs repeat across
--- players, so owner and id together name a unit. See UnitFlagManager.lua and MapSearchPanel.lua.
+-- Returns a list of the other living players' units that the player with ID
+-- playerID can see now: each on a tile that is visible now, and seen by
+-- IsUnitVisible, which leaves out a stealthy unit on a visible tile. A unit on
+-- a fogged tile is never listed. Unit IDs repeat across players, so owner and
+-- id together name a unit. See UnitFlagManager.lua and MapSearchPanel.lua.
 function SentientSystems_GetRivalUnitStates(playerID)
 	local visibility = PlayersVisibility[playerID]
 	local units = {}

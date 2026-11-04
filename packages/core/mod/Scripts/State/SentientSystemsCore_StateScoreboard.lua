@@ -1,16 +1,18 @@
--- The scoreboard section of the state: each living major player's score, as the Score tab of World
--- Rankings shows it, and the leader panel's numbers for the player and each player they have met.
--- SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/scoreboard.ts. The numbers follow ViewScore in WorldRankings.lua and
--- UpdateStatValues in DiplomacyRibbon.lua and DiplomacyRibbon_Expansion2.lua.
+-- The scoreboard section of the state: each living major player's score, as the
+-- Score tab of World Rankings shows it, and the leader panel's numbers for the
+-- player and each player they have met. SentientSystemsCore_State.lua loads
+-- this file. The shape is in bridge/src/state/scoreboard.ts. The numbers follow
+-- ViewScore in WorldRankings.lua and UpdateStatValues in DiplomacyRibbon.lua
+-- and DiplomacyRibbon_Expansion2.lua.
 
 -- Rounds to the nearest whole number, as the game's Round does.
 local function Round(number)
 	return math.floor(number + 0.5)
 end
 
--- Returns the scoring categories that add to a score, each with its type, name, and the player's
--- points. The tab's details list only the categories with a multiplier.
+-- Returns the scoring categories that add to a score, each with its type, name,
+-- and the player's points. The tab's details list only the categories with a
+-- multiplier.
 local function GetCategories(other)
 	local categories = {}
 
@@ -27,9 +29,9 @@ local function GetCategories(other)
 	return categories
 end
 
--- Adds the leader panel's numbers for a player to an entry. Gold is rounded down and the rest to the
--- nearest whole number. The panel adds favor only with Gathering Storm, when the diplomatic victory
--- is on.
+-- Adds the leader panel's numbers for a player to an entry. Gold is rounded
+-- down and the rest to the nearest whole number. The panel adds favor only with
+-- Gathering Storm, when the diplomatic victory is on.
 local function AddLeaderPanel(entry, other)
 	entry.military = Round(other:GetStats():GetMilitaryStrengthWithoutTreasury())
 	entry.science = Round(other:GetTechs():GetScienceYield())
@@ -42,9 +44,10 @@ local function AddLeaderPanel(entry, other)
 	end
 end
 
--- Returns a list with one entry for each living major player, highest score first and, for equal
--- scores, in ID order. The tab shows the score and categories for a player that has not been met
--- too, so only the leader panel's numbers and the ID are left out for one.
+-- Returns a list with one entry for each living major player, highest score
+-- first and, for equal scores, in ID order. The tab shows the score and
+-- categories for a player that has not been met too, so only the leader panel's
+-- numbers and the ID are left out for one.
 function SentientSystems_GetScoreboardState(player)
 	local ranked = {}
 	local diplomacy = player:GetDiplomacy()

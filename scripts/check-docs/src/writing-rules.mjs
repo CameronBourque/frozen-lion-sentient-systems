@@ -22,7 +22,8 @@ export const fixedRules = [
 		rule: "dash",
 		example: "pages 1–2",
 		pattern: /–/g,
-		// An en dash may join two capitalized words in a name, as in "Indonesia–Khmer".
+		// An en dash may join two capitalized words in a name, as in
+		// "Indonesia–Khmer".
 		allow: (line, match) => /\p{Lu}\p{L}*$/u.test(line.slice(0, match.index)) && /^\p{Lu}/u.test(line.slice(match.index + 1)),
 		message: 'en dash. Use "to" for ranges',
 	},
@@ -38,7 +39,8 @@ export const fixedRules = [
 	},
 	{ rule: "date", example: "Oct 14, 2026", pattern: new RegExp(`\\b${monthName} ${day},? ${year}\\b`, "g"), message: dateMessage },
 	{ rule: "date", example: "14 October 2026", pattern: new RegExp(`\\b${day} ${monthName},? ${year}\\b`, "g"), message: dateMessage },
-	// The lookbehind skips "October 2026" inside "14 October 2026", which the rule above reports.
+	// The lookbehind skips "October 2026" inside "14 October 2026", which the
+	// rule above reports.
 	{ rule: "date", example: "October 2026", pattern: new RegExp(`(?<!\\b${day} )\\b${monthName} ${year}\\b`, "g"), message: dateMessage },
 	{ rule: "date", example: "10/14/2026", pattern: /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g, message: dateMessage },
 	{
@@ -101,8 +103,8 @@ function listAfter(text, leadIn, end) {
 }
 
 // Matches each word and its common forms: "enhance" also matches "enhances",
-// "enhanced", and "enhancing". A space or hyphen in an entry, as in "north star",
-// matches either.
+// "enhanced", and "enhancing". A space or hyphen in an entry, as in "north
+// star", matches either.
 function wordPattern(words) {
 	const forms = words.map((word) => {
 		const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/[\s-]+/g, "[\\s-]+");

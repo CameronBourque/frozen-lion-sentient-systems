@@ -1,9 +1,10 @@
--- The victories section of the state: how close each living major player is to each victory, in the
--- order the Overall tab of World Rankings ranks them, with the values its icon tooltips show.
--- SentientSystemsCore_State.lua loads this file. The shape is in bridge/src/state/victories.ts.
--- The order and values follow PopulateOverallInstance in WorldRankings.lua and g_victoryData in
--- WorldRankings_Expansion2.lua.
--- The details of each victory come from SentientSystemsCore_StateVictories*.lua.
+-- The victories section of the state: how close each living major player is to
+-- each victory, in the order the Overall tab of World Rankings ranks them, with
+-- the values its icon tooltips show. SentientSystemsCore_State.lua loads this
+-- file. The shape is in bridge/src/state/victories.ts. The order and values
+-- follow PopulateOverallInstance in WorldRankings.lua and g_victoryData in
+-- WorldRankings_Expansion2.lua. The details of each victory come from
+-- SentientSystemsCore_StateVictories*.lua.
 
 -- Returns whether the player is the other player or has met them. The tabs
 -- show who a player is only then.
@@ -37,15 +38,17 @@ local function RoundNearest(number)
 	return math.floor(number * 10 + 0.5) / 10
 end
 
--- Rounds a progress to the nearest thousandth, which the game's single precision floats leave long.
+-- Rounds a progress to the nearest thousandth, which the game's single
+-- precision floats leave long.
 local function RoundProgress(progress)
 	return math.floor(progress * 1000 + 0.5) / 1000
 end
 
--- The victories in the Overall tab's order. values returns the two numbers that the tooltip shows
--- and that break a tie, the first one first, and what the section names them. A player is in the
--- section as { primary, secondary, values }. details, if there is one, returns more keys for a
--- player's entry, and is told whether the player has met them.
+-- The victories in the Overall tab's order. values returns the two numbers that
+-- the tooltip shows and that break a tie, the first one first, and what the
+-- section names them. A player is in the section as { primary, secondary,
+-- values }. details, if there is one, returns more keys for a player's entry,
+-- and is told whether the player has met them.
 local VICTORIES = {
 	{
 		key = "science",
@@ -105,9 +108,9 @@ local VICTORIES = {
 	},
 }
 
--- Returns the entry of a player in a victory's ranking, and what it sorts by. A player that the
--- player has not met has unmet, true, and no ID, and only the keys that the victory's tab shows
--- for them.
+-- Returns the entry of a player in a victory's ranking, and what it sorts by. A
+-- player that the player has not met has unmet, true, and no ID, and only the
+-- keys that the victory's tab shows for them.
 local function GetRanked(player, other, victory)
 	local id = other:GetID()
 	local met = SentientSystems_IsKnownPlayer(player, id)
@@ -142,8 +145,9 @@ local function GetRanked(player, other, victory)
 	return ranked
 end
 
--- Returns the players that can win a victory, best first: by progress, the two tooltip numbers, the
--- player's score, and the lower ID, as PopulateOverallInstance sorts the teams.
+-- Returns the players that can win a victory, best first: by progress, the two
+-- tooltip numbers, the player's score, and the lower ID, as
+-- PopulateOverallInstance sorts the teams.
 local function GetRanking(player, victory)
 	local ranking = {}
 
@@ -172,8 +176,9 @@ local function GetRanking(player, victory)
 	return entries
 end
 
--- Returns a table with a list for each victory that is on and that a player can win. The keys
--- that the tabs show for every player are in the details of each victory.
+-- Returns a table with a list for each victory that is on and that a player can
+-- win. The keys that the tabs show for every player are in the details of each
+-- victory.
 function SentientSystems_GetVictoryState(player)
 	local victories = {}
 

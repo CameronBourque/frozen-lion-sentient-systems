@@ -1,4 +1,5 @@
-// Tests for documents.mjs: reading the registry output and expanding its variables.
+// Tests for documents.mjs: reading the registry output and expanding its
+// variables.
 
 import path from "node:path";
 import { describe, expect, test } from "vitest";

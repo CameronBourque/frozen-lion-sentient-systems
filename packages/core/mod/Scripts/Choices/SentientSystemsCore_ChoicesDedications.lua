@@ -1,12 +1,14 @@
--- The dedication choice: the dedications the player may make for the era that began, as the
--- dedication popup offers them. SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/dedications.ts. The checks follow OnGameEraChanged and CreateCommemoration in
+-- The dedication choice: the dedications the player may make for the era that
+-- began, as the dedication popup offers them. SentientSystemsCore_Choices.lua
+-- loads this file. The shape is in bridge/src/choices/dedications.ts. The
+-- checks follow OnGameEraChanged and CreateCommemoration in
 -- DedicationPopup.lua.
 
 SentientSystems_Include("SentientSystemsCore_Eras")
 
--- Returns the dedication choice. Returns nil with no dedication to make. The calls read the era's choices only while the blocker is
--- up, as the spy choice must. See DedicationPopup.lua, lines 25 to 120.
+-- Returns the dedication choice. Returns nil with no dedication to make. The
+-- calls read the era's choices only while the blocker is up, as the spy choice
+-- must. See DedicationPopup.lua.
 function SentientSystems_GetDedicationChoices(player)
 	local playerID = player:GetID()
 

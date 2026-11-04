@@ -1,5 +1,5 @@
-// The schema for the great people section of the state: each great person on offer, as the Great
-// People screen shows them. The core mod builds it in
+// The schema for the great people section of the state: each great person on
+// offer, as the Great People screen shows them. The core mod builds it in
 // Scripts/State/SentientSystemsCore_StateGreatPeople.lua.
 
 import { z } from "zod";

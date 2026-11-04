@@ -1,11 +1,13 @@
--- The tiles section of the state: each tile the player has revealed, from the player's own
--- visibility data, never from the screen. A tile under fog reads as it is now, as the game's tooltip
--- shows it. See docs/findings/tile-visibility.md. SentientSystemsCore_State.lua loads this file.
--- The shape is in bridge/src/state/tiles.ts.
+-- The tiles section of the state: each tile the player has revealed, from the
+-- player's own visibility data, never from the screen. A tile under fog reads
+-- as it is now, as the game's tooltip shows it. See
+-- docs/findings/tile-visibility.md. SentientSystemsCore_State.lua loads this
+-- file. The shape is in bridge/src/state/tiles.ts.
 
--- Returns the type of the plot's resource, such as RESOURCE_IRON, or nil when the plot has none or
--- the player can't see it yet. Some resources, such as iron, stay hidden until the player has a
--- tech. The game's tooltip checks IsResourceVisible the same way, in PlotToolTip.lua.
+-- Returns the type of the plot's resource, or nil when the plot has none or the
+-- player can't see it yet. Some resources stay hidden until the player has a
+-- tech. The game's tooltip checks IsResourceVisible the same way, in
+-- PlotToolTip.lua.
 local function GetResource(plot, resources)
 	local resource = GameInfo.Resources[plot:GetResourceType()]
 
@@ -16,21 +18,22 @@ local function GetResource(plot, resources)
 	return resource.ResourceType
 end
 
--- Returns the column of the row at index in a GameInfo table, or nil for an index of -1, which the
--- game uses for none.
+-- Returns the column of the row at index in a GameInfo table, or nil for an
+-- index of -1, which the game uses for none.
 local function TypeAt(rows, index, column)
 	local row = rows[index]
 
 	return row and row[column]
 end
 
--- Returns true when value is true, or nil, so a flag that is usually false is left out of the JSON.
+-- Returns true when value is true, or nil, so a flag that is usually false is
+-- left out of the JSON.
 local function TrueOrNil(value)
 	return value or nil
 end
 
--- Returns a list of the tiles that the player with ID playerID has revealed, in plot index order.
--- The tooltip shows the same values, in PlotToolTip.lua.
+-- Returns a list of the tiles that the player with ID playerID has revealed, in
+-- plot index order. The tooltip shows the same values, in PlotToolTip.lua.
 function SentientSystems_GetTileStates(playerID)
 	local visibility = PlayersVisibility[playerID]
 	local resources = Players[playerID]:GetResources()

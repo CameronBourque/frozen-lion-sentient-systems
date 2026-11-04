@@ -1,11 +1,13 @@
--- The religion section of the state: the player's pantheon, their progress toward a religion, and
--- the religion they founded with its followers, as the religion screen's My Religion tab shows them.
--- SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/religion.ts. The checks follow ViewMyReligion and ViewReligion in
--- ReligionScreen.lua.
+-- The religion section of the state: the player's pantheon, their progress
+-- toward a religion, and the religion they founded with its followers, as the
+-- religion screen's My Religion tab shows them. SentientSystemsCore_State.lua
+-- loads this file. The shape is in bridge/src/state/religion.ts. The checks
+-- follow ViewMyReligion and ViewReligion in ReligionScreen.lua.
 
--- Returns the religion the player founded, with the cities of every living player where it has
--- followers, as the screen's cities panel lists them. Returns nil before the player founds one. See ViewReligion in ReligionScreen.lua, lines 964 to 1170.
+-- Returns the religion the player founded, with the cities of every living
+-- player where it has followers, as the screen's cities panel lists them.
+-- Returns nil before the player founds one. See ViewReligion in
+-- ReligionScreen.lua.
 local function GetFounded(religion)
 	local religionType = religion:GetReligionTypeCreated()
 
@@ -52,8 +54,8 @@ local function GetFounded(religion)
 	return founded
 end
 
--- Returns the religion section. See ViewMyReligion, WorkingTowardsPantheon, and WorkingTowardsReligion in
--- ReligionScreen.lua, lines 308 to 403.
+-- Returns the religion section. See ViewMyReligion, WorkingTowardsPantheon, and
+-- WorkingTowardsReligion in ReligionScreen.lua.
 function SentientSystems_GetReligionState(player)
 	local religion = player:GetReligion()
 	local pantheon = religion:GetPantheon()

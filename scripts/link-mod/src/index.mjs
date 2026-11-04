@@ -1,6 +1,7 @@
-// Links the core mod into the game's user mods folder, so the game loads this checkout.
-// Usage: npm run link-mod, or npm run link-mod -- --remove to remove the link.
-// This file only reads the registry and prints. documents.mjs and link.mjs hold the logic, so tests can reach it.
+// Links the core mod into the game's user mods folder, so the game loads this
+// checkout. Usage: npm run link-mod, or npm run link-mod -- --remove to remove
+// the link. This file only reads the registry and prints. documents.mjs and
+// link.mjs hold the logic, so tests can reach it.
 
 import { execFileSync } from "node:child_process";
 import os from "node:os";

@@ -33,8 +33,8 @@ local AGOGE = { type = "POLICY_AGOGE", slot = "SLOT_MILITARY", description = "LO
 local GOD_KING = { type = "POLICY_GOD_KING", slot = "SLOT_ECONOMIC", description = "LOC_POLICY_GOD_KING_DESCRIPTION" }
 local CHIEFDOM = { type = "GOVERNMENT_CHIEFDOM", slots = { { type = "SLOT_MILITARY" }, { type = "SLOT_ECONOMIC", policy = "POLICY_GOD_KING" } } }
 
--- Returns the policy choice JSON for player 0, whose data is given, in a world with the fields in
--- worldFields.
+-- Returns the policy choice JSON for player 0, whose data is given, in a world
+-- with the fields in worldFields.
 local function PoliciesWith(player, worldFields)
 	local env = Game.new()
 	local world = { players = { [0] = player }, text = { LOC_POLICY_SURVEY_DESCRIPTION = "Double experience for recon units." } }
@@ -137,8 +137,8 @@ local AUTOCRACY_ROW = {
 	legacyPercent = 10,
 }
 
--- Returns the government options JSON for player 0, whose government is given, in a world with
--- Chiefdom and Autocracy and the fields in worldFields.
+-- Returns the government options JSON for player 0, whose government is given,
+-- in a world with Chiefdom and Autocracy and the fields in worldFields.
 local function GovernmentsWith(government, worldFields, player)
 	local env = Game.new()
 	local world = { players = { [0] = player or {} }, governments = { CHIEFDOM_ROW, AUTOCRACY_ROW } }

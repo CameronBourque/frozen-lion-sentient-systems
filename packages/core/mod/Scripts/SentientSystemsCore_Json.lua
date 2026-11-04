@@ -1,11 +1,13 @@
--- Encodes Lua values as JSON on one line, and keeps long text in pieces that the bridge reads one
--- command at a time.
+-- Encodes Lua values as JSON on one line, and keeps long text in pieces that
+-- the bridge reads one command at a time.
 
--- A command whose output is longer than about 2 MiB gets no reply from the tuner, so each piece
--- stays well under it. See docs/findings/tuner-commands.md.
+-- A command whose output is longer than about 2 MiB gets no reply from the
+-- tuner, so each piece stays well under it. See
+-- docs/findings/tuner-commands.md.
 local PIECE_BYTES = 1000000
 
--- The pieces from the last SentientSystems_Stash call, or nil once the bridge has read them all.
+-- The pieces from the last SentientSystems_Stash call, or nil once the bridge
+-- has read them all.
 local stash = nil
 
 -- Numbers from -2^53 to 2^53 are whole numbers that a double holds exactly.
@@ -21,18 +23,19 @@ local ESCAPES = {
 	["\t"] = "\\t",
 }
 
--- Quotes text, and escapes the quote, the backslash, each control character, and the percent sign.
--- The game's log prints text as a printf format, so a raw % prints garbage, and a "% s" crashes the
--- game, which it did for a governor's description. As \u0025 the bridge still reads a %. See
--- docs/findings/tuner-commands.md. Other bytes, such as UTF-8 text, pass through.
+-- Quotes text, and escapes the quote, the backslash, each control character,
+-- and the percent sign. The game's log prints text as a printf format, so a raw
+-- % prints garbage, and a "% s" crashes the game, which it did for a governor's
+-- description. As \u0025 the bridge still reads a %. See
+-- docs/findings/tuner-commands.md. Other bytes pass through.
 local function EncodeString(text)
 	return "\"" .. text:gsub("[%c\"\\%%]", function(char)
 		return ESCAPES[char] or string.format("\\u%04x", char:byte())
 	end) .. "\""
 end
 
--- JSON has no infinity or NaN, so they become null. Whole numbers print with every digit, where
--- tostring would round IDs past 14 digits.
+-- JSON has no infinity or NaN, so they become null. Whole numbers print with
+-- every digit, where tostring would round IDs past 14 digits.
 local function EncodeNumber(number)
 	if number ~= number or number == math.huge or number == -math.huge then
 		return "null"
@@ -45,8 +48,8 @@ local function EncodeNumber(number)
 	return string.format("%.14g", number)
 end
 
--- Returns how many items a table holds when its keys are exactly 1 to n, or nil when it isn't a list.
--- An empty table is a list.
+-- Returns how many items a table holds when its keys are exactly 1 to n, or nil
+-- when it isn't a list. An empty table is a list.
 local function ListLength(value)
 	local count = 0
 
@@ -65,8 +68,9 @@ end
 
 local Encode
 
--- Adds each part of a table's JSON to parts. inProgress holds the tables being encoded, so a table
--- that holds itself raises an error instead of overflowing the stack.
+-- Adds each part of a table's JSON to parts. inProgress holds the tables being
+-- encoded, so a table that holds itself raises an error instead of overflowing
+-- the stack.
 local function EncodeTable(value, path, parts, inProgress)
 	if inProgress[value] then
 		error("can't encode a table that holds itself, at " .. path, 0)
@@ -89,8 +93,8 @@ local function EncodeTable(value, path, parts, inProgress)
 
 		parts[#parts + 1] = "]"
 	else
-		-- Sorted keys give the same text for the same state. A number key, such as a unit ID, is
-		-- written as text.
+		-- Sorted keys give the same text for the same state. A number key, such
+		-- as a unit ID, is written as text.
 		local entries = {}
 
 		for key, item in pairs(value) do
@@ -124,7 +128,8 @@ local function EncodeTable(value, path, parts, inProgress)
 	inProgress[value] = nil
 end
 
--- Adds each part of value's JSON to parts. Encode is declared above EncodeTable, which calls it.
+-- Adds each part of value's JSON to parts. Encode is declared above
+-- EncodeTable, which calls it.
 Encode = function(value, path, parts, inProgress)
 	local valueType = type(value)
 
@@ -143,9 +148,10 @@ Encode = function(value, path, parts, inProgress)
 	end
 end
 
--- Returns value as JSON. A table whose keys are 1 to n is a list, and an empty table is an empty
--- list. Any other table is an object, with its keys sorted. Raises an error for a function or
--- userdata, a key that isn't a string or number, or a table that holds itself, and names where.
+-- Returns value as JSON. A table whose keys are 1 to n is a list, and an empty
+-- table is an empty list. Any other table is an object, with its keys sorted.
+-- Raises an error for a function or userdata, a key that isn't a string or
+-- number, or a table that holds itself, and names where.
 function SentientSystems_EncodeJson(value)
 	local parts = {}
 
@@ -154,9 +160,10 @@ function SentientSystems_EncodeJson(value)
 	return table.concat(parts)
 end
 
--- Returns text in pieces of at most PIECE_BYTES bytes, and at least one piece. The bridge decodes
--- each print as UTF-8 on its own, so a piece never ends inside a character: the cut moves back past
--- UTF-8 continuation bytes, 0x80 to 0xBF.
+-- Returns text in pieces of at most PIECE_BYTES bytes, and at least one piece.
+-- The bridge decodes each print as UTF-8 on its own, so a piece never ends
+-- inside a character: the cut moves back past UTF-8 continuation bytes, 0x80 to
+-- 0xBF.
 local function Split(text)
 	local pieces = {}
 	local start = 1
@@ -181,8 +188,9 @@ local function Split(text)
 	return pieces
 end
 
--- Keeps text in pieces, in place of any earlier stash, and prints and returns how many there are.
--- The bridge then reads each piece with its own SentientSystems_PrintPiece command and joins them.
+-- Keeps text in pieces, in place of any earlier stash, and prints and returns
+-- how many there are. The bridge then reads each piece with its own
+-- SentientSystems_PrintPiece command and joins them.
 function SentientSystems_Stash(text)
 	stash = Split(text)
 	print(#stash)
@@ -190,8 +198,8 @@ function SentientSystems_Stash(text)
 	return #stash
 end
 
--- Prints piece index of the stash, counting from 1. After the last piece, the stash is cleared.
--- Raises an error when no stash holds that piece.
+-- Prints piece index of the stash, counting from 1. After the last piece, the
+-- stash is cleared. Raises an error when no stash holds that piece.
 function SentientSystems_PrintPiece(index)
 	local piece = stash and stash[index]
 

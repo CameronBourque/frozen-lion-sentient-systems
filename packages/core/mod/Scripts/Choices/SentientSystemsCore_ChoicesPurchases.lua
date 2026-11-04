@@ -1,16 +1,19 @@
--- The purchase choice: what each of the player's cities can buy, as the production panel's purchase
--- tabs list it. SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/purchases.ts. The checks follow ComposeUnitForPurchase,
--- ComposeBldgForPurchase, and ComposeDistrictForPurchase in ProductionPanel.lua, lines 1632 to 1827.
--- The tiles to buy with gold follow ShowPurchases in PlotInfo.lua.
+-- The purchase choice: what each of the player's cities can buy, as the
+-- production panel's purchase tabs list it. SentientSystemsCore_Choices.lua
+-- loads this file. The shape is in bridge/src/choices/purchases.ts. The checks
+-- follow ComposeUnitForPurchase, ComposeBldgForPurchase, and
+-- ComposeDistrictForPurchase in ProductionPanel.lua. The tiles to buy with gold
+-- follow ShowPurchases in PlotInfo.lua.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
--- Each yield the city can buy with: its key in a city's purchases, its name in GameInfo.Yields, the
--- player's store of it, the text key the panel adds when the player can't afford an item, and
--- whether the panel tries a unit or a building with it. The panel tries every district with each
--- yield. A city can buy some units and buildings with faith that the game marks for gold, such as
--- with a policy, and the panel asks the city for those. See GetData in ProductionPanel.lua, lines 2006 to 2016, 2084 to 2097, and 2188 to 2201.
+-- Each yield the city can buy with: its key in a city's purchases, its name in
+-- GameInfo.Yields, the player's store of it, the text key the panel adds when
+-- the player can't afford an item, and whether the panel tries a unit or a
+-- building with it. The panel tries every district with each yield. A city can
+-- buy some units and buildings with faith that the game marks for gold, as with
+-- a policy, and the panel asks the city for those. See GetData in
+-- ProductionPanel.lua.
 local PURCHASE_YIELDS = {
 	{
 		key = "gold",
@@ -42,10 +45,10 @@ local PURCHASE_YIELDS = {
 	},
 }
 
--- Returns the option to buy what params names, with its cost, and blocked when the panel greys it
--- out: the game's reasons, and the panel's text when the player can't afford it. formation is nil
--- for anything but a unit. The game gives no reason when the player can't afford an item, so the
--- panel adds one.
+-- Returns the option to buy what params names, with its cost, and blocked when
+-- the panel greys it out: the game's reasons, and the panel's text when the
+-- player can't afford it. formation is nil for anything but a unit. The game
+-- gives no reason when the player can't afford an item, so the panel adds one.
 local function PurchaseOption(city, purchase, params, hash, formation)
 	local yieldIndex = GameInfo.Yields[purchase.yield].Index
 	local cityGold = city:GetGold()
@@ -82,14 +85,14 @@ local function PurchaseParams(param, hash, purchase)
 	return params
 end
 
--- Returns whether the panel lists the item that params names: when CanStartCommand allows it when
--- it only tests.
+-- Returns whether the panel lists the item that params names: when
+-- CanStartCommand allows it when it only tests.
 local function IsListed(city, params)
 	return CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, true, params, false)
 end
 
--- Returns the units the city can buy with the yield, each with a corps and an army when the results
--- allow one, as ComposeUnitForPurchase does.
+-- Returns the units the city can buy with the yield, each with a corps and an
+-- army when the results allow one, as ComposeUnitForPurchase does.
 local function GetUnitPurchases(city, purchase)
 	local units = {}
 
@@ -119,8 +122,9 @@ local function GetUnitPurchases(city, purchase)
 	return units
 end
 
--- Returns the buildings or districts the city can buy with the yield. tries(row) says whether the
--- panel tries a row, param is the parameter that names it, and column is its type's column.
+-- Returns the buildings or districts the city can buy with the yield.
+-- tries(row) says whether the panel tries a row, param is the parameter that
+-- names it, and column is its type's column.
 local function GetPurchases(city, purchase, rows, param, column, tries)
 	local options = {}
 
@@ -138,12 +142,14 @@ local function GetPurchases(city, purchase, rows, param, column, tries)
 	return options
 end
 
--- The text key of the tooltip on a tile the player can't afford, which takes the gold still needed.
+-- The text key of the tooltip on a tile the player can't afford, which takes
+-- the gold still needed.
 local NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
 
--- Returns the tiles the city can buy with gold, in plot index order. A tile that costs more than
--- the player's gold has the text of the tooltip the purchase lens shows on it, as its button is
--- disabled. See ShowPurchases in PlotInfo.lua, lines 282 to 326.
+-- Returns the tiles the city can buy with gold, in plot index order. A tile
+-- that costs more than the player's gold has the text of the tooltip the
+-- purchase lens shows on it, as its button is disabled. See ShowPurchases in
+-- PlotInfo.lua.
 local function GetTilePurchases(city)
 	local gold = Players[city:GetOwner()]:GetTreasury():GetGoldBalance()
 	local cityGold = city:GetGold()
@@ -164,8 +170,9 @@ local function GetTilePurchases(city)
 	return tiles
 end
 
--- Returns a list with what each of the player's cities can buy, by yield, in the game's order of
--- cities. The tiles to buy are under gold, the only yield that buys them.
+-- Returns a list with what each of the player's cities can buy, by yield, in
+-- the game's order of cities. The tiles to buy are under gold, the only yield
+-- that buys them.
 function SentientSystems_GetPurchaseChoices(player)
 	local purchases = {}
 

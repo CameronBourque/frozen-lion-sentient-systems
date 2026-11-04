@@ -1,8 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Owls of Minerva, a Secret Society, joined, with its base ability held and the next two hidden until
--- the one before is held.
+-- Owls of Minerva, a Secret Society, joined, with its base ability held and the
+-- next two hidden until the one before is held.
 local OWLS = {
 	type = "GOVERNOR_OWLS_OF_MINERVA",
 	promotions = {
@@ -12,8 +12,8 @@ local OWLS = {
 	},
 }
 
--- Returns an environment with the shared governor rules loaded into a fake game where player 0 has
--- the governors given, and the world fields in extra.
+-- Returns an environment with the shared governor rules loaded into a fake game
+-- where player 0 has the governors given, and the world fields in extra.
 local function Load(governors, extra)
 	local env = Game.new()
 	local world = {

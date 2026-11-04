@@ -10,13 +10,15 @@ local SCOREBOARD_OF_1 = "[{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\
 -- The yields JSON for a city with every yield at 0.
 local NO_YIELDS = "\"yields\":{\"culture\":0,\"faith\":0,\"food\":0,\"gold\":0,\"production\":0,\"science\":0}"
 
--- The amenities, defense, districts, and growth JSON for a content city with no amenities,
--- districts, or housing, that neither grows nor starves, and a garrison at full health.
+-- The amenities, defense, districts, and growth JSON for a content city with no
+-- amenities, districts, or housing, that neither grows nor starves, and a
+-- garrison at full health.
 local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"need\":0,\"warWeariness\":0},\"defense\":{\"garrison\":{\"max\":200,\"value\":200},\"strength\":0},\"districts\":[],\"growth\":{\"foodSurplus\":0,\"housing\":0,\"rate\":\"normal\"},"
 
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
--- Returns an environment with the state script loaded into a fake game built from world.
+-- Returns an environment with the state script loaded into a fake game built
+-- from world.
 local function Load(world)
 	local env = Game.new()
 
@@ -26,7 +28,8 @@ local function Load(world)
 	return env
 end
 
--- Returns a state without its player's income and resources, which have tests of their own.
+-- Returns a state without its player's income and resources, which have tests
+-- of their own.
 local function WithoutIncome(state)
 	return (state:gsub("\"income\":%b{},", ""):gsub("\"resources\":%b[],", ""))
 end

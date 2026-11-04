@@ -1,5 +1,5 @@
-// The schema for the production choice: what each of the player's cities can produce, as the
-// production panel lists it. The core mod builds it in
+// The schema for the production choice: what each of the player's cities can
+// produce, as the production panel lists it. The core mod builds it in
 // Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua.
 
 import { z } from "zod";
@@ -27,7 +27,8 @@ const REPAIR = z.literal(true).optional().describe(
 	"True when it is pillaged and producing it repairs it. Left out otherwise.",
 );
 
-// A building, wonders left out. The building in production is left out, as the panel leaves it out.
+// A building, wonders left out. The building in production is left out, as the
+// panel leaves it out.
 const BUILDING_OPTION = z.object({
 	type: z.string().describe("Such as BUILDING_GRANARY."),
 	district: z.string().optional().describe(
@@ -40,8 +41,9 @@ const BUILDING_OPTION = z.object({
 	repair: REPAIR,
 });
 
-// A district or a wonder. Its tiles come from readPlacement, in src/placement/placement.ts. A district
-// with a tile only to buy isn't greyed out. Nuclear contamination isn't included.
+// A district or a wonder. Its tiles come from readPlacement, in
+// src/placement/placement.ts. A district with a tile only to buy isn't greyed
+// out. Nuclear contamination isn't included.
 const PLACED_OPTION = z.object({
 	type: z.string().describe("Such as DISTRICT_CAMPUS or BUILDING_PYRAMIDS."),
 	cost: z.number(),

@@ -1,12 +1,12 @@
--- Escaping spies. A player's escapingSpy is its next escaping spy, with id, name, loot, pursuer, the
--- counterspy's name or "" for the police, x, and y, the tile of the city it escapes from. With one,
--- the four escape districts get rows, with TravelTime 1 to 4.
+-- Escaping spies. Fakes a player's next escaping spy, with the four escape
+-- districts it needs.
 
 return function(env, world, ctx)
 	local AddRow, indexes, List = ctx.AddRow, ctx.indexes, ctx.List
 
 
-	-- With an escaping spy, each escape district gets a row, with its travel time and name.
+	-- With an escaping spy, each escape district gets a row, with its travel
+	-- time and name.
 	for _, data in pairs(world.players or {}) do
 		if data.escapingSpy ~= nil then
 			for i, districtType in ipairs({ "DISTRICT_AERODROME", "DISTRICT_HARBOR", "DISTRICT_COMMERCIAL_HUB", "DISTRICT_CITY_CENTER" }) do
@@ -33,7 +33,8 @@ return function(env, world, ctx)
 		end,
 	}
 
-	-- The player's escaping spy, from data.escapingSpy, which FindID alone finds.
+	-- The player's escaping spy, from data.escapingSpy, which FindID alone
+	-- finds.
 	ctx.OnPlayer(function(player, data)
 		local spy = data.escapingSpy
 		local GetDiplomacy = player.GetDiplomacy

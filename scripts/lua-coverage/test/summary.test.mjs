@@ -1,4 +1,5 @@
-// Tests for summary.mjs: reading a luacov report's summary table and checking its total.
+// Tests for summary.mjs: reading a luacov report's summary table and checking
+// its total.
 
 import { describe, expect, test } from "vitest";
 import { checkCoverage, summarySection, THRESHOLD, totalCoverage } from "../src/summary.mjs";

@@ -114,7 +114,8 @@ describe("parseLine", () => {
 		expect(parseLine("[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated C:\\temp")).toMatchObject({ event: { message: "C:\\temp" } });
 	});
 
-	// A line that the core mod printed in a running game on 2026-10-23, with its trace cut short.
+	// A line that the core mod printed in a running game on 2026-10-23, with
+	// its trace cut short.
 	test("splits the traceback off an error from the game", () => {
 		const line = "SentientSystemsCore_UI: [SENTIENTSYSTEMS] ERROR ProbeNil [string \"(function()...\"]:5: attempt to index a nil value\\nstack traceback:\\n\t[string \"(function()...\"]:5: in function '(anonymous)'\\n\t[C]: in function 'pcall'";
 
@@ -129,8 +130,9 @@ describe("parseLine", () => {
 		});
 	});
 
-	// A line from the game test on 2026-10-23, with its trace cut short. The core mod escaped each
-	// backslash in the paths, so String.raw keeps them as the game printed them.
+	// A line from the game test on 2026-10-23, with its trace cut short. The
+	// core mod escaped each backslash in the paths, so String.raw keeps them as
+	// the game printed them.
 	test("cuts the paths in an error from the game down to the game's folder", () => {
 		const path = String.raw`C:\\Users\\lion1\\OneDrive\\Documents\\My Games\\Sid Meier's Civilization VI\\Mods\\SentientSystemsCore\\UI\\SentientSystemsCore_UI.lua`;
 		const line = String.raw`[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated ${path}:38: test\nstack traceback:\n${"\t"}[C]: in function 'error'\n${"\t"}${path}:38: in function 'OnPlayerTurnActivated'`;

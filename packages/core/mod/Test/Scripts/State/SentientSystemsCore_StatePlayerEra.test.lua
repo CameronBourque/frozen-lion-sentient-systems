@@ -1,8 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- The player's era, with the score and age the tests give, in a game on turn 85 whose era ends
--- between turns 101 and 111.
+-- The player's era, with the score and age the tests give, in a game on turn 85
+-- whose era ends between turns 101 and 111.
 local function Era(changes)
 	local era = {
 		score = 200,
@@ -22,8 +22,8 @@ local function Era(changes)
 	return era
 end
 
--- Returns the era section JSON for player 0, whose era is given, in a game with the rest of world,
--- or nil when it is left out.
+-- Returns the era section JSON for player 0, whose era is given, in a game with
+-- the rest of world, or nil when it is left out.
 local function EraWith(era, world)
 	local env = Game.new()
 	local setup = {

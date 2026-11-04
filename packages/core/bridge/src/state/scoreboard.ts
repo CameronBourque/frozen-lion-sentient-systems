@@ -1,6 +1,7 @@
-// The schema for the scoreboard section of the state: each living major player's score, as the Score
-// tab of World Rankings shows it, and the leader panel's numbers for the player and each player they
-// have met. The core mod builds it in Scripts/State/SentientSystemsCore_StateScoreboard.lua.
+// The schema for the scoreboard section of the state: each living major
+// player's score, as the Score tab of World Rankings shows it, and the leader
+// panel's numbers for the player and each player they have met. The core mod
+// builds it in Scripts/State/SentientSystemsCore_StateScoreboard.lua.
 
 import { z } from "zod";
 

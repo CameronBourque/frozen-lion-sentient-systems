@@ -1,5 +1,5 @@
--- Rivals. A player's met lists the IDs of the players it has met, which HasMet checks. The ones it
--- is at war with, atWar, are in FakeGame/Envoys.lua. Other features add to GetDiplomacy.
+-- Rivals. Fakes the players that a player has met. Other features add to
+-- GetDiplomacy.
 
 return function(env, world, ctx)
 	ctx.OnPlayer(function(player, data)

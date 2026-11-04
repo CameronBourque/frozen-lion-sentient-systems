@@ -1,14 +1,16 @@
--- The governors section of the state: the player's governor titles and each appointed governor, with
--- their city, how settled they are, their loyalty pressure, and their promotions, as the Governors
--- panel shows them. Rise and Fall adds governors, so without it the section is left out.
+-- The governors section of the state: the player's governor titles and each
+-- appointed governor, with their city, how settled they are, their loyalty
+-- pressure, and their promotions, as the Governors panel shows them. Rise and
+-- Fall adds governors, so without it the section is left out.
 -- SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/governors.ts. The checks follow Refresh and AddGovernorAppointed in
--- GovernorPanel.lua, and GetGovernorStatus in GovernorSupport.lua.
+-- bridge/src/state/governors.ts. The checks follow Refresh and
+-- AddGovernorAppointed in GovernorPanel.lua, and GetGovernorStatus in
+-- GovernorSupport.lua.
 
 SentientSystems_Include("SentientSystemsCore_Governors")
 
--- Returns the promotions an appointed governor has, by type, in the order the panel lists them. See
--- AddGovernorAppointed in GovernorPanel.lua, lines 359 to 374.
+-- Returns the promotions an appointed governor has, by type, in the order the
+-- panel lists them. See AddGovernorAppointed in GovernorPanel.lua.
 local function GetPromotions(governor, definition)
 	local promotions = {}
 
@@ -25,10 +27,10 @@ local function GetPromotions(governor, definition)
 	return promotions
 end
 
--- Returns one appointed governor. A Secret Society has neither loyalty nor turns, as its card shows
--- no stats. See GetGovernorStatus in GovernorSupport.lua, lines 72 to 95, AddGovernorInstance in
--- GovernorAssignmentChooser.lua, lines 103 to 121, and AddSecretGovernorAppointed in
--- GovernorPanel.lua, lines 313 to 350.
+-- Returns one appointed governor. A Secret Society has neither loyalty nor
+-- turns, as its card shows no stats. See GetGovernorStatus in
+-- GovernorSupport.lua, AddGovernorInstance in GovernorAssignmentChooser.lua,
+-- and AddSecretGovernorAppointed in GovernorPanel.lua.
 local function GetGovernor(governor)
 	local definition = GameInfo.Governors[governor:GetType()]
 	local city = governor:GetAssignedCity()
@@ -57,7 +59,8 @@ local function GetGovernor(governor)
 	return entry
 end
 
--- Returns the governors section, or nil without Rise and Fall, whose players have no GetGovernors. See Refresh in GovernorPanel.lua, lines 39 to 122.
+-- Returns the governors section, or nil without Rise and Fall, whose players
+-- have no GetGovernors. See Refresh in GovernorPanel.lua.
 function SentientSystems_GetGovernorState(player)
 	if player.GetGovernors == nil then
 		return nil

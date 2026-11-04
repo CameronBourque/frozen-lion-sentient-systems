@@ -1,7 +1,6 @@
--- The top bar. A player's culture is its culture per turn, tourism its tourism, favor its Diplomatic
--- Favor, and favorPerTurn its favor per turn, which only Gathering Storm (world.expansion2) has. Each
--- is 0 when missing. trade has active, its outgoing routes, and capacity. Science is in
--- FakeGame/Research.lua, gold and faith in FakeGame/Stores.lua and Income.lua.
+-- The top bar. Fakes a player's culture, tourism, favor, and trade routes.
+-- FakeGame/Research.lua holds science, and Stores.lua and Income.lua gold and
+-- faith.
 
 return function(env, world, ctx)
 	ctx.OnPlayer(function(player, data)

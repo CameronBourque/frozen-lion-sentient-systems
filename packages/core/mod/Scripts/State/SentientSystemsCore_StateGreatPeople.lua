@@ -1,14 +1,15 @@
--- The great people section of the state: each great person on offer, with their era, cost, effects,
--- patronage costs, and each major player's progress toward them, as the Great People screen shows
--- them. SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/great-people.ts. The checks follow PopulateData and AddRecruit in
--- GreatPeoplePopup.lua.
+-- The great people section of the state: each great person on offer, with their
+-- era, cost, effects, patronage costs, and each major player's progress toward
+-- them, as the Great People screen shows them. SentientSystemsCore_State.lua
+-- loads this file. The shape is in bridge/src/state/great-people.ts. The checks
+-- follow PopulateData and AddRecruit in GreatPeoplePopup.lua.
 
--- The screen hides a patronage cost at or above this, which the game gives a great person the player
--- can't earn.
+-- The screen hides a patronage cost at or above this, which the game gives a
+-- great person the player can't earn.
 local MAX_PATRONAGE_COST = 1000000
 
--- The patronage yields, each with the capability the screen checks for its button.
+-- The patronage yields, each with the capability the screen checks for its
+-- button.
 local PATRONAGE = {
 	{ key = "gold", yield = "GOLD", capability = "CAPABILITY_GREAT_PEOPLE_RECRUIT_WITH_GOLD" },
 	{ key = "faith", yield = "FAITH", capability = "CAPABILITY_GREAT_PEOPLE_RECRUIT_WITH_FAITH" },
@@ -19,10 +20,11 @@ local function RoundTenth(number)
 	return math.floor(number * 10 + 0.5) / 10
 end
 
--- Returns the patronage costs of a great person, gold and faith. The screen shows a button only while the player can neither recruit nor pass
--- the person, and turns it off while Gathering Storm's World Congress is in session. Returns nil when
--- it shows neither. See AddRecruit in GreatPeoplePopup.lua, lines 241 to 262, and IsReadOnly in
--- GreatPeoplePopup_Expansion2.lua.
+-- Returns the patronage costs of a great person, gold and faith. The screen
+-- shows a button only while the player can neither recruit nor pass the person,
+-- and turns it off while Gathering Storm's World Congress is in session.
+-- Returns nil when it shows neither. See AddRecruit in GreatPeoplePopup.lua,
+-- and IsReadOnly in GreatPeoplePopup_Expansion2.lua.
 local function GetPatronage(greatPeople, playerID, individual)
 	if greatPeople:CanRecruitPerson(playerID, individual) or greatPeople:CanRejectPerson(playerID, individual) then
 		return nil
@@ -44,9 +46,9 @@ local function GetPatronage(greatPeople, playerID, individual)
 	return patronage
 end
 
--- Returns each major player's progress toward a class of great person. The most points come
--- first, then the lowest ID. See
--- PopulateData in GreatPeoplePopup.lua, lines 780 to 814, and AddRecruit, lines 296 to 321.
+-- Returns each major player's progress toward a class of great person. The most
+-- points come first, then the lowest ID. See PopulateData in
+-- GreatPeoplePopup.lua, and AddRecruit.
 local function GetProgress(player, classIndex)
 	local progress = {}
 
@@ -79,8 +81,8 @@ local function GetProgress(player, classIndex)
 	return progress
 end
 
--- Returns one great person on offer. See PopulateData in
--- GreatPeoplePopup.lua, lines 708 to 777, and AddRecruit, lines 153 to 330.
+-- Returns one great person on offer. See PopulateData in GreatPeoplePopup.lua,
+-- and AddRecruit.
 local function GetGreatPerson(player, greatPeople, entry)
 	local playerID = player:GetID()
 	local individual = GameInfo.GreatPersonIndividuals[entry.Individual]
@@ -112,9 +114,9 @@ local function GetGreatPerson(player, greatPeople, entry)
 	return person
 end
 
--- Returns the great people on offer, in the screen's order. A class whose great person someone has
--- claimed, which the screen shows as claimed, is left out. See PopulateData in GreatPeoplePopup.lua,
--- lines 682 to 778.
+-- Returns the great people on offer, in the screen's order. A class whose great
+-- person someone has claimed, which the screen shows as claimed, is left out.
+-- See PopulateData in GreatPeoplePopup.lua.
 function SentientSystems_GetGreatPeopleState(player)
 	local greatPeople = Game.GetGreatPeople()
 	local list = {}

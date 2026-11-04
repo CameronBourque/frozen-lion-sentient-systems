@@ -49,7 +49,8 @@ describe("parseMarker", () => {
 		"InGame: @@ss:end:7:maybe",
 		"InGame: @@ss:end:7",
 		"InGame: @@ss:begin:seven",
-		// A marker in the middle of a line was printed by the Lua, not by the wrapper.
+		// A marker in the middle of a line was printed by the Lua, not by the
+		// wrapper.
 		"InGame: said @@ss:begin:7",
 	];
 

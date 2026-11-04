@@ -1,10 +1,11 @@
-// Reads the summary table at the end of a luacov report, checks its total against the threshold,
-// and returns the lines to print and the exit code.
+// Reads the summary table at the end of a luacov report, checks its total
+// against the threshold, and returns the lines to print and the exit code.
 
 // The same threshold as the TypeScript coverage in vitest.config.js.
 export const THRESHOLD = 98;
 
-// Returns the summary table, from its "Summary" heading to the end, or null when the report has none.
+// Returns the summary table, from its "Summary" heading to the end, or null
+// when the report has none.
 export function summarySection(report) {
 	const text = report.replaceAll("\r\n", "\n");
 	const start = text.search(/^Summary$/m);
@@ -12,7 +13,8 @@ export function summarySection(report) {
 	return start === -1 ? null : text.slice(start).trimEnd();
 }
 
-// Returns the total line coverage in percent, from the table's "Total" row, or null.
+// Returns the total line coverage in percent, from the table's "Total" row, or
+// null.
 export function totalCoverage(summary) {
 	const match = /^Total\s+\d+\s+\d+\s+([\d.]+)%$/m.exec(summary);
 

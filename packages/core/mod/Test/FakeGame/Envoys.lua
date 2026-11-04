@@ -1,9 +1,5 @@
--- Envoys. A player's influence has tokens, canGive, false to refuse envoys, points, perTurn,
--- threshold, and envoys, the envoys each threshold gives. A city-state's minor has envoys, the count
--- by player ID, suzerain, a player ID, cantReceive, true for the Free Cities, quests by player ID,
--- each with type, name, description, and reward, and uniqueDisabled, true when Gathering Storm turns
--- off its suzerain bonus. The minor's name, leader, inherit, traits, and resources are in
--- FakeGame/Players.lua and Resources.lua.
+-- Envoys. Fakes a player's influence and a city-state's envoys, suzerain, and
+-- quests. FakeGame/Players.lua and Resources.lua hold the rest of a city-state.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes
@@ -44,8 +40,8 @@ return function(env, world, ctx)
 				GetTokensPerThreshold = function()
 					return influence.envoys or 1
 				end,
-				-- A city-state that can receive envoys, which the player has met and isn't at war
-				-- with.
+				-- A city-state that can receive envoys, which the player has
+				-- met and isn't at war with.
 				CanGiveTokensToPlayer = function(_, otherID)
 					local other = env.Players[otherID]
 

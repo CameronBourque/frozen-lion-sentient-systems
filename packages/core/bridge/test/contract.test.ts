@@ -1,5 +1,6 @@
-// Contract test: the JSON that the Lua tests record parses with the schema the bridge reads it with, and loses nothing.
-// npm run test:lua writes the fixtures, in test/lua-fixtures/, with one folder for each call.
+// Contract test: the JSON that the Lua tests record parses with the schema the
+// bridge reads it with, and loses nothing. npm run test:lua writes the
+// fixtures, in test/lua-fixtures/, with one folder for each call.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -13,7 +14,8 @@ import { TREE } from "../src/trees/research.js";
 
 const FIXTURES = path.join(import.meta.dirname, "lua-fixtures");
 
-// The schema that each call's JSON is read with, by the folder the fixtures are in.
+// The schema that each call's JSON is read with, by the folder the fixtures are
+// in.
 const CALLS: Record<string, z.ZodType> = {
 	GetState: STATE,
 	GetChoices: CHOICES,
@@ -43,7 +45,8 @@ describe.each(Object.entries(CALLS))("%s fixtures", (call, schema) => {
 		const result = schema.safeParse(json);
 
 		expect(result.error?.message).toBeUndefined();
-		// The schemas have no defaults or transforms, so a parse that drops nothing returns the same value.
+		// The schemas have no defaults or transforms, so a parse that drops
+		// nothing returns the same value.
 		expect(result.data).toEqual(json);
 	});
 });

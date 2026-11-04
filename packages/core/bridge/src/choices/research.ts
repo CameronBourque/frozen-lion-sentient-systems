@@ -1,7 +1,8 @@
-// The schema for the tech and civic choices: the techs and civics the player can research now, and
-// the one in research, as the research and civics choosers list them. The core mod builds them in
-// Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua. A tech's prerequisites come from the tech
-// tree.
+// The schema for the tech and civic choices: the techs and civics the player
+// can research now, and the one in research, as the research and civics
+// choosers list them. The core mod builds them in
+// Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua. A tech's
+// prerequisites come from the tech tree.
 
 import { z } from "zod";
 

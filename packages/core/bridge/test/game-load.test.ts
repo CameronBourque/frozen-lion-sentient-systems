@@ -39,7 +39,8 @@ describe("onLoadEvent", () => {
 		fs.rmSync(folder, { recursive: true, force: true });
 	});
 
-	// Reads a line the way main.ts does. Each new log file gets the next number.
+	// Reads a line the way main.ts does. Each new log file gets the next
+	// number.
 	function read(line: string): void {
 		readLine(line, logger, (event) => onLoadEvent(event, client, logger, () => path.join(folder, `${++files}.log`)));
 	}

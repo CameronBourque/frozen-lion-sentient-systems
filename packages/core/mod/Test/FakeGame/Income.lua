@@ -1,8 +1,6 @@
--- A player's income. data.goldPerTurn and data.upkeep are its gold income and upkeep per turn,
--- data.unitDiscount what its units cost less each, and data.faithPerTurn its faith income, each 0 when
--- missing. data.tooltips has the income's text, as gold, faith, and culture, each "" when missing. A tile
--- that a city of the player owns gives GetTourismAt its tourism, from the city's tiles. The gold and
--- faith stores are in FakeGame/Stores.lua, and a city's tiles and income rows in FakeGame/Plots.lua.
+-- A player's income. Fakes its gold and faith per turn, its upkeep, its income
+-- text, and the tourism of the tiles its cities own. FakeGame/Stores.lua holds
+-- the stores and Plots.lua the city tiles.
 
 return function(env, world, ctx)
 	local PlotIndex = ctx.PlotIndex
@@ -49,7 +47,8 @@ return function(env, world, ctx)
 		function player.GetCulture()
 			local culture = GetCulture()
 
-			-- The tourism of a plot, from the tile that a city of the player owns there.
+			-- The tourism of a plot, from the tile that a city of the player
+			-- owns there.
 			function culture.GetTourismAt(_, plotIndex)
 				for _, city in ipairs(data.cities or {}) do
 					for _, tile in ipairs(city.tiles or {}) do

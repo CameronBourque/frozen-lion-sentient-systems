@@ -1,6 +1,6 @@
-// The schema for the governors section of the state: the player's governor titles and each appointed
-// governor, as the Governors panel shows them. The core mod builds it in
-// Scripts/State/SentientSystemsCore_StateGovernors.lua.
+// The schema for the governors section of the state: the player's governor
+// titles and each appointed governor, as the Governors panel shows them. The
+// core mod builds it in Scripts/State/SentientSystemsCore_StateGovernors.lua.
 
 import { z } from "zod";
 

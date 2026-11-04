@@ -1,5 +1,5 @@
-// Tests for placement.ts, against the fake game. The stash's failures are tested in state.test.ts,
-// through readState.
+// Tests for placement.ts, against the fake game. The stash's failures are
+// tested in state.test.ts, through readState.
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -11,7 +11,8 @@ import { FakeGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetPlacement(0, 65536, \"DISTRICT_CAMPUS\"))";
 
-// The smallest placement the schema accepts. The schemas are checked in contract.test.ts.
+// The smallest placement the schema accepts. The schemas are checked in
+// contract.test.ts.
 const PLACEMENT = { tiles: [{ x: 17, y: 13 }], purchaseTiles: [] };
 const JSON_TEXT = JSON.stringify(PLACEMENT);
 
@@ -32,7 +33,8 @@ describe("readPlacement", () => {
 		await game.close();
 	});
 
-	// Answers each command with the result given for it. Other Lua prints nothing.
+	// Answers each command with the result given for it. Other Lua prints
+	// nothing.
 	function answer(results: Record<string, CommandResult | undefined>): void {
 		game.onCommand = (_stateIndex, lua) => (lua in results ? results[lua] : {});
 	}

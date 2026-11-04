@@ -1,8 +1,10 @@
--- The emergency choice: the emergency the player has to look at, as the emergency popup offers it.
--- SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/emergencies.ts. The checks follow OnEmergencyAvailable and ShowEmergency in WorldCrisisPopup.lua and ProcessEmergency_WorldCrisisPopup
--- in WorldCrisisSupport.lua. Checked in a running game against the popup of an ongoing emergency. The
--- blocker's own case, with join and reject, hasn't been seen.
+-- The emergency choice: the emergency the player has to look at, as the
+-- emergency popup offers it. SentientSystemsCore_Choices.lua loads this file.
+-- The shape is in bridge/src/choices/emergencies.ts. The checks follow
+-- OnEmergencyAvailable and ShowEmergency in WorldCrisisPopup.lua and
+-- ProcessEmergency_WorldCrisisPopup in WorldCrisisSupport.lua. Checked in a
+-- running game against the popup of an ongoing emergency. The blocker's own
+-- case, with join and reject, hasn't been seen.
 
 -- Returns the lines of a list of texts, as the popup shows them.
 local function Lines(list)
@@ -15,8 +17,8 @@ local function Lines(list)
 	return lines
 end
 
--- Returns the goals the popup lists: the target's own for the target, and the members' for anyone
--- else, each by its name, leaving out one with no name.
+-- Returns the goals the popup lists: the target's own for the target, and the
+-- members' for anyone else, each by its name, leaving out one with no name.
 local function GetGoals(entry, playerID)
 	local goals = {}
 
@@ -29,8 +31,9 @@ local function GetGoals(entry, playerID)
 	return goals
 end
 
--- Returns the rewards the popup lists: the members' first, top, bottom, and extra tiers' lines and
--- the extra rewards, and the target's lines, for a hostile emergency.
+-- Returns the rewards the popup lists: the members' first, top, bottom, and
+-- extra tiers' lines and the extra rewards, and the target's lines, for a
+-- hostile emergency.
 local function GetRewards(entry, hostile)
 	local members = {}
 
@@ -47,10 +50,11 @@ local function GetRewards(entry, hostile)
 	return { members = members, target = hostile and Lines(entry.TargetRewardsText) or {} }
 end
 
--- Returns the emergency choice: the next emergency that needs the player's attention. targetCity is
--- the city's name, as the popup looks it up. Returns nil with none to look at. The popup reads the emergency only from the
--- blocker's notification, so this reads it only while the blocker is up, as the spy choice must. See
--- OnEmergencyAvailable in WorldCrisisPopup.lua, lines 31 to 61.
+-- Returns the emergency choice: the next emergency that needs the player's
+-- attention. targetCity is the city's name, as the popup looks it up. Returns
+-- nil with none to look at. The popup reads the emergency only from the
+-- blocker's notification, so this reads it only while the blocker is up, as the
+-- spy choice must. See OnEmergencyAvailable in WorldCrisisPopup.lua.
 function SentientSystems_GetEmergencyChoices(player)
 	local playerID = player:GetID()
 

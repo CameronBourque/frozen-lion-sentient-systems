@@ -99,12 +99,14 @@ describe("SentientSystems_GetDiplomacyState", function()
 			return DiplomacyOf(playerID, players):match("\"turnsLeft\":(%d+)")
 		end
 
-		-- The other denounced at 74, and has the higher ID: 1 + 74 + 20 - 85 + 1.
+		-- The other denounced at 74, and has the higher ID: 1 + 74 + 20 - 85 +
+		-- 1.
 		assert.equal("11", TurnsLeft(0, 5, -1, 74))
-		-- The player denounced at 80, after the other at 74: 1 + 80 + 20 - 85, and no more
-		-- as the player has the lower ID.
+		-- The player denounced at 80, after the other at 74: 1 + 80 + 20 - 85,
+		-- and no more as the player has the lower ID.
 		assert.equal("16", TurnsLeft(0, 5, 80, 74))
-		-- With the player's ID higher, the player's later denouncement adds a turn.
+		-- With the player's ID higher, the player's later denouncement adds a
+		-- turn.
 		assert.equal("17", TurnsLeft(5, 0, 80, 74))
 	end)
 

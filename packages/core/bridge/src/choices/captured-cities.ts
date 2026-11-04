@@ -1,6 +1,7 @@
-// The schema for the captured city choice: what the player can do with the next city they captured,
-// as the raze screen offers it, and with the next city that rebelled to join them, as Rise and
-// Fall's disloyal city screen offers it. The core mod builds it in
+// The schema for the captured city choice: what the player can do with the next
+// city they captured, as the raze screen offers it, and with the next city that
+// rebelled to join them, as Rise and Fall's disloyal city screen offers it. The
+// core mod builds it in
 // Scripts/Choices/SentientSystemsCore_ChoicesCapturedCities.lua.
 
 import { z } from "zod";

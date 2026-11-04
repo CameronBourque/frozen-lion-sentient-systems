@@ -1,8 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns the resources section JSON for player 0, whose data is given, in a game with the rest of
--- world, with Gathering Storm when it has expansion2.
+-- Returns the resources section JSON for player 0, whose data is given, in a
+-- game with the rest of world, with Gathering Storm when it has expansion2.
 local function ResourcesWith(data, world)
 	local env = Game.new()
 	local setup = { players = { [0] = data, [4] = {} }, turn = 85, text = { LOC_CITY_NAME_ROME = "Rome" } }

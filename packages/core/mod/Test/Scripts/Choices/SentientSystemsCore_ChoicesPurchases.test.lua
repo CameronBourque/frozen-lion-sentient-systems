@@ -4,7 +4,8 @@ local Game = require("Game")
 local BUILDER = { type = "UNIT_BUILDER", cost = 100 }
 local CANT_AFFORD = "LOC_BUILDING_INSUFFICIENT_FUNDS"
 
--- Returns the purchase choice JSON for player 0, whose one city, Rome, can buy what purchases holds.
+-- Returns the purchase choice JSON for player 0, whose one city, Rome, can buy
+-- what purchases holds.
 local function PurchasesWith(purchases)
 	local env = Game.new()
 

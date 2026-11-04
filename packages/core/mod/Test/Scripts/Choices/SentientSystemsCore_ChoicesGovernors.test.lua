@@ -7,7 +7,8 @@ local CITIES = {
 	{ id = 393221, name = "Ostia", x = 3, y = 3, population = 4 },
 }
 
--- Reyna, established in Ostia, who can be promoted to Harbormaster but not yet to Tax Collector.
+-- Reyna, established in Ostia, who can be promoted to Harbormaster but not yet
+-- to Tax Collector.
 local REYNA = {
 	type = "GOVERNOR_THE_MERCHANT",
 	city = { owner = 0, id = 393221 },
@@ -20,9 +21,9 @@ local REYNA = {
 	},
 }
 
--- Returns the governor choice JSON for player 0, whose governors are given, or nil when it is left
--- out. options has met, the IDs player 0 has met, players, more players by ID, and world, more fields
--- of the world.
+-- Returns the governor choice JSON for player 0, whose governors are given, or
+-- nil when it is left out. options has met, the IDs player 0 has met, players,
+-- more players by ID, and world, more fields of the world.
 local function ChoicesWith(governors, options)
 	options = options or {}
 

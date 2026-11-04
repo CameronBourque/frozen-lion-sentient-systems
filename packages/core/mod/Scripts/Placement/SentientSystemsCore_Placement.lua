@@ -1,15 +1,16 @@
--- The placement tiles: where a city can place a district or a wonder, on tiles it owns or could buy,
--- with each district's adjacency bonus on each tile, as the placement view shows them when the
--- player picks one. The bridge reads them for one district or wonder at a time, in a call of their
--- own, and the production choice counts them. The UI script and the production choice load this
--- file. The shape is in bridge/src/placement/placement.ts. The calls follow
--- AdjacencyBonusSupport.lua.
+-- The placement tiles: where a city can place a district or a wonder, on tiles
+-- it owns or could buy, with each district's adjacency bonus on each tile, as
+-- the placement view shows them when the player picks one. The bridge reads
+-- them for one district or wonder at a time, in a call of their own, and the
+-- production choice counts them. The UI script and the production choice load
+-- this file. The shape is in bridge/src/placement/placement.ts. The calls
+-- follow AdjacencyBonusSupport.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 
--- Each yield, by its key in an adjacency bonus, and its name in YieldTypes. The keys are the same as
--- those of a city's yields in the state.
+-- Each yield, by its key in an adjacency bonus, and its name in YieldTypes. The
+-- keys are the same as those of a city's yields in the state.
 local YIELDS = {
 	culture = "CULTURE",
 	faith = "FAITH",
@@ -19,8 +20,9 @@ local YIELDS = {
 	science = "SCIENCE",
 }
 
--- Returns the tile at a plot index, with x and y. With a district's index, it adds the district's
--- adjacency bonus on the tile, by yield, when there is one, as the placement view shows it.
+-- Returns the tile at a plot index, with x and y. With a district's index, it
+-- adds the district's adjacency bonus on the tile, by yield, when there is one,
+-- as the placement view shows it.
 local function Tile(city, plotIndex, districtIndex)
 	local plot = Map.GetPlotByIndex(plotIndex)
 	local tile = { x = plot:GetX(), y = plot:GetY() }
@@ -44,12 +46,14 @@ local function Tile(city, plotIndex, districtIndex)
 	return tile
 end
 
--- Returns the tiles the city owns where a district or a wonder can go now, and the tiles it could
--- buy where it could go. param is the operation parameter that names it, and canHave(plot) checks a
--- tile the city could buy. districtIndex is nil for a wonder. See
--- GetCityRelatedPlotIndexesDistrictsAlternative and GetCityRelatedPlotIndexesWondersAlternative in
--- AdjacencyBonusSupport.lua. The panel shows a district's tile to buy only when it gives an
--- adjacency bonus, and this lists every one.
+-- Returns the tiles the city owns where a district or a wonder can go now, and
+-- the tiles it could buy where it could go. param is the operation parameter
+-- that names it, and canHave(plot) checks a tile the city could buy.
+-- districtIndex is nil for a wonder. See
+-- GetCityRelatedPlotIndexesDistrictsAlternative and
+-- GetCityRelatedPlotIndexesWondersAlternative in AdjacencyBonusSupport.lua. The
+-- panel shows a district's tile to buy only when it gives an adjacency bonus,
+-- and this lists every one.
 local function PlacementTiles(city, purchasable, param, hash, canHave, districtIndex)
 	local params = {}
 	local tiles, purchaseTiles = {}, {}
@@ -69,10 +73,10 @@ local function PlacementTiles(city, purchasable, param, hash, canHave, districtI
 	return tiles, purchaseTiles
 end
 
--- Returns the plot indexes of the tiles the city could buy, in index order. The panel asks for them
--- with the interface mode's plot purchase parameter, in AdjacencyBonusSupport.lua, lines 309 to 311.
--- Ask once for each city, and pass the list to SentientSystems_GetDistrictTiles and
--- SentientSystems_GetWonderTiles.
+-- Returns the plot indexes of the tiles the city could buy, in index order. The
+-- panel asks for them with the interface mode's plot purchase parameter, in
+-- AdjacencyBonusSupport.lua. Ask once for each city, and pass the list to
+-- SentientSystems_GetDistrictTiles and SentientSystems_GetWonderTiles.
 function SentientSystems_GetPurchasablePlots(city)
 	local params = {}
 	local plots = {}
@@ -88,26 +92,30 @@ function SentientSystems_GetPurchasablePlots(city)
 	return plots
 end
 
--- Returns the tiles the city owns where the district in row, a row of GameInfo.Districts, can go
--- now, and the tiles from purchasable where it could go, each with its adjacency bonus.
+-- Returns the tiles the city owns where the district in row, a row of
+-- GameInfo.Districts, can go now, and the tiles from purchasable where it could
+-- go, each with its adjacency bonus.
 function SentientSystems_GetDistrictTiles(city, purchasable, row)
 	return PlacementTiles(city, purchasable, CityOperationTypes.PARAM_DISTRICT_TYPE, row.Hash, function(plot)
 		return plot:CanHaveDistrict(row.Index, city:GetOwner(), city:GetID())
 	end, row.Index)
 end
 
--- Returns the tiles the city owns where the wonder in row, a row of GameInfo.Buildings, can go now,
--- and the tiles from purchasable where it could go.
+-- Returns the tiles the city owns where the wonder in row, a row of
+-- GameInfo.Buildings, can go now, and the tiles from purchasable where it could
+-- go.
 function SentientSystems_GetWonderTiles(city, purchasable, row)
 	return PlacementTiles(city, purchasable, CityOperationTypes.PARAM_BUILDING_TYPE, row.Hash, function(plot)
 		return plot:CanHaveWonder(row.Index, city:GetOwner(), city:GetID())
 	end)
 end
 
--- Returns the tiles where the city with ID cityID, of the player with ID playerID, can place the
--- district or the wonder typeName, such as DISTRICT_CAMPUS, as JSON. Raises an error for an ID with
--- no player or city, and for a type that isn't a district or a wonder. The bridge reads it through
--- the stash, as SentientSystems_Stash(SentientSystems_GetPlacement(playerID, cityID, typeName)).
+-- Returns the tiles where the city with ID cityID, of the player with ID
+-- playerID, can place the district or the wonder typeName, as JSON. Raises an
+-- error for an ID with no player or city, and for a type that isn't a district
+-- or a wonder. The bridge reads it through the stash, as
+-- SentientSystems_Stash(SentientSystems_GetPlacement(playerID, cityID,
+-- typeName)).
 function SentientSystems_GetPlacement(playerID, cityID, typeName)
 	local player = Players[playerID]
 

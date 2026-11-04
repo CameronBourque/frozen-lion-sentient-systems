@@ -1,7 +1,5 @@
--- Resources. A city-state's minor.resources, each with type, amount, exported, and perTurn, which
--- only Gathering Storm reads, and a major player's resources, each with type, class, amount, the
--- stockpile, cap, reserved, unitDemand, powerDemand, imported, perTurn, cities, and allocation,
--- get rows. A player's hiddenResources lists the resource types its techs don't reveal yet.
+-- Resources. Fakes the resources a city-state has and a major player owns, and
+-- the ones its techs don't reveal yet.
 
 return function(env, world, ctx)
 	local AddRow, hashes, indexes = ctx.AddRow, ctx.hashes, ctx.indexes
@@ -31,8 +29,8 @@ return function(env, world, ctx)
 			hidden[hashes[typeName]] = true
 		end
 
-		-- The resources a city-state has, from data.minor.resources, each with amount, exported,
-		-- and perTurn, which only Gathering Storm reads.
+		-- The resources a city-state has, from data.minor.resources, each with
+		-- amount, exported, and perTurn, which only Gathering Storm reads.
 		player.GetResources = function()
 			local owned = {}
 
@@ -64,10 +62,12 @@ return function(env, world, ctx)
 				end
 			end
 
-			-- A major player's resources, from data.resources, each with type, class, amount, the stockpile,
-			-- cap, reserved, unitDemand, powerDemand, imported, and perTurn, which are 0 when missing,
-			-- cities, a city ID to the amount it extracts, and allocation, a city ID to the amount it gets. A
-			-- resource is found by its index, its hash, or its type.
+			-- A major player's resources, from data.resources, each with type,
+			-- class, amount, the stockpile, cap, reserved, unitDemand,
+			-- powerDemand, imported, and perTurn, which are 0 when missing,
+			-- cities, a city ID to the amount it extracts, and allocation, a
+			-- city ID to the amount it gets. A resource is found by its index,
+			-- its hash, or its type.
 			local mine = data.resources or {}
 
 			local function Find(key)
@@ -100,7 +100,8 @@ return function(env, world, ctx)
 				return cities
 			end
 
-			-- Whether a plot's resource can be extracted, from the tile's extractable.
+			-- Whether a plot's resource can be extracted, from the tile's
+			-- extractable.
 			function resources.IsResourceExtractableAt(_, plot)
 				return plot.extractable == true
 			end

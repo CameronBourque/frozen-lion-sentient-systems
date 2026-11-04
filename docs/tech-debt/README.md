@@ -6,5 +6,4 @@ The table lists the files in the order to work on them. A later debt can depend 
 
 | File | Debt |
 | --- | --- |
-| [comment-cleanup.md](comment-cleanup.md) | Older comments break the comment rules, and no lint rule stops new ones |
 | [feature-touch-points.md](feature-touch-points.md) | A new state section or choice touches 12 places |

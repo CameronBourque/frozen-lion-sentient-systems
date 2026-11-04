@@ -8,7 +8,8 @@ local BELIEFS = {
 	{ type = "BELIEF_SACRED_PATH", description = "LOC_BELIEF_SACRED_PATH_DESCRIPTION" },
 }
 
--- Returns the pantheon choice JSON for player 0, whose data is given, or nil when it is left out.
+-- Returns the pantheon choice JSON for player 0, whose data is given, or nil
+-- when it is left out.
 local function PantheonWith(player)
 	local env = Game.new()
 
@@ -56,8 +57,8 @@ local RELIGIONS = {
 	{ type = "RELIGION_CUSTOM", customName = true },
 }
 
--- Returns the religion choice JSON for player 0, whose data is given, in a world with the fields in
--- worldFields, or nil when it is left out.
+-- Returns the religion choice JSON for player 0, whose data is given, in a
+-- world with the fields in worldFields, or nil when it is left out.
 local function ReligionWith(player, worldFields)
 	local env = Game.new()
 	local world = { players = { [0] = player }, beliefs = RELIGION_BELIEFS, religions = RELIGIONS }

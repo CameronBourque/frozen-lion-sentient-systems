@@ -1,8 +1,9 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns the emergency choice JSON for player 0, or nil when it is left out, with the emergencies
--- given as the player's and its blockers, the emergency blocker when missing.
+-- Returns the emergency choice JSON for player 0, or nil when it is left out,
+-- with the emergencies given as the player's and its blockers, the emergency
+-- blocker when missing.
 local function ChoicesWith(emergencies, blockers)
 	local env = Game.new()
 
@@ -15,7 +16,8 @@ local function ChoicesWith(emergencies, blockers)
 	return env.SentientSystems_GetChoices(0):match("\"emergencies\":(%b[])")
 end
 
--- Returns a hostile emergency against player 9 that hasn't begun, with any field given.
+-- Returns a hostile emergency against player 9 that hasn't begun, with any
+-- field given.
 local function Emergency(extra)
 	local emergency = {
 		type = "EMERGENCY_CAPTURE_CITY_STATE",

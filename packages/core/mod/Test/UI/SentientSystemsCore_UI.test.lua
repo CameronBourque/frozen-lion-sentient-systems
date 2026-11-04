@@ -4,7 +4,8 @@ local MOD_ID = "5D4B5856-E71F-492C-A434-A0938AF49451"
 
 local env
 
--- A player with an ID, whether a human plays it, and whether its turn is active.
+-- A player with an ID, whether a human plays it, and whether its turn is
+-- active.
 local function Player(id, isHuman, isTurnActive)
 	return {
 		GetID = function()

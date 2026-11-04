@@ -1,11 +1,5 @@
--- Techs and civics. A player's techs has current, the tech in research, and options, the techs the
--- player knows, each with type, cost, turns, progress, boost, with percent, trigger, and triggered,
--- unlocks, description, a text key, recommended, locked, which CanResearch refuses, and for the tech
--- tree, era, which is ERA_ANCIENT when missing, researched, hidden, which IsTechRevealed refuses, and
--- prerequisites, by type. techs.turnsLeft is what GetTurnsLeft returns. A player's civics has the
--- same, with civic types. The player's science and its tooltip are here, and its culture is in
--- FakeGame/TopBar.lua. Governments and policies are in FakeGame/Governments.lua, which is registered after
--- this file.
+-- Techs and civics. Fakes a player's research, boosts, and tech tree, and its
+-- science. FakeGame/TopBar.lua holds its culture.
 
 return function(env, world, ctx)
 	local AddRow, indexes, hashes = ctx.AddRow, ctx.indexes, ctx.hashes
@@ -14,9 +8,9 @@ return function(env, world, ctx)
 	env.GameInfo.Civics = ctx.TypedRows({}, "CivicType")
 	env.GameInfo.Boosts = ctx.TypedRows({}, "TechnologyType")
 
-	-- Each tech and civic gets a row, a hash, and a boost row when it has a boost. The game's
-	-- GetUnlockablesForTech and GetUnlockablesForCivic return what one unlocks as { type, name, key }
-	-- rows.
+	-- Each tech and civic gets a row, a hash, and a boost row when it has a
+	-- boost. The game's GetUnlockablesForTech and GetUnlockablesForCivic return
+	-- what one unlocks as { type, name, key } rows.
 	local unlocksByType = {}
 
 	for _, data in pairs(world.players or {}) do
@@ -57,8 +51,9 @@ return function(env, world, ctx)
 	env.GetUnlockablesForTech = UnlockRows
 	env.GetUnlockablesForCivic = UnlockRows
 
-	-- Returns the nodes of a tree from player 0's techs or civics, in order, with their type in
-	-- nameField, Name for a tech and CivicName for a civic, and their prerequisites in field.
+	-- Returns the nodes of a tree from player 0's techs or civics, in order,
+	-- with their type in nameField, Name for a tech and CivicName for a civic,
+	-- and their prerequisites in field.
 	local function TreeNodes(key, nameField, field)
 		local nodes = {}
 		local options = (((world.players or {})[0] or {})[key] or {}).options or {}

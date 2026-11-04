@@ -96,7 +96,8 @@ describe("SentientSystems_GetUnitStates", function()
 end)
 
 describe("SentientSystems_GetHealth", function()
-	-- Returns an environment with the state script loaded, where the helper lives.
+	-- Returns an environment with the state script loaded, where the helper
+	-- lives.
 	local function Load()
 		local env = Game.new()
 

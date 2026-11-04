@@ -1,6 +1,6 @@
-// The schema for the envoys section of the state: the player's envoys and influence, and each met
-// city-state, as the City-States screen shows them. The core mod builds it in
-// Scripts/State/SentientSystemsCore_StateEnvoys.lua.
+// The schema for the envoys section of the state: the player's envoys and
+// influence, and each met city-state, as the City-States screen shows them. The
+// core mod builds it in Scripts/State/SentientSystemsCore_StateEnvoys.lua.
 
 import { z } from "zod";
 

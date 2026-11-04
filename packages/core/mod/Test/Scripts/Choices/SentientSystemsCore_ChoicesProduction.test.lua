@@ -3,7 +3,8 @@ local Game = require("Game")
 
 local SETTLER = { type = "UNIT_SETTLER", cost = 40, turns = 6 }
 
--- Returns the production choice JSON for player 0, whose one city, Rome, has the given unit options.
+-- Returns the production choice JSON for player 0, whose one city, Rome, has
+-- the given unit options.
 local function ProductionWith(units)
 	local env = Game.new()
 
@@ -93,8 +94,8 @@ end)
 
 local GRANARY = { type = "BUILDING_GRANARY", district = "DISTRICT_CITY_CENTER", cost = 32, turns = 5 }
 
--- Returns the buildings in the production choice JSON for player 0, whose one city, Rome, has the
--- given building options and production.
+-- Returns the buildings in the production choice JSON for player 0, whose one
+-- city, Rome, has the given building options and production.
 local function BuildingsWith(buildings, production)
 	local env = Game.new()
 
@@ -155,8 +156,8 @@ end)
 
 local CAMPUS = { type = "DISTRICT_CAMPUS", cost = 29, turns = 6, tiles = { { x = 17, y = 13 } } }
 
--- Returns a key in the production choice JSON for player 0, whose one city, Rome, has the given
--- options and districts.
+-- Returns a key in the production choice JSON for player 0, whose one city,
+-- Rome, has the given options and districts.
 local function ChoiceWith(key, options, districts)
 	local env = Game.new()
 

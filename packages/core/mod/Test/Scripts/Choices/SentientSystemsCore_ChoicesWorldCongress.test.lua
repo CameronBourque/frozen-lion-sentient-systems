@@ -15,8 +15,8 @@ local TEXT = {
 	LOC_DIPLOPANEL_UNMET_PLAYER = "Unmet",
 }
 
--- Returns the World Congress choice JSON for player 0, or nil when it is left out, with the congress
--- and blockers given.
+-- Returns the World Congress choice JSON for player 0, or nil when it is left
+-- out, with the congress and blockers given.
 local function ChoicesWith(congress, blockers, extra)
 	local env = Game.new()
 	local player = { favor = 196, met = { 1 }, playerName = "LOC_LEADER_TRAJAN_NAME", blockers = blockers }

@@ -1,12 +1,13 @@
--- The religion choices: the pantheon beliefs the player can found a pantheon with, as the pantheon
--- chooser lists them, and the religions and beliefs the player can found a religion with or add to
--- it, as the religion screen lists them. SentientSystemsCore_Choices.lua loads this file. The
--- shapes are in bridge/src/choices/religion.ts. The checks follow PantheonChooser.lua and
+-- The religion choices: the pantheon beliefs the player can found a pantheon
+-- with, as the pantheon chooser lists them, and the religions and beliefs the
+-- player can found a religion with or add to it, as the religion screen lists
+-- them. SentientSystemsCore_Choices.lua loads this file. The shapes are in
+-- bridge/src/choices/religion.ts. The checks follow PantheonChooser.lua and
 -- ReligionScreen.lua.
 
--- Returns the pantheon choice. Returns nil unless the player can found a pantheon now, as the
--- launch bar opens the chooser only then. See Realize and CanSelectBelief in
--- PantheonChooser.lua, lines 23 to 72, and LaunchBar.lua, lines 136 to 140.
+-- Returns the pantheon choice. Returns nil unless the player can found a
+-- pantheon now, as the launch bar opens the chooser only then. See Realize and
+-- CanSelectBelief in PantheonChooser.lua, and LaunchBar.lua.
 function SentientSystems_GetPantheonChoices(player)
 	local religion = player:GetReligion()
 
@@ -29,7 +30,8 @@ function SentientSystems_GetPantheonChoices(player)
 	return { beliefs = beliefs }
 end
 
--- Returns the beliefs the founder of a religion has added to it, or none before they found one.
+-- Returns the beliefs the founder of a religion has added to it, or none before
+-- they found one.
 local function CountBeliefs(playerID)
 	for _, entry in ipairs(Game.GetReligion():GetReligions()) do
 		if entry.Founder == playerID then
@@ -40,8 +42,8 @@ local function CountBeliefs(playerID)
 	return 0
 end
 
--- Returns the religions that no player has founded, in the game's order. See ChooseReligion in ReligionScreen.lua, lines
--- 604 to 688.
+-- Returns the religions that no player has founded, in the game's order. See
+-- ChooseReligion in ReligionScreen.lua.
 local function GetReligionOptions()
 	local gameReligion = Game.GetReligion()
 	local canRename = GameCapabilities.HasCapability("CAPABILITY_RENAME")
@@ -56,10 +58,10 @@ local function GetReligionOptions()
 	return religions
 end
 
--- Returns the beliefs the screen offers for the player's religion: those that aren't pantheon
--- beliefs, that no player has taken, and of which the religion doesn't have too many, ordered by
--- class as the screen orders them. See
--- PopulateAvailableBeliefs in ReligionScreen.lua, lines 446 to 486.
+-- Returns the beliefs the screen offers for the player's religion: those that
+-- aren't pantheon beliefs, that no player has taken, and of which the religion
+-- doesn't have too many, ordered by class as the screen orders them. See
+-- PopulateAvailableBeliefs in ReligionScreen.lua.
 local function GetBeliefOptions(religionType)
 	local gameReligion = Game.GetReligion()
 	local rows = {}
@@ -74,8 +76,8 @@ local function GetBeliefOptions(religionType)
 		end
 	end
 
-	-- The screen sorts by class, from the last name to the first, and keeps no order within a class,
-	-- so the game's order breaks ties.
+	-- The screen sorts by class, from the last name to the first, and keeps no
+	-- order within a class, so the game's order breaks ties.
 	table.sort(rows, function(a, b)
 		if a.BeliefClassType ~= b.BeliefClassType then
 			return a.BeliefClassType > b.BeliefClassType
@@ -93,10 +95,11 @@ local function GetBeliefOptions(religionType)
 	return beliefs
 end
 
--- Returns the religion choice. In one round the player picks at most one belief of each class, and
--- the first belief of a new religion is a follower belief. Returns nil unless the screen offers a
--- religion or beliefs: after the pantheon, with more beliefs earned than the religion has. See ViewMyReligion in ReligionScreen.lua,
--- lines 308 to 336, and OnBeliefSelected, lines 488 to 500.
+-- Returns the religion choice. In one round the player picks at most one belief
+-- of each class, and the first belief of a new religion is a follower belief.
+-- Returns nil unless the screen offers a religion or beliefs: after the
+-- pantheon, with more beliefs earned than the religion has. See ViewMyReligion
+-- in ReligionScreen.lua, and OnBeliefSelected.
 function SentientSystems_GetReligionChoices(player)
 	local religion = player:GetReligion()
 	local picks = religion:GetNumBeliefsEarned() - CountBeliefs(player:GetID())

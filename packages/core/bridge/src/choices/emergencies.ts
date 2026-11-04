@@ -1,7 +1,8 @@
-// The schema for the emergency choice: the emergency the player has to look at, as the emergency
-// popup offers it. The core mod builds it in Scripts/Choices/SentientSystemsCore_ChoicesEmergencies.lua.
-// Checked in a running game against the popup of an ongoing emergency. The blocker's own case,
-// with join and reject, hasn't been seen.
+// The schema for the emergency choice: the emergency the player has to look at,
+// as the emergency popup offers it. The core mod builds it in
+// Scripts/Choices/SentientSystemsCore_ChoicesEmergencies.lua. Checked in a
+// running game against the popup of an ongoing emergency. The blocker's own
+// case, with join and reject, hasn't been seen.
 
 import { z } from "zod";
 

@@ -1,10 +1,12 @@
--- The tech and civic choices: the techs and civics the player can research now, as the research and
--- civics choosers list them. SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/research.ts. The checks follow GetData in ResearchChooser.lua and
--- CivicsChooser.lua, and GetResearchData and GetCivicData in TechAndCivicSupport.lua.
+-- The tech and civic choices: the techs and civics the player can research now,
+-- as the research and civics choosers list them.
+-- SentientSystemsCore_Choices.lua loads this file. The shape is in
+-- bridge/src/choices/research.ts. The checks follow GetData in
+-- ResearchChooser.lua and CivicsChooser.lua, and GetResearchData and
+-- GetCivicData in TechAndCivicSupport.lua.
 
--- The game's calls for techs and for civics. Each reads from the player's store: GetTechs for techs,
--- and GetCulture for civics.
+-- The game's calls for techs and for civics. Each reads from the player's
+-- store: GetTechs for techs, and GetCulture for civics.
 local KINDS = {
 	tech = {
 		rows = function()
@@ -33,8 +35,8 @@ local KINDS = {
 			return strategicAI:GetTechRecommendations()
 		end,
 		hashField = "TechHash",
-		-- The game's function from TechAndCivicUnlockables.lua, read when it is called, as the file
-		-- may load later.
+		-- The game's function from TechAndCivicUnlockables.lua, read when it is
+		-- called, as the file may load later.
 		unlocksFunction = function()
 			return GetUnlockablesForTech
 		end,
@@ -72,10 +74,10 @@ local KINDS = {
 	},
 }
 
--- Returns the boost of a tech or civic, with its percent of the cost, the text of its trigger, and
--- whether it has been triggered, or nil for one with no boost. A row of GameInfo.Boosts names a tech
--- in TechnologyType, or a civic in CivicType. See GetResearchData and GetCivicData in
--- TechAndCivicSupport.lua, lines 550 to 557 and 667 to 674.
+-- Returns the boost of a tech or civic, with its percent of the cost, the text
+-- of its trigger, and whether it has been triggered, or nil for one with no
+-- boost. A row of GameInfo.Boosts names a tech in TechnologyType, or a civic in
+-- CivicType. See GetResearchData and GetCivicData in TechAndCivicSupport.lua.
 local function Boost(kind, store, row)
 	for boost in GameInfo.Boosts() do
 		if boost[kind.typeColumn] == row[kind.typeColumn] then
@@ -88,8 +90,8 @@ local function Boost(kind, store, row)
 	end
 end
 
--- Returns a set of the hashes the game's advisor recommends, as the choosers mark them. See GetData
--- in ResearchChooser.lua, lines 56 to 61, and in CivicsChooser.lua, lines 54 to 58.
+-- Returns a set of the hashes the game's advisor recommends, as the choosers
+-- mark them. See GetData in ResearchChooser.lua, and in CivicsChooser.lua.
 local function Recommended(kind, player)
 	local hashes = {}
 	local strategicAI = player:GetGrandStrategicAI()
@@ -101,11 +103,13 @@ local function Recommended(kind, player)
 	return hashes
 end
 
--- Returns a function that lists what a tech or civic unlocks, by type, with the game's own
--- GetUnlockablesForTech or GetUnlockablesForCivic from TechAndCivicUnlockables.lua, which the
--- choosers draw as icons. For techs, the list of the player's unlockable items is built once, as it
--- is slow to build. Without the file, the function returns nil, and nothing has unlocks. The game's
--- UI states have no _G, so each kind returns its function in place of naming it.
+-- Returns a function that lists what a tech or civic unlocks, by type, with the
+-- game's own GetUnlockablesForTech or GetUnlockablesForCivic from
+-- TechAndCivicUnlockables.lua, which the choosers draw as icons. For techs, the
+-- list of the player's unlockable items is built once, as it is slow to build.
+-- Without the file, the function returns nil, and nothing has unlocks. The
+-- game's UI states have no _G, so each kind returns its function in place of
+-- naming it.
 local function UnlocksReader(kind, playerID)
 	if kind.unlocksFunction() == nil then
 		include("TechAndCivicUnlockables")
@@ -132,9 +136,10 @@ local function UnlocksReader(kind, playerID)
 	end
 end
 
--- Returns a reader of the player's techs or civics, by kind, "tech" or "civic". reader.store is the
--- player's store, reader.current the index of the one in research, or -1, and reader.Option(row)
--- returns a row's option, as the choosers show it. The tech and civic trees use it too.
+-- Returns a reader of the player's techs or civics, by kind, "tech" or "civic".
+-- reader.store is the player's store, reader.current the index of the one in
+-- research, or -1, and reader.Option(row) returns a row's option, as the
+-- choosers show it. The tech and civic trees use it too.
 function SentientSystems_GetResearchReader(kindName, player)
 	local kind = KINDS[kindName]
 	local store = kind.store(player)
@@ -156,10 +161,11 @@ function SentientSystems_GetResearchReader(kindName, player)
 			option.progress = progress
 		end
 
-		-- The choosers draw the description as one more unlock icon, a star, with the text as its
-		-- tooltip. See PopulateUnlockablesForTech and PopulateUnlockablesForCivic in
-		-- TechAndCivicSupport.lua, lines 391 to 412 and 310 to 331. The civics chooser leaves out the
-		-- star for some civics, which show an icon for an envoy or a governor title in its place.
+		-- The choosers draw the description as one more unlock icon, a star,
+		-- with the text as its tooltip. See PopulateUnlockablesForTech and
+		-- PopulateUnlockablesForCivic in TechAndCivicSupport.lua. The civics
+		-- chooser leaves out the star for some civics, which show an icon for
+		-- an envoy or a governor title in its place.
 		if row.Description ~= nil then
 			option.description = Locale.Lookup(row.Description)
 		end
@@ -174,9 +180,9 @@ function SentientSystems_GetResearchReader(kindName, player)
 	return reader
 end
 
--- Returns a list of the techs or civics the player can research now, and the one in research, in
--- the game's order. See GetData in ResearchChooser.lua, lines 66 to 96, and in CivicsChooser.lua,
--- lines 63 to 93.
+-- Returns a list of the techs or civics the player can research now, and the
+-- one in research, in the game's order. See GetData in ResearchChooser.lua, and
+-- in CivicsChooser.lua.
 local function GetResearchChoices(kindName, player)
 	local reader = SentientSystems_GetResearchReader(kindName, player)
 	local options = {}
@@ -196,12 +202,14 @@ local function GetResearchChoices(kindName, player)
 	return options
 end
 
--- Returns a list of the techs the player can research now, and the tech in research.
+-- Returns a list of the techs the player can research now, and the tech in
+-- research.
 function SentientSystems_GetTechChoices(player)
 	return GetResearchChoices("tech", player)
 end
 
--- Returns a list of the civics the player can research now, and the civic in research.
+-- Returns a list of the civics the player can research now, and the civic in
+-- research.
 function SentientSystems_GetCivicChoices(player)
 	return GetResearchChoices("civic", player)
 end

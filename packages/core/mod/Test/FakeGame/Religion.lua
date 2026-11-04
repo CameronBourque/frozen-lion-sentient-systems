@@ -1,12 +1,5 @@
--- Religion. world.beliefs lists the ruleset's beliefs, each with type, class, BELIEF_CLASS_PANTHEON when
--- missing, description, and taken, true when a player's pantheon or religion holds it. A player's
--- pantheon is its belief type, and canCreatePantheon is true when it can found one. A player's
--- religion is the religion it founded, with type, name, beliefs, by type, and holyCity, a city ID,
--- beliefsEarned the beliefs it has earned, and prophet is true when it has a Great Prophet. A city's religions lists the religions
--- in it, each with type and followers, and majority is its majority religion's type.
--- world.pantheonFaith is the faith the next pantheon needs, 25 when missing. world.religions lists
--- more religions, each with type, pantheon, customName, and founded. A belief's tooMany is true
--- when a religion has too many of its class. The player's faith store is in FakeGame/Stores.lua.
+-- Religion. Fakes the ruleset's beliefs, a player's pantheon and religion, and
+-- the religions in a city. FakeGame/Stores.lua holds the faith store.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes
@@ -38,8 +31,8 @@ return function(env, world, ctx)
 		row.founded = religion.founded
 	end
 
-	-- Each religion that a player founded or a city holds gets a row, with its name, and each of a
-	-- founded religion's beliefs a belief row.
+	-- Each religion that a player founded or a city holds gets a row, with its
+	-- name, and each of a founded religion's beliefs a belief row.
 	for _, data in pairs(world.players or {}) do
 		local religions = { data.religion }
 
@@ -62,8 +55,9 @@ return function(env, world, ctx)
 	end
 
 	ctx.OnCity(function(city, data)
-		-- The religions in the city, from data.religions, each with type and followers, and the
-		-- majority religion, from data.majority, by their GameInfo indexes.
+		-- The religions in the city, from data.religions, each with type and
+		-- followers, and the majority religion, from data.majority, by their
+		-- GameInfo indexes.
 		city.GetReligion = function()
 			return {
 				GetMajorityReligion = function()
@@ -88,7 +82,8 @@ return function(env, world, ctx)
 		function player.GetReligion()
 			local religion = GetReligion()
 
-			-- The index of the player's pantheon belief, from data.pantheon, or -1 for none.
+			-- The index of the player's pantheon belief, from data.pantheon, or
+			-- -1 for none.
 			function religion.GetPantheon()
 				return data.pantheon and indexes[data.pantheon] or -1
 			end
@@ -97,8 +92,9 @@ return function(env, world, ctx)
 				return data.canCreatePantheon == true
 			end
 
-			-- The religion the player founded, from data.religion, with type and holyCity, a city ID.
-			-- The beliefs earned come from data.beliefsEarned, the count of its beliefs when missing.
+			-- The religion the player founded, from data.religion, with type
+			-- and holyCity, a city ID. The beliefs earned come from
+			-- data.beliefsEarned, the count of its beliefs when missing.
 			local founded = data.religion or {}
 
 			function religion.GetReligionTypeCreated()
@@ -121,7 +117,8 @@ return function(env, world, ctx)
 		end
 	end)
 
-	-- Whether any player's pantheon or religion holds a belief, from each belief's taken.
+	-- Whether any player's pantheon or religion holds a belief, from each
+	-- belief's taken.
 	env.Game.GetReligion = function()
 		local function IsTaken(_, index)
 			return env.GameInfo.Beliefs[index].taken == true
@@ -142,7 +139,8 @@ return function(env, world, ctx)
 			GetName = function(_, index)
 				return env.GameInfo.Religions[index].Name
 			end,
-			-- Each founded religion, with its index, founder, and belief indexes.
+			-- Each founded religion, with its index, founder, and belief
+			-- indexes.
 			GetReligions = function()
 				local religions = {}
 

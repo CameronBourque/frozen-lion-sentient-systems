@@ -28,8 +28,8 @@ local function With(person, changes)
 	return copy
 end
 
--- Returns the great people section JSON for player 0, in a world with the great people and players
--- given, and the world fields in extra.
+-- Returns the great people section JSON for player 0, in a world with the great
+-- people and players given, and the world fields in extra.
 local function GreatPeopleWith(greatPeople, players, extra)
 	local env = Game.new()
 	local world = { greatPeople = greatPeople, players = players or { [0] = {} }, text = { LOC_GREAT_PERSON_INDIVIDUAL_SUN_TZU_NAME = "Sun Tzu" } }

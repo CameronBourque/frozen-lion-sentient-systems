@@ -1,6 +1,6 @@
-// The schema for the artifact choice: whose artifact the player's next digging archaeologist
-// uncovers, as the artifact screen offers it. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua.
+// The schema for the artifact choice: whose artifact the player's next digging
+// archaeologist uncovers, as the artifact screen offers it. The core mod builds
+// it in Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua.
 
 import { z } from "zod";
 

@@ -1,13 +1,15 @@
-// The phase 0 gate: it lists your cities and units from the bridge, checks a move into deep water,
-// and moves one unit, following the method in docs/findings/game-api.md. It prints each call, the
-// Lua state it ran in, and what came back, for the results table there. Run it with `npm run gate`,
-// with a game loaded and the core mod on. Options: `--unit <id>` picks the unit to move,
-// `--end-turn` ends the turn after the move and waits for the next turn signal, `--read-only` prints
-// the turn, cities, and units and stops before any move, for the online test in
-// docs/findings/multiplayer.md, and `--port <port>` sets another port, such as
-// `npm run gate -- --unit 131073 --end-turn`. In PowerShell, write the
-// `--` as `'--'`, as docs/rules/code.md says. Throwaway code: this file goes when the phase 1
-// action API does the same from the bridge executable, as docs/roadmap/phase-1/README.md says.
+// The phase 0 gate: it lists your cities and units from the bridge, checks a
+// move into deep water, and moves one unit, following the method in
+// docs/findings/game-api.md. It prints each call, the Lua state it ran in, and
+// what came back, for the results table there. Run it with `npm run gate`, with
+// a game loaded and the core mod on. Options: `--unit <id>` picks the unit to
+// move, `--end-turn` ends the turn after the move and waits for the next turn
+// signal, `--read-only` prints the turn, cities, and units and stops before any
+// move, for the online test in docs/findings/multiplayer.md, and `--port
+// <port>` sets another port, such as `npm run gate -- --unit 131073
+// --end-turn`. In PowerShell, write the `--` as `'--'`, as docs/rules/code.md
+// says. Throwaway code: this file goes when the phase 1 action API does the
+// same from the bridge executable, as docs/roadmap/phase-1/README.md says.
 
 import { once } from "node:events";
 import { parseArgs } from "node:util";
@@ -24,17 +26,20 @@ const warn = (text: string): void => logger.warn("gate", text);
 
 // The read-only gameplay state, for comparing what it sees with the UI state.
 const GAMEPLAY_STATE = "GameCore_Tuner";
-// The base UI's state, where the move is tried again if the core mod's state can't move the unit.
+// The base UI's state, where the move is tried again if the core mod's state
+// can't move the unit.
 const FALLBACK_STATE = "InGame";
-// A move may finish after RequestOperation returns, so the position is read a few times.
+// A move may finish after RequestOperation returns, so the position is read a
+// few times.
 const POSITION_READS = 5;
 const POSITION_WAIT_MS = 1_000;
-// The AI turns run between the request and the next turn signal, and they get slower as a game
-// goes on.
+// The AI turns run between the request and the next turn signal, and they get
+// slower as a game goes on.
 const NEXT_TURN_TIMEOUT_MS = 5 * 60_000;
 
-// Prints the turn number, whether the UI says the turn can end, and the first end-turn blocker by
-// name, such as ENDTURN_BLOCKING_RESEARCH. ActionPanel.lua checks the blocker before it ends a turn.
+// Prints the turn number, whether the UI says the turn can end, and the first
+// end-turn blocker by name, such as ENDTURN_BLOCKING_RESEARCH. ActionPanel.lua
+// checks the blocker before it ends a turn.
 const TURN_STATE_LUA = `
 	local blocker = NotificationManager.GetFirstEndTurnBlocking(Game.GetLocalPlayer())
 	local blockerName = tostring(blocker)
@@ -43,7 +48,8 @@ const TURN_STATE_LUA = `
 	end
 	print("turn", Game.GetCurrentGameTurn(), "can end", tostring(UI.CanEndTurn()), "blocker", blockerName)`;
 
-// The move's parameters, as MoveUnitToPlot in Base/Assets/UI/Civ6Common.lua builds them.
+// The move's parameters, as MoveUnitToPlot in Base/Assets/UI/Civ6Common.lua
+// builds them.
 const MOVE_PARAMS = `
 	local function MoveParams(x, y)
 		local params = {}
@@ -72,8 +78,8 @@ const { values } = parseArgs({
 });
 const client = new TunerClient({ port: Number(values.port) });
 
-// Runs Lua in a state and prints what it printed, one line each. A failure prints a warning and
-// returns no lines, so the later steps still run.
+// Runs Lua in a state and prints what it printed, one line each. A failure
+// prints a warning and returns no lines, so the later steps still run.
 async function step(label: string, state: string, lua: string): Promise<string[]> {
 	log(`${label}, in ${state}`);
 
@@ -94,8 +100,9 @@ async function step(label: string, state: string, lua: string): Promise<string[]
 	}
 }
 
-// Prints "id, name, x, y, population" for each of the player's cities, tab-separated. Gameplay
-// states may have no Locale, so the name stays a text key there.
+// Prints "id, name, x, y, population" for each of the player's cities,
+// tab-separated. Gameplay states may have no Locale, so the name stays a text
+// key there.
 function citiesLua(playerId: number): string {
 	return `
 		for _, city in Players[${playerId}]:GetCities():Members() do
@@ -105,8 +112,9 @@ function citiesLua(playerId: number): string {
 		end`;
 }
 
-// Prints "id, type, x, y, moves left" for each of the player's units on the map, tab-separated.
-// Units off the map, such as one inside a transport, have an X of -9999.
+// Prints "id, type, x, y, moves left" for each of the player's units on the
+// map, tab-separated. Units off the map, such as one inside a transport, have
+// an X of -9999.
 function unitsLua(playerId: number): string {
 	return `
 		for _, unit in Players[${playerId}]:GetUnits():Members() do
@@ -118,9 +126,10 @@ function unitsLua(playerId: number): string {
 		end`;
 }
 
-// Finds the deep-water tile nearest the unit and checks a move there twice: the plain check, which
-// returns a boolean, and the form with true as a fifth argument, which civ6-mcp reads a reason
-// table from. Prints each result, every field of the table, and whether the tile is reachable.
+// Finds the deep-water tile nearest the unit and checks a move there twice: the
+// plain check, which returns a boolean, and the form with true as a fifth
+// argument, which civ6-mcp reads a reason table from. Prints each result, every
+// field of the table, and whether the tile is reachable.
 function negativeLua(playerId: number, unitId: number): string {
 	return `${MOVE_PARAMS}
 		local unit = UnitManager.GetUnit(${playerId}, ${unitId})
@@ -151,8 +160,9 @@ function negativeLua(playerId: number, unitId: number): string {
 		end`;
 }
 
-// Moves the unit to the first adjacent tile that it can reach and that passes the check, and prints
-// "target x y" before the request. Prints "no target" if no adjacent tile qualifies.
+// Moves the unit to the first adjacent tile that it can reach and that passes
+// the check, and prints "target x y" before the request. Prints "no target" if
+// no adjacent tile qualifies.
 function moveLua(playerId: number, unitId: number): string {
 	return `${MOVE_PARAMS}
 		local unit = UnitManager.GetUnit(${playerId}, ${unitId})
@@ -187,8 +197,8 @@ function fields(line: string | undefined): string[] {
 	return line?.split("\t") ?? [];
 }
 
-// Requests the move from one state, then reads the position until the unit is on the target.
-// Returns whether it got there.
+// Requests the move from one state, then reads the position until the unit is
+// on the target. Returns whether it got there.
 async function move(state: string, playerId: number, unitId: number): Promise<boolean> {
 	const lines = await step("Move", state, moveLua(playerId, unitId));
 	const [, x, y] = fields(lines.find((line) => line.startsWith("target")));
@@ -215,8 +225,8 @@ async function move(state: string, playerId: number, unitId: number): Promise<bo
 	return false;
 }
 
-// Ends the turn from the core mod's state, and waits for the player's next turn signal. Returns
-// whether it came.
+// Ends the turn from the core mod's state, and waits for the player's next turn
+// signal. Returns whether it came.
 async function endTurn(playerId: number): Promise<boolean> {
 	await step("Turn state", CORE_STATE, TURN_STATE_LUA);
 
@@ -273,8 +283,8 @@ await step("Cities", GAMEPLAY_STATE, citiesLua(playerId));
 await step("Cities", CORE_STATE, citiesLua(playerId));
 const units = await step("Units", CORE_STATE, unitsLua(playerId));
 
-// An action in an online game can cause a desync, so a read-only run stops before the checks and
-// the move, and never ends the turn.
+// An action in an online game can cause a desync, so a read-only run stops
+// before the checks and the move, and never ends the turn.
 if (values["read-only"]) {
 	await step("Turn", CORE_STATE, "print(Game.GetCurrentGameTurn())");
 

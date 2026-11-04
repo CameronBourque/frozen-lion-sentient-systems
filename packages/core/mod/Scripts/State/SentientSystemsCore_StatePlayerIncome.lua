@@ -1,15 +1,17 @@
--- The income part of the player section: what the player makes each turn and where it
--- comes from, what the player pays, and the gold deals, as the Yields tab of Reports shows
--- them. SentientSystemsCore_StatePlayer.lua loads this file. The shape is in
--- bridge/src/state/income.ts. The checks follow GetData and ViewYieldsPage in
--- ReportScreen.lua.
+-- The income part of the player section: what the player makes each turn and
+-- where it comes from, what the player pays, and the gold deals, as the Yields
+-- tab of Reports shows them. SentientSystemsCore_StatePlayer.lua loads this
+-- file. The shape is in bridge/src/state/income.ts. The checks follow GetData
+-- and ViewYieldsPage in ReportScreen.lua.
 
--- The sources each yield's tooltip names, by the key they have in the state and the label that follows
--- the amount in the game's English text, as in "+33 from [ICON_Envoy] Envoys". The game gives no
--- numbers for them, only the tooltip text, and its text keys for the lines (LOC_PLAYER_YIELD_<YIELD>_FROM_
--- <SOURCE> in InGameText.xml) return an empty text when they are looked up, so the labels are
--- matched as the English file has them. In another language no label matches, and every amount
--- lands in other. Other is the game's own Other line.
+-- The sources each yield's tooltip names, by the key they have in the state and
+-- the label that follows the amount in the game's English text, as in "+33 from
+-- [ICON_Envoy] Envoys". The game gives no numbers for them, only the tooltip
+-- text, and its text keys for the lines (LOC_PLAYER_YIELD_<YIELD>_FROM_
+-- <SOURCE> in InGameText.xml) return an empty text when they are looked up, so
+-- the labels are matched as the English file has them. In another language no
+-- label matches, and every amount lands in other. Other is the game's own Other
+-- line.
 local COMMON_SOURCES = {
 	{ key = "cities", label = "Cities" },
 	{ key = "beliefs", label = "Beliefs" },
@@ -18,8 +20,9 @@ local COMMON_SOURCES = {
 	{ key = "other", label = "Other" },
 }
 
--- Each yield: its key in the state and the sources it has besides the common ones. Culture's and
--- science's alliance lines are percentages, so they are left out.
+-- Each yield: its key in the state and the sources it has besides the common
+-- ones. Culture's and science's alliance lines are percentages, so they are
+-- left out.
 local YIELDS = {
 	{
 		key = "gold",
@@ -41,7 +44,8 @@ local YIELDS = {
 	{ key = "culture", extra = {} },
 }
 
--- A source or total below this is left out, as the lines of a tooltip are rounded to a tenth.
+-- A source or total below this is left out, as the lines of a tooltip are
+-- rounded to a tenth.
 local MIN_REMAINDER = 0.5
 
 -- Rounds a number to the nearest tenth, as the top bar's number format does.
@@ -72,7 +76,8 @@ local function GetLines(tooltip)
 	end
 end
 
--- Returns the amount that one of the tooltip's lines gives for a label, or nil without one.
+-- Returns the amount that one of the tooltip's lines gives for a label, or nil
+-- without one.
 local function ReadSource(lines, label)
 	local pattern = "^([%+%-]?[%d%.,]+) from " .. Escape(label) .. "$"
 
@@ -87,9 +92,9 @@ local function ReadSource(lines, label)
 	return nil
 end
 
--- Returns one yield's total and its sources, each left out while it is 0. What the lines don't give
--- is added to other, when it is at least half a point. See GetGoldTooltip in
--- ToolTipHelper_PlayerYields.lua.
+-- Returns one yield's total and its sources, each left out while it is 0. What
+-- the lines don't give is added to other, when it is at least half a point. See
+-- GetGoldTooltip in ToolTipHelper_PlayerYields.lua.
 local function GetYield(yield, total, tooltip)
 	local lines = GetLines(tooltip)
 	local result = { total = RoundNearest(total) }
@@ -115,7 +120,8 @@ local function GetYield(yield, total, tooltip)
 	return result
 end
 
--- Each yield a city makes, by its key in the state and its type, in the order the report lists them.
+-- Each yield a city makes, by its key in the state and its type, in the order
+-- the report lists them.
 local CITY_YIELDS = {
 	{ key = "food", type = "YIELD_FOOD" },
 	{ key = "production", type = "YIELD_PRODUCTION" },
@@ -125,8 +131,9 @@ local CITY_YIELDS = {
 	{ key = "faith", type = "YIELD_FAITH" },
 }
 
--- Returns the yields a source gives, each rounded to a tenth and left out while 0, or nil when it
--- gives none. read is called with each yield's type, and returns its amount.
+-- Returns the yields a source gives, each rounded to a tenth and left out while
+-- 0, or nil when it gives none. read is called with each yield's type, and
+-- returns its amount.
 local function CollectYields(read)
 	local yields, found = {}, false
 
@@ -142,31 +149,33 @@ local function CollectYields(read)
 	return found and yields or nil
 end
 
--- Adds a row to a city's sources unless it gives no yield and costs no upkeep. A row has kind, name,
--- type, left out for a row that isn't a district, a building, a wonder, or a great work, yields, and
--- upkeep.
+-- Adds a row to a city's sources unless it gives no yield and costs no upkeep.
+-- A row has kind, name, type, left out for a row that isn't a district, a
+-- building, a wonder, or a great work, yields, and upkeep.
 local function AddSource(sources, row)
 	if row.yields ~= nil or row.upkeep ~= nil then
 		sources[#sources + 1] = row
 	end
 end
 
--- Returns a function that reads the amount of a yield type from a table of amounts, 0 for a missing one.
+-- Returns a function that reads the amount of a yield type from a table of
+-- amounts, 0 for a missing one.
 local function Reader(amounts)
 	return function(yieldType)
 		return amounts[yieldType] or 0
 	end
 end
 
--- Returns the gold a district or building costs each turn, which is its row's Maintenance while it
--- isn't pillaged, or nil for none. The game's own call for a building's cost returns 0 for every
--- building, so the report leaves them out, and the top bar's tooltip counts the row's cost.
+-- Returns the gold a district or building costs each turn, which is its row's
+-- Maintenance while it isn't pillaged, or nil for none. The game's own call for
+-- a building's cost returns 0 for every building, so the report leaves them
+-- out, and the top bar's tooltip counts the row's cost.
 local function GetUpkeep(cost, pillaged)
 	return cost > 0 and not pillaged and cost or nil
 end
 
--- Returns the rows for the great works in a building, each with the yields its row gives. See
--- GetGreatWorksForCity in Civ6Common.lua, lines 631 to 661.
+-- Returns the rows for the great works in a building, each with the yields its
+-- row gives. See GetGreatWorksForCity in Civ6Common.lua.
 local function GetGreatWorkRows(buildings, index)
 	local rows = {}
 
@@ -190,10 +199,10 @@ local function GetGreatWorkRows(buildings, index)
 	return rows
 end
 
--- Adds the rows of the buildings on a district's plot to sources, and the rows of its wonders to
--- wonders, and returns the upkeep of the buildings. A wonder sits in a district of its own, which the
--- report leaves out, and its rows follow the districts'. See GetCityData in CitySupport.lua, lines
--- 687 to 755.
+-- Adds the rows of the buildings on a district's plot to sources, and the rows
+-- of its wonders to wonders, and returns the upkeep of the buildings. A wonder
+-- sits in a district of its own, which the report leaves out, and its rows
+-- follow the districts'. See GetCityData in CitySupport.lua.
 local function AddBuildingRows(city, plotIndex, sources, wonders)
 	local buildings = city:GetBuildings()
 	local upkeep = 0
@@ -225,8 +234,9 @@ local function AddBuildingRows(city, plotIndex, sources, wonders)
 	return upkeep
 end
 
--- Adds the rows of the city's districts, with their adjacency bonuses and buildings, to sources, and
--- the rows of its wonders to wonders, and returns the upkeep of them all.
+-- Adds the rows of the city's districts, with their adjacency bonuses and
+-- buildings, to sources, and the rows of its wonders to wonders, and returns
+-- the upkeep of them all.
 local function AddDistrictRows(city, sources, wonders)
 	local upkeep = 0
 
@@ -260,8 +270,8 @@ local function AddDistrictRows(city, sources, wonders)
 	return upkeep
 end
 
--- Adds a row for each trade route the city sends out, with what it gives the city. See ViewYieldsPage
--- in ReportScreen.lua, lines 941 to 974.
+-- Adds a row for each trade route the city sends out, with what it gives the
+-- city. See ViewYieldsPage in ReportScreen.lua.
 local function AddRouteRows(city, sources)
 	for _, route in ipairs(city:GetTrade():GetOutgoingRoutes()) do
 		local amounts = {}
@@ -281,8 +291,8 @@ local function AddRouteRows(city, sources)
 	end
 end
 
--- Returns what the city's worked tiles give by yield type, and the tourism of its tiles. See
--- GetWorkedTileYieldData in ReportScreen.lua, lines 567 to 598.
+-- Returns what the city's worked tiles give by yield type, and the tourism of
+-- its tiles. See GetWorkedTileYieldData in ReportScreen.lua.
 local function GetTileYields(player, city)
 	local amounts, tourism = {}, 0
 	local citizens = city:GetCitizens()
@@ -306,10 +316,11 @@ end
 -- The happiness status that gives no yield, which is content.
 local CONTENT = 4
 
--- Adds the rows for the city's worked tiles, its amenities, and its population, and returns the
--- tourism of its tiles. While the city isn't content, its amenities give a tenth of the worked tiles'
--- yields but food, scaled by the city's modifier. The population gives culture. See ViewYieldsPage in
--- ReportScreen.lua, lines 976 to 1008.
+-- Adds the rows for the city's worked tiles, its amenities, and its population,
+-- and returns the tourism of its tiles. While the city isn't content, its
+-- amenities give a tenth of the worked tiles' yields but food, scaled by the
+-- city's modifier. The population gives culture. See ViewYieldsPage in
+-- ReportScreen.lua.
 local function AddTileRows(player, city, sources)
 	local amounts, tourism = GetTileYields(player, city)
 	local growth = city:GetGrowth()
@@ -339,8 +350,8 @@ local function AddTileRows(player, city, sources)
 	return tourism
 end
 
--- Returns each of the player's cities with its income rows, in the order of the report's city
--- table, and the cost of all of them.
+-- Returns each of the player's cities with its income rows, in the order of the
+-- report's city table, and the cost of all of them.
 local function GetCityIncomes(player)
 	local list, total = {}, 0
 
@@ -366,8 +377,9 @@ local function GetCityIncomes(player)
 	return list, total
 end
 
--- Returns the gold one unit costs each turn, less the player's discount, by its formation, as GetData
--- in ReportScreen.lua, lines 305 to 353, finds it. A unit that costs nothing after the discount is 0.
+-- Returns the gold one unit costs each turn, less the player's discount, by its
+-- formation, as GetData in ReportScreen.lua, finds it. A unit that costs
+-- nothing after the discount is 0.
 local function GetUnitCost(unit, discount)
 	local row = GameInfo.Units[unit:GetUnitType()]
 	local formation = unit:GetMilitaryFormation()
@@ -395,8 +407,9 @@ local function GetFormationName(formation)
 	return nil
 end
 
--- Returns the units that cost gold, grouped by type and formation, and their total. The report's
--- own order is arbitrary, so the groups are sorted by type and formation.
+-- Returns the units that cost gold, grouped by type and formation, and their
+-- total. The report's own order is arbitrary, so the groups are sorted by type
+-- and formation.
 local function GetUnitUpkeep(player, discount)
 	local groups, order, total = {}, {}, 0
 
@@ -430,8 +443,8 @@ local function GetUnitUpkeep(player, discount)
 	return list, total
 end
 
--- Returns the gold deals the player is in, and the gold the player pays in all. A deal item with
--- no duration is left out. See GetData in ReportScreen.lua, lines 355 to 460.
+-- Returns the gold deals the player is in, and the gold the player pays in all.
+-- A deal item with no duration is left out. See GetData in ReportScreen.lua.
 local function GetDeals(playerID)
 	local list, paid = {}, 0
 	local turn = Game.GetCurrentGameTurn()
@@ -463,8 +476,9 @@ local function GetDeals(playerID)
 	return list, paid
 end
 
--- Returns the gold the player pays each turn. What the upkeep of the cities, the units, and the
--- deals don't cover is other, when it is at least half a point.
+-- Returns the gold the player pays each turn. What the upkeep of the cities,
+-- the units, and the deals don't cover is other, when it is at least half a
+-- point.
 local function GetExpenses(treasury, units, deals, cities)
 	local total = treasury:GetTotalMaintenance()
 	local expenses = { total = total, cities = cities, units = units, deals = deals }

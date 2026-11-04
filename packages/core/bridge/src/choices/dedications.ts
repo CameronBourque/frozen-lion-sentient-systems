@@ -1,6 +1,6 @@
-// The schema for the dedication choice: the dedications the player may make for the era that began,
-// as the dedication popup offers them. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua.
+// The schema for the dedication choice: the dedications the player may make for
+// the era that began, as the dedication popup offers them. The core mod builds
+// it in Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua.
 
 import { z } from "zod";
 

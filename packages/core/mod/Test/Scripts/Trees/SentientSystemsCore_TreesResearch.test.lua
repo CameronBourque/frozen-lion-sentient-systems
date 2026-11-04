@@ -12,7 +12,8 @@ local IRRIGATION = {
 }
 local CURRENCY = { type = "TECH_CURRENCY", era = "ERA_CLASSICAL", cost = 120, turns = 20, prerequisites = { "TECH_IRRIGATION" }, locked = true }
 
--- Returns an environment with the trees script loaded into a fake game built from world.
+-- Returns an environment with the trees script loaded into a fake game built
+-- from world.
 local function Load(world)
 	local env = Game.new()
 

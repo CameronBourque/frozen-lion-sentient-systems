@@ -1,6 +1,7 @@
-// The schema for the religion section of the state: the player's pantheon, their progress toward a
-// religion, and the religion they founded with its followers, as the religion screen's My Religion
-// tab shows them. The core mod builds it in Scripts/State/SentientSystemsCore_StateReligion.lua.
+// The schema for the religion section of the state: the player's pantheon,
+// their progress toward a religion, and the religion they founded with its
+// followers, as the religion screen's My Religion tab shows them. The core mod
+// builds it in Scripts/State/SentientSystemsCore_StateReligion.lua.
 
 import { z } from "zod";
 

@@ -1,9 +1,10 @@
--- The artifact choice: whose artifact the player's next digging archaeologist uncovers, as the
--- artifact screen offers it. SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/artifacts.ts. The checks follow OnOpen in ChooseArtifact.lua.
+-- The artifact choice: whose artifact the player's next digging archaeologist
+-- uncovers, as the artifact screen offers it. SentientSystemsCore_Choices.lua
+-- loads this file. The shape is in bridge/src/choices/artifacts.ts. The checks
+-- follow OnOpen in ChooseArtifact.lua.
 
--- The explanation for each type of site, and whether it offers both players. A tribal village, a
--- barbarian camp, and a heroic relic come from one player.
+-- The explanation for each type of site, and whether it offers both players. A
+-- tribal village, a barbarian camp, and a heroic relic come from one player.
 local SITES = {
 	[0] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_NO_TYPE", choice = true },
 	[1] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_GOODY_HUT" },
@@ -18,10 +19,10 @@ local function Option(playerID)
 	return { player = playerID, name = Locale.Lookup(PlayerConfigurations[playerID]:GetPlayerName()) }
 end
 
--- Returns the artifact choice: the next digging archaeologist's artifact. Returns nil with no
--- archaeologist digging, or no artifact. The
--- screen opens only from the blocker's notification, so this reads the artifact only while the
--- blocker is up, as the spy choice must. See OnOpen in ChooseArtifact.lua, lines 4 to 77.
+-- Returns the artifact choice: the next digging archaeologist's artifact.
+-- Returns nil with no archaeologist digging, or no artifact. The screen opens
+-- only from the blocker's notification, so this reads the artifact only while
+-- the blocker is up, as the spy choice must. See OnOpen in ChooseArtifact.lua.
 function SentientSystems_GetArtifactChoices(player)
 	if not SentientSystems_HasBlocker(player:GetID(), "ENDTURN_BLOCKING_ARTIFACT") then
 		return nil

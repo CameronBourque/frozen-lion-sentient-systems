@@ -1,10 +1,6 @@
--- Purchases. data.purchases maps a yield name, such as YIELD_GOLD, to the units, buildings, and
--- districts the city can buy with it. Each has type, cost, blocked, hidden, which the check refuses
--- even when it only tests, and cantAfford, and a unit has corps and army, each with cost, blocked,
--- and cantAfford. Each purchase gets a GameInfo row, with a hash and the yield that buys it, which
--- is gold for a faithEnabled one. A faith purchase has faithEnabled when the game marks it for
--- another yield but the city can buy it with faith. data.options.purchasable lists tiles to buy, each with x, y, and cost,
--- its gold cost, and the player's gold and faith stores are in FakeGame/Stores.lua.
+-- Purchases. Fakes the units, buildings, districts, and tiles a city can buy
+-- with gold or faith, with a GameInfo row for each. FakeGame/Stores.lua holds
+-- the stores.
 
 return function(env, world, ctx)
 	local hashes, indexes, Formation, PlotIndex = ctx.hashes, ctx.indexes, ctx.Formation, ctx.PlotIndex
@@ -41,8 +37,8 @@ return function(env, world, ctx)
 
 	ctx.OnCity(function(city, data)
 
-		-- Returns the purchase option for an item's hash and a yield's index, or its corps or army for a
-		-- formation, or nil.
+		-- Returns the purchase option for an item's hash and a yield's index,
+		-- or its corps or army for a formation, or nil.
 		local function PurchaseOption(yieldIndex, hash, formation)
 			for name, row in pairs(YIELD_ROWS) do
 				if row.Index == yieldIndex then
@@ -64,7 +60,8 @@ return function(env, world, ctx)
 				GetPurchaseCost = function(_, yieldIndex, hash, formation)
 					return PurchaseOption(yieldIndex, hash, formation).cost
 				end,
-				-- The cost of a tile to buy, from its tile in data.options.purchasable, or 0.
+				-- The cost of a tile to buy, from its tile in
+				-- data.options.purchasable, or 0.
 				GetPlotPurchaseCost = function(_, plotIndex)
 					for _, tile in ipairs((data.options or {}).purchasable or {}) do
 						if PlotIndex(tile.x, tile.y) == plotIndex then
@@ -74,8 +71,9 @@ return function(env, world, ctx)
 
 					return 0
 				end,
-				-- Whether the city can buy a unit or a building with faith that the game marks for
-				-- another yield. The option is under YIELD_FAITH with faithEnabled.
+				-- Whether the city can buy a unit or a building with faith that
+				-- the game marks for another yield. The option is under
+				-- YIELD_FAITH with faithEnabled.
 				IsUnitFaithPurchaseEnabled = function(_, hash)
 					local option = PurchaseOption(YIELD_ROWS.YIELD_FAITH.Index, hash)
 
@@ -90,9 +88,10 @@ return function(env, world, ctx)
 		end
 	end)
 
-	-- With testOnly, whether the city's purchases list the item that params names. Without it,
-	-- whether the city can buy it now, and the results: the reasons it can't, and for a unit,
-	-- whether a corps or an army can be bought.
+	-- With testOnly, whether the city's purchases list the item that params
+	-- names. Without it, whether the city can buy it now, and the results: the
+	-- reasons it can't, and for a unit, whether a corps or an army can be
+	-- bought.
 	env.CityManager.CanStartCommand = function(city, command, testOnly, params, withResults)
 		assert(command == CITY_COMMAND_TYPES.PURCHASE, "no fake for this command")
 

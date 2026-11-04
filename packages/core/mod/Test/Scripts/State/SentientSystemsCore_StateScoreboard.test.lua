@@ -23,7 +23,8 @@ local ME = {
 	met = { 1 },
 }
 
--- Returns the categories JSON of a player with the points in civics and empire, and 0 in the rest.
+-- Returns the categories JSON of a player with the points in civics and empire,
+-- and 0 in the rest.
 local function Categories(civics, empire)
 	return "[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":" .. civics .. ",\"type\":\"CATEGORY_CIVICS\"},"
 		.. "{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":" .. empire .. ",\"type\":\"CATEGORY_EMPIRE\"},"

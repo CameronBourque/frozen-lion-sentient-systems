@@ -1,9 +1,9 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns the artifact choice JSON for player 0, or nil when it is left out, with an archaeologist
--- digging the artifact given, of the site type given, and the player's blockers, the artifact
--- blocker when missing.
+-- Returns the artifact choice JSON for player 0, or nil when it is left out,
+-- with an archaeologist digging the artifact given, of the site type given, and
+-- the player's blockers, the artifact blocker when missing.
 local function ChoicesWith(artifact, blockers)
 	local env = Game.new()
 	local archaeologist = artifact and { id = 2686995, name = "LOC_UNIT_NAME_REMO", x = 48, y = 25, artifact = artifact }
