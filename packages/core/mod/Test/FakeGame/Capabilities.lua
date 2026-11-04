@@ -1,8 +1,9 @@
--- The game's switches and parameters. GameCapabilities.HasCapability is true for
--- CAPABILITY_GOVERNMENTS_LEGACY_BONUSES when world.legacyBonuses is true, CAPABILITY_RENAME when
--- world.rename is true, CAPABILITY_DRAMATICAGES when world.dramaticAges is true, and every
--- CAPABILITY_GREAT_PEOPLE_ one that world.offCapabilities doesn't list. GlobalParameters holds the
--- numbers the core mod reads, and world.unlockWithFaith makes the policy unlock cost faith.
+-- The game's switches and parameters. GameCapabilities.HasCapability is true
+-- for CAPABILITY_GOVERNMENTS_LEGACY_BONUSES when world.legacyBonuses is true,
+-- CAPABILITY_RENAME when world.rename is true, CAPABILITY_DRAMATICAGES when
+-- world.dramaticAges is true, and every CAPABILITY_GREAT_PEOPLE_ one that
+-- world.offCapabilities doesn't list. GlobalParameters holds the numbers the
+-- core mod reads, and world.unlockWithFaith makes the policy unlock cost faith.
 
 return function(env, world, ctx)
 	env.GameCapabilities = {

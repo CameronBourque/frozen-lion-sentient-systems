@@ -6,16 +6,18 @@
 
 local FakeGame = {}
 
--- The features that Install runs, in registration order, and the hooks they add to each Install's
--- players and cities.
+-- The features that Install runs, in registration order, and the hooks they add
+-- to each Install's players and cities.
 local features, playerHooks, cityHooks, unitHooks = {}, {}, {}, {}
 
--- Registers a feature, the part of the fake that one area of the game needs. install(env, world,
--- ctx) runs in every Install, after the shared GameInfo rows and before the players are built. It
--- adds its GameInfo rows with ctx.AddRow, sets its Game.* and other globals on env, and attaches its
--- calls to players and cities with ctx.OnPlayer and ctx.OnCity. Its file has the docs for the world
--- and player data it reads. A file under FakeGame/ returns its install function, and the
--- registration lines at the end of this file list them.
+-- Registers a feature, the part of the fake that one area of the game needs.
+-- install(env, world, ctx) runs in every Install, after the shared GameInfo
+-- rows and before the players are built. It adds its GameInfo rows with
+-- ctx.AddRow, sets its Game.* and other globals on env, and attaches its calls
+-- to players and cities with ctx.OnPlayer and ctx.OnCity. Its file has the docs
+-- for the world and player data it reads. A file under FakeGame/ returns its
+-- install function, and the registration lines at the end of this file list
+-- them.
 function FakeGame.Register(name, install)
 	for _, feature in ipairs(features) do
 		assert(feature.name ~= name, "feature registered twice: " .. name)
@@ -24,9 +26,9 @@ function FakeGame.Register(name, install)
 	features[#features + 1] = { name = name, install = install }
 end
 
--- A list with Members(), as the game's city and unit lists have. Members() returns an iterator, as
--- in "for i, city in player:GetCities():Members() do". FindID(id) returns the item with that ID, or
--- nil.
+-- A list with Members(), as the game's city and unit lists have. Members()
+-- returns an iterator, as in "for i, city in player:GetCities():Members() do".
+-- FindID(id) returns the item with that ID, or nil.
 local function List(items)
 	return {
 		Members = function()
@@ -69,9 +71,10 @@ local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE =
 -- The YieldTypes names by GameInfo.Yields index.
 local YIELD_NAMES = { [0] = "FOOD", "PRODUCTION", "GOLD", "SCIENCE", "CULTURE", "FAITH" }
 
--- The districts and buildings of a city from data, which more than one feature reads: placed, each
--- district by its GameInfo index, buildings, each building by its index, and buildingsAt, the
--- building indexes at each plot. It is built once for each city.
+-- The districts and buildings of a city from data, which more than one feature
+-- reads: placed, each district by its GameInfo index, buildings, each building
+-- by its index, and buildingsAt, the building indexes at each plot. It is built
+-- once for each city.
 local layouts = setmetatable({}, { __mode = "k" })
 
 local function CityLayout(data, indexes)
@@ -99,12 +102,14 @@ local function CityLayout(data, indexes)
 	return layouts[data]
 end
 
--- A city from data: its identity, id, name, x, y, and population. The rest is added by the features,
--- with OnCity, each describing the data it reads: FakeGame/CityDistricts.lua and CityBuildings.lua,
--- CityGrowth.lua, CityYields.lua, Production.lua for data.production and the build queue's options,
--- Purchases.lua for data.purchases, and Placement.lua for the tiles to place or buy. hashes maps each
--- production, unit, building, and district type to its hash, and indexes maps each district,
--- building, and unit type to its GameInfo index. ownerID is the player's ID.
+-- A city from data: its identity, id, name, x, y, and population. The rest is
+-- added by the features, with OnCity, each describing the data it reads:
+-- FakeGame/CityDistricts.lua and CityBuildings.lua, CityGrowth.lua,
+-- CityYields.lua, Production.lua for data.production and the build queue's
+-- options, Purchases.lua for data.purchases, and Placement.lua for the tiles to
+-- place or buy. hashes maps each production, unit, building, and district type
+-- to its hash, and indexes maps each district, building, and unit type to its
+-- GameInfo index. ownerID is the player's ID.
 local function BuildCity(data, hashes, indexes, ownerID)
 	return {
 		GetOwner = function()
@@ -142,9 +147,9 @@ local function City(data, hashes, indexes, ownerID)
 	return city
 end
 
--- A unit from data: its identity, id and type, and its place, x and y. The rest is added by
--- FakeGame/Units.lua, with OnUnit, which describes the data it reads. indexes maps each unit type to
--- its GameInfo index.
+-- A unit from data: its identity, id and type, and its place, x and y. The rest
+-- is added by FakeGame/Units.lua, with OnUnit, which describes the data it
+-- reads. indexes maps each unit type to its GameInfo index.
 local function Unit(data, indexes)
 	local unit = {
 		GetID = function()
@@ -171,9 +176,10 @@ local function Unit(data, indexes)
 	return unit
 end
 
--- A player from data: its ID, its cities and units, and the districts it finds by ID. The rest is
--- added by the features, with OnPlayer. hashes maps each production, unit, building, and district
--- type to its hash, and indexes maps each district, building, and unit type to its GameInfo index.
+-- A player from data: its ID, its cities and units, and the districts it finds
+-- by ID. The rest is added by the features, with OnPlayer. hashes maps each
+-- production, unit, building, and district type to its hash, and indexes maps
+-- each district, building, and unit type to its GameInfo index.
 local function BuildPlayer(id, data, hashes, indexes)
 	local cities, units = {}, {}
 
@@ -233,9 +239,10 @@ local function Player(id, data, hashes, indexes)
 	return player
 end
 
--- Sets Players, GameInfo, YieldTypes, and Locale in env from world. world.players maps each player
--- ID to its data. world.text maps each LOC_ key to its text. Locale.Lookup returns any other key as
--- it is. GameInfo.Types holds each production type in world, under a made-up hash.
+-- Sets Players, GameInfo, YieldTypes, and Locale in env from world.
+-- world.players maps each player ID to its data. world.text maps each LOC_ key
+-- to its text. Locale.Lookup returns any other key as it is. GameInfo.Types
+-- holds each production type in world, under a made-up hash.
 function FakeGame.Install(env, world)
 	playerHooks, cityHooks, unitHooks, layouts = {}, {}, {}, setmetatable({}, { __mode = "k" })
 
@@ -244,7 +251,8 @@ function FakeGame.Install(env, world)
 	-- Each plot in world.plots by its index, which FakeGame/Plots.lua fills.
 	local plots = {}
 
-	-- GameInfo.Yields finds a yield by its type or by its index, as the game's table does.
+	-- GameInfo.Yields finds a yield by its type or by its index, as the game's
+	-- table does.
 	local yieldInfo = {}
 
 	for name, row in pairs(YIELD_ROWS) do
@@ -271,7 +279,8 @@ function FakeGame.Install(env, world)
 		Traits = {},
 	}
 	-- Gives a table of rows the game's lookups: a row by its type name, as in
-	-- GameInfo.Districts["DISTRICT_CAMPUS"], and a call that lists the rows in index order.
+	-- GameInfo.Districts["DISTRICT_CAMPUS"], and a call that lists the rows in
+	-- index order.
 	local function TypedRows(rows, column)
 		return setmetatable(rows, {
 			__index = function(_, key)
@@ -297,9 +306,10 @@ function FakeGame.Install(env, world)
 		})
 	end
 
-	-- GameInfo.Units(), GameInfo.Buildings(), GameInfo.Districts(), and GameInfo.Projects() list the
-	-- rows in index order, as the game's tables do when called, and each table finds a row by its type
-	-- name, as in GameInfo.Districts["DISTRICT_CAMPUS"].
+	-- GameInfo.Units(), GameInfo.Buildings(), GameInfo.Districts(), and
+	-- GameInfo.Projects() list the rows in index order, as the game's tables do
+	-- when called, and each table finds a row by its type name, as in
+	-- GameInfo.Districts["DISTRICT_CAMPUS"].
 	for name, column in pairs({
 		Units = "UnitType",
 		GreatWorks = "GreatWorkType",
@@ -312,7 +322,8 @@ function FakeGame.Install(env, world)
 	end
 	env.YieldTypes = YIELD_TYPES
 
-	-- Adds a type to a GameInfo table under the next index, as the game numbers its rows.
+	-- Adds a type to a GameInfo table under the next index, as the game numbers
+	-- its rows.
 	local function AddRow(tableName, column, typeName)
 		if indexes[typeName] == nil then
 			local index = #env.GameInfo[tableName] + (env.GameInfo[tableName][0] and 1 or 0)
@@ -339,10 +350,11 @@ function FakeGame.Install(env, world)
 		})
 	end
 
-	-- What a feature gets from the core: the rows and their hashes and indexes, the plots by index,
-	-- and the shared helpers. NextHash(base, typeName) gives a type the hash base plus a running
-	-- count, once. OnPlayer(hook) and OnCity(hook) run hook(player, data, id) and hook(city, data,
-	-- ownerID) on each one built, to add its calls.
+	-- What a feature gets from the core: the rows and their hashes and indexes,
+	-- the plots by index, and the shared helpers. NextHash(base, typeName)
+	-- gives a type the hash base plus a running count, once. OnPlayer(hook) and
+	-- OnCity(hook) run hook(player, data, id) and hook(city, data, ownerID) on
+	-- each one built, to add its calls.
 	local ctx = {
 		hashes = hashes,
 		indexes = indexes,
@@ -392,8 +404,8 @@ function FakeGame.Install(env, world)
 	end
 end
 
--- One line for each feature in FakeGame/, in the order Install runs them. Each file returns its
--- install function, as FakeGame.Register describes.
+-- One line for each feature in FakeGame/, in the order Install runs them. Each
+-- file returns its install function, as FakeGame.Register describes.
 FakeGame.Register("Resources", require("FakeGame/Resources"))
 FakeGame.Register("Plots", require("FakeGame/Plots"))
 FakeGame.Register("Rivals", require("FakeGame/Rivals"))

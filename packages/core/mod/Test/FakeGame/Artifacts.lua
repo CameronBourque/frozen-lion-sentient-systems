@@ -1,5 +1,6 @@
--- Artifacts. A player's archaeologist is its next digging archaeologist, with id, name, x, y, and
--- artifact, with index, type, the site's kind from 0 to 5, acting and target, player IDs, and era.
+-- Artifacts. A player's archaeologist is its next digging archaeologist, with
+-- id, name, x, y, and artifact, with index, type, the site's kind from 0 to 5,
+-- acting and target, player IDs, and era.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes
@@ -50,8 +51,9 @@ return function(env, world, ctx)
 	end)
 
 
-	-- The artifact of each digging archaeologist, by its index, with the site's type, the acting and
-	-- target players, and the acting player's era, by its GameInfo index.
+	-- The artifact of each digging archaeologist, by its index, with the site's
+	-- type, the acting and target players, and the acting player's era, by its
+	-- GameInfo index.
 	env.Game.GetArtifactByIndex = function(index)
 		for _, data in pairs(world.players or {}) do
 			local artifact = data.archaeologist and data.archaeologist.artifact

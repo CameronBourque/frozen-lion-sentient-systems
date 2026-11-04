@@ -1,15 +1,18 @@
--- Plots. world.plots lists plots, each with x, y, terrain, feature, resource, owner, district,
--- improvement, improvementPillaged, route, and routePillaged, which are all optional but x, y, and
--- terrain. Each gets its rows and a plot, and the map's plot count covers the highest row. A tile of
--- a city's data.tiles, with x, y, yields, resource, and extractable, gets a plot too, which has only
--- GetX, GetY, GetYield, and GetResourceType. GetCityPlots lists a city's tiles by plot index.
+-- Plots. world.plots lists plots, each with x, y, terrain, feature, resource,
+-- owner, district, improvement, improvementPillaged, route, and routePillaged,
+-- which are all optional but x, y, and terrain. Each gets its rows and a plot,
+-- and the map's plot count covers the highest row. A tile of a city's
+-- data.tiles, with x, y, yields, resource, and extractable, gets a plot too,
+-- which has only GetX, GetY, GetYield, and GetResourceType. GetCityPlots lists
+-- a city's tiles by plot index.
 
 return function(env, world, ctx)
 	local AddRow, hashes, indexes, plots = ctx.AddRow, ctx.hashes, ctx.indexes, ctx.plots
 	local PlotIndex, MAP_WIDTH, YIELD_NAMES = ctx.PlotIndex, ctx.MAP_WIDTH, ctx.YIELD_NAMES
 	local plotCount = 0
 
-	-- The plots that cities own, by index, with the yield each gives for a GameInfo.Yields index.
+	-- The plots that cities own, by index, with the yield each gives for a
+	-- GameInfo.Yields index.
 	local tilePlots = {}
 
 	for _, player in pairs(world.players or {}) do
@@ -25,7 +28,8 @@ return function(env, world, ctx)
 					GetYield = function(_, yieldIndex)
 						return (tile.yields or {})[YIELD_NAMES[yieldIndex]] or 0
 					end,
-					-- The tile's resource, from tile.resource, and whether it can be extracted.
+					-- The tile's resource, from tile.resource, and whether it
+					-- can be extracted.
 					GetResourceType = function()
 						return tile.resource and indexes[tile.resource] or -1
 					end,
@@ -106,7 +110,8 @@ return function(env, world, ctx)
 			GetResourceTypeHash = function()
 				return data.resource and hashes[data.resource] or 0
 			end,
-			-- The game returns -1 for no owner, district, improvement, or route.
+			-- The game returns -1 for no owner, district, improvement, or
+			-- route.
 			GetOwner = function()
 				return data.owner or -1
 			end,

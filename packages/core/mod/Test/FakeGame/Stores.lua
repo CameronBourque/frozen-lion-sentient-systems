@@ -1,13 +1,14 @@
--- The gold and faith stores. A player's gold and faith are its balances, each 0 when missing. Each
--- store can afford an item in a city unless the city's purchase option for that yield has cantAfford,
--- which FakeGame/Purchases.lua describes. The income per turn is in FakeGame/Income.lua.
+-- The gold and faith stores. A player's gold and faith are its balances, each 0
+-- when missing. Each store can afford an item in a city unless the city's
+-- purchase option for that yield has cantAfford, which FakeGame/Purchases.lua
+-- describes. The income per turn is in FakeGame/Income.lua.
 
 return function(env, world, ctx)
 	local yields = env.GameInfo.Yields
 
 	ctx.OnPlayer(function(player, data)
-		-- The player's store of a yield, which can afford an item in a city unless the city's purchase
-		-- option for it has cantAfford.
+		-- The player's store of a yield, which can afford an item in a city
+		-- unless the city's purchase option for it has cantAfford.
 		local function Store(yieldIndex)
 			return {
 				CanAfford = function(_, cityID, hash, formation)

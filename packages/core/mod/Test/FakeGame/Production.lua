@@ -1,17 +1,22 @@
--- The build queue. A city's production is { type, turnsLeft }, or { hash, turnsLeft } for a hash that
--- GameInfo.Types doesn't know, or nil for nothing in production. data.options.units lists each unit
--- the build queue knows, with type, cost, turns, progress, which is 0 when missing, blocked, a list
--- of reasons the queue refuses it, hidden, which the queue refuses even when it only tests, and
--- corps and army, each with cost, turns, and blocked. data.options.buildings lists each building the
--- build queue knows, with type, cost, turns, progress, blocked, and hidden in the same way, and
--- pillaged, district, its PrereqDistrict, wonder, and mustPurchase, which go in its GameInfo row. A
--- wonder also has noLocation, the NO_SUITABLE_LOCATION result. data.options.districts lists each
--- district the build queue knows, with type, cost, turns, progress, blocked, hidden, and reasons,
--- which the queue returns when it allows the district. onePerCity, true when missing, and
--- internalOnly go in its GameInfo row. data.options.projects lists each project the build queue
--- knows, with type, cost, turns, progress, blocked, and hidden, and maxPlayerInstances and
--- prereqTech, a tech type, which go in its GameInfo row as MaxPlayerInstances and PrereqTech. Each
--- option gets a GameInfo row, with a hash, and a city's production type gets one in GameInfo.Types. Their tiles are in FakeGame/Placement.lua.
+-- The build queue. A city's production is { type, turnsLeft }, or { hash,
+-- turnsLeft } for a hash that GameInfo.Types doesn't know, or nil for nothing
+-- in production. data.options.units lists each unit the build queue knows, with
+-- type, cost, turns, progress, which is 0 when missing, blocked, a list of
+-- reasons the queue refuses it, hidden, which the queue refuses even when it
+-- only tests, and corps and army, each with cost, turns, and blocked.
+-- data.options.buildings lists each building the build queue knows, with type,
+-- cost, turns, progress, blocked, and hidden in the same way, and pillaged,
+-- district, its PrereqDistrict, wonder, and mustPurchase, which go in its
+-- GameInfo row. A wonder also has noLocation, the NO_SUITABLE_LOCATION result.
+-- data.options.districts lists each district the build queue knows, with type,
+-- cost, turns, progress, blocked, hidden, and reasons, which the queue returns
+-- when it allows the district. onePerCity, true when missing, and internalOnly
+-- go in its GameInfo row. data.options.projects lists each project the build
+-- queue knows, with type, cost, turns, progress, blocked, and hidden, and
+-- maxPlayerInstances and prereqTech, a tech type, which go in its GameInfo row
+-- as MaxPlayerInstances and PrereqTech. Each option gets a GameInfo row, with a
+-- hash, and a city's production type gets one in GameInfo.Types. Their tiles
+-- are in FakeGame/Placement.lua.
 
 return function(env, world, ctx)
 	local hashes, indexes, Formation = ctx.hashes, ctx.indexes, ctx.Formation
@@ -110,7 +115,8 @@ return function(env, world, ctx)
 				GetCurrentProductionTypeHash = function()
 					return hash
 				end,
-				-- The game takes a hash or a type name, and a formation for a unit.
+				-- The game takes a hash or a type name, and a formation for a
+				-- unit.
 				GetTurnsLeft = function(_, typeOrHash, formation)
 					local unit = unitsByHash[typeOrHash]
 
@@ -134,10 +140,12 @@ return function(env, world, ctx)
 
 					return production.turnsLeft
 				end,
-				-- With testOnly, whether the queue knows the unit or building. Without it, whether the
-				-- city can produce it now, and the results: the reasons it can't, and for a unit, whether
-				-- a corps or an army can be trained. params is a building's hash, or a table that names a
-				-- unit and its formation, as in the game.
+				-- With testOnly, whether the queue knows the unit or building.
+				-- Without it, whether the city can produce it now, and the
+				-- results: the reasons it can't, and for a unit, whether a
+				-- corps or an army can be trained. params is a building's hash,
+				-- or a table that names a unit and its formation, as in the
+				-- game.
 				CanProduce = function(_, params, testOnly, withResults)
 					if type(params) == "number" then
 						local option = buildingsByHash[params] or districtsByHash[params] or projectsByHash[params]
@@ -189,7 +197,8 @@ return function(env, world, ctx)
 				GetDistrictCost = function(_, index)
 					return districtsByIndex[index].cost
 				end,
-				-- 0 for a district the queue doesn't know, such as a built city center.
+				-- 0 for a district the queue doesn't know, such as a built city
+				-- center.
 				GetDistrictProgress = function(_, index)
 					return (districtsByIndex[index] or {}).progress or 0
 				end,

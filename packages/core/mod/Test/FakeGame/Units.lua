@@ -1,19 +1,22 @@
--- A player's units. A unit has id, type, x, y, moves, maxMoves, damage, which is 0 when missing,
--- maxDamage, which is 100 when missing, dead, delayedDeath, ready, which IsReadyToSelect returns,
--- hidden, which hides it from other players' IsUnitVisible, as a stealthy unit is, and formation,
--- such as "CORPS_MILITARY_FORMATION", which is standard when missing. experience has points,
--- nextLevel, promotions, and available, a list of the promotions it can pick now. Without it, the
--- unit has no experience. A unit and its promotions get GameInfo rows, which the upkeep pass in
--- FakeGame/Maintenance.lua names and hashes. A player's escaping spy and digging archaeologist are
--- in FakeGame/Spies.lua and Artifacts.lua. UnitManager.CanStartCommand has only the promotion
--- command, with results, as the units state asks for it. The game returns false and no results when
--- the unit can't promote. ctx.Formation(unit, formation) gives a unit option, or its corps or army,
--- for a formation.
+-- A player's units. A unit has id, type, x, y, moves, maxMoves, damage, which
+-- is 0 when missing, maxDamage, which is 100 when missing, dead, delayedDeath,
+-- ready, which IsReadyToSelect returns, hidden, which hides it from other
+-- players' IsUnitVisible, as a stealthy unit is, and formation, such as
+-- "CORPS_MILITARY_FORMATION", which is standard when missing. experience has
+-- points, nextLevel, promotions, and available, a list of the promotions it can
+-- pick now. Without it, the unit has no experience. A unit and its promotions
+-- get GameInfo rows, which the upkeep pass in FakeGame/Maintenance.lua names
+-- and hashes. A player's escaping spy and digging archaeologist are in
+-- FakeGame/Spies.lua and Artifacts.lua. UnitManager.CanStartCommand has only
+-- the promotion command, with results, as the units state asks for it. The game
+-- returns false and no results when the unit can't promote. ctx.Formation(unit,
+-- formation) gives a unit option, or its corps or army, for a formation.
 
 return function(env, world, ctx)
 	local indexes, AddRow = ctx.indexes, ctx.AddRow
 
-	-- The MilitaryFormationTypes values. The tests don't depend on the game's numbers.
+	-- The MilitaryFormationTypes values. The tests don't depend on the game's
+	-- numbers.
 	local MILITARY_FORMATION_TYPES = { STANDARD_MILITARY_FORMATION = 0, CORPS_MILITARY_FORMATION = 1, ARMY_MILITARY_FORMATION = 2 }
 
 	env.MilitaryFormationTypes = MILITARY_FORMATION_TYPES

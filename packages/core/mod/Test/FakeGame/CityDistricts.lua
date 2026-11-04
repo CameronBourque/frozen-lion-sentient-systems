@@ -1,9 +1,10 @@
--- A city's districts. data.districts lists each district with type, x, y, complete, which is true when
--- missing, pillaged, yields, and adjacency, each a YieldTypes name to an amount, and buildings, which
--- FakeGame/CityBuildings.lua describes. A city's capital is true or false. Its defense has strength,
--- garrison, and walls, the last two each with damage and max. Without them the garrison has damage 0
--- and max 200 and the walls 0 and 0. The city center is what the player's GetDistricts():FindID
--- returns by the city's ID.
+-- A city's districts. data.districts lists each district with type, x, y,
+-- complete, which is true when missing, pillaged, yields, and adjacency, each a
+-- YieldTypes name to an amount, and buildings, which FakeGame/CityBuildings.lua
+-- describes. A city's capital is true or false. Its defense has strength,
+-- garrison, and walls, the last two each with damage and max. Without them the
+-- garrison has damage 0 and max 200 and the walls 0 and 0. The city center is
+-- what the player's GetDistricts():FindID returns by the city's ID.
 
 return function(env, world, ctx)
 	local indexes, YIELD_NAMES, List, Layout = ctx.indexes, ctx.YIELD_NAMES, ctx.List, ctx.Layout
@@ -34,7 +35,8 @@ return function(env, world, ctx)
 				IsPillaged = function()
 					return district.pillaged == true
 				end,
-				-- The district's yield and adjacency bonus for a GameInfo.Yields index, from district.yields and
+				-- The district's yield and adjacency bonus for a
+				-- GameInfo.Yields index, from district.yields and
 				-- district.adjacency, which map a YieldTypes name to an amount.
 				GetYield = function(_, yieldIndex)
 					return (district.yields or {})[YIELD_NAMES[yieldIndex]] or 0
@@ -51,7 +53,8 @@ return function(env, world, ctx)
 
 		local districtList = List(districts)
 
-		-- The city's district list also answers for a district type, by its GameInfo index.
+		-- The city's district list also answers for a district type, by its
+		-- GameInfo index.
 		function districtList.HasDistrict(_, index)
 			return placed[index] ~= nil
 		end
@@ -72,8 +75,8 @@ return function(env, world, ctx)
 			return data.capital == true
 		end
 
-		-- The city center district, which the fake player's GetDistricts():FindID returns by the
-		-- city's ID.
+		-- The city center district, which the fake player's
+		-- GetDistricts():FindID returns by the city's ID.
 		city.center = {
 			GetDefenseStrength = function()
 				return defense.strength or 0

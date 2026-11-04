@@ -1,13 +1,15 @@
--- Governments and policies. A player's government has type, missing for none, and slots, each with
--- type, such as SLOT_MILITARY, and policy, missing for an empty slot, and civicThisTurn, slotsOpen,
--- changeMade, and unlockCost, as the game's culture calls give them. A player's policies lists the
--- policies the player knows, each with type, slot, its slot type, description, civic, its
--- prerequisite, and locked, obsolete, banned, and unslottable. A player's government also has
--- unlocked, the other governments it has unlocked, anarchy, the turns by government type,
--- canChangeAtAll, and governmentChangeMade. world.governments lists the ruleset's governments, each
--- with type, civic, bonusType, bonuses, its two text keys, slots, counts by slot type, influence, with
--- perTurn, threshold, and envoys, favor, and legacyPercent. Registered after Research, whose Civics
--- table holds the civic completed this turn.
+-- Governments and policies. A player's government has type, missing for none,
+-- and slots, each with type, such as SLOT_MILITARY, and policy, missing for an
+-- empty slot, and civicThisTurn, slotsOpen, changeMade, and unlockCost, as the
+-- game's culture calls give them. A player's policies lists the policies the
+-- player knows, each with type, slot, its slot type, description, civic, its
+-- prerequisite, and locked, obsolete, banned, and unslottable. A player's
+-- government also has unlocked, the other governments it has unlocked, anarchy,
+-- the turns by government type, canChangeAtAll, and governmentChangeMade.
+-- world.governments lists the ruleset's governments, each with type, civic,
+-- bonusType, bonuses, its two text keys, slots, counts by slot type, influence,
+-- with perTurn, threshold, and envoys, favor, and legacyPercent. Registered
+-- after Research, whose Civics table holds the civic completed this turn.
 
 return function(env, world, ctx)
 	local AddRow, indexes, hashes = ctx.AddRow, ctx.indexes, ctx.hashes
@@ -19,7 +21,8 @@ return function(env, world, ctx)
 	env.GameInfo.GovernmentModifiers = ctx.Callable({})
 	env.GameInfo.ModifierArguments = ctx.Callable({})
 
-	-- Adds a policy's row with a hash. A policy in a slot alone has only its type.
+	-- Adds a policy's row with a hash. A policy in a slot alone has only its
+	-- type.
 	local function AddPolicy(policy)
 		AddRow("Policies", "PolicyType", policy.type)
 
@@ -31,8 +34,9 @@ return function(env, world, ctx)
 		row.PrereqCivic = row.PrereqCivic or policy.civic
 	end
 
-	-- Each government in world.governments gets its row, its slot counts, the modifier that holds
-	-- its legacy percent, and its Gathering Storm row with its favor.
+	-- Each government in world.governments gets its row, its slot counts, the
+	-- modifier that holds its legacy percent, and its Gathering Storm row with
+	-- its favor.
 	local governmentsXP2 = ctx.Callable({})
 
 	for _, government in ipairs(world.governments or {}) do
@@ -65,7 +69,8 @@ return function(env, world, ctx)
 		table.insert(governmentsXP2, { GovernmentType = government.type, Favor = government.favor or 0 })
 	end
 
-	-- Each government, slot type, policy, and civic completed this turn gets a row.
+	-- Each government, slot type, policy, and civic completed this turn gets a
+	-- row.
 	for _, data in pairs(world.players or {}) do
 		local government = data.government or {}
 

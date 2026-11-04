@@ -1,10 +1,12 @@
--- The World Congress. world.congress is the World Congress, with inSession, turnsLeft, maxVotes,
--- costs, the game's cost table from 0, resolutions, each with type, targetType, targets, the game's
--- possible targets, favored, and disfavored, proposals, each with the game's TypeName, Name,
--- Description, Sender, and Target, available, the same with Disabled and cost, effects, each with
--- type, targetType, and the game's ChosenLabel, ChosenOption, and ChosenThing, and review, the same
--- with PlayerSelections, each with OptionChosen and Votes. world.congressInSession puts the World
--- Congress in session.
+-- The World Congress. world.congress is the World Congress, with inSession,
+-- turnsLeft, maxVotes, costs, the game's cost table from 0, resolutions, each
+-- with type, targetType, targets, the game's possible targets, favored, and
+-- disfavored, proposals, each with the game's TypeName, Name, Description,
+-- Sender, and Target, available, the same with Disabled and cost, effects, each
+-- with type, targetType, and the game's ChosenLabel, ChosenOption, and
+-- ChosenThing, and review, the same with PlayerSelections, each with
+-- OptionChosen and Votes. world.congressInSession puts the World Congress in
+-- session.
 
 return function(env, world, ctx)
 	local indexes = ctx.indexes
@@ -13,7 +15,8 @@ return function(env, world, ctx)
 	ctx.AddBlockerType("ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK", 1215684003)
 	ctx.AddBlockerType("ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION", 1215684004)
 
-	-- Each resolution in the World Congress gets a row, with the text keys the screen reads.
+	-- Each resolution in the World Congress gets a row, with the text keys the
+	-- screen reads.
 	local congress = world.congress or {}
 
 	for _, list in ipairs({ congress.resolutions or {}, congress.effects or {}, congress.review or {} }) do
@@ -28,10 +31,12 @@ return function(env, world, ctx)
 		end
 	end
 
-	-- The World Congress, from world.congress. The calls that take a player's ID give the voting
-	-- entries in a session, as the game does, and the chosen outcomes out of one.
+	-- The World Congress, from world.congress. The calls that take a player's
+	-- ID give the voting entries in a session, as the game does, and the chosen
+	-- outcomes out of one.
 	env.Game.GetWorldCongress = function()
-		-- Returns proposals as the game groups them, each in a category with its cost.
+		-- Returns proposals as the game groups them, each in a category with
+		-- its cost.
 		local function Categories(list)
 			local categories = {}
 

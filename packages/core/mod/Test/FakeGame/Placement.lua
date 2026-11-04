@@ -1,8 +1,10 @@
--- Placement tiles. data.options.districts lists, with the entries FakeGame/Production.lua describes,
--- tiles, the tiles where a district can go, and purchaseTiles, the tiles to buy where it can go, each
--- with x, y, and adjacency, a bonus by YieldTypes name. A wonder in data.options.buildings also has
--- tiles and purchaseTiles. data.options.purchasable lists more tiles to buy, by x and y. Each tile
--- gets a plot, and CanHaveDistrict and CanHaveWonder allow a district or wonder on a tile to buy.
+-- Placement tiles. data.options.districts lists, with the entries
+-- FakeGame/Production.lua describes, tiles, the tiles where a district can go,
+-- and purchaseTiles, the tiles to buy where it can go, each with x, y, and
+-- adjacency, a bonus by YieldTypes name. A wonder in data.options.buildings
+-- also has tiles and purchaseTiles. data.options.purchasable lists more tiles
+-- to buy, by x and y. Each tile gets a plot, and CanHaveDistrict and
+-- CanHaveWonder allow a district or wonder on a tile to buy.
 -- UI.GetInterfaceModeParameter returns the parameter it is given.
 
 return function(env, world, ctx)
@@ -16,11 +18,13 @@ return function(env, world, ctx)
 		end,
 	}
 
-	-- Each placement tile gets a plot, with the adjacency bonuses and the districts and wonders that
-	-- CanHaveDistrict and CanHaveWonder allow on it as a tile to buy.
+	-- Each placement tile gets a plot, with the adjacency bonuses and the
+	-- districts and wonders that CanHaveDistrict and CanHaveWonder allow on it
+	-- as a tile to buy.
 	local adjacencyAt, districtsAt, wondersAt = {}, {}, {}
 
-	-- Adds a fake plot at a tile that world.plots doesn't hold, and returns its index.
+	-- Adds a fake plot at a tile that world.plots doesn't hold, and returns its
+	-- index.
 	local function PlacementPlot(tile)
 		local index = PlotIndex(tile.x, tile.y)
 
@@ -147,8 +151,8 @@ return function(env, world, ctx)
 		-- The tiles to buy, for the fake CityManager.GetCommandTargets.
 		city.purchasable = purchasable
 
-		-- The plot indexes where the district or wonder that params names can go, for the fake
-		-- CityManager.GetOperationTargets.
+		-- The plot indexes where the district or wonder that params names can
+		-- go, for the fake CityManager.GetOperationTargets.
 		city.PlacementPlots = function(params)
 			local option = districtsByHash[params[CITY_OPERATION_TYPES.PARAM_DISTRICT_TYPE]] or buildingsByHash[params[CITY_OPERATION_TYPES.PARAM_BUILDING_TYPE]]
 

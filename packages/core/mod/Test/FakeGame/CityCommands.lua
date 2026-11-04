@@ -1,8 +1,10 @@
--- The city commands. CityCommandResults and CityOperationResults hold the result keys of a CanProduce
--- check, of which FAILURE_REASONS has the game's number. CityOperationTypes and CityCommandTypes hold
--- the values that ask for placement tiles, tiles to buy, and purchases. CityManager.GetCity finds the
--- city that a component ID, such as a holy city's, names. FakeGame/Production.lua, Purchases.lua, and
--- Placement.lua use these and add to CityManager.
+-- The city commands. CityCommandResults and CityOperationResults hold the
+-- result keys of a CanProduce check, of which FAILURE_REASONS has the game's
+-- number. CityOperationTypes and CityCommandTypes hold the values that ask for
+-- placement tiles, tiles to buy, and purchases. CityManager.GetCity finds the
+-- city that a component ID, such as a holy city's, names.
+-- FakeGame/Production.lua, Purchases.lua, and Placement.lua use these and add
+-- to CityManager.
 
 return function(env, world, ctx)
 	env.CityCommandResults = { FAILURE_REASONS = -2028665063, PLOTS = 2001 }

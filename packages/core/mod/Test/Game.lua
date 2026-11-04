@@ -1,5 +1,6 @@
--- Loads core mod files for tests, into an environment that matches the game's Lua. The game runs
--- Havok Script, which matches Lua 5.1.5 except for five functions it doesn't have. See
+-- Loads core mod files for tests, into an environment that matches the game's
+-- Lua. The game runs Havok Script, which matches Lua 5.1.5 except for five
+-- functions it doesn't have. See
 -- docs/findings/lua-contexts.md#lua-51-comparison.
 
 local Game = {}
@@ -7,17 +8,18 @@ local Game = {}
 -- The mod folder, with a trailing slash, from this file's path.
 local MOD_ROOT = debug.getinfo(1, "S").source:match("^@(.*)Test[/\\][^/\\]*$")
 
--- The global functions and libraries a mod file can use. load, setfenv, getfenv, _G, and io are
--- missing in the game. debug is missing in UI states. Functions the game has that aren't checked yet, such as
--- require, are left out until a test needs them.
+-- The global functions and libraries a mod file can use. load, setfenv,
+-- getfenv, _G, and io are missing in the game. debug is missing in UI states.
+-- Functions the game has that aren't checked yet, such as require, are left out
+-- until a test needs them.
 local GLOBALS = {
 	"_VERSION", "assert", "collectgarbage", "error", "getmetatable", "ipairs", "loadstring", "next",
 	"pairs", "pcall", "rawequal", "rawget", "rawset", "select", "setmetatable", "tonumber",
 	"tostring", "type", "unpack", "xpcall", "coroutine", "math", "os",
 }
 
--- The folder that records the JSON of each top-level call, for the bridge tests. npm run test:lua
--- makes it, with one folder per call.
+-- The folder that records the JSON of each top-level call, for the bridge
+-- tests. npm run test:lua makes it, with one folder per call.
 local FIXTURES = MOD_ROOT .. "../bridge/test/lua-fixtures/"
 
 -- The top-level calls to record.
@@ -25,11 +27,13 @@ local RECORDED = {
 	"GetState", "GetChoices", "GetTechTree", "GetCivicTree", "GetGovernorTree", "GetPlacement",
 }
 
--- How many JSON strings each test file has recorded for each call, by "call/file".
+-- How many JSON strings each test file has recorded for each call, by
+-- "call/file".
 local recorded = {}
 
--- Returns each imported file's path in the mod folder, by its name without the extension, from the
--- ImportFiles actions in the .modinfo. The game's include finds only these files.
+-- Returns each imported file's path in the mod folder, by its name without the
+-- extension, from the ImportFiles actions in the .modinfo. The game's include
+-- finds only these files.
 local function ReadImports()
 	local file = assert(io.open(MOD_ROOT .. "SentientSystemsCore.modinfo"))
 	local text = file:read("*a")
@@ -75,8 +79,9 @@ local function TestName()
 	return "unknown"
 end
 
--- Writes the JSON that a top-level call returned, named by the test file and the call's order in it.
--- Without the folder, as when busted runs on its own, it writes nothing.
+-- Writes the JSON that a top-level call returned, named by the test file and
+-- the call's order in it. Without the folder, as when busted runs on its own,
+-- it writes nothing.
 local function Record(call, json)
 	local name = TestName()
 	local key = call .. "/" .. name
@@ -91,7 +96,8 @@ local function Record(call, json)
 	end
 end
 
--- Replaces each top-level call that the file defined with one that records its JSON.
+-- Replaces each top-level call that the file defined with one that records its
+-- JSON.
 local function WrapRecorded(env)
 	for _, call in ipairs(RECORDED) do
 		local original = env["SentientSystems_" .. call]
@@ -113,10 +119,11 @@ local function WrapRecorded(env)
 	end
 end
 
--- Returns a new environment. env.printed lists each line that print printed. env.include(name)
--- runs the file with that name from ImportFiles in the .modinfo, in the same environment, and
--- returns a list of its path, as include does. For a name that ImportFiles doesn't list, it returns
--- an empty list, as the game does.
+-- Returns a new environment. env.printed lists each line that print printed.
+-- env.include(name) runs the file with that name from ImportFiles in the
+-- .modinfo, in the same environment, and returns a list of its path, as include
+-- does. For a name that ImportFiles doesn't list, it returns an empty list, as
+-- the game does.
 function Game.new()
 	local env = { printed = {} }
 

@@ -1,15 +1,19 @@
--- The governors. A player's governors has points, spent, and appointed, each with type, city,
--- with owner and id, established, turnsOnSite, turnsToEstablish, neutralized, loyalty, and
--- promotions, each with type, has, canEarn, base, true for the base ability, level, column, and
--- requires, the types of the promotions it follows, hiddenWithoutPrereqs, true for one that the panel
--- hides until its governor holds them, and canPromote, cityStates, true for one that can
--- govern city-states, and abroad, true for one that can go to other players' capitals. Its candidates
--- lists the governors it can appoint, each with type, canEver, false for one it never can,
--- turnsToEstablish, loyalty, and promotions, as for an appointed governor. canAppoint is false without a title, and cannotAssignTo maps "owner:id" of a city
--- to the reasons a governor can't go there. world.cannotAssign lists the governors of Secret
--- Societies. Without governors the player has no GetGovernors, as without Rise and Fall. A city's
--- governor is { type, established } for a governor, false for none in a game with Rise and Fall, and
--- missing without it, where the city has no GetAssignedGovernor.
+-- The governors. A player's governors has points, spent, and appointed, each
+-- with type, city, with owner and id, established, turnsOnSite,
+-- turnsToEstablish, neutralized, loyalty, and promotions, each with type, has,
+-- canEarn, base, true for the base ability, level, column, and requires, the
+-- types of the promotions it follows, hiddenWithoutPrereqs, true for one that
+-- the panel hides until its governor holds them, and canPromote, cityStates,
+-- true for one that can govern city-states, and abroad, true for one that can
+-- go to other players' capitals. Its candidates lists the governors it can
+-- appoint, each with type, canEver, false for one it never can,
+-- turnsToEstablish, loyalty, and promotions, as for an appointed governor.
+-- canAppoint is false without a title, and cannotAssignTo maps "owner:id" of a
+-- city to the reasons a governor can't go there. world.cannotAssign lists the
+-- governors of Secret Societies. Without governors the player has no
+-- GetGovernors, as without Rise and Fall. A city's governor is { type,
+-- established } for a governor, false for none in a game with Rise and Fall,
+-- and missing without it, where the city has no GetAssignedGovernor.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes
@@ -21,12 +25,13 @@ return function(env, world, ctx)
 	env.GameInfo.GovernorPromotionPrereqs = ctx.Callable({})
 	env.GameInfo.GovernorPromotionConditions = ctx.Callable({})
 
-	-- Each appointed governor gets a row, with its name, title, and a made-up hash, and each of its
-	-- promotions a row and a place in its set.
+	-- Each appointed governor gets a row, with its name, title, and a made-up
+	-- hash, and each of its promotions a row and a place in its set.
 	for _, data in pairs(world.players or {}) do
 		local governorData = data.governors or {}
 
-		-- Rows for a governor's promotions, with their place in its tree and their prerequisites.
+		-- Rows for a governor's promotions, with their place in its tree and
+		-- their prerequisites.
 		local function AddPromotions(governor)
 			for _, promotion in ipairs(governor.promotions or {}) do
 				AddRow("GovernorPromotions", "GovernorPromotionType", promotion.type)
@@ -165,7 +170,8 @@ return function(env, world, ctx)
 					}
 				end
 
-				-- The candidates by hash, and the promotions each appointed governor can earn.
+				-- The candidates by hash, and the promotions each appointed
+				-- governor can earn.
 				local candidates, earnable, appointed = {}, {}, {}
 
 				for _, candidate in ipairs(governorData.candidates or {}) do
@@ -208,8 +214,9 @@ return function(env, world, ctx)
 					CanEarnPromotion = function(_, _, promotionHash)
 						return earnable[promotionHash] == true
 					end,
-					-- Whether a city can take a governor, from governorData.cannotAssignTo, with the game's
-					-- failure reasons.
+					-- Whether a city can take a governor, from
+					-- governorData.cannotAssignTo, with the game's failure
+					-- reasons.
 					CanAssignGovernor = function(_, _, city)
 						local reasons = (governorData.cannotAssignTo or {})[city:GetOwner() .. ":" .. city:GetID()]
 
