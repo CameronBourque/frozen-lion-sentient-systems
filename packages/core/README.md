@@ -30,6 +30,17 @@ A state section is one key of the table that `SentientSystems_GetState` returns.
 
 The contract test checks the schema against the JSON that the Lua test records, so a section needs no TypeScript test.
 
+## Parts of an action
+
+An action is one Lua function that the bridge calls to run a request function of the game's own UI. Paths are relative to this folder. Each action step adds its rows.
+
+| Part | Where |
+| --- | --- |
+| Result format | `SentientSystems_RunAction` in `mod/Scripts/Actions/SentientSystemsCore_Actions.lua`, and `ACTION_RESULT` in `bridge/src/actions/actions.ts` |
+| Lua test | `mod/Test/Scripts/Actions/SentientSystemsCore_Actions.test.lua` |
+| Typed function | `bridge/src/actions/<area>.ts`, which calls `sendAction` |
+| Test | `bridge/test/actions/<area>.test.ts`, with a fake client |
+
 ## Parts of a choice
 
 A choice is one key of the table that `SentientSystems_GetChoices` returns. It has the same parts as a state section, in other folders.

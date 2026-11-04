@@ -4,6 +4,7 @@
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_State")
 SentientSystems_Include("SentientSystemsCore_Choices")
+SentientSystems_Include("SentientSystemsCore_Actions")
 SentientSystems_Include("SentientSystemsCore_Placement")
 SentientSystems_Include("SentientSystemsCore_TreesResearch")
 SentientSystems_Include("SentientSystemsCore_TreesGovernors")

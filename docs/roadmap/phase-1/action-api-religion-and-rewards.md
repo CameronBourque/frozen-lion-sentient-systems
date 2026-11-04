@@ -4,7 +4,7 @@ Add the actions for the pantheon, religion, governor, envoy, great person, and a
 
 ## Tasks
 
-1. **Religion.** Add actions for the pantheon, for founding a religion, and for choosing a belief. Read the calls from `PantheonChooser.lua` and `ReligionScreen.lua`. Add the typed functions to `src/actions.ts`. Commit: `feat(core): add the religion actions`.
+1. **Religion.** Add actions for the pantheon, for founding a religion, and for choosing a belief. Read the calls from `PantheonChooser.lua` and `ReligionScreen.lua`. Add the typed functions to `src/actions/religion.ts`. Commit: `feat(core): add the religion actions`.
 2. **Governors.** Add actions for appointing a governor, taking an opportunity, promoting, and assigning an idle governor. Read the calls from `GovernorPanel.lua`. Commit: `feat(core): add the governor actions`.
 3. **Envoys.** Add an action that gives an influence token to a city-state. Read the call from the envoys view of `CityStates.lua`. Commit: `feat(core): add the envoy action`.
 4. **Great people.** Add an action that claims a great person. Read the call from `GreatPeoplePopup.lua`. Commit: `feat(core): add the great person action`.

@@ -19,6 +19,7 @@
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
 			<File>Scripts/SentientSystemsCore_Governors.lua</File>
 			<File>Scripts/SentientSystemsCore_Eras.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -66,6 +67,7 @@
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
 		<File>Scripts/SentientSystemsCore_Governors.lua</File>
 		<File>Scripts/SentientSystemsCore_Eras.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
