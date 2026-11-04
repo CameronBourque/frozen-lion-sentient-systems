@@ -37,7 +37,7 @@ Last, add a short Node script to `npm run lint` that checks the Lua comments.
 
 ## Tasks
 
-Each rewrap task changes only line breaks in full-line comments. Comment length isn't checked until task 5 for TypeScript and JavaScript, and task 14 for Lua, so each commit passes lint by itself. The PR title check has no `style` type, so the rewraps use `chore`.
+Each rewrap task changes only line breaks in full-line comments. Comment length isn't checked until task 5 for TypeScript and JavaScript, and task 13 for Lua, so each commit passes lint by itself. The PR title check has no `style` type, so the rewraps use `chore`.
 
 1. **Bridge schemas.** Rewrap the comments in `packages/core/bridge/src/state/`, `choices/`, `trees/`, and `placement/`. Commit: `chore(core): wrap the schema comments at 80 columns`.
 2. **Bridge source.** Rewrap the rest of `packages/core/bridge/src/`. Commit: `chore(core): wrap the bridge comments at 80 columns`.
@@ -51,8 +51,7 @@ Each rewrap task changes only line breaks in full-line comments. Comment length 
 10. **Fake game headers.** Cut each header comment in `packages/core/mod/Test/FakeGame/` to a purpose of one to three lines. Drop the field-by-field data shape, which the feature's tests already show. Split the commit by folder if the diff is too big to review. Commit: `chore(core): shorten the fake game header comments`.
 11. **Game line numbers.** Remove the `lines N to M` ranges from the comments in `packages/core/mod/`, and keep the function and file names. Commit: `chore(core): remove the game line numbers from the mod comments`.
 12. **Example comments.** Remove the examples in `packages/core/mod/` comments, such as "such as TRADE". Turn one into a test only if no test covers it already. Commit: `chore(core): remove the examples from the mod comments`.
-13. **Lua tests.** Rewrap the rest of `packages/core/mod/Test/`. Commit: `chore(core): wrap the Lua test comments at 80 columns`.
-14. **Lua check.** Add `scripts/lua-comments/`, which fails on a full-line Lua comment over 80 columns, counting a tab as 4, with its tests. Run it from `npm run lint`, and describe it under **Lint and test** in [code.md](../rules/code.md#lint-and-test). Commit: `chore: limit Lua comment lines to 80 columns`.
+13. **Lua check.** Add `scripts/lua-comments/`, which fails on a full-line Lua comment over 80 columns, counting a tab as 4 and a character, not a byte, as 1, with its tests. Run it from `npm run lint`, and describe it under **Lint and test** in [code.md](../rules/code.md#lint-and-test). Commit: `chore: limit Lua comment lines to 80 columns`.
 
 ## Done when
 
