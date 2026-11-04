@@ -203,8 +203,7 @@ local function GetGovernmentOption(culture, row, currentIndex)
 	end
 
 	if not culture:IsGovernmentUnlocked(row.Hash) then
-		-- true for a locked government with no civic, such as one a scenario
-		-- adds.
+		-- true for a locked government with no civic, which a scenario can add.
 		option.locked = row.PrereqCivic or true
 	end
 

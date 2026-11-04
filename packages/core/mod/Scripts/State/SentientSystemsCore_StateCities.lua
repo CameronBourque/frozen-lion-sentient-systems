@@ -95,9 +95,8 @@ local function GetGrowth(city)
 	return result
 end
 
--- Returns the amenities the city has and needs, its mood, such as
--- HAPPINESS_CONTENT, and the amenities it loses to war weariness. The city
--- panel shows have minus need.
+-- Returns the amenities the city has and needs, its mood, and the amenities it
+-- loses to war weariness. The city panel shows have minus need.
 local function GetAmenities(city)
 	local growth = city:GetGrowth()
 	local mood = GameInfo.Happinesses[growth:GetHappiness()]
@@ -110,10 +109,9 @@ local function GetAmenities(city)
 	}
 end
 
--- Returns the city's governor, with type, such as GOVERNOR_THE_MERCHANT, and
--- established, whether they have settled in, or nil for none, and in a game
--- without Rise and Fall, which adds governors. See CreateCityStatusInstance in
--- ReportScreen_Expansion1.lua.
+-- Returns the city's governor, with type and established, whether they have
+-- settled in, or nil for none, and in a game without Rise and Fall, which adds
+-- governors. See CreateCityStatusInstance in ReportScreen_Expansion1.lua.
 local function GetGovernor(city)
 	local governor = city.GetAssignedGovernor ~= nil and city:GetAssignedGovernor()
 

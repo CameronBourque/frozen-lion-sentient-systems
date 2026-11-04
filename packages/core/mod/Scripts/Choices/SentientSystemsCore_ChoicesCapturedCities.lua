@@ -6,8 +6,8 @@
 -- RazeCity.lua and its replacement in RazeCity_Expansion2.lua, and OnOpen in
 -- DisloyalCityChooser.lua.
 
--- Returns the name of a CityDestroyDirectives value, such as KEEP, which is how
--- the choice names an option.
+-- Returns the name of a CityDestroyDirectives value, which is how the choice
+-- names an option.
 local function DirectiveName(directive)
 	for name, value in pairs(CityDestroyDirectives) do
 		if value == directive then

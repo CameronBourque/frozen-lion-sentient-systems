@@ -29,18 +29,16 @@ function SentientSystems_Include(name)
 	return loaded
 end
 
--- Returns whether Gathering Storm is on. Its screens, such as
--- GovernmentScreen_Expansion2.lua, read rows from Governments_XP2, which only
--- the expansion adds.
+-- Returns whether Gathering Storm is on. Its screens read rows from
+-- Governments_XP2, which only the expansion adds.
 function SentientSystems_HasExpansion2()
 	return GameInfo.Governments_XP2 ~= nil
 end
 
--- Returns whether any of the end-turn blockers named, such as
--- ENDTURN_BLOCKING_ARTIFACT, blocks the player's turn. Some of the game's calls
--- for a blocker's screen crash the game when nothing is waiting, so a choice
--- checks its blocker first. A name the game doesn't have never blocks. See
--- docs/findings/game-spies.md.
+-- Returns whether any of the end-turn blockers named blocks the player's turn.
+-- Some of the game's calls for a blocker's screen crash the game when nothing
+-- is waiting, so a choice checks its blocker first. A name the game doesn't
+-- have never blocks. See docs/findings/game-spies.md.
 function SentientSystems_HasBlocker(playerID, ...)
 	local values = {}
 

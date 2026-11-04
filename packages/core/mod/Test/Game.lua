@@ -10,8 +10,8 @@ local MOD_ROOT = debug.getinfo(1, "S").source:match("^@(.*)Test[/\\][^/\\]*$")
 
 -- The global functions and libraries a mod file can use. load, setfenv,
 -- getfenv, _G, and io are missing in the game. debug is missing in UI states.
--- Functions the game has that aren't checked yet, such as require, are left out
--- until a test needs them.
+-- Functions the game has that aren't checked yet are left out until a test
+-- needs them.
 local GLOBALS = {
 	"_VERSION", "assert", "collectgarbage", "error", "getmetatable", "ipairs", "loadstring", "next",
 	"pairs", "pcall", "rawequal", "rawget", "rawset", "select", "setmetatable", "tonumber",
@@ -162,7 +162,7 @@ function Game.new()
 	return env
 end
 
--- Runs a mod file, such as "Scripts/SentientSystemsCore_Common.lua", in env.
+-- Runs a mod file in env.
 function Game.run(env, path)
 	local chunk = assert(loadfile(MOD_ROOT .. path))
 

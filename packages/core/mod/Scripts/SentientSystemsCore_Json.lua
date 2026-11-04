@@ -27,8 +27,7 @@ local ESCAPES = {
 -- and the percent sign. The game's log prints text as a printf format, so a raw
 -- % prints garbage, and a "% s" crashes the game, which it did for a governor's
 -- description. As \u0025 the bridge still reads a %. See
--- docs/findings/tuner-commands.md. Other bytes, such as UTF-8 text, pass
--- through.
+-- docs/findings/tuner-commands.md. Other bytes pass through.
 local function EncodeString(text)
 	return "\"" .. text:gsub("[%c\"\\%%]", function(char)
 		return ESCAPES[char] or string.format("\\u%04x", char:byte())

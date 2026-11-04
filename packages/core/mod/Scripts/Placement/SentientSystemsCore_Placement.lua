@@ -111,11 +111,11 @@ function SentientSystems_GetWonderTiles(city, purchasable, row)
 end
 
 -- Returns the tiles where the city with ID cityID, of the player with ID
--- playerID, can place the district or the wonder typeName, such as
--- DISTRICT_CAMPUS, as JSON. Raises an error for an ID with no player or city,
--- and for a type that isn't a district or a wonder. The bridge reads it through
--- the stash, as SentientSystems_Stash(SentientSystems_GetPlacement(playerID,
--- cityID, typeName)).
+-- playerID, can place the district or the wonder typeName, as JSON. Raises an
+-- error for an ID with no player or city, and for a type that isn't a district
+-- or a wonder. The bridge reads it through the stash, as
+-- SentientSystems_Stash(SentientSystems_GetPlacement(playerID, cityID,
+-- typeName)).
 function SentientSystems_GetPlacement(playerID, cityID, typeName)
 	local player = Players[playerID]
 

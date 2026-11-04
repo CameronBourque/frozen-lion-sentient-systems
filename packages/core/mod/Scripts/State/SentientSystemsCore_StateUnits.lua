@@ -20,7 +20,7 @@ function SentientSystems_IsUnitOnMap(unit)
 	return unit:GetX() ~= OFF_MAP and not unit:IsDead() and not unit:IsDelayedDeath()
 end
 
--- Returns the type of each promotion index in a list, such as PROMOTION_RANGER.
+-- Returns the type of each promotion index in a list.
 local function PromotionTypes(indexes)
 	local types = {}
 

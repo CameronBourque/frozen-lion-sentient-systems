@@ -8,17 +8,15 @@
 -- hand.
 local MIN_SUZERAIN_ENVOYS = 3
 
--- The prefix of the leader types that name each kind of city-state, such as
--- LEADER_MINOR_CIV_SCIENTIFIC.
+-- The prefix of the leader types that name each kind of city-state.
 local KIND_PREFIX = "LEADER_MINOR_CIV_"
 local KINDS = { SCIENTIFIC = true, RELIGIOUS = true, TRADE = true, CULTURAL = true, MILITARISTIC = true, INDUSTRIAL = true }
 
 -- The sizes in the text keys of the bonuses at 1, 3, and 6 envoys.
 local BONUS_SIZES = { "SMALL", "MEDIUM", "LARGE" }
 
--- Returns the kind of a city-state, such as TRADE, from its leader or the
--- leader it inherits from, or nil for a leader of no kind. See GetCityStateType
--- in CityStates.lua.
+-- Returns the kind of a city-state from its leader or the leader it inherits
+-- from, or nil for a leader of no kind. See GetCityStateType in CityStates.lua.
 local function GetKind(playerID)
 	local leader = PlayerConfigurations[playerID]:GetLeaderTypeName()
 	local row = GameInfo.Leaders[leader]

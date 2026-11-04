@@ -30,9 +30,8 @@ local function Numbers(list)
 	return numbers
 end
 
--- Returns the proposals of a call such as GetProposals, each with its
--- category's cost, sorted by type so the order doesn't depend on the game's
--- hashes.
+-- Returns the proposals of a call, each with its category's cost, sorted by
+-- type so the order doesn't depend on the game's hashes.
 local function GetProposalEntries(categories)
 	local entries = {}
 

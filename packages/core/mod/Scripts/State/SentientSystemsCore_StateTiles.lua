@@ -4,10 +4,10 @@
 -- docs/findings/tile-visibility.md. SentientSystemsCore_State.lua loads this
 -- file. The shape is in bridge/src/state/tiles.ts.
 
--- Returns the type of the plot's resource, such as RESOURCE_IRON, or nil when
--- the plot has none or the player can't see it yet. Some resources, such as
--- iron, stay hidden until the player has a tech. The game's tooltip checks
--- IsResourceVisible the same way, in PlotToolTip.lua.
+-- Returns the type of the plot's resource, or nil when the plot has none or the
+-- player can't see it yet. Some resources stay hidden until the player has a
+-- tech. The game's tooltip checks IsResourceVisible the same way, in
+-- PlotToolTip.lua.
 local function GetResource(plot, resources)
 	local resource = GameInfo.Resources[plot:GetResourceType()]
 

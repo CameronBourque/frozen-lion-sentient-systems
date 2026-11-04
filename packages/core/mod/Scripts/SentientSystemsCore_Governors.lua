@@ -30,8 +30,8 @@ end
 -- Returns whether the panel hides a promotion: its row in
 -- GameInfo.GovernorPromotionConditions says HiddenWithoutPrereqs, and the
 -- governor doesn't hold every promotion it follows. Without an appointed
--- governor, such as a candidate, it is hidden. See IsPromotionHidden and
--- HasPromotionPrerequisites in GovernorSupport.lua.
+-- governor it is hidden. See IsPromotionHidden and HasPromotionPrerequisites in
+-- GovernorSupport.lua.
 function SentientSystems_IsPromotionHidden(promotion, governor)
 	local hiddenWithoutPrerequisites = false
 

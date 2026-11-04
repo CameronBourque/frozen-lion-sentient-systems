@@ -1,8 +1,7 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns a tooltip line, as the game's English text has it, such as "+33 from
--- Envoys".
+-- Returns a tooltip line, as the game's English text has it.
 local function Line(amount, label)
 	return (amount >= 0 and "+" or "") .. amount .. " from " .. label
 end

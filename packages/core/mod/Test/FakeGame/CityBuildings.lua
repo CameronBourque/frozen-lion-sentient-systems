@@ -54,9 +54,8 @@ return function(env, world, ctx)
 			buildingsByHash[hashes[building.type]] = building
 		end
 
-		-- A building's yield for an index and a yield type such as
-		-- "YIELD_GOLD", from building.yields, which maps a YieldTypes name to
-		-- an amount.
+		-- A building's yield for an index and a yield type, from
+		-- building.yields, which maps a YieldTypes name to an amount.
 		function city.GetBuildingYield(_, index, yieldType)
 			return ((buildings[index] or {}).yields or {})[yieldType:gsub("^YIELD_", "")] or 0
 		end

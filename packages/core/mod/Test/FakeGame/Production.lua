@@ -181,8 +181,7 @@ return function(env, world, ctx)
 				GetDistrictCost = function(_, index)
 					return districtsByIndex[index].cost
 				end,
-				-- 0 for a district the queue doesn't know, such as a built city
-				-- center.
+				-- 0 for a district the queue doesn't know.
 				GetDistrictProgress = function(_, index)
 					return (districtsByIndex[index] or {}).progress or 0
 				end,

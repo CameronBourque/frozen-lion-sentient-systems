@@ -11,9 +11,9 @@ SentientSystems_Include("SentientSystemsCore_Placement")
 -- GameInfo.Yields, the player's store of it, the text key the panel adds when
 -- the player can't afford an item, and whether the panel tries a unit or a
 -- building with it. The panel tries every district with each yield. A city can
--- buy some units and buildings with faith that the game marks for gold, such as
--- with a policy, and the panel asks the city for those. See GetData in
--- ProductionPanel.lua, 2084 to 2097, and 2188 to 2201.
+-- buy some units and buildings with faith that the game marks for gold, as with
+-- a policy, and the panel asks the city for those. See GetData in
+-- ProductionPanel.lua.
 local PURCHASE_YIELDS = {
 	{
 		key = "gold",
