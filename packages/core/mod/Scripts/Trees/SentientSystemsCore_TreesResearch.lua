@@ -1,15 +1,17 @@
--- Builds one player's tech tree or civic tree as JSON for the bridge, in a call of its own, as the
--- tree screen shows it, so the agent can plan a route through the tree. It reads the tree from the
--- running game, because the Tech and Civic Shuffle mode changes it. See
--- docs/design/core/in-game-lua.md. The shape is in bridge/src/trees/research.ts. The checks follow
--- GetCurrentData and PopulateNode in TechTree.lua and CivicsTree.lua.
+-- Builds one player's tech tree or civic tree as JSON for the bridge, in a call
+-- of its own, as the tree screen shows it, so the agent can plan a route
+-- through the tree. It reads the tree from the running game, because the Tech
+-- and Civic Shuffle mode changes it. See docs/design/core/in-game-lua.md. The
+-- shape is in bridge/src/trees/research.ts. The checks follow GetCurrentData
+-- and PopulateNode in TechTree.lua and CivicsTree.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_ChoicesResearch")
 
--- Returns the number of rows that the player has, and the latest era of those rows, or nil when the
--- player has none. has(store, index) checks a row in the player's store.
+-- Returns the number of rows that the player has, and the latest era of those
+-- rows, or nil when the player has none. has(store, index) checks a row in the
+-- player's store.
 local function Researched(rows, store, has)
 	local count, highest = 0, nil
 
@@ -26,11 +28,13 @@ local function Researched(rows, store, has)
 	return count, highest
 end
 
--- The game's calls for the tech tree and the civic tree. Each screen lists the nodes from UITree,
--- with the prerequisites the running game has. See PopulateItemData in TechTree.lua, lines 1374 to
--- 1447, and in CivicsTree.lua, lines 1566 to 1645. Without the Tech and Civic Shuffle mode, a store
--- may have no IsTechRevealed or IsCivicRevealed, and every node is revealed. See GetCurrentData in
--- TechTree.lua, lines 1244 to 1252, and in CivicsTree.lua, lines 1418 to 1428.
+-- The game's calls for the tech tree and the civic tree. Each screen lists the
+-- nodes from UITree, with the prerequisites the running game has. See
+-- PopulateItemData in TechTree.lua, lines 1374 to 1447, and in CivicsTree.lua,
+-- lines 1566 to 1645. Without the Tech and Civic Shuffle mode, a store may have
+-- no IsTechRevealed or IsCivicRevealed, and every node is revealed. See
+-- GetCurrentData in TechTree.lua, lines 1244 to 1252, and in CivicsTree.lua,
+-- lines 1418 to 1428.
 local TREES = {
 	tech = {
 		nodes = function()
@@ -56,8 +60,8 @@ local TREES = {
 		nodes = function()
 			return UITree.GetAvailableCivics()
 		end,
-		-- A civic node holds its index in CivicType, and its type in CivicName. See PopulateItemData
-		-- in CivicsTree.lua, line 1584.
+		-- A civic node holds its index in CivicType, and its type in CivicName.
+		-- See PopulateItemData in CivicsTree.lua, line 1584.
 		name = "CivicName",
 		prerequisites = "PrereqCivicTypes",
 		row = function(name)
@@ -75,8 +79,9 @@ local TREES = {
 	},
 }
 
--- Returns a node's status, as the tree screen colors it: researched, current, ready, or blocked.
--- See GetCurrentData in TechTree.lua, lines 1099 to 1109, and in CivicsTree.lua, lines 1272 to 1284.
+-- Returns a node's status, as the tree screen colors it: researched, current,
+-- ready, or blocked. See GetCurrentData in TechTree.lua, lines 1099 to 1109,
+-- and in CivicsTree.lua, lines 1272 to 1284.
 local function Status(tree, reader, row)
 	if tree.has(reader.store, row.Index) then
 		return "researched"
@@ -89,9 +94,10 @@ local function Status(tree, reader, row)
 	return "blocked"
 end
 
--- Returns the name of each node by its type: its type when the player has revealed it, and "?1",
--- "?2", and so on, in the tree's order, when the screen shows it as Unrevealed. The numbers link a
--- hidden node to the nodes it leads to within one call, as the screen's lines do.
+-- Returns the name of each node by its type: its type when the player has
+-- revealed it, and "?1", "?2", and so on, in the tree's order, when the screen
+-- shows it as Unrevealed. The numbers link a hidden node to the nodes it leads
+-- to within one call, as the screen's lines do.
 local function NodeNames(tree, reader, nodes)
 	local names = {}
 	local hidden = 0
@@ -108,11 +114,12 @@ local function NodeNames(tree, reader, nodes)
 	return names
 end
 
--- Returns a node as the tree screen shows it. A revealed node has what the chooser shows, except
--- that the screen shows no boost or progress for a researched node, and turns only while they are
--- above 0. An unrevealed node shows no name, cost, boost, or unlocks. The node in research shows the
--- turns from GetTurnsLeft. See PopulateNode in TechTree.lua, lines 778 to 967, and in CivicsTree.lua,
--- lines 889 to 1081.
+-- Returns a node as the tree screen shows it. A revealed node has what the
+-- chooser shows, except that the screen shows no boost or progress for a
+-- researched node, and turns only while they are above 0. An unrevealed node
+-- shows no name, cost, boost, or unlocks. The node in research shows the turns
+-- from GetTurnsLeft. See PopulateNode in TechTree.lua, lines 778 to 967, and in
+-- CivicsTree.lua, lines 889 to 1081.
 local function Node(tree, reader, node, names)
 	local row = tree.row(node[tree.name])
 	local status = Status(tree, reader, row)
@@ -153,10 +160,11 @@ local function Node(tree, reader, node, names)
 	return entry
 end
 
--- Returns the player and each player they have met, with the number of nodes they have researched,
--- and the latest era they have researched in, as the timeline at the bottom of the screen marks it.
--- The era is left out for a player who has researched nothing. See GetCurrentData in TechTree.lua,
--- lines 1143 to 1177, and in CivicsTree.lua, lines 1317 to 1352.
+-- Returns the player and each player they have met, with the number of nodes
+-- they have researched, and the latest era they have researched in, as the
+-- timeline at the bottom of the screen marks it. The era is left out for a
+-- player who has researched nothing. See GetCurrentData in TechTree.lua, lines
+-- 1143 to 1177, and in CivicsTree.lua, lines 1317 to 1352.
 local function PlayerProgress(tree, player)
 	local players = {}
 	local diplomacy = player:GetDiplomacy()
@@ -195,15 +203,15 @@ local function GetTree(kindName, playerID)
 	return SentientSystems_EncodeJson({ nodes = entries, players = PlayerProgress(tree, player) })
 end
 
--- Returns the tech tree of the player with ID playerID as JSON. Raises an error for an ID with no
--- player. The bridge reads it through the stash, as
+-- Returns the tech tree of the player with ID playerID as JSON. Raises an error
+-- for an ID with no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetTechTree(playerID)).
 function SentientSystems_GetTechTree(playerID)
 	return GetTree("tech", playerID)
 end
 
--- Returns the civic tree of the player with ID playerID as JSON, in the same form as the tech tree.
--- Raises an error for an ID with no player.
+-- Returns the civic tree of the player with ID playerID as JSON, in the same
+-- form as the tech tree. Raises an error for an ID with no player.
 function SentientSystems_GetCivicTree(playerID)
 	return GetTree("civic", playerID)
 end
