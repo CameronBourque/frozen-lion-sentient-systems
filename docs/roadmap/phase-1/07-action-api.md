@@ -24,3 +24,4 @@ In a running game, each action works once from the bridge, and each one returns 
 
 - Each request function, its Lua state, and its result, in [game-api.md](../../findings/game-api.md#results). If the file passes 150 lines, move the actions into a new finding, `findings/game-actions.md`.
 - The result format and the reasons, in [in-game-lua.md](../../design/core/in-game-lua.md).
+- The parts of an action, in a new `## Parts of an action` table in the [core README](../../../packages/core/README.md): the Lua function in `Scripts/SentientSystemsCore_Actions.lua`, its Lua test, the typed function in `src/actions.ts`, and its test with a fake client.
