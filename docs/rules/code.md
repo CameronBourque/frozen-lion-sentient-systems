@@ -33,6 +33,7 @@ Most code should read without comments. Name things so they explain themselves.
 - **Put each comment where its subject is.** A comment above a function describes the whole function. A comment about one step goes on the line before that step.
 - **Keep data shapes out of comments.** The zod schemas in `packages/core/bridge/src/` are the home of the core mod's JSON shapes. Give a field a `.describe()` note when its name doesn't say what it means, such as how it is rounded or which screen it matches. Link to the schema from the code.
 - **Keep examples out of comments.** Write them as tests.
+- **Name the game's function, not its line numbers.** When code copies a game function, name the function and its file. Line numbers go stale when the game updates, and the name still finds the code.
 - **Don't repeat a document.** Link to it instead.
 - **Keep comment lines to 80 characters or fewer.**
 
