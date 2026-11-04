@@ -1,15 +1,5 @@
--- Religion. world.beliefs lists the ruleset's beliefs, each with type, class,
--- BELIEF_CLASS_PANTHEON when missing, description, and taken, true when a
--- player's pantheon or religion holds it. A player's pantheon is its belief
--- type, and canCreatePantheon is true when it can found one. A player's
--- religion is the religion it founded, with type, name, beliefs, by type, and
--- holyCity, a city ID, beliefsEarned the beliefs it has earned, and prophet is
--- true when it has a Great Prophet. A city's religions lists the religions in
--- it, each with type and followers, and majority is its majority religion's
--- type. world.pantheonFaith is the faith the next pantheon needs, 25 when
--- missing. world.religions lists more religions, each with type, pantheon,
--- customName, and founded. A belief's tooMany is true when a religion has too
--- many of its class. The player's faith store is in FakeGame/Stores.lua.
+-- Religion. Fakes the ruleset's beliefs, a player's pantheon and religion, and
+-- the religions in a city. FakeGame/Stores.lua holds the faith store.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes

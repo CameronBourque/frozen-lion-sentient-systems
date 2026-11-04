@@ -1,15 +1,5 @@
--- The player managers. Game.GetPlayers, with Major = true, and
--- PlayerManager.GetAlive, GetAliveMajorIDs, GetAliveMajors, and GetAliveMinors
--- list the players in ID order, a player being a minor when it has data.minor.
--- Game.IsAllowStrategicCommands is false while a player's noStrategicCommands
--- is true. Game.GetCurrentGameTurn is world.turn, or 1. A player's playerName
--- is its leader's name, and a city-state's minor has name, leader, inherit, the
--- leader it inherits from, and traits, the text keys of its suzerain bonus,
--- which get GameInfo.Leaders and GameInfo.LeaderTraits rows. A player's
--- revealed and visible lists name plots by x and y, such as revealed = { { 17,
--- 14 } }, and a visible plot is revealed too. Each of PlayersVisibility's calls
--- takes a plot index, or x and y. A unit with hidden is not visible to
--- IsUnitVisible. A player's freeCities is true for the Free Cities.
+-- The player managers. Fakes which players are alive, major or minor, what each
+-- has revealed and sees, and the game turn.
 
 return function(env, world, ctx)
 	local PlotIndex = ctx.PlotIndex

@@ -1,11 +1,5 @@
--- Deals that other players put to a player. A player's proposals maps the ID
--- of the player who proposes to its deal, with items, gift, and valid, which is
--- true when missing, and started, which is false for a session the player
--- started. Each item has id, type, a DealItemTypes name such as "GOLD", from,
--- the ID of the player who gives it, amount, duration, value, a type name, a
--- city ID, or a player ID, sub, an agreement name such as "OPEN_BORDERS" or a
--- city sub type, war, a war type, name, a text key, locked, unacceptable, and
--- parent, the ID of the item it comes with.
+-- Deals that other players put to a player. Fakes a player's proposals and the
+-- items of each.
 
 local AGREEMENTS = {
 	ALLIANCE = 1764885355,

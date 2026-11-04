@@ -1,12 +1,6 @@
--- The game's eras. world.era is the era, with type, final, countdown, which is
--- -1 when missing, minEnd, and maxEnd. A player's era has score, age, heroic,
--- golden, dark, or normal, dark and golden, the score's thresholds, previous
--- and current, the score's sources, each a table of its text to its points, and
--- commemorations, the active dedications' category names, such as "ECONOMIC".
--- Without world.era, as in a game without Rise and Fall, there are none of the
--- era's calls. A player's era.loyalty is its civilian loyalty. GameInfo.Eras
--- starts with ERA_ANCIENT, ERA_CLASSICAL, and ERA_MEDIEVAL, each with a
--- ChronologyIndex. See FakeGame/Dedications.lua for the era change.
+-- The game's eras. Fakes the era, a player's era score and age, and its
+-- commemorations. Without world.era there are none of the era's calls, as
+-- without Rise and Fall. FakeGame/Dedications.lua adds the era change.
 
 return function(env, world, ctx)
 	local indexes = ctx.indexes

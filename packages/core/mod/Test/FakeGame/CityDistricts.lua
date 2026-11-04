@@ -1,10 +1,5 @@
--- A city's districts. data.districts lists each district with type, x, y,
--- complete, which is true when missing, pillaged, yields, and adjacency, each a
--- YieldTypes name to an amount, and buildings, which FakeGame/CityBuildings.lua
--- describes. A city's capital is true or false. Its defense has strength,
--- garrison, and walls, the last two each with damage and max. Without them the
--- garrison has damage 0 and max 200 and the walls 0 and 0. The city center is
--- what the player's GetDistricts():FindID returns by the city's ID.
+-- A city's districts. Fakes each district's yields, adjacency, and defense, and
+-- the player's district lookup by city ID.
 
 return function(env, world, ctx)
 	local indexes, YIELD_NAMES, List, Layout = ctx.indexes, ctx.YIELD_NAMES, ctx.List, ctx.Layout

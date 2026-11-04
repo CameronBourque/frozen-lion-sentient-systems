@@ -1,7 +1,5 @@
--- Deals. A player's deals lists the gold and resource deals it has, each with
--- player, the other player's ID, gold or resource and amount, duration,
--- enacted, and outgoing, true for what the player pays. A deal with several
--- items has one entry for each, in a deal of its own.
+-- Deals. Fakes a player's gold and resource deals, with one entry for each item
+-- of a deal.
 
 return function(env, world, ctx)
 	local indexes = ctx.indexes

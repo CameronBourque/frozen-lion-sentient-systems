@@ -1,11 +1,5 @@
--- The era change. A player's dedications is the era change it is making them
--- for, with era, an era type, age, heroic, golden, dark, or normal, allowed,
--- the picks it needs, alwaysNormal, true for a player always allowed the normal
--- bonus too, and options, the category names, such as "SCIENTIFIC", which give
--- each its row in GameInfo.CommemorationTypes, with the keys
--- LOC_MOMENT_CATEGORY_<name>, with _BONUS_GOLDEN_AGE, _BONUS_NORMAL_AGE, and
--- _BONUS_DARK_AGE. The ages are the same for every player here, as the tests
--- use one. Registered after Eras, it adds to Eras' Game.GetEras.
+-- The era change. Fakes a player's dedications. Registered after Eras, it adds
+-- to Eras' Game.GetEras.
 
 return function(env, world, ctx)
 	local indexes = ctx.indexes

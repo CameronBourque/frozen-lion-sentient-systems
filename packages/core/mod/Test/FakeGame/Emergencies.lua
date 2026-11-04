@@ -1,11 +1,5 @@
--- The emergencies a player faces. A player's emergencies are the entries of the
--- game's GetEmergencyInfoTable, each with type, an EmergencyType, hostile,
--- waiting, true for the one GetNextBlockingEmergency returns, and the game's
--- own fields, such as TargetID, TargetCityName, NameText, ShortDescriptionText,
--- GoalDescription, TurnsLeft, HasBegun, MemberIDs, GoalsTable,
--- TargetGoalsTable, ScoreSourcesTable, BuffsText, ExtraBuffs, the
--- MemberRewardsText lists, TargetRewardsText, and ExtraRewards, with a missing
--- text 0 or "" and a missing list empty.
+-- The emergencies a player faces. Fakes the game's GetEmergencyInfoTable and
+-- GetNextBlockingEmergency.
 
 return function(env, world, ctx)
 	local indexes = ctx.indexes

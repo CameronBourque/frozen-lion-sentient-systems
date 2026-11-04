@@ -1,12 +1,5 @@
--- The World Congress. world.congress is the World Congress, with inSession,
--- turnsLeft, maxVotes, costs, the game's cost table from 0, resolutions, each
--- with type, targetType, targets, the game's possible targets, favored, and
--- disfavored, proposals, each with the game's TypeName, Name, Description,
--- Sender, and Target, available, the same with Disabled and cost, effects, each
--- with type, targetType, and the game's ChosenLabel, ChosenOption, and
--- ChosenThing, and review, the same with PlayerSelections, each with
--- OptionChosen and Votes. world.congressInSession puts the World Congress in
--- session.
+-- The World Congress. Fakes whether it is in session, its resolutions,
+-- proposals, effects, and review.
 
 return function(env, world, ctx)
 	local indexes = ctx.indexes

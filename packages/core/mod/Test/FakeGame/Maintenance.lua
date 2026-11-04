@@ -1,8 +1,6 @@
--- Upkeep. world.maintenance maps a district or building type to its upkeep, and
--- world.unitMaintenance a unit type to its unit, corps, and army upkeep, each 0
--- when missing. Every district and building row gets a Maintenance, a Name, and
--- an IsWonder, and every unit row a hash and a Name, so it runs after the
--- features that add rows. A building is a wonder when its city data says so.
+-- Upkeep. Fakes the upkeep of districts, buildings, and units. It runs after
+-- the features that add rows, because it gives each of their rows a Maintenance
+-- and a Name.
 
 return function(env, world, ctx)
 	local hashes, wonderTypes = ctx.hashes, ctx.wonderTypes

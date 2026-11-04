@@ -1,15 +1,6 @@
--- Governments and policies. A player's government has type, missing for none,
--- and slots, each with type, such as SLOT_MILITARY, and policy, missing for an
--- empty slot, and civicThisTurn, slotsOpen, changeMade, and unlockCost, as the
--- game's culture calls give them. A player's policies lists the policies the
--- player knows, each with type, slot, its slot type, description, civic, its
--- prerequisite, and locked, obsolete, banned, and unslottable. A player's
--- government also has unlocked, the other governments it has unlocked, anarchy,
--- the turns by government type, canChangeAtAll, and governmentChangeMade.
--- world.governments lists the ruleset's governments, each with type, civic,
--- bonusType, bonuses, its two text keys, slots, counts by slot type, influence,
--- with perTurn, threshold, and envoys, favor, and legacyPercent. Registered
--- after Research, whose Civics table holds the civic completed this turn.
+-- Governments and policies. Fakes a player's government, slots, and policies,
+-- and the ruleset's governments. Registered after Research, whose Civics table
+-- holds the civic completed this turn.
 
 return function(env, world, ctx)
 	local AddRow, indexes, hashes = ctx.AddRow, ctx.indexes, ctx.hashes

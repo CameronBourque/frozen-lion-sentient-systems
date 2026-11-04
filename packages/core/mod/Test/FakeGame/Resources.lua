@@ -1,9 +1,5 @@
--- Resources. A city-state's minor.resources, each with type, amount, exported,
--- and perTurn, which only Gathering Storm reads, and a major player's
--- resources, each with type, class, amount, the stockpile, cap, reserved,
--- unitDemand, powerDemand, imported, perTurn, cities, and allocation, get rows.
--- A player's hiddenResources lists the resource types its techs don't reveal
--- yet.
+-- Resources. Fakes the resources a city-state has and a major player owns, and
+-- the ones its techs don't reveal yet.
 
 return function(env, world, ctx)
 	local AddRow, hashes, indexes = ctx.AddRow, ctx.hashes, ctx.indexes

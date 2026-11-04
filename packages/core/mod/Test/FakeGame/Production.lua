@@ -1,22 +1,6 @@
--- The build queue. A city's production is { type, turnsLeft }, or { hash,
--- turnsLeft } for a hash that GameInfo.Types doesn't know, or nil for nothing
--- in production. data.options.units lists each unit the build queue knows, with
--- type, cost, turns, progress, which is 0 when missing, blocked, a list of
--- reasons the queue refuses it, hidden, which the queue refuses even when it
--- only tests, and corps and army, each with cost, turns, and blocked.
--- data.options.buildings lists each building the build queue knows, with type,
--- cost, turns, progress, blocked, and hidden in the same way, and pillaged,
--- district, its PrereqDistrict, wonder, and mustPurchase, which go in its
--- GameInfo row. A wonder also has noLocation, the NO_SUITABLE_LOCATION result.
--- data.options.districts lists each district the build queue knows, with type,
--- cost, turns, progress, blocked, hidden, and reasons, which the queue returns
--- when it allows the district. onePerCity, true when missing, and internalOnly
--- go in its GameInfo row. data.options.projects lists each project the build
--- queue knows, with type, cost, turns, progress, blocked, and hidden, and
--- maxPlayerInstances and prereqTech, a tech type, which go in its GameInfo row
--- as MaxPlayerInstances and PrereqTech. Each option gets a GameInfo row, with a
--- hash, and a city's production type gets one in GameInfo.Types. Their tiles
--- are in FakeGame/Placement.lua.
+-- The build queue. Fakes what a city is producing and the units, buildings,
+-- districts, and projects it can build, with a GameInfo row for each.
+-- FakeGame/Placement.lua holds their tiles.
 
 return function(env, world, ctx)
 	local hashes, indexes, Formation = ctx.hashes, ctx.indexes, ctx.Formation

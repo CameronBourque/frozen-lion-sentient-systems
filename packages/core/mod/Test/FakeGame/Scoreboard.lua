@@ -1,10 +1,5 @@
--- Scores. A player's score is its score, and its categories maps a scoring
--- category's type to its points, such as CATEGORY_CIVICS = 3, each 0 when
--- missing. Its military is its military strength without the treasury, 0 when
--- missing. GameInfo.ScoringCategories has the game's categories, each with a
--- CategoryType, Name, and Multiplier. CATEGORY_TRADE has no multiplier, so the
--- Score tab leaves it out. Culture, science, gold, faith, and favor are in
--- FakeGame/TopBar.lua, Research.lua, and Stores.lua.
+-- Scores. Fakes a player's score, its categories, and its military strength,
+-- with the game's scoring categories.
 
 local CATEGORIES = {
 	{ "CATEGORY_CIVICS", 1 },

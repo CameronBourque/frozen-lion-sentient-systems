@@ -1,10 +1,5 @@
--- Captured and rebelled cities. A player's captured and rebelled are the next
--- city it captured and the next city that rebelled to join it, each with id,
--- name, x, y, population, districts, originalOwner, ownerBefore, conqueredFrom,
--- gift, true for a city given in a deal, canRaze, false for one the player
--- can't raze, and warmonger, with keep and raze points. noRiseAndFall leaves
--- out GetNextRebelledCity. A player's liberate lists the IDs it can liberate a
--- city to, and revived the IDs it has brought back.
+-- Captured and rebelled cities. Fakes a player's next captured and rebelled
+-- city, and the cities it can liberate or has revived.
 
 -- The game's city transfer types, of which the raze screen checks only BY_GIFT.
 local CITY_TRANSFER_TYPES = { BY_GIFT = 7 }

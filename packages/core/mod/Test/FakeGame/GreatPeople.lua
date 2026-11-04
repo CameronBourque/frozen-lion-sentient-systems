@@ -1,10 +1,5 @@
--- Great people. world.greatPeople lists the great people on offer, each with
--- class, type, name, era, cost, charges, passive and action, each with the text
--- the timeline gives, canRecruit, passCost, there when the player can pass,
--- gold and faith, each with cost and can, cantEarn, and claimed, true for a
--- class whose great person is taken. A player's greatPeoplePoints maps a class
--- type to its points and perTurn. world.offCapabilities, which turns off great
--- people capabilities, is in FakeGame/Capabilities.lua.
+-- Great people. Fakes the great people on offer and a player's points toward
+-- each class. FakeGame/Capabilities.lua turns off great people capabilities.
 
 return function(env, world, ctx)
 	local AddRow, indexes, YIELD_TYPES = ctx.AddRow, ctx.indexes, ctx.YIELD_TYPES

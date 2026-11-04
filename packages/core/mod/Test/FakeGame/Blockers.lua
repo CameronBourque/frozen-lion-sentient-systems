@@ -1,7 +1,5 @@
--- End-turn blockers. A player's blockers lists its end-turn blockers by name,
--- in the game's order, such as { "ENDTURN_BLOCKING_RESEARCH" }. A number in the
--- list is a value that EndTurnBlockingTypes doesn't hold. Another feature adds
--- a blocker type with ctx.AddBlockerType(name, hash), so it must be registered
+-- End-turn blockers. Fakes a player's blockers, in the game's order. Another
+-- feature adds blocker types with ctx.AddBlockerType, so it must be registered
 -- after this one.
 
 -- Some EndTurnBlockingTypes values, with their hashes from the game.

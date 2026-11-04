@@ -1,10 +1,5 @@
--- Plots. world.plots lists plots, each with x, y, terrain, feature, resource,
--- owner, district, improvement, improvementPillaged, route, and routePillaged,
--- which are all optional but x, y, and terrain. Each gets its rows and a plot,
--- and the map's plot count covers the highest row. A tile of a city's
--- data.tiles, with x, y, yields, resource, and extractable, gets a plot too,
--- which has only GetX, GetY, GetYield, and GetResourceType. GetCityPlots lists
--- a city's tiles by plot index.
+-- Plots. Fakes the map's plots and the plots of a city's tiles, with the rows
+-- each one needs.
 
 return function(env, world, ctx)
 	local AddRow, hashes, indexes, plots = ctx.AddRow, ctx.hashes, ctx.indexes, ctx.plots

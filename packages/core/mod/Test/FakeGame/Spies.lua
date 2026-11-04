@@ -1,7 +1,5 @@
--- Escaping spies. A player's escapingSpy is its next escaping spy, with id,
--- name, loot, pursuer, the counterspy's name or "" for the police, x, and y,
--- the tile of the city it escapes from. With one, the four escape districts get
--- rows, with TravelTime 1 to 4.
+-- Escaping spies. Fakes a player's next escaping spy, with the four escape
+-- districts it needs.
 
 return function(env, world, ctx)
 	local AddRow, indexes, List = ctx.AddRow, ctx.indexes, ctx.List

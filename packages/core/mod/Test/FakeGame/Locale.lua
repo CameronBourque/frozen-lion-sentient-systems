@@ -1,5 +1,4 @@
--- Locale. world.text maps each LOC_ key to its text. Locale.Lookup returns any
--- other key as it is.
+-- Locale. Fakes Locale.Lookup, which returns a key with no text as it is.
 
 return function(env, world, ctx)
 	local text = world.text or {}

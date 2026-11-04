@@ -1,17 +1,6 @@
--- Diplomacy status. A player's diplomacy maps another player's ID to what it
--- has with that player: state, a DIPLO_STATE_ type for how it sees them,
--- access, the visibility level, delegation, embassy, openBorders, from the
--- other player, defensivePact, research, a tech type, jointWar, friendship, the
--- turn it declared one, denounce, the turn it denounced them, and alliance,
--- with type, level, turnsThis, turnsToNext, expires, and perTurn. A player's
--- atWar and met, in FakeGame/Rivals.lua and Envoys.lua, say who it fights and
--- has met, and human is true for a human. The alliance calls need world.era, as
--- Rise and Fall does. world.denounceLimit is the turns a friendship or
--- denouncement lasts, 20 when missing. A player's anarchyUntil is the turn its
--- anarchy ends. Its agendas lists its agenda types, the first historical. What
--- a player has with another also has modifiers, each with Score and Text, and
--- grievances, with balance, perTurn, and log, each entry with Turn, Initiator,
--- Target, Amount, and Description. The grievance calls need world.expansion2.
+-- Diplomacy status. Fakes what each player has with each other player:
+-- access, treaties, alliances, modifiers, and grievances. The alliance calls
+-- need world.era, and the grievance calls world.expansion2, as in the game.
 
 local STATES = {
 	"DIPLO_STATE_ALLIED",

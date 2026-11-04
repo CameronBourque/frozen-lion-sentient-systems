@@ -1,11 +1,6 @@
--- Placement tiles. data.options.districts lists, with the entries
--- FakeGame/Production.lua describes, tiles, the tiles where a district can go,
--- and purchaseTiles, the tiles to buy where it can go, each with x, y, and
--- adjacency, a bonus by YieldTypes name. A wonder in data.options.buildings
--- also has tiles and purchaseTiles. data.options.purchasable lists more tiles
--- to buy, by x and y. Each tile gets a plot, and CanHaveDistrict and
--- CanHaveWonder allow a district or wonder on a tile to buy.
--- UI.GetInterfaceModeParameter returns the parameter it is given.
+-- Placement tiles. Fakes the tiles where a district or wonder can go or be
+-- bought, and the checks that allow one. FakeGame/Production.lua describes the
+-- options.
 
 return function(env, world, ctx)
 	local hashes, indexes, plots, PlotIndex, YIELD_TYPES = ctx.hashes, ctx.indexes, ctx.plots, ctx.PlotIndex, ctx.YIELD_TYPES

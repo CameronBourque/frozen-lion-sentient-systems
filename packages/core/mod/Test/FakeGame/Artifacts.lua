@@ -1,6 +1,5 @@
--- Artifacts. A player's archaeologist is its next digging archaeologist, with
--- id, name, x, y, and artifact, with index, type, the site's kind from 0 to 5,
--- acting and target, player IDs, and era.
+-- Artifacts. Fakes a player's next digging archaeologist and the artifact it
+-- digs up.
 
 return function(env, world, ctx)
 	local AddRow, indexes = ctx.AddRow, ctx.indexes

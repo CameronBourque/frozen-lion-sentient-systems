@@ -1,30 +1,6 @@
--- The victories. world.disabledVictories names the victories that are off, such
--- as VICTORY_DIPLOMATIC = true, which Game.IsVictoryEnabled reports, and
--- world.unwinnable names those that no player can win, which
--- Game.GetVictoryProgressForTeam answers with nil. A player's progress maps
--- each victory type to its progress from 0 to 1, 0 when missing, and its team
--- is its ID unless it has data.team. Its techsResearched is the number of techs
--- it has researched, followers the cities that follow its religion, and points
--- its diplomatic victory points, each 0 when missing. Its tourism, culture,
--- science, faith, military, and score are in FakeGame/TopBar.lua, Research.lua,
--- Income.lua, and Scoreboard.lua. For the science victory, a player's spaceport
--- is "complete" or "building" for the district it has, and projectsAdvanced
--- lists the project types it has launched. A city's projects, with their cost,
--- progress, and prereqTech, are in FakeGame/Production.lua. A city's build
--- queue answers a project it doesn't list with a cost of 1 and progress of 0. A
--- player's techs are in Research.lua. With Gathering Storm, a player's
--- lightYears and lightYearsPerTurn are 0 when missing, and
--- world.lightYearsNeeded is 50 when missing.
---
--- For the culture victory, a player's domesticTourists, visitingTourists, and
--- turnsToVictory are 0, 0, and -1 when missing. Its touristsFrom and
--- touristsFromTooltip map a player's ID to the tourists it has from that player
--- and the tooltip's text, and dominantOver lists the IDs of the players it
--- dominates. For the domination victory, a city's originalOwner is its player
--- when missing, and originalCapital is its capital when missing. For the
--- religion victory, a player's majorityReligion is the type of the religion
--- most of its cities follow. With Gathering Storm, a player's pointsTooltip is
--- the text of its diplomatic points tooltip.
+-- The victories. Fakes which victories are enabled or winnable and a player's
+-- progress toward each, with the extra fields that each victory and Gathering
+-- Storm read.
 
 return function(env, world, ctx)
 	local disabled, unwinnable = world.disabledVictories or {}, world.unwinnable or {}
