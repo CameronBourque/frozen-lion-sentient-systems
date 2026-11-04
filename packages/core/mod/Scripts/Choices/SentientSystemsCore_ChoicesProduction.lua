@@ -34,7 +34,7 @@ end
 -- unit whose MustPurchase is false and that CanProduce allows when it only
 -- tests. It greys out a listed unit that CanProduce refuses with results, and
 -- offers a corps or an army when the results allow one. See GetData in
--- ProductionPanel.lua, lines 2113 to 2202.
+-- ProductionPanel.lua.
 local function GetUnitOptions(city)
 	local buildQueue = city:GetBuildQueue()
 	local units = {}
@@ -81,8 +81,7 @@ end
 -- The failure reason that the panel ignores for a district when it has a tile
 -- to place it on, and the key of the one that greys out a district to repair
 -- whose tile is flooded. The panel compares the reasons with the first key
--- itself and with the second one's text, in GetData in ProductionPanel.lua,
--- lines 1950 and 1934.
+-- itself and with the second one's text, in GetData in ProductionPanel.lua.
 local NO_SUITABLE_LOCATION_KEY = "LOC_DISTRICT_ZONE_NO_SUITABLE_LOCATION"
 local FLOODED_KEY = "LOC_DISTRICT_REPAIR_LOCATION_FLOODED"
 
@@ -122,7 +121,7 @@ end
 -- Returns whether the panel shows the district as built, with a checkmark in
 -- place of turns: one per city, complete, not pillaged or contaminated, and
 -- with no progress. See PopulateDistrictsWithNestedBuildings in
--- ProductionPanel.lua, line 953.
+-- ProductionPanel.lua.
 local function IsBuilt(row, cityDistricts, progress)
 	return row.OnePerCity and cityDistricts:HasDistrict(row.Index) and cityDistricts:IsComplete(row.Index)
 		and not cityDistricts:IsPillaged(row.Index) and not cityDistricts:IsContaminated(row.Index) and progress == 0
@@ -135,7 +134,7 @@ end
 -- two changes from the tiles. A district with no tile is greyed out unless it
 -- is placed already and its tile isn't flooded. One with a tile isn't greyed
 -- out when its only reason is NO_SUITABLE_LOCATION_KEY. See GetData in
--- ProductionPanel.lua, lines 1898 to 2018.
+-- ProductionPanel.lua.
 local function GetDistrictOptions(city, purchasable)
 	local buildQueue = city:GetBuildQueue()
 	local cityDistricts = city:GetDistricts()
@@ -202,7 +201,7 @@ end
 -- must be bought only when it is pillaged, to repair it. It greys out a listed
 -- building that CanProduce refuses with results, but not a wonder whose result
 -- is NO_SUITABLE_LOCATION and that has a tile. See GetData in
--- ProductionPanel.lua, lines 2020 to 2081.
+-- ProductionPanel.lua.
 local function GetBuildingAndWonderOptions(city, purchasable)
 	local buildQueue = city:GetBuildQueue()
 	local cityBuildings = city:GetBuildings()
@@ -242,8 +241,7 @@ end
 -- Returns the projects the city's production panel lists. The panel lists a
 -- project that CanProduce allows when it only tests, and greys out one that
 -- CanProduce refuses with results. A project is repeatable when its
--- MaxPlayerInstances isn't 1. See GetData in ProductionPanel.lua, lines 2208 to
--- 2239.
+-- MaxPlayerInstances isn't 1. See GetData in ProductionPanel.lua.
 local function GetProjectOptions(city)
 	local buildQueue = city:GetBuildQueue()
 	local projects = {}

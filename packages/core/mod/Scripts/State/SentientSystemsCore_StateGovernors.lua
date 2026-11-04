@@ -10,8 +10,7 @@
 SentientSystems_Include("SentientSystemsCore_Governors")
 
 -- Returns the promotions an appointed governor has, by type, in the order the
--- panel lists them. See AddGovernorAppointed in GovernorPanel.lua, lines 359 to
--- 374.
+-- panel lists them. See AddGovernorAppointed in GovernorPanel.lua.
 local function GetPromotions(governor, definition)
 	local promotions = {}
 
@@ -30,9 +29,8 @@ end
 
 -- Returns one appointed governor. A Secret Society has neither loyalty nor
 -- turns, as its card shows no stats. See GetGovernorStatus in
--- GovernorSupport.lua, lines 72 to 95, AddGovernorInstance in
--- GovernorAssignmentChooser.lua, lines 103 to 121, and
--- AddSecretGovernorAppointed in GovernorPanel.lua, lines 313 to 350.
+-- GovernorSupport.lua, AddGovernorInstance in GovernorAssignmentChooser.lua,
+-- and AddSecretGovernorAppointed in GovernorPanel.lua.
 local function GetGovernor(governor)
 	local definition = GameInfo.Governors[governor:GetType()]
 	local city = governor:GetAssignedCity()
@@ -62,7 +60,7 @@ local function GetGovernor(governor)
 end
 
 -- Returns the governors section, or nil without Rise and Fall, whose players
--- have no GetGovernors. See Refresh in GovernorPanel.lua, lines 39 to 122.
+-- have no GetGovernors. See Refresh in GovernorPanel.lua.
 function SentientSystems_GetGovernorState(player)
 	if player.GetGovernors == nil then
 		return nil

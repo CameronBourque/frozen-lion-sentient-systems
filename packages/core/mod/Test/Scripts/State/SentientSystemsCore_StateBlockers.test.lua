@@ -1,7 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns the blockers section of the state JSON for player 0, built from the player's data.
+-- Returns the blockers section of the state JSON for player 0, built from the
+-- player's data.
 local function BlockersOf(player)
 	local env = Game.new()
 

@@ -54,8 +54,7 @@ end
 -- attention. targetCity is the city's name, as the popup looks it up. Returns
 -- nil with none to look at. The popup reads the emergency only from the
 -- blocker's notification, so this reads it only while the blocker is up, as the
--- spy choice must. See OnEmergencyAvailable in WorldCrisisPopup.lua, lines 31
--- to 61.
+-- spy choice must. See OnEmergencyAvailable in WorldCrisisPopup.lua.
 function SentientSystems_GetEmergencyChoices(player)
 	local playerID = player:GetID()
 

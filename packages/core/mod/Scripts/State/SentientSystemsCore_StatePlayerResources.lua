@@ -14,7 +14,7 @@ local CLASSES = {
 
 -- Adds an amount to a resource's entry, and a source for it unless source is
 -- nil, which only makes sure the resource has an entry. The report leaves out
--- artifacts. See AddResourceData in ReportScreen.lua, lines 506 to 536.
+-- artifacts. See AddResourceData in ReportScreen.lua.
 local function Add(entries, index, source, amount)
 	local row = GameInfo.Resources[index]
 	local class = CLASSES[row.ResourceClassType]
@@ -38,7 +38,7 @@ end
 -- Adds what each city owns, as GetResourcesExtractedByCity gives it with
 -- Gathering Storm, and otherwise as the count of the city's extractable
 -- resource tiles, in the order of the resources. See GetCityResourceData in
--- ReportScreen.lua, lines 541 to 562, and in ReportScreen_Expansion2.lua.
+-- ReportScreen.lua, and in ReportScreen_Expansion2.lua.
 local function AddOwned(player, entries, stockpiles)
 	local resources = player:GetResources()
 
@@ -78,7 +78,7 @@ end
 
 -- Adds the resources the player trades in deals that haven't ended, as exports,
 -- which are negative, and imports, with the turns left. See GetData in
--- ReportScreen.lua, lines 355 to 460.
+-- ReportScreen.lua.
 local function AddDeals(player, entries)
 	local playerID = player:GetID()
 	local turn = Game.GetCurrentGameTurn()
@@ -105,7 +105,7 @@ local function AddDeals(player, entries)
 end
 
 -- Adds the resources the city-states that the player is Suzerain of export to
--- the player. See GetData in ReportScreen.lua, lines 462 to 478.
+-- the player. See GetData in ReportScreen.lua.
 local function AddSuzerain(player, entries)
 	for _, minor in ipairs(PlayerManager.GetAliveMinors()) do
 		local influence = minor:GetInfluence()
@@ -125,7 +125,7 @@ end
 -- Adds the Gathering Storm sources: what units and power plants use each turn,
 -- what is reserved, and what city-states send, and the stockpile a resource has
 -- that no source explains. See AppendXP2ResourceData in
--- ReportScreen_Expansion2.lua, lines 8 to 54.
+-- ReportScreen_Expansion2.lua.
 local function AddGatheringStorm(player, entries)
 	local resources = player:GetResources()
 
@@ -171,8 +171,8 @@ end
 
 -- Adds the rest of what the game holds as a source named other, which the
 -- report calls Gameplay Bonuses, and with Gathering Storm gives each resource
--- in the stockpile an entry. See AddMiscResourceData in ReportScreen.lua, lines
--- 485 to 502, and in ReportScreen_Expansion2.lua, lines 91 to 123.
+-- in the stockpile an entry. See AddMiscResourceData in ReportScreen.lua, and
+-- in ReportScreen_Expansion2.lua.
 local function AddOther(player, entries, stockpiles)
 	local resources = player:GetResources()
 
@@ -195,7 +195,7 @@ local function AddOther(player, entries, stockpiles)
 end
 
 -- Returns the cities the game allocates a luxury to, each with the amount, or
--- nil for none. See ViewResourcesPage in ReportScreen.lua, lines 1224 to 1244.
+-- nil for none. See ViewResourcesPage in ReportScreen.lua.
 local function GetAllocation(player, index)
 	local cities = {}
 

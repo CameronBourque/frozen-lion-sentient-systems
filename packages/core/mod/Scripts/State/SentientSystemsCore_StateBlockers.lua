@@ -65,9 +65,9 @@ end
 
 -- Returns the IDs of the player's units that need orders: those with moves left
 -- and no standing order, such as fortify. The unit flags dim every other unit
--- with IsReadyToSelect, in UnitFlagManager.lua, line 380. The game updates the
--- unit blockers only on its own events, so the list comes from the units, not
--- from the blockers.
+-- with IsReadyToSelect, in UnitFlagManager.lua. The game updates the unit
+-- blockers only on its own events, so the list comes from the units, not from
+-- the blockers.
 local function GetUnitsNeedingOrders(player)
 	local ids = {}
 

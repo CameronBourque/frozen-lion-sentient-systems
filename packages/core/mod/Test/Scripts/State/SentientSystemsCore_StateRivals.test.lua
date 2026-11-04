@@ -6,7 +6,8 @@ local RA_KEDET = {
 	defense = { strength = 12.6, garrison = { damage = 50, max = 200 } },
 }
 
--- Returns the rival cities JSON in the state for player 0, with Egypt as player 1.
+-- Returns the rival cities JSON in the state for player 0, with Egypt as player
+-- 1.
 local function RivalCitiesFor(me, egyptCities)
 	local env = Game.new()
 
@@ -21,7 +22,8 @@ end
 
 local WARRIOR = { id = 131073, type = "UNIT_WARRIOR", x = 25, y = 14, moves = 2, maxMoves = 2 }
 
--- Returns the rival units JSON in the state for player 0, with Egypt as player 1.
+-- Returns the rival units JSON in the state for player 0, with Egypt as player
+-- 1.
 local function RivalUnitsFor(me, egyptUnits)
 	local env = Game.new()
 

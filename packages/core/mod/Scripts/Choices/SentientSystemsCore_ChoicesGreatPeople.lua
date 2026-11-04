@@ -5,7 +5,7 @@
 
 -- Returns the great people the player can recruit or pass, in the screen's
 -- order. Returns nil when there are none. See AddRecruit in
--- GreatPeoplePopup.lua, lines 265 to 287.
+-- GreatPeoplePopup.lua.
 function SentientSystems_GetGreatPeopleChoices(player)
 	local playerID = player:GetID()
 	local greatPeople = Game.GetGreatPeople()

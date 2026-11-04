@@ -33,7 +33,7 @@ end
 
 -- Returns the promotions the unit can pick now, or an empty list. The unit
 -- panel asks CanStartCommand for PROMOTE with results, and lists
--- UnitCommandResults.PROMOTIONS. See UnitPanel.lua, lines 435 to 446.
+-- UnitCommandResults.PROMOTIONS. See UnitPanel.lua.
 local function GetAvailablePromotions(unit)
 	local canPromote, results = UnitManager.CanStartCommand(unit, UnitCommandTypes.PROMOTE, true, true)
 

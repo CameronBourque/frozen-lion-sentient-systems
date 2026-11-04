@@ -4,7 +4,8 @@ local Game = require("Game")
 -- A city of player 1's, so a player that keeps it isn't wiped out.
 local OTHER_CITY = { id = 65536, name = "Uruk", x = 10, y = 10, population = 3 }
 
--- Returns a city player 0 captured from player 1, who founded it, with the fields in extra.
+-- Returns a city player 0 captured from player 1, who founded it, with the
+-- fields in extra.
 local function Captured(extra)
 	local city = { id = 131073, name = "LOC_CITY_NAME_CAGUANA", x = 47, y = 40, population = 1, originalOwner = 1, ownerBefore = 1, conqueredFrom = 1, warmonger = { keep = 50, raze = 100 } }
 
@@ -15,8 +16,9 @@ local function Captured(extra)
 	return city
 end
 
--- Returns the captured city choice JSON for player 0, whose data is given, or nil when it is left
--- out, in a world with player 1 as given and the world fields in extra.
+-- Returns the captured city choice JSON for player 0, whose data is given, or
+-- nil when it is left out, in a world with player 1 as given and the world
+-- fields in extra.
 local function ChoicesWith(player, other, extra)
 	local env = Game.new()
 	local world = { players = { [0] = player, [1] = other or { cities = { OTHER_CITY } } }, text = { LOC_CITY_NAME_CAGUANA = "Caguana" } }

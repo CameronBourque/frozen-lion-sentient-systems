@@ -18,7 +18,7 @@ local BONUS_SIZES = { "SMALL", "MEDIUM", "LARGE" }
 
 -- Returns the kind of a city-state, such as TRADE, from its leader or the
 -- leader it inherits from, or nil for a leader of no kind. See GetCityStateType
--- in CityStates.lua, lines 1591 to 1613.
+-- in CityStates.lua.
 local function GetKind(playerID)
 	local leader = PlayerConfigurations[playerID]:GetLeaderTypeName()
 	local row = GameInfo.Leaders[leader]
@@ -35,7 +35,7 @@ local function GetKind(playerID)
 end
 
 -- Returns the bonuses of a kind of city-state at 1, 3, and 6 envoys, as text.
--- See GetBonusText in CityStates.lua, lines 130 to 189.
+-- See GetBonusText in CityStates.lua.
 local function GetKindBonuses(kind)
 	local bonuses = {}
 
@@ -48,7 +48,7 @@ end
 
 -- Returns the descriptions of a city-state's own traits, its suzerain bonus, as
 -- text, or nil for a city-state with none. See GetSuzerainBonusText in
--- CityStates.lua, lines 197 to 250.
+-- CityStates.lua.
 local function GetSuzerainBonus(playerID)
 	local leader = PlayerConfigurations[playerID]:GetLeaderTypeName()
 	local texts = {}
@@ -67,7 +67,7 @@ end
 -- Returns the resources a city-state has, which its suzerain gets, each with
 -- type and amount, or nil for none. With Gathering Storm, a strategic
 -- resource's amount is what it gains each turn. See GetSuzerainBonusText in
--- CityStates_Expansion2.lua, lines 50 to 72.
+-- CityStates_Expansion2.lua.
 local function GetResources(cityState)
 	local resources = cityState:GetResources()
 	local list = {}
@@ -87,7 +87,7 @@ local function GetResources(cityState)
 end
 
 -- Returns the quests a city-state gives the player, or nil for none. See
--- GetQuests in CityStates.lua, lines 255 to 275.
+-- GetQuests in CityStates.lua.
 local function GetQuests(playerID, cityStateID)
 	local manager = Game.GetQuestsManager()
 	local quests = {}
@@ -108,8 +108,7 @@ end
 
 -- Returns the players with envoys at a city-state, most envoys first, as the
 -- Influenced By tab lists them. Ties keep the game's order. See ViewCityState
--- in CityStates.lua, lines 1235 to 1275, and AddInfluenceRow, lines 1314 to
--- 1333.
+-- in CityStates.lua, and AddInfluenceRow.
 local function GetInfluencedBy(player, influence)
 	local list = {}
 
@@ -139,7 +138,7 @@ local function GetInfluencedBy(player, influence)
 end
 
 -- Returns one city-state as the screen's list shows it. See GetData in
--- CityStates.lua, lines 1411 to 1530.
+-- CityStates.lua.
 local function GetCityState(player, cityState)
 	local playerID = player:GetID()
 	local cityStateID = cityState:GetID()
@@ -177,8 +176,7 @@ local function IsMetCityState(player, minor)
 		and player:GetDiplomacy():HasMet(minor:GetID())
 end
 
--- Returns the envoys section. See RealizeListHeader in CityStates.lua, lines
--- 609 to 662.
+-- Returns the envoys section. See RealizeListHeader in CityStates.lua.
 function SentientSystems_GetEnvoyState(player)
 	local influence = player:GetInfluence()
 	local cityStates = {}

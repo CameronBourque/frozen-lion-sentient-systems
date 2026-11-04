@@ -24,7 +24,7 @@ end
 -- shows a button only while the player can neither recruit nor pass the person,
 -- and turns it off while Gathering Storm's World Congress is in session.
 -- Returns nil when it shows neither. See AddRecruit in GreatPeoplePopup.lua,
--- lines 241 to 262, and IsReadOnly in GreatPeoplePopup_Expansion2.lua.
+-- and IsReadOnly in GreatPeoplePopup_Expansion2.lua.
 local function GetPatronage(greatPeople, playerID, individual)
 	if greatPeople:CanRecruitPerson(playerID, individual) or greatPeople:CanRejectPerson(playerID, individual) then
 		return nil
@@ -48,7 +48,7 @@ end
 
 -- Returns each major player's progress toward a class of great person. The most
 -- points come first, then the lowest ID. See PopulateData in
--- GreatPeoplePopup.lua, lines 780 to 814, and AddRecruit, lines 296 to 321.
+-- GreatPeoplePopup.lua, and AddRecruit.
 local function GetProgress(player, classIndex)
 	local progress = {}
 
@@ -81,8 +81,8 @@ local function GetProgress(player, classIndex)
 	return progress
 end
 
--- Returns one great person on offer. See PopulateData in
--- GreatPeoplePopup.lua, lines 708 to 777, and AddRecruit, lines 153 to 330.
+-- Returns one great person on offer. See PopulateData in GreatPeoplePopup.lua,
+-- and AddRecruit.
 local function GetGreatPerson(player, greatPeople, entry)
 	local playerID = player:GetID()
 	local individual = GameInfo.GreatPersonIndividuals[entry.Individual]
@@ -116,7 +116,7 @@ end
 
 -- Returns the great people on offer, in the screen's order. A class whose great
 -- person someone has claimed, which the screen shows as claimed, is left out.
--- See PopulateData in GreatPeoplePopup.lua, lines 682 to 778.
+-- See PopulateData in GreatPeoplePopup.lua.
 function SentientSystems_GetGreatPeopleState(player)
 	local greatPeople = Game.GetGreatPeople()
 	local list = {}

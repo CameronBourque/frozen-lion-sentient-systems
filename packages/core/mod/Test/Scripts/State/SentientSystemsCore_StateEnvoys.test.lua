@@ -1,14 +1,14 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns a city-state with the ID's name, the leader given, the envoys by player ID, and the
--- suzerain.
+-- Returns a city-state with the ID's name, the leader given, the envoys by
+-- player ID, and the suzerain.
 local function CityState(name, inherit, envoys, suzerain)
 	return { minor = { name = "LOC_CIVILIZATION_" .. name .. "_NAME", leader = "LEADER_MINOR_CIV_" .. name, inherit = inherit, envoys = envoys, suzerain = suzerain } }
 end
 
--- Returns the envoys section JSON for player 0, in a world with the players given, and with
--- Gathering Storm when expansion2 is true.
+-- Returns the envoys section JSON for player 0, in a world with the players
+-- given, and with Gathering Storm when expansion2 is true.
 local function EnvoysWith(players, expansion2)
 	local env = Game.new()
 

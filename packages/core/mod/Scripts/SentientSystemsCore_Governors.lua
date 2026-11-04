@@ -14,8 +14,7 @@ local HIDDEN_DESCRIPTION_KEY = "LOC_GOVERNOR_PROMOTION_UNKNOWN_DESCRIPTION"
 
 -- Returns whether a governor can't be assigned to a city, which only a Secret
 -- Society can't. The panel shows such a governor as a society, with no stats
--- and no Assign button. See IsCannotAssign in GovernorSupport.lua, lines 110 to
--- 125.
+-- and no Assign button. See IsCannotAssign in GovernorSupport.lua.
 function SentientSystems_IsCannotAssign(definition)
 	if GameInfo.GovernorsCannotAssign ~= nil then
 		for row in GameInfo.GovernorsCannotAssign() do
@@ -32,7 +31,7 @@ end
 -- GameInfo.GovernorPromotionConditions says HiddenWithoutPrereqs, and the
 -- governor doesn't hold every promotion it follows. Without an appointed
 -- governor, such as a candidate, it is hidden. See IsPromotionHidden and
--- HasPromotionPrerequisites in GovernorSupport.lua, lines 127 to 183.
+-- HasPromotionPrerequisites in GovernorSupport.lua.
 function SentientSystems_IsPromotionHidden(promotion, governor)
 	local hiddenWithoutPrerequisites = false
 
@@ -69,7 +68,7 @@ end
 -- as the third value when it hides them: the game's own text for an unknown
 -- promotion, or ? when it has none. The governor is the appointed one, or nil
 -- for a candidate. See GetPromotionHiddenName and GetPromotionHiddenDescription
--- in GovernorSupport.lua, lines 149 to 165.
+-- in GovernorSupport.lua.
 function SentientSystems_GetPromotionTexts(promotion, governor)
 	if not SentientSystems_IsPromotionHidden(promotion, governor) then
 		return Locale.Lookup(promotion.Name), Locale.Lookup(promotion.Description), nil

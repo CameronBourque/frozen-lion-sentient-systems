@@ -4,8 +4,9 @@ local Game = require("Game")
 -- A spy of player 0's escaping from Istanbul, player 4's city at 84, 34.
 local SPY = { id = 2555922, name = "LOC_CITIZEN_ROME_FEMALE_3", loot = "LOC_ESPIONAGE_LOOT_NONE", pursuer = "", x = 84, y = 34 }
 
--- Returns the spy choice JSON for player 0, or nil when it is left out, with the spy given,
--- Istanbul's districts, and the player's blockers, the escape route blocker when missing.
+-- Returns the spy choice JSON for player 0, or nil when it is left out, with
+-- the spy given, Istanbul's districts, and the player's blockers, the escape
+-- route blocker when missing.
 local function ChoicesWith(spy, districts, blockers)
 	local env = Game.new()
 	local istanbul = { id = 65536, name = "LOC_CITY_NAME_ISTANBUL", x = 84, y = 34, population = 5, districts = districts }

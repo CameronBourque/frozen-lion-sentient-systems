@@ -31,7 +31,7 @@ end
 
 -- Returns the favor that liberating a city gives with Gathering Storm: more for
 -- a major player's city than a city-state's, and more again for bringing a
--- major player back. See OnOpen in RazeCity_Expansion2.lua, lines 33 to 45.
+-- major player back. See OnOpen in RazeCity_Expansion2.lua.
 local function GetLiberationFavor(player, originalOwner)
 	local isMinor = PlayerConfigurations[originalOwner]:GetCivilizationLevelTypeID() ~= CivilizationLevelTypes.CIVILIZATION_LEVEL_FULL_CIV
 	local favor = isMinor and GlobalParameters.FAVOR_FOR_LIBERATE_CITY_STATE or GlobalParameters.FAVOR_FOR_LIBERATE_PLAYER_CITY
@@ -47,8 +47,8 @@ end
 -- Raze when the city can't be razed. Each names what the choice costs:
 -- warmonger points in the base game, and grievances with Gathering Storm, with
 -- their own text for a gifted city, a Free City, and the last city of the
--- player it was taken from. See OnOpen in RazeCity.lua, lines 64 to 145, and in
--- RazeCity_Expansion2.lua, lines 9 to 107.
+-- player it was taken from. See OnOpen in RazeCity.lua, and in
+-- RazeCity_Expansion2.lua.
 local function GetKeepAndRaze(player, city, conqueredFrom, wipedOut)
 	local expansion2 = SentientSystems_HasExpansion2()
 	local diplomacy = player:GetDiplomacy()
@@ -94,7 +94,7 @@ end
 -- screen's order: liberate to the founder, when the city has changed hands
 -- since and the player can liberate it to them, liberate to the owner before
 -- the war, when the player can liberate it to them, keep, and raze. Returns nil
--- with no captured city. See OnOpen in RazeCity.lua, lines 64 to 145.
+-- with no captured city. See OnOpen in RazeCity.lua.
 local function GetCapturedCity(player)
 	local city = player:GetCities():GetNextCapturedCity()
 
@@ -147,7 +147,7 @@ end
 -- Returns the next city that rebelled to join the player, with its options,
 -- keep and refuse, as Rise and Fall's disloyal city screen offers them. Returns
 -- nil with no such city, or without Rise and Fall, whose cities have no
--- GetNextRebelledCity. See OnOpen in DisloyalCityChooser.lua, lines 27 to 56.
+-- GetNextRebelledCity. See OnOpen in DisloyalCityChooser.lua.
 local function GetDisloyalCity(player)
 	local cities = player:GetCities()
 	local city = cities.GetNextRebelledCity and cities:GetNextRebelledCity()

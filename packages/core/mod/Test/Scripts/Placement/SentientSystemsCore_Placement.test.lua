@@ -1,8 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns an environment with the placement file loaded, and player 0's one city, Rome, which has
--- the given options.
+-- Returns an environment with the placement file loaded, and player 0's one
+-- city, Rome, which has the given options.
 local function Load(options)
 	local env = Game.new()
 

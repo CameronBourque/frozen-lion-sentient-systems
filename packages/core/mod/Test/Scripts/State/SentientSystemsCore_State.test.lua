@@ -4,7 +4,8 @@ local Game = require("Game")
 -- The scoreboard of a world with one player, ID 0, who has not met anyone.
 local SCOREBOARD = "[{\"categories\":[{\"name\":\"LOC_CATEGORY_CIVICS_NAME\",\"score\":0,\"type\":\"CATEGORY_CIVICS\"},{\"name\":\"LOC_CATEGORY_EMPIRE_NAME\",\"score\":0,\"type\":\"CATEGORY_EMPIRE\"},{\"name\":\"LOC_CATEGORY_GREAT_PEOPLE_NAME\",\"score\":0,\"type\":\"CATEGORY_GREAT_PEOPLE\"},{\"name\":\"LOC_CATEGORY_RELIGION_NAME\",\"score\":0,\"type\":\"CATEGORY_RELIGION\"},{\"name\":\"LOC_CATEGORY_TECH_NAME\",\"score\":0,\"type\":\"CATEGORY_TECH\"},{\"name\":\"LOC_CATEGORY_WONDER_NAME\",\"score\":0,\"type\":\"CATEGORY_WONDER\"},{\"name\":\"LOC_CATEGORY_ERA_SCORE_NAME\",\"score\":0,\"type\":\"CATEGORY_ERA_SCORE\"}],\"culture\":0,\"faith\":0,\"gold\":0,\"military\":0,\"player\":0,\"science\":0,\"score\":0}]"
 
--- Returns an environment with the state script loaded into a fake game built from world.
+-- Returns an environment with the state script loaded into a fake game built
+-- from world.
 local function Load(world)
 	local env = Game.new()
 

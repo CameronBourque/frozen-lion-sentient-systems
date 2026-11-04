@@ -5,8 +5,8 @@
 
 -- Returns the envoy choice. The screen's buttons allow a city-state the player
 -- has met and isn't at war with. Returns nil unless the player can send envoys
--- and some city-state can take one. See GetData in CityStates.lua, lines 1411
--- to 1500, and RealizeEnvoyChangeButtons, lines 667 to 701.
+-- and some city-state can take one. See GetData in CityStates.lua, and
+-- RealizeEnvoyChangeButtons.
 function SentientSystems_GetEnvoyChoices(player)
 	local influence = player:GetInfluence()
 	local tokens = influence:GetTokensToGive()

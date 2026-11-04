@@ -8,7 +8,7 @@
 local ROUTES = { "DISTRICT_AERODROME", "DISTRICT_HARBOR", "DISTRICT_COMMERCIAL_HUB", "DISTRICT_CITY_CENTER" }
 
 -- Returns the escape routes from a city, as the screen shows them. See OnOpen
--- in EspionageEscape.lua, lines 71 to 106.
+-- in EspionageEscape.lua.
 local function GetRoutes(city)
 	local routes = {}
 
@@ -32,8 +32,7 @@ end
 -- spy. The screen opens only from a blocker's notification, and its calls are
 -- safe only then: GetNextEscapingSpyID crashed the game with no spy escaping,
 -- as GetNextPursuedSpyID did with none pursued, so this reads the spy only
--- while a blocker for it is up. See OnOpen in EspionageEscape.lua, lines 36 to
--- 113.
+-- while a blocker for it is up. See OnOpen in EspionageEscape.lua.
 function SentientSystems_GetSpyChoices(player)
 	if not SentientSystems_HasBlocker(player:GetID(), "ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE", "ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY") then
 		return nil

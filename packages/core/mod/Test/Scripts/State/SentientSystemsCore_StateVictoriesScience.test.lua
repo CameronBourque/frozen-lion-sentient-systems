@@ -16,8 +16,8 @@ local BASE_PROJECTS = {
 	{ type = "PROJECT_LAUNCH_MARS_HYDROPONICS" },
 }
 
--- Returns a city that knows the projects, each at cost 400 and with the progress that progress gives
--- by project type, 0 when missing.
+-- Returns a city that knows the projects, each at cost 400 and with the
+-- progress that progress gives by project type, 0 when missing.
 local function City(id, projects, progress)
 	local options = {}
 
@@ -38,7 +38,8 @@ local function Techs(researched)
 	return { options = options }
 end
 
--- Returns the science entry of player 0 in a world where player 0 has these cities and fields.
+-- Returns the science entry of player 0 in a world where player 0 has these
+-- cities and fields.
 local function ScienceOf(projects, player, world, cities)
 	local env = Game.new()
 

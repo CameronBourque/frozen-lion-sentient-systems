@@ -29,9 +29,8 @@ end
 
 -- Returns the promotions of a governor, in the game's order. A governor of nil
 -- is a candidate, whose card shows only the base ability as held. See
--- CreatePromotionTree in GovernorDetailsPanel.lua, lines 150 to 230,
--- CreateSecretPromotionTree, lines 270 to 328, and AddGovernorCandidate in
--- GovernorPanel.lua, lines 198 to 207.
+-- CreatePromotionTree in GovernorDetailsPanel.lua, CreateSecretPromotionTree,
+-- and AddGovernorCandidate in GovernorPanel.lua.
 local function GetPromotions(governors, governor, definition, prerequisites)
 	local promotions = {}
 
@@ -85,7 +84,7 @@ end
 -- Returns the governor tree of the player with ID playerID as JSON. Raises an
 -- error for an ID with no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetGovernorTree(playerID)). See Refresh
--- in GovernorPanel.lua, lines 39 to 122.
+-- in GovernorPanel.lua.
 function SentientSystems_GetGovernorTree(playerID)
 	local player = Players[playerID]
 

@@ -1,13 +1,14 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns a tooltip line, as the game's English text has it, such as "+33 from Envoys".
+-- Returns a tooltip line, as the game's English text has it, such as "+33 from
+-- Envoys".
 local function Line(amount, label)
 	return (amount >= 0 and "+" or "") .. amount .. " from " .. label
 end
 
--- Returns the income section JSON for player 0, whose data is given, and the other players, or nil
--- when there is none.
+-- Returns the income section JSON for player 0, whose data is given, and the
+-- other players, or nil when there is none.
 local function IncomeWith(data, world)
 	local env = Game.new()
 	local setup = { players = { [0] = data, [4] = {} }, text = { LOC_UNIT_MUSKETMAN_NAME = "Musketman" } }

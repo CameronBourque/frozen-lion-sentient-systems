@@ -1,7 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- A small map: a forest on grassland hills, a plain grassland tile, an ocean tile, deer, and iron.
+-- A small map: a forest on grassland hills, a plain grassland tile, an ocean
+-- tile, deer, and iron.
 local PLOTS = {
 	{ x = 0, y = 0, terrain = "TERRAIN_GRASS_HILLS", feature = "FEATURE_FOREST" },
 	{ x = 1, y = 0, terrain = "TERRAIN_GRASS" },
@@ -19,7 +20,8 @@ local PLOTS = {
 	{ x = 2, y = 2, terrain = "TERRAIN_GRASS", owner = 0, improvement = "IMPROVEMENT_FARM" },
 }
 
--- Returns the tiles JSON in the state for player 0, who has revealed and sees the given plots.
+-- Returns the tiles JSON in the state for player 0, who has revealed and sees
+-- the given plots.
 local function TilesFor(player)
 	local env = Game.new()
 

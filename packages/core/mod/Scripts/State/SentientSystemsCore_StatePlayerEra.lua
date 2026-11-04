@@ -12,7 +12,7 @@ local AGE_ORDER = { "heroic", "golden", "normal", "dark" }
 
 -- Returns what the player's era score is made of: the total of the earlier eras
 -- as one entry, when it is above 0, then each source of this era that is above
--- 0. See GetData, lines 70 to 96.
+-- 0. See GetData.
 local function GetScoreBreakdown(eras, playerID)
 	local list, previous = {}, 0
 
@@ -40,8 +40,7 @@ end
 -- Returns the least and the most turns until the next era. Once the countdown
 -- has started, it is one number, counted so that its last turn is 1. Before it,
 -- the era can end at its earliest end turn at the soonest, but not before the
--- countdown would run out, and at its latest end turn. See GetData, lines 98 to
--- 112.
+-- countdown would run out, and at its latest end turn. See GetData.
 local function GetTurnsUntilNext(eras)
 	local countdown = eras:GetNextEraCountdown() + 1
 
@@ -58,8 +57,7 @@ local function GetTurnsUntilNext(eras)
 end
 
 -- Returns the age the player earns for the next era at their score: golden at
--- the golden threshold, normal at the dark one, and dark below it. See GetData,
--- lines 124 to 130.
+-- the golden threshold, normal at the dark one, and dark below it. See GetData.
 local function GetNextAge(score, normalFrom, goldenFrom)
 	if score >= goldenFrom then
 		return "golden"
@@ -70,7 +68,7 @@ local function GetNextAge(score, normalFrom, goldenFrom)
 	return "dark"
 end
 
--- Returns the effects of the player's age. See GetData, lines 133 to 202.
+-- Returns the effects of the player's age. See GetData.
 local function GetEffects(eras, player, age)
 	local playerID = player:GetID()
 	local dedications = {}
@@ -120,7 +118,7 @@ local function GetCivilizations(eras, player)
 end
 
 -- Returns the era section, or nil without Rise and Fall, whose game has no
--- ages. See Refresh in EraProgressPanel.lua, lines 207 to 268.
+-- ages. See Refresh in EraProgressPanel.lua.
 function SentientSystems_GetEraState(player)
 	local eras = Game.GetEras()
 

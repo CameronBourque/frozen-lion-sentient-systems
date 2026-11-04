@@ -16,7 +16,7 @@ local function RoundNearest(number)
 end
 
 -- Returns the player's gold: the balance, rounded down, and the income less the
--- upkeep per turn. See RefreshYields in TopPanel.lua, lines 136 to 151.
+-- upkeep per turn. See RefreshYields in TopPanel.lua.
 local function GetGold(player)
 	local treasury = player:GetTreasury()
 
@@ -27,7 +27,7 @@ local function GetGold(player)
 end
 
 -- Returns the player's faith, the balance and the income per turn. See
--- RefreshYields in TopPanel.lua, lines 123 to 134.
+-- RefreshYields in TopPanel.lua.
 local function GetFaith(player)
 	local religion = player:GetReligion()
 
@@ -36,7 +36,7 @@ end
 
 -- Returns the player section. tradeRoutes is left out while the capacity is 0,
 -- and favor without Gathering Storm, whose players have no GetFavorPerTurn. See
--- RefreshTrade in TopPanel.lua, lines 190 to 224.
+-- RefreshTrade in TopPanel.lua.
 function SentientSystems_GetPlayerState(player)
 	local trade = player:GetTrade()
 	local capacity = trade:GetOutgoingRouteCapacity()

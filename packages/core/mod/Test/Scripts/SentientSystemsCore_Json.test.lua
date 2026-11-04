@@ -118,7 +118,8 @@ describe("SentientSystems_EncodeJson", function()
 	end)
 end)
 
--- Stashes text, reads every piece the way the bridge does, and returns the count and the pieces.
+-- Stashes text, reads every piece the way the bridge does, and returns the
+-- count and the pieces.
 local function StashAndRead(text)
 	local count = env.SentientSystems_Stash(text)
 	local pieces = {}
@@ -172,7 +173,8 @@ describe("SentientSystems_Stash", function()
 	end)
 
 	it("never ends a piece inside a UTF-8 character", function()
-		-- "é" is 2 bytes, 195 and 169, at bytes 1,000,000 and 1,000,001, across the cut.
+		-- "é" is 2 bytes, 195 and 169, at bytes 1,000,000 and 1,000,001, across
+		-- the cut.
 		local count, pieces = StashAndRead(string.rep("a", 999999) .. "é" .. "b")
 
 		assert.equal(2, count)

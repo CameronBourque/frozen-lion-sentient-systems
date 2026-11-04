@@ -75,9 +75,8 @@ end
 
 -- Returns the plot indexes of the tiles the city could buy, in index order. The
 -- panel asks for them with the interface mode's plot purchase parameter, in
--- AdjacencyBonusSupport.lua, lines 309 to 311. Ask once for each city, and pass
--- the list to SentientSystems_GetDistrictTiles and
--- SentientSystems_GetWonderTiles.
+-- AdjacencyBonusSupport.lua. Ask once for each city, and pass the list to
+-- SentientSystems_GetDistrictTiles and SentientSystems_GetWonderTiles.
 function SentientSystems_GetPurchasablePlots(city)
 	local params = {}
 	local plots = {}

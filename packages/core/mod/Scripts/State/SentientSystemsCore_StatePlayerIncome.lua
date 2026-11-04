@@ -175,7 +175,7 @@ local function GetUpkeep(cost, pillaged)
 end
 
 -- Returns the rows for the great works in a building, each with the yields its
--- row gives. See GetGreatWorksForCity in Civ6Common.lua, lines 631 to 661.
+-- row gives. See GetGreatWorksForCity in Civ6Common.lua.
 local function GetGreatWorkRows(buildings, index)
 	local rows = {}
 
@@ -202,7 +202,7 @@ end
 -- Adds the rows of the buildings on a district's plot to sources, and the rows
 -- of its wonders to wonders, and returns the upkeep of the buildings. A wonder
 -- sits in a district of its own, which the report leaves out, and its rows
--- follow the districts'. See GetCityData in CitySupport.lua, lines 687 to 755.
+-- follow the districts'. See GetCityData in CitySupport.lua.
 local function AddBuildingRows(city, plotIndex, sources, wonders)
 	local buildings = city:GetBuildings()
 	local upkeep = 0
@@ -271,7 +271,7 @@ local function AddDistrictRows(city, sources, wonders)
 end
 
 -- Adds a row for each trade route the city sends out, with what it gives the
--- city. See ViewYieldsPage in ReportScreen.lua, lines 941 to 974.
+-- city. See ViewYieldsPage in ReportScreen.lua.
 local function AddRouteRows(city, sources)
 	for _, route in ipairs(city:GetTrade():GetOutgoingRoutes()) do
 		local amounts = {}
@@ -292,7 +292,7 @@ local function AddRouteRows(city, sources)
 end
 
 -- Returns what the city's worked tiles give by yield type, and the tourism of
--- its tiles. See GetWorkedTileYieldData in ReportScreen.lua, lines 567 to 598.
+-- its tiles. See GetWorkedTileYieldData in ReportScreen.lua.
 local function GetTileYields(player, city)
 	local amounts, tourism = {}, 0
 	local citizens = city:GetCitizens()
@@ -320,7 +320,7 @@ local CONTENT = 4
 -- and returns the tourism of its tiles. While the city isn't content, its
 -- amenities give a tenth of the worked tiles' yields but food, scaled by the
 -- city's modifier. The population gives culture. See ViewYieldsPage in
--- ReportScreen.lua, lines 976 to 1008.
+-- ReportScreen.lua.
 local function AddTileRows(player, city, sources)
 	local amounts, tourism = GetTileYields(player, city)
 	local growth = city:GetGrowth()
@@ -378,8 +378,8 @@ local function GetCityIncomes(player)
 end
 
 -- Returns the gold one unit costs each turn, less the player's discount, by its
--- formation, as GetData in ReportScreen.lua, lines 305 to 353, finds it. A unit
--- that costs nothing after the discount is 0.
+-- formation, as GetData in ReportScreen.lua, finds it. A unit that costs
+-- nothing after the discount is 0.
 local function GetUnitCost(unit, discount)
 	local row = GameInfo.Units[unit:GetUnitType()]
 	local formation = unit:GetMilitaryFormation()
@@ -444,8 +444,7 @@ local function GetUnitUpkeep(player, discount)
 end
 
 -- Returns the gold deals the player is in, and the gold the player pays in all.
--- A deal item with no duration is left out. See GetData in ReportScreen.lua,
--- lines 355 to 460.
+-- A deal item with no duration is left out. See GetData in ReportScreen.lua.
 local function GetDeals(playerID)
 	local list, paid = {}, 0
 	local turn = Game.GetCurrentGameTurn()

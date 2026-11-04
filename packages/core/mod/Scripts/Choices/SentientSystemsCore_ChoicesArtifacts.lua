@@ -22,8 +22,7 @@ end
 -- Returns the artifact choice: the next digging archaeologist's artifact.
 -- Returns nil with no archaeologist digging, or no artifact. The screen opens
 -- only from the blocker's notification, so this reads the artifact only while
--- the blocker is up, as the spy choice must. See OnOpen in ChooseArtifact.lua,
--- lines 4 to 77.
+-- the blocker is up, as the spy choice must. See OnOpen in ChooseArtifact.lua.
 function SentientSystems_GetArtifactChoices(player)
 	if not SentientSystems_HasBlocker(player:GetID(), "ENDTURN_BLOCKING_ARTIFACT") then
 		return nil

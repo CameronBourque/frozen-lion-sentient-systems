@@ -8,7 +8,7 @@
 
 -- Returns a player's name as the game shows it: the leader's name once the
 -- player has met them, and the unmet player text before. See
--- GetVisiblePlayerNameAndIcons in PlayerSupport.lua, lines 39 to 90.
+-- GetVisiblePlayerNameAndIcons in PlayerSupport.lua.
 local function GetPlayerName(playerID, localPlayerID)
 	if playerID ~= localPlayerID and not Players[localPlayerID]:GetDiplomacy():HasMet(playerID) then
 		return Locale.Lookup("LOC_DIPLOPANEL_UNMET_PLAYER")
@@ -113,7 +113,7 @@ local function GetOutcomes(data, localPlayerID, turnsLeft)
 end
 
 -- Returns the resolutions to vote on in a regular session. See
--- PopulateResolutions, lines 569 to 686.
+-- PopulateResolutions.
 local function GetResolutions(data, localPlayerID)
 	local resolutions = {}
 
@@ -152,7 +152,7 @@ local function GetResolutions(data, localPlayerID)
 end
 
 -- Returns the proposals on the floor to vote for or against. See
--- PopulateProposalStack, lines 1227 to 1325.
+-- PopulateProposalStack.
 local function GetProposals(data)
 	local proposals = {}
 
@@ -172,7 +172,7 @@ local function GetProposals(data)
 end
 
 -- Returns the proposals the player could call a Special Session for. See
--- PopulateEmergencyProposals, lines 1763 to 1786.
+-- PopulateEmergencyProposals.
 local function GetAvailable(data)
 	local available = {}
 
@@ -195,7 +195,7 @@ end
 -- Returns the World Congress choice. Returns nil with nothing to show. The
 -- congress screen opens only from its notification, so the session and the
 -- results read only while their blocker is up. See SetStage in
--- WorldCongressPopup.lua, lines 164 to 246.
+-- WorldCongressPopup.lua.
 function SentientSystems_GetWorldCongressChoices(player)
 	local playerID = player:GetID()
 	local congress = Game.GetWorldCongress()

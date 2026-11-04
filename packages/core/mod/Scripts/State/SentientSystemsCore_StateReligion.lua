@@ -7,7 +7,7 @@
 -- Returns the religion the player founded, with the cities of every living
 -- player where it has followers, as the screen's cities panel lists them.
 -- Returns nil before the player founds one. See ViewReligion in
--- ReligionScreen.lua, lines 964 to 1170.
+-- ReligionScreen.lua.
 local function GetFounded(religion)
 	local religionType = religion:GetReligionTypeCreated()
 
@@ -55,7 +55,7 @@ local function GetFounded(religion)
 end
 
 -- Returns the religion section. See ViewMyReligion, WorkingTowardsPantheon, and
--- WorkingTowardsReligion in ReligionScreen.lua, lines 308 to 403.
+-- WorkingTowardsReligion in ReligionScreen.lua.
 function SentientSystems_GetReligionState(player)
 	local religion = player:GetReligion()
 	local pantheon = religion:GetPantheon()

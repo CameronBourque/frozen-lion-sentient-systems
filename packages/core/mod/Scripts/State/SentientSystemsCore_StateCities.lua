@@ -53,8 +53,7 @@ end
 -- Returns the city's growth rate status as the City Status tab of Reports shows
 -- it: halted without room to grow or while the city is occupied, slowed at half
 -- the rate or less, accelerated when its amenities speed it up, and normal
--- otherwise. See CreateCityStatusInstance in ReportScreen.lua, lines 1678 to
--- 1689.
+-- otherwise. See CreateCityStatusInstance in ReportScreen.lua.
 local function GetGrowthRate(city, growth)
 	local housingModifier = growth:GetHousingGrowthModifier()
 

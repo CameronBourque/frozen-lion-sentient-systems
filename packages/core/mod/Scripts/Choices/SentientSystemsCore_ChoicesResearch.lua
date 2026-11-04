@@ -77,8 +77,7 @@ local KINDS = {
 -- Returns the boost of a tech or civic, with its percent of the cost, the text
 -- of its trigger, and whether it has been triggered, or nil for one with no
 -- boost. A row of GameInfo.Boosts names a tech in TechnologyType, or a civic in
--- CivicType. See GetResearchData and GetCivicData in TechAndCivicSupport.lua,
--- lines 550 to 557 and 667 to 674.
+-- CivicType. See GetResearchData and GetCivicData in TechAndCivicSupport.lua.
 local function Boost(kind, store, row)
 	for boost in GameInfo.Boosts() do
 		if boost[kind.typeColumn] == row[kind.typeColumn] then
@@ -92,8 +91,7 @@ local function Boost(kind, store, row)
 end
 
 -- Returns a set of the hashes the game's advisor recommends, as the choosers
--- mark them. See GetData in ResearchChooser.lua, lines 56 to 61, and in
--- CivicsChooser.lua, lines 54 to 58.
+-- mark them. See GetData in ResearchChooser.lua, and in CivicsChooser.lua.
 local function Recommended(kind, player)
 	local hashes = {}
 	local strategicAI = player:GetGrandStrategicAI()
@@ -165,10 +163,9 @@ function SentientSystems_GetResearchReader(kindName, player)
 
 		-- The choosers draw the description as one more unlock icon, a star,
 		-- with the text as its tooltip. See PopulateUnlockablesForTech and
-		-- PopulateUnlockablesForCivic in TechAndCivicSupport.lua, lines 391 to
-		-- 412 and 310 to 331. The civics chooser leaves out the star for some
-		-- civics, which show an icon for an envoy or a governor title in its
-		-- place.
+		-- PopulateUnlockablesForCivic in TechAndCivicSupport.lua. The civics
+		-- chooser leaves out the star for some civics, which show an icon for
+		-- an envoy or a governor title in its place.
 		if row.Description ~= nil then
 			option.description = Locale.Lookup(row.Description)
 		end
@@ -184,8 +181,8 @@ function SentientSystems_GetResearchReader(kindName, player)
 end
 
 -- Returns a list of the techs or civics the player can research now, and the
--- one in research, in the game's order. See GetData in ResearchChooser.lua,
--- lines 66 to 96, and in CivicsChooser.lua, lines 63 to 93.
+-- one in research, in the game's order. See GetData in ResearchChooser.lua, and
+-- in CivicsChooser.lua.
 local function GetResearchChoices(kindName, player)
 	local reader = SentientSystems_GetResearchReader(kindName, player)
 	local options = {}

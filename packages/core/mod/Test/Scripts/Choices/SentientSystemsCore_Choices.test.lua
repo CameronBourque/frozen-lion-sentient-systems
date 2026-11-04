@@ -1,7 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns an environment with the choices script loaded into a fake game built from world.
+-- Returns an environment with the choices script loaded into a fake game built
+-- from world.
 local function Load(world)
 	local env = Game.new()
 

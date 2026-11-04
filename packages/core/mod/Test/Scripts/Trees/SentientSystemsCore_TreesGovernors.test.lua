@@ -1,7 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Reyna, established in Ostia with her base ability, who can earn both promotions below it.
+-- Reyna, established in Ostia with her base ability, who can earn both
+-- promotions below it.
 local REYNA = {
 	type = "GOVERNOR_THE_MERCHANT",
 	city = { owner = 0, id = 393221 },
@@ -31,8 +32,8 @@ local VICTOR = {
 	},
 }
 
--- Returns an environment with the governor tree script loaded into a fake game where player 0 has
--- the governors given, and the world fields in extra.
+-- Returns an environment with the governor tree script loaded into a fake game
+-- where player 0 has the governors given, and the world fields in extra.
 local function Load(governors, extra)
 	local env = Game.new()
 	local world = { players = { [0] = { governors = governors } } }

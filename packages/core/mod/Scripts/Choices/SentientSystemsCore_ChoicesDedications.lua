@@ -8,7 +8,7 @@ SentientSystems_Include("SentientSystemsCore_Eras")
 
 -- Returns the dedication choice. Returns nil with no dedication to make. The
 -- calls read the era's choices only while the blocker is up, as the spy choice
--- must. See DedicationPopup.lua, lines 25 to 120.
+-- must. See DedicationPopup.lua.
 function SentientSystems_GetDedicationChoices(player)
 	local playerID = player:GetID()
 

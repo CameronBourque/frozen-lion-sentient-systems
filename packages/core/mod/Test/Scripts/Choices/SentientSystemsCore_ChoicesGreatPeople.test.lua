@@ -12,8 +12,8 @@ local function Person(name, extra)
 	return person
 end
 
--- Returns the great person choice JSON for player 0, or nil when it is left out, in a world with the
--- great people given and the world fields in extra.
+-- Returns the great person choice JSON for player 0, or nil when it is left
+-- out, in a world with the great people given and the world fields in extra.
 local function ChoicesWith(greatPeople, extra)
 	local env = Game.new()
 	local world = { greatPeople = greatPeople, players = { [0] = {} } }

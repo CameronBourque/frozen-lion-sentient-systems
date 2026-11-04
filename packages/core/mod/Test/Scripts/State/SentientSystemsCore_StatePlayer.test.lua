@@ -1,8 +1,9 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
 
--- Returns the player section JSON for player 0, whose data is given, with or without Gathering
--- Storm, without its income and resources, which have tests of their own.
+-- Returns the player section JSON for player 0, whose data is given, with or
+-- without Gathering Storm, without its income and resources, which have tests
+-- of their own.
 local function PlayerWith(data, expansion2)
 	local env = Game.new()
 

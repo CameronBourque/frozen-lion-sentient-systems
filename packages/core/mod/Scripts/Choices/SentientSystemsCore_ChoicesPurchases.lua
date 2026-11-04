@@ -2,8 +2,8 @@
 -- production panel's purchase tabs list it. SentientSystemsCore_Choices.lua
 -- loads this file. The shape is in bridge/src/choices/purchases.ts. The checks
 -- follow ComposeUnitForPurchase, ComposeBldgForPurchase, and
--- ComposeDistrictForPurchase in ProductionPanel.lua, lines 1632 to 1827. The
--- tiles to buy with gold follow ShowPurchases in PlotInfo.lua.
+-- ComposeDistrictForPurchase in ProductionPanel.lua. The tiles to buy with gold
+-- follow ShowPurchases in PlotInfo.lua.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
@@ -13,7 +13,7 @@ SentientSystems_Include("SentientSystemsCore_Placement")
 -- building with it. The panel tries every district with each yield. A city can
 -- buy some units and buildings with faith that the game marks for gold, such as
 -- with a policy, and the panel asks the city for those. See GetData in
--- ProductionPanel.lua, lines 2006 to 2016, 2084 to 2097, and 2188 to 2201.
+-- ProductionPanel.lua, 2084 to 2097, and 2188 to 2201.
 local PURCHASE_YIELDS = {
 	{
 		key = "gold",
@@ -149,7 +149,7 @@ local NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
 -- Returns the tiles the city can buy with gold, in plot index order. A tile
 -- that costs more than the player's gold has the text of the tooltip the
 -- purchase lens shows on it, as its button is disabled. See ShowPurchases in
--- PlotInfo.lua, lines 282 to 326.
+-- PlotInfo.lua.
 local function GetTilePurchases(city)
 	local gold = Players[city:GetOwner()]:GetTreasury():GetGoldBalance()
 	local cityGold = city:GetGold()

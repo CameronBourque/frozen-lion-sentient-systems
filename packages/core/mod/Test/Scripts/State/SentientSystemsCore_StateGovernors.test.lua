@@ -12,8 +12,8 @@ local REYNA = {
 	},
 }
 
--- Returns the governors section JSON for player 0, whose governors are given, or nil when it is
--- left out.
+-- Returns the governors section JSON for player 0, whose governors are given,
+-- or nil when it is left out.
 local function GovernorsWith(governors, extra)
 	local env = Game.new()
 	local world = {
