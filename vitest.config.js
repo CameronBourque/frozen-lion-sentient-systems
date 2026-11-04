@@ -19,6 +19,9 @@ export default defineConfig({
 				// Only empties a folder and makes its subfolders. Nothing in it
 				// needs a test.
 				"scripts/clean-lua-fixtures/src/index.mjs",
+				// Only lists the Lua files and prints. Its logic is in
+				// check.mjs, which the tests cover.
+				"scripts/lua-comments/src/index.mjs",
 				// Only runs busted and luacov and reads the report. Its logic
 				// is in summary.mjs, which the tests cover.
 				"scripts/lua-coverage/src/index.mjs",
