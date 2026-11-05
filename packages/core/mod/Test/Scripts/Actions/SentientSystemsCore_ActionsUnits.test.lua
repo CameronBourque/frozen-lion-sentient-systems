@@ -77,7 +77,7 @@ describe("SentientSystems_MoveUnit", function()
 	it("fails for an air unit", function()
 		local env = Load(With(SCOUT, { type = "UNIT_BOMBER", domain = "DOMAIN_AIR" }))
 
-		assert.equal(Failed("Air units can't move with this action."), env.SentientSystems_MoveUnit(0, SCOUT.id, 11, 10))
+		assert.equal(Failed("Air units can't move. They rebase, deploy, or attack instead."), env.SentientSystems_MoveUnit(0, SCOUT.id, 11, 10))
 	end)
 
 	it("fails for a unit with no moves left", function()
@@ -125,6 +125,6 @@ describe("SentientSystems_UnitAction", function()
 	end)
 
 	it("fails for an action it doesn't know, and lists the actions", function()
-		assert.equal(Failed("Unknown unit action dance. The actions are alert, attack, build_road, delete, enter_formation, exit_formation, form_army, form_corps, fortify, found_city, harvest, heal, improve, pillage, promote, remove_feature, remove_improvement, repair, skip, sleep, upgrade, wake."), Load(KNIGHT).SentientSystems_UnitAction(0, KNIGHT.id, "dance"))
+		assert.equal(Failed("Unknown unit action dance. The actions are airlift, alert, attack, build_road, delete, deploy, enter_formation, exit_formation, form_army, form_corps, fortify, found_city, harvest, heal, improve, paradrop, pillage, promote, rebase, remove_feature, remove_improvement, repair, skip, sleep, upgrade, wake."), Load(KNIGHT).SentientSystems_UnitAction(0, KNIGHT.id, "dance"))
 	end)
 end)

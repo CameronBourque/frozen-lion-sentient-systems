@@ -1,6 +1,6 @@
 # Unit orders and attacks
 
-Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, formations, and attacks are confirmed in a running game.
+Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, formations, air moves, and attacks are confirmed in a running game.
 
 The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 
@@ -64,6 +64,17 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
 - A corps and an army failed the check for exit with moves restored, and `RestoreMovement` in `GameCore_Tuner` gave the moves back.
 - The checks give only the `UNITS` list and no reasons. A request changed the units after the call returned, not inside it.
 
+### Air moves
+
+`WorldInput.lua` makes four air calls, each in an interface mode that the player clicks a tile in. Rebase and deploy are unit operations: `AirUnitReBase` and `AirUnitDeploy` check `CanStartOperation(unit, REBASE or DEPLOY, nil, { PARAM_X, PARAM_Y })` and request it with the same parameters. Airlift is the unit command `AIRLIFT`, and `UnitAirlift` uses `UnitCommandTypes.PARAM_X` and `PARAM_Y`. Paradrop is the command `PARADROP` of the Rise and Fall expansion, and `UnitParadrop` in `WorldInput_Expansion1.lua` does the same. Each mode lists its tiles with `UnitManager.GetOperationTargets` or `GetCommandTargets`, as `PLOTS` plot indexes. Confirmed in files. Confirmed on Windows on 2026-11-05:
+
+- **Rebase.** A jet fighter at a city listed 13 tiles up to 20 away, such as cities, an aerodrome, and an airstrip. It moved to a city 7 tiles away and had no moves left, and the check then failed. A plain land tile failed.
+- **Deploy.** The same fighter listed 218 tiles up to 10 away, including plain land. The request kept the unit in its city and set its activity to `ACTIVITY_INTERCEPT`. It passed with no moves left.
+- **Airlift.** An infantry unit in a city with an airport listed 12 tiles around the aerodrome of the other city with an airport, and landed on one of them with no moves left. Infantry on the aerodrome tile and on a tile next to it listed targets too, and a city with no airport listed none. A frigate on the water next to an aerodrome with an airport listed none, where infantry on the aerodrome listed 9. In `GameCore_Tuner`, `WorldBuilder.CityManager():CreateDistrict` and `CreateBuilding` built the aerodrome, the hangar, and the airport.
+- **Paradrop.** Spec ops, the only unit with `CLASS_PARADROP` in `GameInfo.TypeTags`, listed about 130 tiles up to 7 away from a city, and about 200 from a tile with an airstrip. It landed 3 tiles away with no moves left. Infantry failed, and so did spec ops on a bare tile.
+- A unit with no moves failed rebase, airlift, and paradrop. `CanStartCommand(unit, command, nil, parameters)` ignored the tile, and `CanStartCommand(unit, command, parameters)` checked it.
+- The checks give no reasons and no results besides the tiles.
+
 ### Attacks
 
 `WorldInput.lua` and `Civ6Common.lua` make three attack calls, and `RequestMoveOperation` picks one. Confirmed in files. Confirmed on Windows on 2026-11-04:
@@ -86,7 +97,8 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
 3. **Builder jobs.** Check and request each job with an engineer or a builder on a tile that allows it and on one that doesn't, print the results of a check with `OperationResultsTypes.ALL`, and read the tile and the unit's charges afterward. In `GameCore_Tuner`, `ImprovementBuilder.SetImprovementPillaged(plot, true)` and `RouteBuilder.SetRoutePillaged(plotIndex, true)` set up a pillaged tile.
 4. **Upgrade.** Call the loose check and the real check with results for units that can upgrade and units that can't, then request it and read the gold and the unit afterward. In `GameCore_Tuner`, `ChangeGoldBalance`, `ChangeResourceAmount` on `GetResources()`, and `SetTech` change the gold, the strategic resources, and the techs.
 5. **Formations.** List `GetCommandTargets` for each command, check with the other unit's player and ID, request it, and read `GetMilitaryFormation()`, `GetFormationUnitCount()`, and the moves afterward. In `GameCore_Tuner`, `InitUnit` spawns the units, `RestoreMovement` and `ChangeMovesRemaining` set the moves, and `SetCivic` gives a civic.
-6. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
+6. **Air moves.** List the targets, check with a tile, and request each order with air units, a spec ops unit, and an infantry unit in cities with and without an airport, and read the unit's tile, moves, and activity afterward.
+7. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
 
 ## Results
 
@@ -99,6 +111,7 @@ The bridge ran these steps in a single-player game.
 | `SentientSystems_UnitAction` for `build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` | `SentientSystemsCore_UI` | Each took effect once, and each gave a reason for one illegal case: a road on a railroad, a remove feature with no feature, a harvest on a farm, a repair of an unpillaged tile, and a repair in a drought | 2026-11-05 |
 | `SentientSystems_UnitAction` for `upgrade` on a crossbowman, a caravel, a builder, a unit with no moves, and a unit short of gold or a resource | `SentientSystemsCore_UI` | The crossbowman became a machine gun and cost 180 gold. Each other case gave a reason: the territory, no upgrade, no moves, gold, and the resource | 2026-11-05 |
 | `SentientSystems_UnitAction` for `form_corps`, `form_army`, `enter_formation`, and `exit_formation` | `SentientSystemsCore_UI` | A musketman formed a corps and then an army, and a knight entered and left a builder's tile formation. Each other case gave a reason: no unit named, a unit that can't join, a builder, no moves, a corps that can't exit, and a missing civic | 2026-11-05 |
+| `SentientSystems_UnitAction` for `rebase`, `deploy`, `airlift`, and `paradrop` | `SentientSystemsCore_UI` | A fighter rebased and deployed, an infantry unit airlifted, and a spec ops unit paradropped. Each other case gave a reason: a tile out of range, a unit of the wrong kind, no moves, no airport, and no city or airstrip | 2026-11-05 |
 | `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs, upgrades, and formations on 2026-11-05.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs, upgrades, formations, and air moves on 2026-11-05.

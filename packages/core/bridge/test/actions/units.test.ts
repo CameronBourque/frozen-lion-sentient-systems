@@ -74,6 +74,12 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 9437197, { action: "upgrade" })).toEqual({ ok: true });
 	});
 
+	test("unitAction passes the tile of an air move", async () => {
+		answer("SentientSystems_UnitAction(0, 9306120, \"rebase\", 43, 38, nil)", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 9306120, { action: "rebase", x: 43, y: 38 })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes the unit to join as a number", async () => {
 		answer("SentientSystems_UnitAction(0, 9437197, \"form_corps\", nil, nil, 9502792)", "{\"ok\":true}");
 		expect(await unitAction(client, 0, 9437197, { action: "form_corps", with: 9502792 })).toEqual({ ok: true });

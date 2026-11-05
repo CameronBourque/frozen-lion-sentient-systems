@@ -30,7 +30,7 @@ local function GetMoveFailure(playerID, unit, x, y)
 
 	-- Air units deploy or attack instead of moving. See Civ6Common.lua.
 	if GameInfo.Units[unit:GetUnitType()].Domain == "DOMAIN_AIR" then
-		return "Air units can't move with this action."
+		return "Air units can't move. They rebase, deploy, or attack instead."
 	end
 
 	if unit:GetMovesRemaining() <= 0 then
@@ -99,6 +99,7 @@ SentientSystems_Include("SentientSystemsCore_ActionsUnitTiles")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitJobs")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitUpgrade")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitFormations")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitAir")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitAttacks")
 
 -- Returns the names of the unit actions, sorted, for the reason an action name
