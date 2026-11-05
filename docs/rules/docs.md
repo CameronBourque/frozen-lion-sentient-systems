@@ -73,7 +73,7 @@ Where each kind of fact lives:
 
 ## Tech debt
 
-- Each debt is its own file in [tech-debt/](../tech-debt/README.md), with a one-line summary and these sections: `## Now`, `## Proposal`, `## Questions`, and `## Done when`.
+- Each debt is its own file in [tech-debt/](../tech-debt/README.md), with a one-line summary and these sections: `## Now`, `## Proposal`, `## Questions`, and `## Done when`. A planned debt has `## Tasks` in place of `## Questions`.
 - `## Now` says what the code or docs hold today, with paths and counts.
 - The index lists the files in the order to work on them.
 - When a debt is planned, answer its questions in the file and add `## Tasks`, one task per commit, as a roadmap step does. Cut `## Proposal` to a short summary of the approach, so the details live only in the tasks.
