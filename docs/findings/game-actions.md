@@ -1,6 +1,6 @@
 # Game actions
 
-Status: open. Moving a unit and ending the turn are confirmed in a running game. The other actions are not yet looked at.
+Status: open. Moving a unit, checking its route, and ending the turn are confirmed in a running game. The other actions are not yet looked at.
 
 The game calls the action API wraps, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](game-api.md). The core mod's result format is in [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -50,6 +50,27 @@ The game's Lua also uses these calls: `CanStartCommand` and `RequestCommand` for
 
 For other operations and commands, civ6-mcp reads failure reasons from the same form. `local ok, result = UnitManager.CanStartOperation(unit, op, nil, params, true)` returns `result.FailureReasons`, a list of reason strings, when the check fails. `UnitManager.CanStartCommand` and `CityManager.CanStartCommand` return a table of reasons the same way. See [`build_improve_tile`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L1039), [`build_sacrifice_builder_charges`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L1266), and [`build_purchase_item`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/cities.py#L593). Unconfirmed, used by civ6-mcp.
 
+### Checking a route
+
+`UnitManager.GetMoveToPathEx(unit, plotIndex)` returns the route the game's cursor draws, as `WorldInput.lua` reads it. Confirmed in files. The table has `plots`, the plot indexes from the first step to the target, `turns`, the turn each step is reached, and `obstacles`, `exitPortals`, and `entrancePortals`. It is the only check we found that covers a move over more than one turn. Confirmed on Windows on 2026-11-04, with a scout on turn 55:
+
+- For a reachable tile the last plot is the target. A tile 9 away gave 10 plots and 4 turns.
+- For a tile with no route, such as an impassable mountain, `plots` is empty.
+- For the unit's own tile, `plots` is empty.
+- A scout that could embark got a route to an ocean tile, so the route follows what the unit can enter.
+
+A `MOVE_TO` request for a far tile starts at once and uses the moves left. A scout with 3 moves, asked to move to a tile 2 away, moved one tile and stopped with 0 moves. A unit with 0 moves left is refused by our own check, because the request would only queue. Confirmed on Windows on 2026-11-04.
+
+`UnitManager.GetUnit(playerID, unitID)` finds the unit, and a unit ID is only unique within a player: players 0 and 1 each had a unit 196608. Confirmed on Windows on 2026-11-04.
+
+### The war dialog
+
+`MoveUnitToPlot` calls `CombatManager.IsAttackChangeWarState(unit:GetComponentID(), x, y)` when the player can see the tile. A result with entries means the move starts a war, and the first entry is the defending player. Instead of moving, it fires `LuaEvents.Civ6Common_ConfirmWarDialog`, which `DeclareWarPopup.lua` shows. Confirming calls `DiplomacyManager.RequestSession(attacker, defender, "DECLARE_SURPRISE_WAR")`, and nothing repeats the move, so the player moves again. Confirmed in files.
+
+The call returned `{1}` for a tile inside the borders of a player at peace, and an empty list for the tiles around it. A move to a tile with a neutral unit on it was not an attack. Confirmed on Windows on 2026-11-04.
+
+A request sent straight to `RequestOperation`, as the core mod does, fires no event and opens no dialog, so our move checks for the war itself and refuses with a reason. Confirmed in files.
+
 ### Ending the turn
 
 `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` ends the turn. It's in `Base/Assets/UI/ActionPanel.lua` at line 512. The base UI calls it in five places. Confirmed in files. Sent from `SentientSystemsCore_UI` in single player, it ended the turn, and the next `AGENT_TURN` line came 3 s later. Confirmed on Windows on 2026-10-23.
@@ -68,7 +89,9 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
    - print the result of `CanStartOperation`, then call `RequestOperation`,
    - read the unit's position again on the next call, because the move may complete asynchronously.
 2. **Negative test.** Check a move into deep water for a land unit. Record what `CanStartOperation` returns, with and without `true` as a fifth argument, and whether the tile is in `GetReachableMovement`.
-3. **End the turn.** Run `UI.RequestAction(ActionTypes.ACTION_ENDTURN)`, and check that the next `AGENT_TURN` line arrives.
+3. **Check a route.** Call `UnitManager.GetMoveToPathEx(unit, plotIndex)` for a tile 9 away, an impassable tile, and the unit's own tile. Compare the last plot with the target, then call `MoveUnit` for each and read the unit's position and moves.
+4. **Check the war test.** Call `CombatManager.IsAttackChangeWarState` for tiles in the borders of a player at peace.
+5. **End the turn.** Run `UI.RequestAction(ActionTypes.ACTION_ENDTURN)`, and check that the next `AGENT_TURN` line arrives.
 
 ## Results
 
@@ -81,7 +104,10 @@ The bridge ran these steps in a single-player game, with one city and one unit.
 | `GetReachableMovement` holds (43, 51) | `SentientSystemsCore_UI` | No | 2026-10-23 |
 | `CanStartOperation`, then `RequestOperation`, for (42, 50), adjacent and not reachable | `SentientSystemsCore_UI`, then `InGame` | The check passed, and the request raised no error. In `GameCore_Tuner`, `FindID` read the unit at (41, 49) with 2 moves left, 5 times over 5 s after each request | 2026-10-23 |
 | `CanStartOperation`, then `RequestOperation`, for (42, 49), adjacent and reachable | `SentientSystemsCore_UI` | The check passed. The unit moved on the map. In `GameCore_Tuner`, `FindID` read it at (42, 49) with 1 move left, 1 s after the request | 2026-10-23 |
+| `GetMoveToPathEx` for a reachable tile 9 away, and for a mountain | `SentientSystemsCore_UI` | 10 plots ending at the target with 4 turns, and an empty `plots` | 2026-11-04 |
+| `IsAttackChangeWarState` for a tile in the borders of a player at peace, and for the tiles around it | `SentientSystemsCore_UI` | `{1}`, and empty lists | 2026-11-04 |
+| `SentientSystems_MoveUnit` for a tile 2 away | `SentientSystemsCore_UI` | `ok`. The scout moved one tile and stopped with 0 moves | 2026-11-04 |
 | `Game.GetCurrentGameTurn()`, `UI.CanEndTurn()`, and `GetFirstEndTurnBlocking` | `SentientSystemsCore_UI` | Turn 1, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 | `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` | `SentientSystemsCore_UI` | The turn ended. `AGENT_TURN 0` came 3 s later, and the same three calls returned turn 2, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23, and routes and the war test on 2026-11-04.

@@ -40,6 +40,8 @@ An action is one Lua function that the bridge calls to run a request function of
 | Lua test | `mod/Test/Scripts/Actions/SentientSystemsCore_Actions.test.lua` |
 | Typed function | `bridge/src/actions/<area>.ts`, which calls `sendAction` |
 | Test | `bridge/test/actions/<area>.test.ts`, with a fake client |
+| Recorded call | The action's name in `RECORDED` in `mod/Test/Game.lua`, in `calls` in `scripts/clean-lua-fixtures/src/index.mjs`, and in `CALLS` in `bridge/test/contract.test.ts`, which checks its JSON against `ACTION_RESULT` |
+| Fake game feature | `mod/Test/FakeGame/<Name>.lua`, and its `FakeGame.Register` line in `mod/Test/FakeGame.lua` |
 
 ## Parts of a choice
 
