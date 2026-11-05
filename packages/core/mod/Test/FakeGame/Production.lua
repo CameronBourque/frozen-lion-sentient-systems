@@ -99,6 +99,12 @@ return function(env, world, ctx)
 				GetCurrentProductionTypeHash = function()
 					return hash
 				end,
+				-- The plot index of the district or wonder being built, or -1.
+				GetConstructionPlot = function()
+					local plot = production and production.plot
+
+					return plot and ctx.PlotIndex(plot.x, plot.y) or -1
+				end,
 				-- The game takes a hash or a type name, and a formation for a
 				-- unit.
 				GetTurnsLeft = function(_, typeOrHash, formation)

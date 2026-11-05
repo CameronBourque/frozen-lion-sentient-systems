@@ -21,17 +21,28 @@ return function(env, world, ctx)
 	end
 
 	env.Cities = {
-		-- The city of any player on the tile x, y, where an escaping spy is.
+		-- The city of any player on the tile x, y, where an escaping spy is, or
+		-- that has the tile in its ownedTiles.
 		GetPlotPurchaseCity = function(x, y)
 			for id = 0, 63 do
 				for _, city in (env.Players[id] and env.Players[id]:GetCities() or List({})):Members() do
-					if city:GetX() == x and city:GetY() == y then
+					local owns = city:GetX() == x and city:GetY() == y
+
+					for _, tile in ipairs(city.ownedTiles or {}) do
+						owns = owns or tile.x == x and tile.y == y
+					end
+
+					if owns then
 						return city
 					end
 				end
 			end
 		end,
 	}
+
+	ctx.OnCity(function(city, data)
+		city.ownedTiles = data.ownedTiles
+	end)
 
 	-- The player's escaping spy, from data.escapingSpy, which FindID alone
 	-- finds.

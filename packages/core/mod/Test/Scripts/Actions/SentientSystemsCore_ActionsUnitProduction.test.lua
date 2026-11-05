@@ -3,6 +3,7 @@ local Game = require("Game")
 
 local ENGINEER = { id = 7405612, type = "UNIT_MILITARY_ENGINEER", x = 20, y = 20, moves = 2, charges = 2 }
 local FLOOD_BARRIER = { type = "BUILDING_FLOOD_BARRIER", turns = 3, cost = 40, progress = 0 }
+local AQUEDUCT = { type = "DISTRICT_AQUEDUCT", plot = { x = 21, y = 20 } }
 
 local function With(unit, changes)
 	local copy = {}
@@ -29,7 +30,15 @@ local function Run(unit, producing)
 	local player = { units = { unit } }
 
 	if producing ~= nil then
-		local city = { id = 65536, name = "Rome", x = 20, y = 20, population = 3, options = { buildings = { FLOOD_BARRIER } } }
+		local city = {
+			id = 65536,
+			name = "Rome",
+			x = 20,
+			y = 20,
+			population = 3,
+			ownedTiles = { { x = 21, y = 20 } },
+			options = { buildings = { FLOOD_BARRIER }, districts = { { type = "DISTRICT_AQUEDUCT", turns = 3 } } },
+		}
 
 		if producing ~= "nothing" then
 			city.production = producing
@@ -44,6 +53,10 @@ local function Run(unit, producing)
 	-- The fake rows have no names, so give each type a text key.
 	for _, row in pairs(env.GameInfo.Buildings) do
 		row.Name = "LOC_" .. row.BuildingType
+	end
+
+	for _, row in pairs(env.GameInfo.Districts) do
+		row.Name = "LOC_" .. row.DistrictType
 	end
 
 	return env.SentientSystems_UnitAction(0, unit.id, "add_production"), env
@@ -78,8 +91,20 @@ describe("add_production", function()
 		assert.equal(Failed("The unit has no moves left."), (Run(With(ENGINEER, { moves = 0 }), FLOOD_BARRIER)))
 	end)
 
-	it("says the unit has to be in a city", function()
-		assert.equal(Failed("The unit has to be in a city to add production."), (Run(ENGINEER)))
+	it("says the unit has to be in a city or on the tile of a district", function()
+		assert.equal(Failed("The unit has to be in a city, or on the tile of a district or wonder that a city is building."), (Run(ENGINEER)))
+	end)
+
+	it("says where a district is being built when the unit is in the city", function()
+		local reason = "Rome is building LOC_DISTRICT_AQUEDUCT on the tile (21, 20). A unit that can add to it has to stand there."
+
+		assert.equal(Failed(reason), (Run(ENGINEER, AQUEDUCT)))
+	end)
+
+	it("fails on the tile of the district for a unit that can't add to it", function()
+		local builder = With(ENGINEER, { type = "UNIT_BUILDER", x = 21, y = 20 })
+
+		assert.equal(Failed("Rome is building LOC_DISTRICT_AQUEDUCT, and this unit can't add production to it."), (Run(builder, AQUEDUCT)))
 	end)
 
 	it("names what the city is building", function()

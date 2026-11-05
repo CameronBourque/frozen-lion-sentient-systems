@@ -9,7 +9,7 @@ Add the unit orders that the unit actions leave out and that need no choice firs
 3. **Formations.** Add `form_corps`, `form_army`, `enter_formation`, and `exit_formation`. Read the calls from `UnitPanel.lua` and `WorldInput.lua`, including `OnUnitActionClicked_EnterFormation`, which names the other unit. Commit: `feat(core): add the formation actions`.
 4. **Air movement.** Add `rebase` and `deploy` for air units, and `airlift` and `paradrop` for land units, which name a target tile in `x` and `y`. Return a reason when the tile is out of range, and make the move action's reason for an air unit name these. Commit: `feat(core): add the air movement actions`.
 5. **Priority target.** Add `priority_target`, which names a tile in `x` and `y` and hits the support or civilian unit that a military unit escorts. Read the command from `WorldInput_Expansion1.lua`, and return a reason when the tile has none. Commit: `feat(core): add the priority target action`.
-6. **Add production.** Add `add_production`, from the unit commands that add production to a city's item at the cost of a build charge, for a military engineer or builder in a city. Return a reason when the unit isn't in a city or the city builds nothing it can help. Commit: `feat(core): add the production action`.
+6. **Add production.** Add `add_production`, from the unit commands that add production to a city's item at the cost of a build charge, for a military engineer or builder in a city or on the tile of a district. Return a reason when the unit isn't there or the city builds nothing it can help. Commit: `feat(core): add the production action`.
 
 ## Done when
 

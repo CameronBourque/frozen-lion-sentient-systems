@@ -10,15 +10,15 @@ local COMMANDS = {
 	"UNITCOMMAND_PROJECT_PRODUCTION",
 }
 
--- Returns the name of what the city is producing, or nil when it builds
--- nothing.
-local function GetProductionName(city)
+-- Returns the name of what the city is producing and its hash, or nil when it
+-- builds nothing.
+local function GetProduction(city)
 	local hash = city:GetBuildQueue():GetCurrentProductionTypeHash()
 
 	for _, tableName in ipairs({ "Buildings", "Districts", "Units", "Projects" }) do
 		for row in GameInfo[tableName]() do
 			if row.Hash == hash then
-				return Locale.Lookup(row.Name)
+				return Locale.Lookup(row.Name), hash
 			end
 		end
 	end
@@ -27,7 +27,8 @@ local function GetProductionName(city)
 end
 
 -- Returns why the unit can't add production. The game gives no reasons, so the
--- unit, its moves, and its tile are checked in turn.
+-- unit, its moves, and its tile are checked in turn. A district or a wonder
+-- takes a unit on its own tile, and a building or a project, one in the city.
 local function GetFailure(unit)
 	if not SentientSystems_IsBuilder(GameInfo.Units[unit:GetUnitType()]) then
 		return "This kind of unit can't add production."
@@ -37,17 +38,26 @@ local function GetFailure(unit)
 		return "The unit has no moves left."
 	end
 
-	local city = CityManager.GetCityAt(unit:GetX(), unit:GetY())
+	local x, y = unit:GetX(), unit:GetY()
+	local city = Cities.GetPlotPurchaseCity(x, y)
 
 	if city == nil then
-		return "The unit has to be in a city to add production."
+		return "The unit has to be in a city, or on the tile of a district or wonder that a city is building."
 	end
 
 	local cityName = Locale.Lookup(city:GetName())
-	local production = GetProductionName(city)
+	local production, hash = GetProduction(city)
 
 	if production == nil then
 		return cityName .. " is not building anything."
+	end
+
+	local plotIndex = city:GetBuildQueue():GetConstructionPlot(hash)
+
+	if plotIndex ~= -1 and plotIndex ~= Map.GetPlot(x, y):GetIndex() then
+		local plot = Map.GetPlotByIndex(plotIndex)
+
+		return cityName .. " is building " .. production .. " on the tile (" .. plot:GetX() .. ", " .. plot:GetY() .. "). A unit that can add to it has to stand there."
 	end
 
 	return cityName .. " is building " .. production .. ", and this unit can't add production to it."
