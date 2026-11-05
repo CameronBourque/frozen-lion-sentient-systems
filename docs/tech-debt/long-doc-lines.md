@@ -4,15 +4,14 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 117 Markdown files. 73 of them have a line over 300 characters, 469 lines in all, and 83 lines pass 600.
+A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 121 Markdown files. 77 of them have a line over 300 characters, 473 lines in all, and 84 lines pass 600.
 
 [findings/lua/state-list.md](../findings/lua/state-list.md) has the longest line, a 2,318-character list of state names.
 
-Six files pass 12,000 characters, although none passes 150 lines:
+Five files pass 12,000 characters, although none passes 150 lines:
 
 | File | Characters | Lines | Lines over 300 |
 | --- | --- | --- | --- |
-| [findings/actions/unit-orders.md](../findings/actions/unit-orders.md) | 25,723 | 133 | 36 |
 | [findings/state/state.md](../findings/state/state.md) | 21,365 | 150 | 23 |
 | [findings/state/player.md](../findings/state/player.md) | 18,032 | 86 | 23 |
 | [findings/state/governors.md](../findings/state/governors.md) | 14,427 | 53 | 20 |
@@ -49,7 +48,7 @@ A split moves the text unchanged, and a later commit shortens the lines, so each
    - `docs/findings/choices/purchases.md`: purchases and tile purchases.
    - `docs/findings/choices/research.md`: techs, civics, and the trees.
    - `docs/findings/choices/placement.md`: placement tiles.
-5. **Unit orders split.** Move the builder jobs and adding production into `docs/findings/actions/builder-jobs.md*`, the attacks into `docs/findings/actions/attacks.md*`, and the air moves into `docs/findings/actions/air-moves.md*`. Commit: `docs: split the unit orders finding by topic`.
+5. **Unit orders split.** Move the builder jobs, formations, air moves, and attacks into `builder-jobs.md`, `formations.md`, `air-moves.md`, and `attacks.md` in `docs/findings/actions/`. Commit: `docs: split the unit orders finding by topic`.
 6. **State split.** Move the end-turn blockers into `docs/findings/state/end-turn-blockers.md*`, and the rival cities and rival units into `docs/findings/state/rivals.md*`. Commit: `docs: split the state finding by topic`.
 7. **Player split.** Move the Yields, Resources, and City Status tabs into `docs/findings/state/reports.md*`, and the Era Progress panel into `docs/findings/state/eras.md*`. Commit: `docs: split the player finding by topic`.
 8. **Governors split.** Move the governor choices into `docs/findings/choices/governors.md*`, and keep the state section in `governors.md`. Commit: `docs: split the governor choices from the governor state`.

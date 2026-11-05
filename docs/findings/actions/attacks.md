@@ -1,0 +1,45 @@
+# Attacks
+
+Status: open. Ranged, air, melee, and city attacks are confirmed in a running game. The priority target is not.
+
+The game calls the attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md).
+
+The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
+
+The other unit actions are in the [actions index](README.md).
+
+## Questions
+
+1. Does `UNITCOMMAND_PRIORITY_TARGET` mark the tile of an enemy escort, and does a request hit the escort? Setup needs an enemy military unit that escorts a civilian or support unit within reach of a spec ops or air unit, in sight. See [Attacks](#attacks).
+
+## What we know now
+
+### Attacks
+
+`WorldInput.lua` and `Civ6Common.lua` make three attack calls, and `RequestMoveOperation` picks one. Confirmed in files. Confirmed on Windows on 2026-11-04:
+
+- **Ranged and bombard.** `UnitManager.CanStartOperation(unit, RANGE_ATTACK, nil, { X, Y })` and `RequestOperation` with the same parameters. The UI picks it when the unit's ranged or bombard strength is above its melee strength. A crossbowman hit a unit 1 tile away, and another hit a heavy chariot 2 tiles away.
+- **Air.** The same with `AIR_ATTACK`. A jet bomber hit a unit within its range of 15.
+- **Melee.** `MOVE_TO` with `UnitOperationMoveModifiers.ATTACK` plus `MOVE_IGNORE_UNEXPLORED_DESTINATION`, as the move path does. A knight damaged a trebuchet on the next tile. A knight attacking a tile with only an enemy builder captured it: the builder became the player's, and the knight stood on the tile.
+- **Targets.** `UnitManager.GetOperationTargets(unit, op)` returns `UnitOperationResults.PLOTS` and `MODIFIERS`. A tile with `MODIFIER_IS_TARGET` holds something to hit, and the others are in range only. A tile behind a forest was missing from a crossbowman's list, so the list also reflects line of sight.
+- The checks give no reasons. A unit with no attacks left failed `CanStartOperation` for every tile with an empty `FAILURE_REASONS`, and `GetAttacksRemaining()` explains it.
+- `Units.GetUnitsInPlot(plot)` lists the units on a tile, and `CityManager.GetCityAt(x, y)` gives its city.
+- **War.** `CombatManager.IsAttackChangeWarState` gives the same answer for an attack as for a move, and `UnitAirAttack` and the coastal raid call it the same way. A tile inside the borders of a player at peace returned the player, with or without a unit on it. Attacking a visible tile there is refused by the core mod. The dialog is the same as for a move, in [the war dialog](move-unit.md#the-war-dialog).
+- **Priority target.** `UNITCOMMAND_PRIORITY_TARGET` is a unit command of the Rise and Fall expansion. It hits the support or civilian unit that a military unit escorts, instead of the military unit. `WorldInput_Expansion1.lua` lists its tiles with `UnitManager.GetCommandTargets(unit, command)`, highlights those marked with `CityCommandResults.MODIFIER_IS_TARGET`, and checks and requests it with `UnitCommandTypes.PARAM_X` and `PARAM_Y`. Confirmed in files. Confirmed on Windows on 2026-11-05: the check passed for spec ops, a bomber, a jet bomber, and a fighter that had moves, and failed for units with none. It listed every tile in range, 464 for the jet bomber, and marked none. A knight and a builder on one tile weren't marked, and the command failed for the tile. An enemy heavy chariot escorting a settler, in range of the jet bomber and in sight, wasn't marked either, though the air attack didn't mark it. `RequestCommand` did nothing for an enemy unit, so a tile that is marked, and a request that works, haven't been seen.
+- **City attack.** `CityManager.GetCommandTargets(city, CityCommandTypes.RANGE_ATTACK, {})` returns the tiles in `CityCommandResults.PLOTS` with `MODIFIERS`, and `CityManager.CanStartCommand` and `RequestCommand` take `{ X, Y }`. `CityRangeAttack` shows no war dialog. A city hit an enemy unit on the next tile, and left it with 22 damage.
+
+## Method
+
+Run each step through the tuner, and record the Lua state you ran it in. Steps 1 and 2 of [game-api.md](../game-api.md#method) give a unit ID.
+
+1. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
+
+## Results
+
+The bridge ran these steps in a single-player game.
+
+| Call | Lua state | Result | Date |
+| --- | --- | --- | --- |
+| `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
+
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04, and on 2026-11-05 for the priority target.
