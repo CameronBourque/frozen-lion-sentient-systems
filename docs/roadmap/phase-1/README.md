@@ -29,7 +29,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 11 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
 | 12 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, great person, and artifact blockers | `feat(core): add the religion, governor, and reward actions` | |
 | 13 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
-| 14 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
+| 14 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
 | 15 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
 | 16 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
 | 17 | [Tool reference](tool-reference.md) | `docs/reference/tools.md` and the workflow that updates it | `ci: generate the tool reference` | |

@@ -46,6 +46,12 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 6160397, { action: "fortify" })).toEqual({ ok: true });
 	});
 
+	test("unitAction passes the tile of an attack", async () => {
+		answer("SentientSystems_UnitAction(0, 4456460, \"attack\", 38, 38, nil)", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 4456460, { action: "attack", x: 38, y: 38 })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes an improvement as text", async () => {
 		answer("SentientSystems_UnitAction(0, 9437197, \"improve\", nil, nil, \"IMPROVEMENT_FARM\")", "{\"ok\":true}");
 

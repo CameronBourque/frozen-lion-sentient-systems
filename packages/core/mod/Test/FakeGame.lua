@@ -446,5 +446,6 @@ FakeGame.Register("Diplomacy", require("FakeGame/Diplomacy"))
 FakeGame.Register("Proposals", require("FakeGame/Proposals"))
 FakeGame.Register("Scoreboard", require("FakeGame/Scoreboard"))
 FakeGame.Register("Victories", require("FakeGame/Victories"))
+FakeGame.Register("Attacks", require("FakeGame/Attacks"))
 
 return FakeGame

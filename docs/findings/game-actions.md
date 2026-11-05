@@ -1,12 +1,11 @@
 # Game actions
 
-Status: open. Moving a unit, checking its route, the unit orders, the orders on a unit's tile, and ending the turn are confirmed in a running game. The other actions are not yet looked at.
+Status: open. Moving a unit, checking its route, the unit orders, the orders on a unit's tile, attacks, and ending the turn are confirmed in a running game. The other actions are not yet looked at.
 
 The game calls the action API wraps, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](game-api.md). The core mod's result format is in [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-1. What failure reasons do `CanStartOperation` give for the attacks? The reasons for a move, the stances, found city, improve, and pillage are checked by hand, because the game gives none.
 
 ## What we know now
 
@@ -95,6 +94,19 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
 - Pillage was allowed for a knight on an unpillaged improvement in the territory of a player at war, and refused on the player's own farm. After the request, the improvement was pillaged and the check refused a second pillage.
 - Units placed with `GameCore_Tuner`'s `UnitManager.InitUnit` take these orders like any other.
 
+### Attacks
+
+`WorldInput.lua` and `Civ6Common.lua` make three attack calls, and `RequestMoveOperation` picks one. Confirmed in files. Confirmed on Windows on 2026-11-04:
+
+- **Ranged and bombard.** `UnitManager.CanStartOperation(unit, RANGE_ATTACK, nil, { X, Y })` and `RequestOperation` with the same parameters. The UI picks it when the unit's ranged or bombard strength is above its melee strength. A crossbowman hit a unit 1 tile away, and another hit a heavy chariot 2 tiles away.
+- **Air.** The same with `AIR_ATTACK`. A jet bomber hit a unit within its range of 15.
+- **Melee.** `MOVE_TO` with `UnitOperationMoveModifiers.ATTACK` plus `MOVE_IGNORE_UNEXPLORED_DESTINATION`, as the move path does. A knight damaged a trebuchet on the next tile. A knight attacking a tile with only an enemy builder captured it: the builder became the player's, and the knight stood on the tile.
+- **Targets.** `UnitManager.GetOperationTargets(unit, op)` returns `UnitOperationResults.PLOTS` and `MODIFIERS`. A tile with `MODIFIER_IS_TARGET` holds something to hit, and the others are in range only. A tile behind a forest was missing from a crossbowman's list, so the list also reflects line of sight.
+- The checks give no reasons. A unit with no attacks left failed `CanStartOperation` for every tile with an empty `FAILURE_REASONS`, and `GetAttacksRemaining()` explains it.
+- `Units.GetUnitsInPlot(plot)` lists the units on a tile, and `CityManager.GetCityAt(x, y)` gives its city.
+- **War.** `CombatManager.IsAttackChangeWarState` gives the same answer for an attack as for a move, and `UnitAirAttack` and the coastal raid call it the same way. A tile inside the borders of a player at peace returned the player, with or without a unit on it. Attacking a visible tile there is refused by the core mod. The dialog is the same as for a move, in [the war dialog](#the-war-dialog).
+- **City attack.** `CityManager.GetCommandTargets(city, CityCommandTypes.RANGE_ATTACK, {})` returns the tiles in `CityCommandResults.PLOTS` with `MODIFIERS`, and `CityManager.CanStartCommand` and `RequestCommand` take `{ X, Y }`. `CityRangeAttack` shows no war dialog. A city hit an enemy unit on the next tile, and left it with 22 damage.
+
 ### Ending the turn
 
 `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` ends the turn. It's in `Base/Assets/UI/ActionPanel.lua` at line 512. The base UI calls it in five places. Confirmed in files. Sent from `SentientSystemsCore_UI` in single player, it ended the turn, and the next `AGENT_TURN` line came 3 s later. Confirmed on Windows on 2026-10-23.
@@ -133,7 +145,8 @@ The bridge ran these steps in a single-player game, with one city and one unit.
 | `SentientSystems_MoveUnit` for a tile 2 away | `SentientSystemsCore_UI` | `ok`. The scout moved one tile and stopped with 0 moves | 2026-11-04 |
 | `SentientSystems_UnitAction` for fortify, skip, wake, promote, and delete on a knight and a caravel | `SentientSystemsCore_UI` | Each took effect. Delete removed the knight | 2026-11-04 |
 | `SentientSystems_UnitAction` for `improve`, `found_city`, and `pillage` | `SentientSystemsCore_UI` | A farm was started, a city was founded, and an enemy improvement was pillaged. The reasons came from the checks in the Lua | 2026-11-04 |
+| `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
 | `Game.GetCurrentGameTurn()`, `UI.CanEndTurn()`, and `GetFirstEndTurnBlocking` | `SentientSystemsCore_UI` | Turn 1, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 | `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` | `SentientSystemsCore_UI` | The turn ended. `AGENT_TURN 0` came 3 s later, and the same three calls returned turn 2, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23, and routes, the war test, the unit orders, and the orders on a unit's tile on 2026-11-04.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23, and routes, the war test, the unit orders, the orders on a unit's tile, and attacks on 2026-11-04.

@@ -1,6 +1,21 @@
 -- The unit actions. SentientSystemsCore_Actions.lua loads this file. The calls
 -- are in docs/findings/game-actions.md.
 
+-- Returns why a move or an attack on x, y would start a war, or nil. The verb
+-- starts the reason. Civ6Common.lua opens a confirmation dialog here, which has
+-- no call to answer. The game checks only tiles the player can see.
+function SentientSystems_GetWarFailure(playerID, unit, x, y, verb)
+	if PlayersVisibility[playerID]:IsVisible(x, y) then
+		local wars = CombatManager.IsAttackChangeWarState(unit:GetComponentID(), x, y)
+
+		if wars ~= nil and #wars > 0 then
+			return verb .. " there would start a war with player " .. wars[1] .. "."
+		end
+	end
+
+	return nil
+end
+
 -- Returns why the unit can't move to x, y, or nil when it can. The game's check
 -- for a move gives no reasons and passes any target, so each case is checked
 -- here, with the path the game's cursor draws.
@@ -22,13 +37,10 @@ local function GetMoveFailure(playerID, unit, x, y)
 		return "The unit has no moves left."
 	end
 
-	-- Civ6Common.lua opens a confirmation dialog here and doesn't move.
-	if PlayersVisibility[playerID]:IsVisible(x, y) then
-		local wars = CombatManager.IsAttackChangeWarState(unit:GetComponentID(), x, y)
+	local war = SentientSystems_GetWarFailure(playerID, unit, x, y, "Moving")
 
-		if wars ~= nil and #wars > 0 then
-			return "Moving there would start a war with player " .. wars[1] .. "."
-		end
+	if war ~= nil then
+		return war
 	end
 
 	local index = Map.GetPlot(x, y):GetIndex()
@@ -84,6 +96,7 @@ end
 
 SentientSystems_Include("SentientSystemsCore_ActionsUnitStances")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitTiles")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitAttacks")
 
 -- Returns the names of the unit actions, sorted, for the reason an action name
 -- isn't one.

@@ -23,6 +23,8 @@
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTiles.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitAttacks.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_ActionsCities.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -74,6 +76,8 @@
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTiles.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitAttacks.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_ActionsCities.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
