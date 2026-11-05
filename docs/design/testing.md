@@ -1,6 +1,6 @@
 # Testing
 
-Tests use fixed presets with a fixed map seed, so a rerun shows whether a change helped or the agent got lucky. Playtests judge fun and advice quality.
+Tests use fixed presets with a fixed map seed, so a rerun shows whether a change helped or the agent got lucky. Scenario tests check one hard moment from a save. Playtests judge fun and advice quality.
 
 ## Presets
 
@@ -12,6 +12,34 @@ Tests use fixed presets with a fixed map seed, so a rerun shows whether a change
 ## Test matrix
 
 After phase 1, a test matrix changes one setting at a time: map size, player count, ruleset, optional game modes, and game mode.
+
+## Scenario tests
+
+A scenario test loads a save set at one hard moment, lets the agent play a few turns, and checks an outcome with code. A full game takes hours and mixes every decision together. A scenario takes a few turns and tests one decision, so it shows whether a change to a prompt, a guide, a [decision helper](decision-support/helpers.md), or a [model tier](decision-support/model-routing.md#tiers) helped.
+
+A scenario has these parts:
+
+- a save,
+- the agent's personality and sweat level,
+- the number of turns to play,
+- a check that code runs on the state after the last turn.
+
+The check judges the outcome, never the moves. Grading each move takes a person and a long time, and two people grade moves differently. An outcome, such as a city that still stands, needs no judgment.
+
+These are the first scenarios. The list is partial.
+
+| Scenario | Save | Passes when |
+| --- | --- | --- |
+| Defend a city | Three enemy units next to a city with one defender | The city still belongs to the agent after 10 turns |
+| Surprise war | A neighbor declares war with its army near the border | Within 2 turns, the agent has units in each threatened city |
+| Pick a settle site | A settler with several sites in reach | The settler founds a city within 5 turns |
+| Recover the treasury | Gold income below 0 | Gold income is above 0 within 5 turns |
+
+A model does not give the same answer each time. Each scenario runs several times, and the result is a pass rate.
+
+We keep only a few scenarios. Each one needs a save, and a save made for one version of the game or the core mod can break on the next. The [game review](decision-support/game-review.md#steps) turning points show which moments are worth a scenario. A save can also be set up with the tuner, such as by placing enemy units next to a city.
+
+Scenarios run on demand, not in CI, because they need the game and cost model calls.
 
 ## Playtests
 
@@ -58,5 +86,8 @@ The tiles are the largest part of the state, at about two thirds on both turns, 
 | --- | --- |
 | Tests use fixed presets with a fixed map seed | A rerun shows whether a change helped or the agent got lucky |
 | The test matrix starts after phase 1 and changes one setting at a time | A failure points at the one setting that changed |
+| Scenario tests check an outcome with code, never the moves | Grading moves takes a person, and two people grade them differently |
+| Each scenario runs several times and reports a pass rate | A model does not give the same answer each time |
+| Only a few scenarios, run on demand | Each save needs upkeep, and each run needs the game and costs model calls |
 | Playtests judge fun and advice quality | These two checks cannot be automated |
 | Phase 1 sends the full state, measures it, and then trims it | The state size per turn is unknown until it is measured |
