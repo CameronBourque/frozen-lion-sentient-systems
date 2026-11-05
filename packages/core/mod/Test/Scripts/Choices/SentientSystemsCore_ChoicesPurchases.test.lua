@@ -15,7 +15,6 @@ local function PurchasesWith(purchases)
 	return env.SentientSystems_GetChoices(0):match("\"purchases\":(%b[])")
 end
 
--- Returns a copy of option with the fields in changes.
 local function With(option, changes)
 	local copy = {}
 

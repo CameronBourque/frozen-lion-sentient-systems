@@ -34,7 +34,6 @@ local function Load(unit, visible, rivals, cities)
 	return env
 end
 
--- Returns a copy of unit with the fields in changes.
 local function With(unit, changes)
 	local copy = {}
 
@@ -53,7 +52,6 @@ local function Failed(reason)
 	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
 end
 
--- A rival unit on a tile.
 local function Rival(x, y, changes)
 	return With({ id = 1, type = "UNIT_BUILDER", x = x, y = y }, changes or {})
 end

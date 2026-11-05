@@ -23,8 +23,6 @@ return function(env, world, ctx)
 					GetYield = function(_, yieldIndex)
 						return (tile.yields or {})[YIELD_NAMES[yieldIndex]] or 0
 					end,
-					-- The tile's resource, from tile.resource, and whether it
-					-- can be extracted.
 					GetResourceType = function()
 						return tile.resource and indexes[tile.resource] or -1
 					end,
@@ -48,7 +46,6 @@ return function(env, world, ctx)
 		GetPlotByIndex = function(index)
 			return plots[index] or assert(tilePlots[index], "no fake plot " .. index)
 		end,
-		-- The plots a city owns, as the indexes of its data.tiles.
 		GetCityPlots = function()
 			return {
 				GetPurchasedPlots = function(_, city)

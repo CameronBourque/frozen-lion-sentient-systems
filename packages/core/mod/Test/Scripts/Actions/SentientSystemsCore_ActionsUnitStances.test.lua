@@ -14,7 +14,6 @@ local function Load(unit, visible)
 	return env
 end
 
--- Returns a copy of unit with the fields in changes.
 local function With(unit, changes)
 	local copy = {}
 

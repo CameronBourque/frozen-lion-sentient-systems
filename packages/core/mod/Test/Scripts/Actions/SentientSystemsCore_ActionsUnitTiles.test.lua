@@ -19,7 +19,6 @@ local function Load(unit, plots, players)
 	return env
 end
 
--- Returns a copy of unit with the fields in changes.
 local function With(unit, changes)
 	local copy = {}
 
@@ -38,7 +37,6 @@ local function Failed(reason)
 	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
 end
 
--- A plot at the unit's tile.
 local function Plot(changes)
 	return With({ x = 20, y = 20, terrain = "TERRAIN_GRASS" }, changes or {})
 end

@@ -33,7 +33,6 @@ local function RivalUnitsFor(me, egyptUnits)
 	return env.SentientSystems_GetState(0):match("\"rivals\":{\"cities\":%b[],\"units\":(%b[])")
 end
 
--- Returns a copy of unit with the fields in changes.
 local function With(unit, changes)
 	local copy = {}
 

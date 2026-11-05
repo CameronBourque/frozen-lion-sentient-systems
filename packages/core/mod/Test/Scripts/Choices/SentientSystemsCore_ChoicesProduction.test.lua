@@ -17,7 +17,6 @@ local function ProductionWith(units)
 	return env.SentientSystems_GetChoices(0):match("\"production\":(%b[])")
 end
 
--- Returns a copy of unit with the fields in changes.
 local function With(unit, changes)
 	local copy = {}
 

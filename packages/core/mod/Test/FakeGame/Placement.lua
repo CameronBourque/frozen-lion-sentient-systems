@@ -71,7 +71,6 @@ return function(env, world, ctx)
 	end
 
 	for index, plot in pairs(plots) do
-		-- The bonus of a district on the plot, for a YieldTypes value.
 		function plot.GetAdjacencyYield(_, _, _, districtIndex, yieldType)
 			local adjacency = (adjacencyAt[index] or {})[districtIndex] or {}
 

@@ -49,7 +49,6 @@ local function PoliciesWith(player, worldFields)
 	return env.SentientSystems_GetChoices(0):match("\"policies\":(%b{})")
 end
 
--- Returns a copy of CHIEFDOM with the fields in changes.
 local function Chiefdom(changes)
 	local copy = { type = CHIEFDOM.type, slots = CHIEFDOM.slots }
 

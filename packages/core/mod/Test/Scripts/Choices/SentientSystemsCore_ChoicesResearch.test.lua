@@ -19,7 +19,6 @@ local function TechsWith(techs)
 	return env.SentientSystems_GetChoices(0):match("\"techs\":(%b[])")
 end
 
--- Returns a copy of tech with the fields in changes.
 local function With(tech, changes)
 	local copy = {}
 

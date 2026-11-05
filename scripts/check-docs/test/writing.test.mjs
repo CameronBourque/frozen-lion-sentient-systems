@@ -11,7 +11,6 @@ describe("writing", () => {
 		"**Abstract metaphor nouns.** Substrate, north star. Use the concrete word.",
 	);
 
-	// Returns the rule names that checkWriting reports for one doc.
 	const rulesHit = (text) =>
 		checkWriting(buildRepo({ "docs/rules/writing.md": writingRules, "docs/a.md": text })).map((p) => p.rule);
 

@@ -9,7 +9,6 @@ local SCOREBOARD_OF_1 = "[{\"player\":0,\"score\":0},{\"categories\":[{\"name\":
 
 local SCOUT = { id = 196608, type = "UNIT_SCOUT", x = 24, y = 15, moves = 3, maxMoves = 3 }
 
--- Returns the state JSON for player 0 with the given units.
 local function StateWith(units)
 	local env = Game.new()
 
@@ -19,7 +18,6 @@ local function StateWith(units)
 	return env.SentientSystems_GetState(0)
 end
 
--- Returns a copy of unit with the fields in changes.
 local function With(unit, changes)
 	local copy = {}
 

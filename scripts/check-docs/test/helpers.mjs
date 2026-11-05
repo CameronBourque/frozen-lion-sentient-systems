@@ -7,5 +7,4 @@ export const lines = (...rows) => rows.join("\n") + "\n";
 // output.
 export const messages = (problems) => problems.map((p) => `${p.file}:${p.line}: ${p.rule}: ${p.message}`);
 
-// A file's text with the given number of lines.
 export const textOfLength = (count) => Array.from({ length: count }, (_, i) => `Line ${i}.`).join("\n");

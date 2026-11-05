@@ -60,8 +60,6 @@ return function(env, world, ctx)
 				GetPurchaseCost = function(_, yieldIndex, hash, formation)
 					return PurchaseOption(yieldIndex, hash, formation).cost
 				end,
-				-- The cost of a tile to buy, from its tile in
-				-- data.options.purchasable, or 0.
 				GetPlotPurchaseCost = function(_, plotIndex)
 					for _, tile in ipairs((data.options or {}).purchasable or {}) do
 						if PlotIndex(tile.x, tile.y) == plotIndex then

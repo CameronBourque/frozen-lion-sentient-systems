@@ -34,7 +34,6 @@ local function WithoutIncome(state)
 	return (state:gsub("\"income\":%b{},", ""):gsub("\"resources\":%b[],", ""))
 end
 
--- Returns a copy of city with the fields in changes.
 local function With(city, changes)
 	local copy = {}
 

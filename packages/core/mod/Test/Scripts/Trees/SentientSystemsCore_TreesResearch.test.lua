@@ -23,12 +23,10 @@ local function Load(world)
 	return env
 end
 
--- Returns the nodes of player 0's tech tree as JSON, for the given techs.
 local function NodesWith(techs)
 	return Load({ players = { [0] = { techs = techs } } }).SentientSystems_GetTechTree(0):match("\"nodes\":(%b[])")
 end
 
--- Returns a copy of tech with the fields in changes.
 local function With(tech, changes)
 	local copy = {}
 

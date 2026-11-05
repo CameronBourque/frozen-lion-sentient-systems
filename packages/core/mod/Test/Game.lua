@@ -182,7 +182,6 @@ function Game.fileLists()
 	}
 end
 
--- Runs a mod file in env.
 function Game.run(env, path)
 	local chunk = assert(loadfile(MOD_ROOT .. path))
 

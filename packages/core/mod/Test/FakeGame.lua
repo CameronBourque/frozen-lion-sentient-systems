@@ -132,7 +132,6 @@ local function BuildCity(data, hashes, indexes, ownerID)
 	}
 end
 
--- A city with the calls that the features add to it.
 local function City(data, hashes, indexes, ownerID)
 	local city = BuildCity(data, hashes, indexes, ownerID)
 
@@ -222,7 +221,6 @@ local function BuildPlayer(id, data, hashes, indexes)
 	}
 end
 
--- A player with the calls that the features add to it.
 local function Player(id, data, hashes, indexes)
 	local player = BuildPlayer(id, data, hashes, indexes)
 

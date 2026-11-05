@@ -80,8 +80,6 @@ return function(env, world, ctx)
 		function player.GetReligion()
 			local religion = GetReligion()
 
-			-- The index of the player's pantheon belief, from data.pantheon, or
-			-- -1 for none.
 			function religion.GetPantheon()
 				return data.pantheon and indexes[data.pantheon] or -1
 			end

@@ -21,7 +21,6 @@ local function Load(city, visible)
 	return env
 end
 
--- Returns a copy of the city with the fields in changes.
 local function With(city, changes)
 	local copy = {}
 

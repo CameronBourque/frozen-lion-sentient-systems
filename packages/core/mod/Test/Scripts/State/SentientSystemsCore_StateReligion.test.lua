@@ -14,7 +14,6 @@ local function ReligionWith(players)
 	return env.SentientSystems_GetState(0):match("\"religion\":(%b{})")
 end
 
--- Returns a city with the ID, religions, and majority given.
 local function City(id, religions, majority)
 	return { id = id, name = "LOC_CITY_NAME_" .. id, x = 0, y = id % 10, population = 5, religions = religions, majority = majority }
 end
