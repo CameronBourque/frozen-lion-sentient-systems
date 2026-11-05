@@ -48,6 +48,8 @@ A helper, `suggest_opening`, scores each opening on turn 1. The score adds two p
 - **Personality.** Weights from the personality file, such as expansion or military, times the opening's weights for them.
 - **Start.** Checks on what the agent can see on turn 1, such as a coast, a river, hills, luxuries, and open land. The civ note adds checks for its civ, such as an early unique unit that suits a rush.
 
+The start checks read only the state the agent can see, as every helper does. On turn 1, most of the map is under fog. Each opening decides how it handles what the agent cannot see yet. One opening may score an unknown check as neutral, and another may scout first and branch once the check can be answered.
+
 The helper returns the top few openings, and the agent picks one with a `reason`. At no sweat, the helper adds noise to the scores, as [helpers.md](helpers.md#weights) describes.
 
 A civ note can also add an opening of its own, such as a rush with an early unique unit. A modded civ with no such note uses the general openings.
@@ -80,7 +82,6 @@ Decision records log the opening the agent picked, each branch it took, and the 
 - What file format do openings use? The example above is a draft.
 - How many openings ship at first?
 - When several branches match, should code take the highest-scoring one instead of waking the model?
-- How do the start checks see a map that is mostly under fog on turn 1?
 
 ## Decisions
 
@@ -89,6 +90,7 @@ Decision records log the opening the agent picked, each branch it took, and the 
 | Openings are trees that branch on conditions | One fixed plan does not fit every start, and the agent learns about its start as it scouts |
 | Personality weights and start checks pick the opening | Agents with different personalities open differently on the same start |
 | A node runs as standing orders | Quiet opening turns cost no model call, and the agent can cancel any order |
+| Start checks read only the visible state, and each opening handles what is under fog | Openings differ in how much they need to know, so one rule for unknown tiles would fit some openings and not others |
 | Steps name item types, never tiles | Tiles differ in every game, and the helpers pick tiles |
 | Branch conditions come from a fixed list | Each condition is a plain check in code, with no model call |
 | The agent can leave the book at any time | The book serves the agent, and an unusual start needs its own plan |
