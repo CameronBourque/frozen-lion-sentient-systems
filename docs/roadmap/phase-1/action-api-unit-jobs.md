@@ -15,6 +15,6 @@ In a running game, each order works once from the bridge. It also returns a reas
 
 ## Record
 
-- Each request function, its Lua state, and its result, in `findings/game-actions.md`. Start a second findings file if it passes 150 lines.
+- Each request function, its Lua state, and its result, in `findings/actions-unit-orders.md`. Start a second findings file if it passes 150 lines.
 - The reasons, in [in-game-lua.md](../../design/core/in-game-lua.md).
 - The rows of each order, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md).

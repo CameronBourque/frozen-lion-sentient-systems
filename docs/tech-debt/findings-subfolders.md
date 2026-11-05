@@ -5,7 +5,7 @@ Group the 26 files in `docs/findings/` into topic subfolders, so the folder inde
 ## Now
 
 - `docs/findings/` holds 26 files in one folder, and its index has 26 rows.
-- 19 of the files are about the game (18 `game-*.md` files and `tile-visibility.md`). The action API steps add more, starting with `game-actions.md`.
+- 19 of the files are about the game (18 `game-*.md` files and `tile-visibility.md`). The action API steps add more, starting with the `actions-*.md` files.
 - Docs link to these files by path in many places: the design files, the roadmap steps, the risks, and other findings.
 
 ## Proposal

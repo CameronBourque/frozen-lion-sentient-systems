@@ -1,6 +1,6 @@
 -- The unit orders that need no tile: stances, wake, delete, and promote.
 -- SentientSystemsCore_ActionsUnits.lua loads this file. The calls are in
--- docs/findings/game-actions.md.
+-- docs/findings/actions-*.md.
 
 -- The stance actions, by action name, as unit operations. UnitPanel.lua reads
 -- each hash from GameInfo.UnitOperations, because UnitOperationTypes lacks

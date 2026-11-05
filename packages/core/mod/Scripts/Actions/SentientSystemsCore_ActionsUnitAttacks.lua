@@ -1,5 +1,5 @@
 -- The attack order. SentientSystemsCore_ActionsUnits.lua loads this file. The
--- calls are in docs/findings/game-actions.md.
+-- calls are in docs/findings/actions-*.md.
 
 -- The most targets a reason lists before it gives a count.
 local MAX_LISTED = 8
