@@ -14,6 +14,8 @@ Agents learn the game from files and the Civilopedia, not from web research. The
 
 When the agent needs a stat, a requirement, or a rule, it calls the Civilopedia `lookup` tool.
 
+Concept guides hold judgment, and [decision helpers](decision-support/helpers.md#helpers-and-knowledge-files) hold arithmetic. A guide says when to call a helper and what the helper cannot judge.
+
 ## Civ notes
 
 The mod ships notes for every Gathering Storm civ. A script generates them from the Civilopedia once, and you review them. When an agent meets a civ with no note, such as a modded civ, it writes one from that civ's Civilopedia and database entries. The bridge caches that note locally for later games.

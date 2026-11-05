@@ -16,6 +16,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Core API | What core offers the feature mods. Feature mods reach the game only through it | [architecture.md](design/architecture.md#core-boundary) |
 | Core mod | The in-game Lua and `.modinfo` in `packages/core/mod`. It does not include the bridge | [in-game-lua.md](design/core/in-game-lua.md) |
 | Cover card | The full-screen card that hides the map during agent turns when a human plays | [cover-and-spectator.md](design/agents/cover-and-spectator.md#cover-card) |
+| Decision helper | Bridge code that reads the state and returns a ranked list of options for one kind of decision. It never acts | [helpers.md](design/decision-support/helpers.md) |
 | Deep strategic review | A mode of the agent loop that uses a stronger model and compacts the journal | [knowledge-files.md](design/knowledge-files.md#file-layout) |
 | Feature mod | The agent players mod or the advisors mod. Each has its own version and a required core range | [versioning.md](design/versioning.md#packages) |
 | Finding | A file in `findings/` that records what is true about the game or our tools, with a status of Confirmed or Unconfirmed | [rules/docs.md](rules/docs.md#findings) |
