@@ -13,7 +13,6 @@ local function GetPlayerName(playerID, localPlayerID)
 	return Locale.Lookup(PlayerConfigurations[playerID]:GetPlayerName())
 end
 
--- Returns a list as a sorted list of its numbers.
 local function Numbers(list)
 	local numbers = {}
 

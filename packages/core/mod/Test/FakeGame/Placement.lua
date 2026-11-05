@@ -104,7 +104,6 @@ return function(env, world, ctx)
 			buildingsByHash[hashes[building.type]] = building
 		end
 
-		-- Returns the plot indexes of a list of tiles.
 		local function PlotIndexes(tiles)
 			local list = {}
 

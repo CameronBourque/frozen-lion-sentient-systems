@@ -48,7 +48,6 @@ export const GOVERNOR_TREE = z.object({
 
 export type GovernorTree = z.infer<typeof GOVERNOR_TREE>;
 
-// Reads the governor tree of the player with ID playerID.
 export function readGovernorTree(client: TunerClient, playerID: number): Promise<StashResult<GovernorTree>> {
 	return readStash(client, `SentientSystems_GetGovernorTree(${playerID})`, GOVERNOR_TREE, "governor tree");
 }

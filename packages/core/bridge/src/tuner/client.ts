@@ -48,8 +48,7 @@ export class TunerStateError extends Error {
 
 // "connected" fires once the game answers the handshake, not when the socket
 // opens. "output" fires for each printed line that belongs to no command, such
-// as an event handler's print. The line keeps its state prefix, such as
-// "PlotInfo: ".
+// as an event handler's print. The line keeps its state prefix.
 export interface ClientEvents {
 	connected: [];
 	disconnected: [];

@@ -89,7 +89,6 @@ local function GetItem(item, deal)
 	return entry
 end
 
--- Returns the items of a deal from the player and from the other player.
 local function GetItems(deal, playerID)
 	local asks, offers = {}, {}
 

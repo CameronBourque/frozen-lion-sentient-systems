@@ -45,7 +45,6 @@ local function List(items)
 	}
 end
 
--- The width of the fake map, for plot indexes.
 local MAP_WIDTH = 100
 
 -- Returns the plot index of x and y, as Map.GetPlot(x, y):GetIndex() does.
@@ -63,7 +62,6 @@ local YIELD_ROWS = {
 	YIELD_FAITH = { Index = 5 },
 }
 
--- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
 
 -- The YieldTypes names by GameInfo.Yields index.
@@ -193,7 +191,6 @@ local function BuildPlayer(id, data, hashes, indexes)
 		GetID = function()
 			return id
 		end,
-		-- The player's cities.
 		GetCities = function()
 			local list = List(cities)
 
@@ -208,7 +205,6 @@ local function BuildPlayer(id, data, hashes, indexes)
 
 			return list
 		end,
-		-- The player's units.
 		GetUnits = function()
 			return List(units)
 		end,

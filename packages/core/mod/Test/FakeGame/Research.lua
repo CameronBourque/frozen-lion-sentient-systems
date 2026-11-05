@@ -34,7 +34,6 @@ return function(env, world, ctx)
 		end
 	end
 
-	-- Returns the unlock rows of a tech or civic type.
 	local function UnlockRows(typeName)
 		local rows = {}
 

@@ -7,8 +7,7 @@ import path from "node:path";
 export const REGISTRY_KEY = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders";
 export const REGISTRY_VALUE = "Personal";
 
-// Matches the value's row in `reg query` output, such as
-// "    Personal    REG_EXPAND_SZ    %USERPROFILE%\Documents".
+// Matches the value's row in `reg query` output.
 const valueRow = new RegExp(`^\\s*${REGISTRY_VALUE}\\s+REG_(?:EXPAND_)?SZ\\s+(.+?)\\s*$`, "m");
 
 // Returns the value's data, or null when the output has no such row.

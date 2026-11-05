@@ -27,7 +27,6 @@ logger.openFile(logFilePath(started.path, new Date()));
 logger.info("config_loaded", `Read the config file ${started.path}`, { path: started.path });
 started.warnings.forEach((warning) => logger.warn("config_warning", warning));
 
-// Start the tuner client and handle its events.
 const client = new TunerClient();
 
 client.on("connected", () => {

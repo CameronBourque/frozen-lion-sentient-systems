@@ -8,7 +8,6 @@ return function(env, world, ctx)
 	env.GameInfo.Religions = ctx.TypedRows({}, "ReligionType")
 
 
-	-- Each belief in world.beliefs gets a row.
 	for _, belief in ipairs(world.beliefs or {}) do
 		AddRow("Beliefs", "BeliefType", belief.type)
 
@@ -20,7 +19,6 @@ return function(env, world, ctx)
 		row.tooMany = belief.tooMany
 	end
 
-	-- Each religion in world.religions gets a row.
 	for _, religion in ipairs(world.religions or {}) do
 		AddRow("Religions", "ReligionType", religion.type)
 

@@ -79,7 +79,6 @@ local function GetUnitsNeedingOrders(player)
 	return ids
 end
 
--- Returns the blockers of the player with ID playerID.
 function SentientSystems_GetBlockerState(playerID)
 	return {
 		list = GetBlockerList(playerID),

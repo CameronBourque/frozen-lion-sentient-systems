@@ -176,7 +176,6 @@ local function PlayerProgress(tree, player)
 	return players
 end
 
--- Returns the tree of a kind for the player with ID playerID as JSON.
 local function GetTree(kindName, playerID)
 	local player = Players[playerID]
 

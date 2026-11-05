@@ -13,7 +13,6 @@ local SITES = {
 	[5] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_HEROIC_RELIC" },
 }
 
--- Returns a player as an option: player, the ID the choice sends, and name.
 local function Option(playerID)
 	return { player = playerID, name = Locale.Lookup(PlayerConfigurations[playerID]:GetPlayerName()) }
 end

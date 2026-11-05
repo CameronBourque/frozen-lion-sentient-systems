@@ -58,7 +58,6 @@ local function GetPromotions(governors, governor, definition)
 	return promotions
 end
 
--- Returns the city as an assignment target.
 local function GetTarget(city, reasons)
 	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()), blocked = reasons }
 end

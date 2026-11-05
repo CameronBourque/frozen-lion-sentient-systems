@@ -98,7 +98,6 @@ return function(env, world, ctx)
 	end)
 
 	ctx.OnPlayer(function(player, data)
-		-- The player's governors, from data.governors.
 		if data.governors ~= nil then
 			local governorData = data.governors
 

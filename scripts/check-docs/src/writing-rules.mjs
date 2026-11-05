@@ -81,8 +81,7 @@ export function buildLineRules(writingText) {
 	return [...fixedRules, ...wordRules(writingText)];
 }
 
-// Reads the comma-separated list after a bold lead-in in writing.md, such as
-// "**Inflated words.** Additionally, crucial, delve. Use the plain word."
+// Reads the comma-separated list after a bold lead-in in writing.md.
 function listAfter(text, leadIn, end) {
 	const start = text.indexOf(`**${leadIn}**`);
 	const stop = text.indexOf(end, start);
