@@ -2,7 +2,7 @@
 
 Status: open. The `capturedCities` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons and tooltips. Its rebelled city, from Rise and Fall's disloyal city screen, is confirmed in the same game and matches that screen.
 
-The calls the captured city choice uses, as the raze and disloyal city screens show them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the captured city choice uses, as the raze and disloyal city screens show them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -28,7 +28,7 @@ None open.
 
 ## Method
 
-1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [game-choices.md](game-choices.md#method), step 6, and send `SentientSystemsCore_Choices.lua` again so it calls it.
+1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [choices/choices.md](choices.md#method), step 6, and send `SentientSystemsCore_Choices.lua` again so it calls it.
 2. To capture a city, while at war with its owner, send `UnitManager.InitUnit(0, "UNIT_GIANT_DEATH_ROBOT", x, y)` in `GameCore_Tuner` on a tile next to it. One attack only took 30 from the walls, so first send `SetDamage(DefenseTypes.DISTRICT_GARRISON, 199)` and `SetDamage(DefenseTypes.DISTRICT_OUTER, 100)` on its center, from `city:GetDistricts():GetDistrict(GameInfo.Districts["DISTRICT_CITY_CENTER"].Index)`. Then attack from the UI state with `UnitManager.RequestOperation(unit, UnitOperationTypes.MOVE_TO, params)`, with `PARAM_X`, `PARAM_Y`, and `PARAM_MODIFIERS` set to `UnitOperationMoveModifiers.ATTACK`.
 
 ## Results

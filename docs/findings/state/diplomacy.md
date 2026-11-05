@@ -2,7 +2,7 @@
 
 Status: open. The `diplomacy` section of `SentientSystems_GetState`, the status of each met player, is confirmed in a running game with Gathering Storm, with the file sent through the tuner. It matches the Intel Report for one player, at war with another, and for a declared friendship and an alliance set with the tuner. A denouncement is checked in the fake game only. The `proposals` section, the deals other players put to the player, is confirmed against a pending proposal with gold, resources, an agreement, and a city with its great works and resources, and against an alliance with a third-party war that the player proposed. A research agreement item isn't confirmed. The relationship reasons, agendas, grievances, and the other players' relationships are confirmed on a save at turn 26 with Gathering Storm, and the promises are left out.
 
-The calls the diplomacy status and the proposals use, as the Intel Report in `DiplomacyActionView.lua` and the deal screen in `DiplomacyDealView.lua` show them. See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the diplomacy status and the proposals use, as the Intel Report in `DiplomacyActionView.lua` and the deal screen in `DiplomacyDealView.lua` show them. See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -42,7 +42,7 @@ The Relationship tab lists `GetDiplomaticAI():GetDiplomaticModifiers(player)` of
 
 ## Method
 
-1. To read the section before the `.modinfo` loads `SentientSystemsCore_StateDiplomacy.lua`, send the file without its comment lines, then `print(SentientSystems_EncodeJson(SentientSystems_GetDiplomacyState(Players[0])))`, as in [game-choices.md](game-choices.md#method), step 6.
+1. To read the section before the `.modinfo` loads `SentientSystemsCore_StateDiplomacy.lua`, send the file without its comment lines, then `print(SentientSystems_EncodeJson(SentientSystems_GetDiplomacyState(Players[0])))`, as in [choices/choices.md](../choices/choices.md#method), step 6.
 2. To set a status without playing it, send in `GameCore_Tuner` `Players[0]:GetDiplomacy():SetHasDeclaredFriendship(2, true)` and the same on player 2 for 0, or `SetHasAllied`. Reload the save to undo it.
 3. Compare with the Intel Report of the player, in the diplomacy screen.
 4. For the proposals, end the turn so that an AI proposes a deal, then send `SentientSystemsCore_StateProposals.lua` without its comment lines, and `print(SentientSystems_EncodeJson(SentientSystems_GetProposalState(Players[0])))`. Compare with the deal screen.

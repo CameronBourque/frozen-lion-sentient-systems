@@ -2,7 +2,7 @@
 
 Status: open. What a player knows about each tile, the visibility layers, and what FireTuner's map reveal changes are confirmed from the game's files and in a running game. Whether a layer keeps what the player last saw on a fogged tile is not checked.
 
-What a player can know about each tile and the rivals on it, and the calls that give the core mod that knowledge. The state serializer builds its tiles and rivals from these facts. The calls it makes are in [game-state.md](game-state.md).
+What a player can know about each tile and the rivals on it, and the calls that give the core mod that knowledge. The state serializer builds its tiles and rivals from these facts. The calls it makes are in [state/state.md](state.md).
 
 ## Questions
 

@@ -2,7 +2,7 @@
 
 Status: open. The `greatPeople` key of `SentientSystems_GetChoices`, the great people the player can recruit or pass, and the `greatPeople` section of `SentientSystems_GetState`, each great person on offer with their effects, patronage, and each player's progress, are confirmed in a running game with Gathering Storm, with the files sent through the tuner, and match the Great People screen.
 
-The calls the great person choice and the great people section of the state use, as the Great People screen shows them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the great person choice and the great people section of the state use, as the Great People screen shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -23,7 +23,7 @@ None open.
 
 ## Method
 
-1. To read a choice or a state section that the `.modinfo` doesn't load yet, send the code as in [game-choices.md](game-choices.md#method), step 6, and send `SentientSystemsCore_State.lua` and `SentientSystemsCore_Choices.lua` again so they call it. Send a new function in `SentientSystemsCore_Common.lua` by itself, as stripping the include lines also strips `SentientSystems_Include`.
+1. To read a choice or a state section that the `.modinfo` doesn't load yet, send the code as in [choices/choices.md](choices.md#method), step 6, and send `SentientSystemsCore_State.lua` and `SentientSystemsCore_Choices.lua` again so they call it. Send a new function in `SentientSystemsCore_Common.lua` by itself, as stripping the include lines also strips `SentientSystems_Include`.
 2. To give a player great person points, send `Players[0]:GetGreatPeoplePoints():ChangePointsTotal(classIndex, points)` in `GameCore_Tuner`. It kept 12 of 12.5 points, so the points look like whole numbers.
 3. To afford patronage, send `Players[0]:GetTreasury():ChangeGoldBalance(600)` in `GameCore_Tuner`.
 

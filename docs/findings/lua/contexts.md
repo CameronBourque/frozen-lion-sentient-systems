@@ -2,7 +2,7 @@
 
 Status: open. The `InGame` probe, the core mod's own states, their Lua version, dialect, and errors, and a move requested from the core mod's UI state are confirmed in a running game on Windows. The rest is partly confirmed from game files.
 
-Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have different APIs. Which states exist, and how the list changes over a session, is in [state-list.md](state-list.md).
+Civ VI runs Lua in separate states. Gameplay scripts and UI scripts have different APIs. Which states exist, and how the list changes over a session, is in [lua/state-list.md](state-list.md).
 
 ## Questions
 
@@ -32,15 +32,15 @@ Turns run one player at a time. An unfiltered print with the time, from `Events.
 
 ### Where actions can come from
 
-The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/in-game-lua.md](../design/core/in-game-lua.md).
+The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](../game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/in-game-lua.md](../../design/core/in-game-lua.md).
 
-The core mod's own UI state has `UnitManager.RequestOperation` and `UI.RequestAction`. See [the core mod's states](#the-core-mods-states). A move requested there takes effect. The bridge sent `RequestOperation` to `SentientSystemsCore_UI`, the unit moved one tile on the map, and `GameCore_Tuner` read its new position 1 s later. Confirmed in single player on Windows on 2026-10-23. The calls are in [game-api.md](actions-move-unit.md#moving-a-unit).
+The core mod's own UI state has `UnitManager.RequestOperation` and `UI.RequestAction`. See [the core mod's states](#the-core-mods-states). A move requested there takes effect. The bridge sent `RequestOperation` to `SentientSystemsCore_UI`, the unit moved one tile on the map, and `GameCore_Tuner` read its new position 1 s later. Confirmed in single player on Windows on 2026-10-23. The calls are in [game-api.md](../actions/move-unit.md#moving-a-unit).
 
 The game's Lua files never call `UnitManager.MoveUnit`, so don't rely on it. Checked on 2026-10-16. Gameplay scenario scripts do use `UnitManager.InitUnit` and `UnitManager.PlaceUnit`, for example in `DLC/VikingsScenario/Scripts/VikingScenario.lua`.
 
 ### State names from other projects
 
-Two community projects name the states they use. Both states appear in the [Windows state list](state-list.md#lua-state-list). Their uses are unconfirmed on Windows. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now) for the projects.
+Two community projects name the states they use. Both states appear in the [Windows state list](state-list.md#lua-state-list). Their uses are unconfirmed on Windows. See [tuner/protocol.md](../tuner/protocol.md#what-we-know-now) for the projects.
 
 | State | Use | Source |
 | --- | --- | --- |
@@ -64,7 +64,7 @@ civ6-mcp sends commands to `InGame`, which matches the assumption that the actio
 | Missing functions | `load`, `setfenv`, `io`, `string.gfind`, and `table.getn` are `nil`. Lua 5.1.5 has all five. `loadstring`, `unpack`, and `os` exist. None of the Lua 5.2 to 5.4 additions that were checked exist: `table.unpack`, `table.move`, `utf8`, `math.type`, and `bit32` | Confirmed |
 | `debug` library | `type(debug)` in `SentientSystemsCore_UI` is `nil` | Confirmed |
 | `_G` and `getfenv` | `type(_G)` and `type(getfenv)` are `nil` in `SentientSystemsCore_UI` and in `GameCore_Tuner`, so a script can't look up a global by its name. Lua 5.1.5 has both | Confirmed |
-| Errors in `pcall` | An error from `error("text")` or a runtime error, caught by `pcall` in `SentientSystemsCore_UI`, has a message with the error, then `stack traceback:` and one line for each call. Errors that reach the tuner have the same form. See [tuner-commands.md](tuner-commands.md#what-we-know-now). An error raised with a table, such as `error({})`, has no trace | Confirmed |
+| Errors in `pcall` | An error from `error("text")` or a runtime error, caught by `pcall` in `SentientSystemsCore_UI`, has a message with the error, then `stack traceback:` and one line for each call. Errors that reach the tuner have the same form. See [tuner/commands.md](../tuner/commands.md#what-we-know-now). An error raised with a table, such as `error({})`, has no trace | Confirmed |
 | Paths in errors | An error in a mod file names the file by its full path, such as `C:\Users\<name>\Documents\My Games\Sid Meier's Civilization VI\Mods\SentientSystemsCore\UI\SentientSystemsCore_UI.lua:38`. The path holds the user's name | Confirmed |
 | `include` result | `include(name)` returns a list of the full paths of the files it loaded, such as `C:\Users\<name>\...\Mods\SentientSystemsCore\Scripts\SentientSystemsCore_Json.lua`. For a name that the game doesn't know, it returns an empty list and raises no error | Confirmed |
 | New files | The game reads each mod's `ImportFiles` list when it starts. After `Scripts/SentientSystemsCore_State.lua` was added to `ImportFiles`, `include` found no file through two save loads. After a restart, it found the file. `Modding.log` names only the component, `SentientSystemsCore_SharedScripts (ImportFiles)`, on each load | Confirmed |

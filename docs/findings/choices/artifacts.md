@@ -2,7 +2,7 @@
 
 Status: open. The `artifacts` key of `SentientSystems_GetChoices`, whose artifact the player's archaeologist uncovers, is confirmed in a running game with Gathering Storm and matches the artifact screen, for a tribal village and a battlefield.
 
-The calls the artifact choice uses, as the artifact screen shows them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the artifact choice uses, as the artifact screen shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -17,7 +17,7 @@ None open.
 - **Artifact.** `OnOpen`, lines 4 to 77, reads the player's `GetUnits():GetNextExtractingArchaeologist()`, then `Game.GetArtifactByIndex(archaeologist:GetArchaeology():GetArtifactIndex())`, a table with `Type`, `ActingPlayerID`, `TargetPlayerID`, `ActingPlayerEra`, an index in `GameInfo.Eras`, and `TargetPlayerEra`. The era line names the acting player's era, which isn't the era of the game: a battlefield on turn 48 read "Industrial Era". Confirmed in files and on Windows on 2026-10-27.
 - **Choice.** `Type` decides it, not the era. A tribal village, 1, a barbarian camp, 2, and a heroic relic, 5, have one player and an **OK** button, with no target, `TargetPlayerID` -1. A battle, 3, a sunk ship, 4, and a site of no type, 0, offer the acting and the target player as buttons. Each button sends `PlayerOperations.CHOOSE_ARTIFACT_PLAYER` with the player in `PARAM_PLAYER_ONE`, and **OK** sends the acting player. Confirmed in files and on Windows on 2026-10-27.
 - **Text.** The explanation is `LOC_CHOOSE_ARTIFACT_EXPLANATION_` and the site's kind, such as `BATTLE_FOUGHT`, with the archaeologist's name and the players' `GetPlayerName()`, their leaders' names, such as Trajan and Free Cities. Confirmed in files and on Windows on 2026-10-27.
-- **Blocker first.** The choice reads the archaeologist only while `ENDTURN_BLOCKING_ARTIFACT` is up, as the screen does, because a `GetNext` call with nothing waiting crashed the game for spies. See [game-spies.md](game-spies.md). Confirmed in files.
+- **Blocker first.** The choice reads the archaeologist only while `ENDTURN_BLOCKING_ARTIFACT` is up, as the screen does, because a `GetNext` call with nothing waiting crashed the game for spies. See [choices/spies.md](spies.md). Confirmed in files.
 
 ## Method
 

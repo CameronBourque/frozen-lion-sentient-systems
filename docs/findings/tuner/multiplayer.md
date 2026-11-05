@@ -2,7 +2,7 @@
 
 Status: confirmed. Hotseat and an online game are tested on Windows. Both close the tuner port, so no client can connect.
 
-What the tuner and the core mod can do in hotseat and online games. The advisors mod needs the tuner in online games. See [design/advisors.md](../design/advisors.md). Agent players need a way to act in any game that has you and an agent in it. See [design/agents/slot-type.md](../design/agents/slot-type.md).
+What the tuner and the core mod can do in hotseat and online games. The advisors mod needs the tuner in online games. See [design/advisors.md](../../design/advisors.md). Agent players need a way to act in any game that has you and an agent in it. See [design/agents/slot-type.md](../../design/agents/slot-type.md).
 
 ## Questions
 
@@ -14,11 +14,11 @@ None open.
 
 | Item | Value | Status |
 | --- | --- | --- |
-| Tuner | The game closes 4318 in hotseat, so no client can connect. Port 4319 is no substitute. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now) | Confirmed, 2026-10-22 |
+| Tuner | The game closes 4318 in hotseat, so no client can connect. Port 4319 is no substitute. See [tuner/protocol.md](protocol.md#what-we-know-now) | Confirmed, 2026-10-22 |
 | Core mod | The mod runs, and `[SENTIENTSYSTEMS] AGENT_TURN` reaches `Lua.log`. A program can read the log, but it can't send anything into the game | Confirmed, 2026-10-22 |
-| Turn order | The humans take their turns one at a time in slot order, each behind the pass screen, and then the AI players go. `AGENT_TURN` printed once for each human each round. See [lua-contexts.md](lua-contexts.md#turn-events-differ-by-script-type) | Confirmed, 2026-10-22 |
-| Local player | `Game.GetLocalPlayer()` follows the human whose turn it is. See [game-api.md](game-api.md#active-player) | Confirmed, 2026-10-22 |
-| Live reload | Editing the mod's UI Lua file reloads it in a running hotseat game. See [state-list.md](state-list.md#state-list-over-a-session) | Confirmed, 2026-10-22 |
+| Turn order | The humans take their turns one at a time in slot order, each behind the pass screen, and then the AI players go. `AGENT_TURN` printed once for each human each round. See [lua/contexts.md](../lua/contexts.md#turn-events-differ-by-script-type) | Confirmed, 2026-10-22 |
+| Local player | `Game.GetLocalPlayer()` follows the human whose turn it is. See [game-api.md](../game-api.md#active-player) | Confirmed, 2026-10-22 |
+| Live reload | Editing the mod's UI Lua file reloads it in a running hotseat game. See [lua/state-list.md](../lua/state-list.md#state-list-over-a-session) | Confirmed, 2026-10-22 |
 
 ### Several humans in single player
 
@@ -34,7 +34,7 @@ Single player keeps one human, so it can't stand in for hotseat with the tuner o
 
 | Item | Value | Status |
 | --- | --- | --- |
-| Tuner | The game closes 4318 in an online game too, as in hotseat. With the host loaded into the map, `netstat` showed nothing on 4318, and the game listened on `127.0.0.1:4319` only. The bridge and `npm run gate -- --read-only` waited for the tuner and never connected. Port 4319 is no substitute. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now) | Confirmed, 2026-10-23 |
+| Tuner | The game closes 4318 in an online game too, as in hotseat. With the host loaded into the map, `netstat` showed nothing on 4318, and the game listened on `127.0.0.1:4319` only. The bridge and `npm run gate -- --read-only` waited for the tuner and never connected. Port 4319 is no substitute. See [tuner/protocol.md](protocol.md#what-we-know-now) | Confirmed, 2026-10-23 |
 | Core mod | The mod runs, and `[SENTIENTSYSTEMS] AGENT_TURN 0` reached `Lua.log` once on each of turns 1 to 3. A program can read the log, but it can't send anything into the game | Confirmed, 2026-10-23 |
 
 ## Rules for the test

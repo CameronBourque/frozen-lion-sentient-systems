@@ -2,7 +2,7 @@
 
 Status: open. The `player` section of `SentientSystems_GetState`, what the top bar shows about the player as a whole, is confirmed in a running game with Gathering Storm, with the file sent through the tuner. It matches the top bar. The income, expenses, unit upkeep, and gold deals of the Yields tab of Reports are confirmed on the same game, and the per-city rows are confirmed against the report's city table for the first city. The resources of the Resources tab are confirmed on the same game against its screenshots. The City Status tab's growth rate, war weariness, and governor, which sit in `cities`, are confirmed on the same game. The Era Progress panel's `era` is confirmed on the same game against its screenshot. Later tasks add the diplomacy screens here.
 
-The calls the player section of the state uses. See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the player section of the state uses. See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -62,7 +62,7 @@ The calls the player section of the state uses. See [in-game-lua.md](../design/c
 
 ## Method
 
-1. To read the player section before the `.modinfo` loads `SentientSystemsCore_StatePlayer.lua`, send the file with its comment lines removed, then `print(SentientSystems_EncodeJson(SentientSystems_GetPlayerState(Players[0])))`, as in [game-choices.md](game-choices.md#method), step 6.
+1. To read the player section before the `.modinfo` loads `SentientSystemsCore_StatePlayer.lua`, send the file with its comment lines removed, then `print(SentientSystems_EncodeJson(SentientSystems_GetPlayerState(Players[0])))`, as in [choices/choices.md](../choices/choices.md#method), step 6.
 2. Compare each value with the top bar.
 3. For the Resources tab, send `SentientSystemsCore_StatePlayerResources.lua` the same way, with `print(SentientSystems_EncodeJson(SentientSystems_GetResourcesState(Players[0])))`, and compare with the screen's groups and strips. To see a strategic resource at 0, set it with `Players[0]:GetResources():ChangeResourceAmount(index, -amount)` in `GameCore_Tuner`.
 4. For the City Status tab, send `SentientSystemsCore_StateCities.lua` without its comments, then print each city's `growth.rate`, `amenities`, and `governor`, and compare with the tab.

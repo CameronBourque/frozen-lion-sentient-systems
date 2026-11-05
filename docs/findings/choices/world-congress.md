@@ -2,7 +2,7 @@
 
 Status: open. The `worldCongress` key of `SentientSystems_GetChoices`, what the player decides in a World Congress session and looks at when one has ended, is confirmed in a running game with Gathering Storm for a regular session, a Special Session, and the results screen, and matches each screen. The results of a session's proposals are left out.
 
-The calls the congress choice uses, as the congress screen shows them. The emergencies the congress calls are in [game-emergencies.md](game-emergencies.md). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the congress choice uses, as the congress screen shows them. The emergencies the congress calls are in [choices/emergencies.md](emergencies.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -26,7 +26,7 @@ The calls the congress choice uses, as the congress screen shows them. The emerg
 ## Method
 
 1. For a regular session, end turns until `ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION` is up, and read the choice before voting. Giving the player Favor in `GameCore_Tuner` raises the most votes.
-2. For a Special Session, with the war between allies, see [game-emergencies.md](game-emergencies.md).
+2. For a Special Session, with the war between allies, see [choices/emergencies.md](emergencies.md).
 
 ## Results
 

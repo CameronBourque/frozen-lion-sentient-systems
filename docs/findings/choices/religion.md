@@ -2,7 +2,7 @@
 
 Status: open. The `pantheon` and `religion` keys of `SentientSystems_GetChoices`, the pantheon beliefs the player can found a pantheon with and the religions and beliefs they can found a religion with, and the `religion` section of `SentientSystems_GetState`, the player's pantheon, progress toward a religion, and founded religion, are confirmed in a running game with Gathering Storm. The faith for the next pantheon is confirmed through its call, not through the state.
 
-The calls the religion choices and the religion section of the state use, as the game's religion screens show them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the religion choices and the religion section of the state use, as the game's religion screens show them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -30,9 +30,9 @@ None open.
 
 ## Method
 
-1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [game-choices.md](game-choices.md#method), step 6, then read `SentientSystems_GetChoices(Game.GetLocalPlayer())`.
+1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [choices/choices.md](choices.md#method), step 6, then read `SentientSystems_GetChoices(Game.GetLocalPlayer())`.
 2. To see the pantheon chooser, load a save from before a pantheon, send `Players[0]:GetReligion():ChangeFaithBalance(100)` in `GameCore_Tuner`, and end the turn.
-3. To found a religion, in `GameCore_Tuner`, add a holy site with a shrine to Rome with `WorldBuilder.CityManager():CreateDistrict` and `CreateBuilding`, as in [game-choices.md](game-choices.md#method), step 3, create a Great Prophet with `Game.GetGreatPeople():CreatePerson`, and move it there with `UnitManager.PlaceUnit(unit, x, y)`. `CreateDistrict` does nothing when the city has no district slot left, so raise the population first with `city:ChangePopulation(3)`. Activate the prophet on the holy site.
+3. To found a religion, in `GameCore_Tuner`, add a holy site with a shrine to Rome with `WorldBuilder.CityManager():CreateDistrict` and `CreateBuilding`, as in [choices/choices.md](choices.md#method), step 3, create a Great Prophet with `Game.GetGreatPeople():CreatePerson`, and move it there with `UnitManager.PlaceUnit(unit, x, y)`. `CreateDistrict` does nothing when the city has no district slot left, so raise the population first with `city:ChangePopulation(3)`. Activate the prophet on the holy site.
 4. To add a belief, after founding, send `UnitManager.InitUnit(0, "UNIT_APOSTLE", x, y)` in `GameCore_Tuner` on the holy site. The unit starts with no religion and no spread charges, so call `SetReligionType(religionIndex)` and `ChangeSpreadCharges(3)` on its `GetReligion()`. Then use the Apostle's **Evangelize Belief**. `CreateBuilding` didn't add a temple, which evangelizing doesn't need.
 
 ## Results

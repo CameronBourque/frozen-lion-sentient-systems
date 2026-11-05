@@ -1,38 +1,21 @@
 # Findings
 
-What we learn about Civ VI, FireTuner, and our tools while we build the bridge. Each file covers one topic. Each file's status line says how settled it is. Statuses, history, and file structure follow [rules/docs.md](../rules/docs.md#findings).
+What we learn about Civ VI, FireTuner, and our tools while we build the bridge. Each folder covers one topic, and each file in it covers one question. Each file's status line says how settled it is. Statuses, history, and file structure follow [rules/docs.md](../rules/docs.md#findings).
+
+| Folder | Topic |
+| --- | --- |
+| [tuner/](tuner/README.md) | How the bridge reaches the game: turning on the tuner, the wire protocol, how commands run, and what the tuner can do in hotseat and online games. |
+| [lua/](lua/README.md) | The Lua states in the running game, what each one can call, and how the list changes. |
+| [actions/](actions/README.md) | The game calls the action API wraps, with the reasons their checks give. |
+| [state/](state/README.md) | The game calls the state serializer uses, and what a player can know about each tile. |
+| [choices/](choices/README.md) | The game calls the choices use to list each choice's legal options, as the game's screens list them. |
+
+Two files sit at the top, because each has no topic folder yet:
 
 | File | Topic |
 | --- | --- |
-| [tuner-protocol.md](tuner-protocol.md) | FireTuner port, frame format, and message types |
-| [tuner-commands.md](tuner-commands.md) | How the game runs commands, what replies carry, and output order |
-| [tuner-setup.md](tuner-setup.md) | Turning on the tuner: the menu toggle, the SDK, and achievements |
-| [lua-contexts.md](lua-contexts.md) | Lua states and what each one can call |
-| [state-list.md](state-list.md) | The Lua state list, and how it changes over a session and during a load |
 | [game-api.md](game-api.md) | Game calls for cities, units, turns, and properties |
-| [actions-move-unit.md](actions-move-unit.md) | The game calls the move action uses, the checks on a move and a route, and the war dialog |
-| [actions-unit-orders.md](actions-unit-orders.md) | The game calls the unit orders, the orders on a unit's tile, and attacks use, and the reasons their checks give |
-| [actions-end-turn.md](actions-end-turn.md) | The game call that ends the turn, and how the end-turn blockers interact with it |
-| [game-state.md](game-state.md) | The calls the state serializer uses for cities, units, tiles, and end-turn blockers |
-| [game-choices.md](game-choices.md) | The calls the choices use to list each choice's legal options, as the game's screens list them |
-| [game-government.md](game-government.md) | The calls the government and policy choices use, as the government screen shows them |
-| [game-religion.md](game-religion.md) | The calls the religion choices use, as the religion screens show them |
-| [game-great-people.md](game-great-people.md) | The calls the great person choice and the great people in the state use, as the Great People screen shows them |
-| [game-captured-cities.md](game-captured-cities.md) | The calls the captured city choice uses, as the raze and disloyal city screens show them |
-| [game-spies.md](game-spies.md) | The calls the spy choice uses, as the escape screen shows it |
-| [game-artifacts.md](game-artifacts.md) | The calls the artifact choice uses, as the artifact screen shows it |
-| [game-dedications.md](game-dedications.md) | The calls the dedication choice uses, as the dedication popup shows it |
-| [game-world-congress.md](game-world-congress.md) | The calls the World Congress choice uses, as the congress screen shows them |
-| [game-emergencies.md](game-emergencies.md) | The calls the emergency choice uses, as the emergency popup shows it, not yet confirmed in a running game |
-| [game-governors.md](game-governors.md) | The calls the governors in the state use, as the Governors panel shows them |
-| [game-diplomacy.md](game-diplomacy.md) | The calls the diplomacy status in the state uses, as the Intel Report shows them |
-| [game-player.md](game-player.md) | The calls the player section of the state uses, as the top bar shows them |
-| [game-scoreboard.md](game-scoreboard.md) | The calls the scoreboard in the state uses, as the Score tab of World Rankings and the leader panel show them |
-| [game-victories.md](game-victories.md) | The calls the victories in the state use, as World Rankings shows each victory's progress |
-| [game-city-states.md](game-city-states.md) | The calls the envoy choice and the envoys and city-state details in the state use, as the City-States screen shows them |
-| [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |
-| [multiplayer.md](multiplayer.md) | What the tuner and the core mod can do in hotseat and online games |
 
 ## Local paths
 
