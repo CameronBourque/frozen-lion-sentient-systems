@@ -8,7 +8,9 @@ How a nontechnical user gets and runs the project: three mods on the Steam Works
 - The bridge launches the game. The user runs a "Civ VI with agents" shortcut, and the bridge starts Civ VI through Steam and waits for the tuner connection. Civ VI Lua cannot start programs, so the mod cannot start the bridge.
 - On first run, the bridge asks permission and then sets `EnableTuner` to `1` in `AppOptions.txt`. The permission prompt and the Workshop description say that achievements are off while the tuner is on.
 - An in-game settings box takes the API key. The game sends the key to the bridge, and the bridge saves it.
-- Windows is the first platform. The tuner also works on macOS and on the native Linux build of Civ VI, where players turn it on in `AppOptions.txt`. It doesn't work under Proton or Wine. See [tuner/setup.md](../findings/tuner/setup.md). Each platform ships once someone has run the phase 0 gate on it, and releases from before then have no build for it. macOS builds also need signing and notarization, or Gatekeeper blocks them.
+- Windows is the first platform. The tuner also works on macOS and on the native Linux build of Civ VI, where players turn it on in `AppOptions.txt`. It doesn't work under Proton or Wine. See [tuner/setup.md](../findings/tuner/setup.md).
+
+  Each platform ships once someone has run the phase 0 gate on it, and releases from before then have no build for it. macOS builds also need signing and notarization, or Gatekeeper blocks them.
 - Gathering Storm is the first supported ruleset. Other rulesets follow.
 
 ## Open questions

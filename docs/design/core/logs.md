@@ -2,11 +2,23 @@
 
 How the bridge logs: one record for each line, five levels, the home folder hidden, and one JSON log file for each game. Part of the [bridge](bridge.md).
 
-`src/main.ts` creates one `Logger`, from `src/log.ts`, and passes it to the code that logs. Each call builds a log record with `time`, `level`, `event`, `msg`, and any fields, such as `{ "level": "info", "event": "turn", "msg": "Player 0's turn started", "playerId": 0 }`. `time` is UTC in ISO 8601 form. `event` is a fixed name for each kind of line, such as `connected`, `core_version`, `turn`, `bad_line`, or `core_error`, so a filter matches the name and not the message. The console prints the local time and `msg`, with `warning: ` or `error: ` in front, and sends warnings and errors to stderr.
+`src/main.ts` creates one `Logger`, from `src/log.ts`, and passes it to the code that logs. Each call builds a log record with `time`, `level`, `event`, `msg`, and any fields, such as `{ "level": "info", "event": "turn", "msg": "Player 0's turn started", "playerId": 0 }`.
 
-- **Levels.** From quietest to noisiest, the levels are `error`, `warn`, `info`, `decisions`, and `debug`. `logLevel` in the config file names the noisiest level the logger writes, to the console and to the file alike. `decisions` holds each agent action and its reason, and `debug` adds each prompt and response. Until the config file loads, the logger writes at `decisions`.
+`time` is UTC in ISO 8601 form. `event` is a fixed name for each kind of line, such as `connected`, `core_version`, `turn`, `bad_line`, or `core_error`, so a filter matches the name and not the message.
+
+The console prints the local time and `msg`, with `warning: ` or `error: ` in front, and sends warnings and errors to stderr.
+
+- **Levels.** From quietest to noisiest, the levels are `error`, `warn`, `info`, `decisions`, and `debug`. `logLevel` in the config file names the noisiest level the logger writes, to the console and to the file alike.
+
+  `decisions` holds each agent action and its reason, and `debug` adds each prompt and response. Until the config file loads, the logger writes at `decisions`.
 - **Home folder.** Before it writes a record, the logger replaces the user's home folder with `~` in `msg` and in every string field, such as `~\OneDrive\Documents\sentient-systems.yaml`. The match ignores case, and it only matches a whole folder name.
-- **Log files.** The logger writes each record as one JSON line to `logs/<date>-<time>.log` in the config file's folder, such as `logs/2026-10-23-181911.log`, named by local time. The first file opens when the config file loads, so it holds the startup lines. Each load starts a new file on the `LOAD_READY` line of the [load signal](mod/lines.md#load-signal), so a game's file begins at its loading screen. A reconnect doesn't start a file. The core mod prints `CORE_LOADED` early in a load, before `LOAD_READY`, so that record ends the old game's file. A quit to the main menu prints nothing, so the old game's file stays open until the next load. A line from the front end could close it there. See question 1 in [findings/lua/state-list.md](../../findings/lua/state-list.md#questions). A config file that fails to load has no folder for logs, so its error goes to the console only. Each write is synchronous. If the folder or the file can't be written, the logger warns once and logs to the console only.
+- **Log files.** The logger writes each record as one JSON line to `logs/<date>-<time>.log` in the config file's folder, such as `logs/2026-10-23-181911.log`, named by local time. The first file opens when the config file loads, so it holds the startup lines.
+
+  Each load starts a new file on the `LOAD_READY` line of the [load signal](mod/lines.md#load-signal), so a game's file begins at its loading screen. A reconnect doesn't start a file. The core mod prints `CORE_LOADED` early in a load, before `LOAD_READY`, so that record ends the old game's file.
+
+  A quit to the main menu prints nothing, so the old game's file stays open until the next load. A line from the front end could close it there. See question 1 in [findings/lua/state-list.md](../../findings/lua/state-list.md#questions).
+
+  A config file that fails to load has no folder for logs, so its error goes to the console only. Each write is synchronous. If the folder or the file can't be written, the logger warns once and logs to the console only.
 
 ## Decisions
 

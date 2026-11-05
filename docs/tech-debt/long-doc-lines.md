@@ -4,9 +4,9 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row, and its length leaves out link targets. `scripts/check-docs/` reads 129 Markdown files. 38 of them have a line over 300 characters, 101 lines in all, and 12 lines pass 600.
+A line is a paragraph, a bullet, or a table row, and its length leaves out link targets. `scripts/check-docs/` reads 129 Markdown files. 18 of them have a line over 300 characters, 47 lines in all, and 4 lines pass 600.
 
-[design/core/logs.md](../design/core/logs.md) has the longest line, at 938 characters. No file passes 12,000 characters.
+[roadmap/phase-1/README.md](../roadmap/phase-1/README.md) has the longest line, at 857 characters. No file passes 12,000 characters.
 
 `scripts/check-docs/src/length.mjs` warns about long lines and large files, but doesn't fail on them.
 

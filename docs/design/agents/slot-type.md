@@ -23,7 +23,9 @@ Before [phase 2](../../roadmap/phase-2/README.md), a test puts an agent in a com
 3. When does the agent take its turn? Turn processing can't wait for an LLM, and computer players may move while you do.
 4. How does the mod mark a player as an agent? The game data has no requirement that checks a per-player flag. Only `REQUIREMENT_PLOT_PROPERTY_MATCHES` exists. Gameplay Lua can attach modifiers to one player with `AttachModifierByID`.
 
-An agent gets the same bonuses in a human slot and a computer slot. Difficulty bonuses are data. `HIGH_DIFFICULTY_*` modifiers apply to computer players through `PLAYER_IS_HIGH_DIFFICULTY_AI`, and `LOW_DIFFICULTY_*` modifiers apply to humans through `PLAYER_IS_LOW_DIFFICULTY_HUMAN`, in `Leaders.xml`. Extra starting units for computer players come from `MajorStartingUnits` rows with `AiOnly`.
+An agent gets the same bonuses in a human slot and a computer slot. Difficulty bonuses are data.
+
+`HIGH_DIFFICULTY_*` modifiers apply to computer players through `PLAYER_IS_HIGH_DIFFICULTY_AI`, and `LOW_DIFFICULTY_*` modifiers apply to humans through `PLAYER_IS_LOW_DIFFICULTY_HUMAN`, in `Leaders.xml`. Extra starting units for computer players come from `MajorStartingUnits` rows with `AiOnly`.
 
 If the test fails, the backups are in [risks.md](../../risks.md).
 

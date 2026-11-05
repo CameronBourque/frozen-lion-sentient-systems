@@ -23,7 +23,9 @@ The turn signal runs the other way. At turn start, the core mod prints a tagged 
 
 ## Core boundary
 
-Core is the only code that talks to the game. The agent players mod and the advisors mod reach the game through the core API and never call FireTuner or game Lua directly. With that boundary, the feature mods stay independent, and moving a feature into core takes a small refactor. The advisors mod will have an advisor module in the bridge next to the agent loop.
+Core is the only code that talks to the game. The agent players mod and the advisors mod reach the game through the core API and never call FireTuner or game Lua directly.
+
+With that boundary, the feature mods stay independent, and moving a feature into core takes a small refactor. The advisors mod will have an advisor module in the bridge next to the agent loop.
 
 A feature moves into core when a second mod needs it. It does not move because a mod might need it later.
 

@@ -4,7 +4,9 @@ When the agent calls `end_turn`, the bridge checks the state for wasted resource
 
 ## Why
 
-Models leave value on the table in long games. They forget a builder, let gold pile up, or leave a policy slot empty, and nothing in the game stops the turn for it. The game's end-turn blockers catch only some of these cases, and the agent finds the blockers one at a time, each on a failed `end_turn` call. The [agent loop](../../roadmap/phase-1/agent-loop.md) step forces the end turn when the loop hits a limit, and a forced end skips the blockers that are left.
+Models leave value on the table in long games. They forget a builder, let gold pile up, or leave a policy slot empty, and nothing in the game stops the turn for it.
+
+The game's end-turn blockers catch only some of these cases, and the agent finds the blockers one at a time, each on a failed `end_turn` call. The [agent loop](../../roadmap/phase-1/agent-loop.md) step forces the end turn when the loop hits a limit, and a forced end skips the blockers that are left.
 
 The check lists the blockers and the waste together in one result, so the agent fixes them in one pass. Fewer failed calls means fewer forced ends.
 
