@@ -1,10 +1,6 @@
 -- Attacks. Fakes the ranged, air, and city attack calls, the units and city on
--- a tile, and a unit's strengths. A unit's data has combat, ranged, bombard,
--- and attacks, the attacks left, blocked, when the game's check fails, and
--- targets, a list of {x, y, target} tiles in range, where target says whether
--- the tile holds something to hit. A city's data has attackTargets, the same
--- list, and attackBlocked. FakeGame/UnitMoves.lua fakes the melee attack and
--- the war check.
+-- a tile, and a unit's strengths. FakeGame/UnitMoves.lua fakes the melee
+-- attack and the war check.
 
 return function(env, world, ctx)
 	local PlotIndex, MAP_WIDTH = ctx.PlotIndex, ctx.MAP_WIDTH

@@ -1,8 +1,6 @@
--- A fake of the game's Lua API for tests. It has only the calls the core mod
--- makes. The core here builds the shared GameInfo tables, a player's cities and
--- units, and the fake env. Each area of the game is a feature in FakeGame/,
--- which holds the docs for the world and player data it reads. A feature
--- registers with one line at the end of this file.
+-- A fake of the game's Lua API for tests, with only the calls the core mod
+-- makes. The core builds the shared GameInfo tables, cities, and units. Each
+-- area is a feature in FakeGame/ that registers at the end of this file.
 
 local FakeGame = {}
 

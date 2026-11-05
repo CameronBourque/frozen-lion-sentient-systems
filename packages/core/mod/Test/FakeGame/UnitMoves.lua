@@ -1,7 +1,5 @@
 -- Unit moves. Fakes the calls a move makes, and keeps each operation requested
--- in env.requests. A unit's data has domain, paths, a list of {x, y} tiles the
--- unit has a route to, blocked, when the game's move check fails, and
--- startsWar, a list of {x, y, player} tiles where a move starts a war.
+-- in env.requests.
 
 return function(env, world, ctx)
 	local PlotIndex, MAP_WIDTH = ctx.PlotIndex, ctx.MAP_WIDTH

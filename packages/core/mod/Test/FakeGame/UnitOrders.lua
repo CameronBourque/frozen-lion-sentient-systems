@@ -1,14 +1,6 @@
--- Unit orders. Fakes the stance, found city, and pillage operations, the build
--- improvement operation, the wake and delete commands, a unit's activity, and
--- the plot calls an order reads, and keeps each request in env.requests. A
--- unit's data has activity, one of SLEEP, HOLD, SENTRY, or OPERATION, and awake
--- when absent, and canEver and canNow, the lists of action names that the
--- game's loose and real checks allow. For improve, improvements is the list the
--- game offers, canBuild is the part of it that the real check allows, and
--- charges is the build charges left. A unit's type sets its GameInfo row:
--- UNIT_SETTLER founds cities, UNIT_BUILDER has build charges, and UNIT_KNIGHT
--- has combat strength. FakeGame/Units.lua fakes the promote command, and
--- FakeGame/Plots.lua the plots.
+-- Unit orders. Fakes the stance, found city, pillage, improve, wake, and delete
+-- operations and a unit's activity, and keeps each request in env.requests.
+-- FakeGame/Units.lua fakes promote, and FakeGame/Plots.lua the plots.
 
 return function(env, world, ctx)
 	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106 }
