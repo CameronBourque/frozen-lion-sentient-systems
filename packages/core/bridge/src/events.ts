@@ -1,7 +1,5 @@
-// Turns the core mod's tagged lines into typed events. A tagged line is
-// "[SENTIENTSYSTEMS] <KIND> <args>", joined with spaces, such as
-// "[SENTIENTSYSTEMS] AGENT_TURN 0". docs/design/core/in-game-lua.md has the
-// format.
+// Turns the core mod's tagged lines into typed events.
+// docs/design/core/in-game-lua.md has the format.
 
 import type { LogFields, Logger, LogLevel } from "./log.js";
 

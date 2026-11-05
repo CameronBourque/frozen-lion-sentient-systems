@@ -1,7 +1,5 @@
-// Encodes and decodes FireTuner frames. Each frame is a 4-byte little-endian
-// payload length, a 4-byte little-endian signed tag, then null-terminated UTF-8
-// strings. Both directions use this format.
-// docs/findings/tuner/protocol.md#frame-format has the captured bytes.
+// Encodes and decodes FireTuner frames, in both directions. The format is in
+// docs/findings/tuner/protocol.md#frame-format.
 
 // The tag says what kind of message a frame is. A reply carries the tag of its
 // request.

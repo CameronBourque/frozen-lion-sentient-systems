@@ -1,9 +1,5 @@
-// Reads where a city can place one district or wonder: the tiles it owns where
-// it can go now, and the tiles it could buy where it could go, with each
-// district's adjacency bonus on each tile, as the placement view shows them.
-// The core mod builds them as JSON in
-// Scripts/Placement/SentientSystemsCore_Placement.lua, and the bridge reads
-// them through the stash, in stash.ts.
+// Reads where a city can place a district or wonder, with adjacency bonuses,
+// as the placement view shows it, through the stash in stash.ts.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";

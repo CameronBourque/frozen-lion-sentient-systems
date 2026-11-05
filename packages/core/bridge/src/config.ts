@@ -1,6 +1,5 @@
-// The bridge's config file, sentient-systems.yaml. It holds settings for the
-// whole bridge: the log level and each provider's API key. Agent slots,
-// personalities, and sweat levels live in the save, not here.
+// The bridge's config file, sentient-systems.yaml: the log level and each
+// provider's API key. Agent slots and personalities live in the save.
 // docs/design/core/settings.md has the design.
 
 import { parseDocument } from "yaml";

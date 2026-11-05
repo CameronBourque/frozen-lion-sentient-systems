@@ -1,9 +1,6 @@
-// The bridge's structured log. Each call builds a record with the time, the
-// level, a fixed event name, a message, and any fields, such as { event:
-// "turn", msg: "Player 0's turn started", playerId: 0 }. The console prints the
-// local time and the message, such as "2:05:09 PM Player 0's turn started". A
-// log file gets each record as one JSON line. Paths in the home folder start
-// with "~". docs/design/core/logs.md has the design.
+// The bridge's structured log: the console prints each record's local time and
+// message, and a log file gets it as one JSON line. Paths in the home folder
+// start with "~". docs/design/core/logs.md has the design.
 
 import fs from "node:fs";
 import os from "node:os";

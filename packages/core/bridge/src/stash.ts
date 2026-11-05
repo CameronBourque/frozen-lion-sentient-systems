@@ -1,8 +1,6 @@
-// Reads JSON that the core mod builds and keeps in pieces, such as the state
-// and the choices. The tuner gives no reply to a command whose output passes
-// about 2 MiB, so the core mod's SentientSystems_Stash keeps the JSON in
-// pieces, and the bridge reads one piece per command and joins them.
-// docs/design/core/in-game-lua.md describes the stash.
+// Reads JSON that the core mod builds in pieces. The tuner gives no reply to a
+// command whose output passes about 2 MiB, so the bridge reads one piece per
+// command and joins them. docs/design/core/in-game-lua.md describes the stash.
 
 import type { z } from "zod";
 import { CORE_STATE } from "./connect.js";

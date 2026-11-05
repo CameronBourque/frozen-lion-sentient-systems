@@ -1,8 +1,6 @@
-// What the bridge does each time it connects to the tuner: it calls the core
-// mod for its version and logs it, then asks whose turn is active, so a restart
-// in the middle of a turn doesn't miss the turn. A failure logs a warning and
-// never throws, because a game load resets the socket and the next connect
-// tries again. docs/design/core/bridge.md has the design.
+// On each connect to the tuner, logs the core mod's version and asks whose turn
+// is active. A failure warns and never throws: a game load resets the socket,
+// and the next connect tries again. docs/design/core/bridge.md has the design.
 
 import { readLine } from "./events.js";
 import type { Logger } from "./log.js";

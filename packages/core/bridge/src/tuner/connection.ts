@@ -1,7 +1,6 @@
-// Holds one TCP connection to the game's tuner socket, and turns its bytes into
-// frames. After connect(), it reconnects with backoff each time the socket
-// closes, until close(). It knows framing but not the protocol, so the
-// handshake and commands are in client.ts.
+// Holds one TCP connection to the game's tuner socket and turns its bytes into
+// frames. It reconnects with backoff when the socket closes, until close().
+// The handshake and commands are in client.ts.
 
 import { EventEmitter } from "node:events";
 import net from "node:net";
