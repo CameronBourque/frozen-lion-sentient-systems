@@ -1,6 +1,6 @@
 # Action API: other blockers
 
-Add the actions for the remaining blockers: captured and disloyal cities, espionage, the World Congress and emergencies, and era dedications. The blockers are in [game-state.md](../../findings/game-state.md#end-turn-blockers). Part of [phase 1](README.md).
+Add the actions for the remaining blockers: captured and disloyal cities, espionage, the World Congress and emergencies, and era dedications. The blockers are in [state/state.md](../../findings/state/state.md#end-turn-blockers). Part of [phase 1](README.md).
 
 ## Tasks
 

@@ -8,7 +8,7 @@ There is one advisor per victory condition, for example `science-advisor.md` and
 
 Advisors speak when you ask, or at key moments such as a new era or a war declaration. They do not speak every turn. Speaking less often keeps the cost down and keeps advisors from repeating minor advice.
 
-Advisors only read your own client's state, so they can't cause a desync in an online game, while agent players' actions could. But the game closes the tuner port in online games, as it does in hotseat, so the bridge can't reach an online game. Advisors start in single player, where the tuner stays open. The core mod still runs online, and its prints reach `Lua.log`. See [findings/multiplayer.md](../findings/multiplayer.md#online).
+Advisors only read your own client's state, so they can't cause a desync in an online game, while agent players' actions could. But the game closes the tuner port in online games, as it does in hotseat, so the bridge can't reach an online game. Advisors start in single player, where the tuner stays open. The core mod still runs online, and its prints reach `Lua.log`. See [findings/tuner/multiplayer.md](../findings/tuner/multiplayer.md#online).
 
 ## Open questions
 

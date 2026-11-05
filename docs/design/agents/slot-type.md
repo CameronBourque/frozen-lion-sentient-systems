@@ -12,7 +12,7 @@ The setup screen gets an **Agent** option in each slot's player-type dropdown. T
 | You, agents, and the native AI | Open | Waits for the computer slot test |
 | Agents only | Open | Waits for the computer slot test |
 
-The first plan put the last two rows in hotseat, with each agent in a human slot. That doesn't work through the tuner, because the game closes the tuner port in hotseat. Single player keeps one human, so it can't hold you and an agent as two humans. See [findings/multiplayer.md](../../findings/multiplayer.md#hotseat).
+The first plan put the last two rows in hotseat, with each agent in a human slot. That doesn't work through the tuner, because the game closes the tuner port in hotseat. Single player keeps one human, so it can't hold you and an agent as two humans. See [findings/tuner/multiplayer.md](../../findings/tuner/multiplayer.md#hotseat).
 
 ## Computer slot test
 

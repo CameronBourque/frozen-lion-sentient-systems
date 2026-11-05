@@ -18,12 +18,12 @@ The gate passed on 2026-10-23, and the phase is done.
 
 | Topic | Where |
 | --- | --- |
-| Turning on the tuner | [tuner-setup.md](../../findings/tuner-setup.md#results) |
-| The wire format and the port | [tuner-protocol.md](../../findings/tuner-protocol.md#results) |
-| How commands run and what comes back | [tuner-commands.md](../../findings/tuner-commands.md#results) |
-| Lua states, and where actions can come from | [lua-contexts.md](../../findings/lua-contexts.md#results) |
+| Turning on the tuner | [tuner/setup.md](../../findings/tuner/setup.md#results) |
+| The wire format and the port | [tuner/protocol.md](../../findings/tuner/protocol.md#results) |
+| How commands run and what comes back | [tuner/commands.md](../../findings/tuner/commands.md#results) |
+| Lua states, and where actions can come from | [lua/contexts.md](../../findings/lua/contexts.md#results) |
 | Cities, units, moves, and the active player | [game-api.md](../../findings/game-api.md#results) |
-| Hotseat and online games | [multiplayer.md](../../findings/multiplayer.md#results) |
+| Hotseat and online games | [tuner/multiplayer.md](../../findings/tuner/multiplayer.md#results) |
 | The single executable and the release download | [build-tooling.md](../../findings/build-tooling.md#results) |
 | The bridge's design | [bridge.md](../../design/core/bridge.md) |
 | The core mod's Lua | [in-game-lua.md](../../design/core/in-game-lua.md) |

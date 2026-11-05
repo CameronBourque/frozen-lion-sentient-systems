@@ -17,6 +17,6 @@ In a running game, each order works once from the bridge. It also returns a reas
 
 ## Record
 
-- Each request function, its Lua state, and its result, in `findings/actions-unit-orders.md`, or in a findings file of its own for the trade route, the great person, or the spy calls, with a row in the [findings index](../../findings/README.md).
+- Each request function, its Lua state, and its result, in `findings/actions/unit-orders.md`, or in a findings file of its own for the trade route, the great person, or the spy calls, with a row in the [findings index](../../findings/README.md).
 - The trade route and spy choices, in the choices schemas in `packages/core/bridge/src/choices/`, with a row in the key table of [in-game-lua.md](../../design/core/in-game-lua.md).
 - The rows of each order, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md).
