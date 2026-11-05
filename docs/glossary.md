@@ -18,6 +18,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Cover card | The full-screen card that hides the map during agent turns when a human plays | [cover-and-spectator.md](design/agents/cover-and-spectator.md#cover-card) |
 | Decision helper | Bridge code that reads the state and returns a ranked list of options for one kind of decision. It never acts | [helpers.md](design/decision-support/helpers.md) |
 | Deep strategic review | A mode of the agent loop that uses a stronger model and compacts the journal | [knowledge-files.md](design/knowledge-files.md#file-layout) |
+| End-turn check | The bridge's check for blockers and unused resources when the agent calls `end_turn`. Unused resources stop only the first call of a turn | [end-turn-check.md](design/decision-support/end-turn-check.md) |
 | Feature mod | The agent players mod or the advisors mod. Each has its own version and a required core range | [versioning.md](design/versioning.md#packages) |
 | Finding | A file in `findings/` that records what is true about the game or our tools, with a status of Confirmed or Unconfirmed | [rules/docs.md](rules/docs.md#findings) |
 | FireTuner | The SDK's debug program, `FireTuner2.exe`. The FireTuner protocol is the wire protocol it uses | [tuner/protocol.md](findings/tuner/protocol.md) |
