@@ -12,7 +12,6 @@ local function DirectiveName(directive)
 	end
 end
 
--- Returns a city as the screens show it.
 local function GetCity(city, kind)
 	return {
 		kind = kind,

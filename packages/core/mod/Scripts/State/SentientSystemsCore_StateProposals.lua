@@ -21,7 +21,6 @@ local CEDE_OCCUPIED = 1
 -- The deal items that the screen names with the game's own text.
 local NAMED = { city = true, greatWork = true, captive = true, unit = true, technology = true }
 
--- The kind of a deal item type, or nil for one that isn't known.
 local function GetKind(itemType)
 	for name, kind in pairs(KINDS) do
 		if DealItemTypes[name] == itemType then
@@ -53,7 +52,6 @@ local function AddAgreement(entry, item)
 	end
 end
 
--- Returns one deal item, as the screen shows it.
 local function GetItem(item, deal)
 	local kind = GetKind(item:GetType())
 	local parent = deal:GetItemParent(item)

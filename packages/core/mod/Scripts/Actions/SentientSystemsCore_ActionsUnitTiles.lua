@@ -100,7 +100,6 @@ local function IsBuilder(row)
 	return row.BuildCharges > 0
 end
 
--- Returns why the unit can't build the improvement, from what it can build.
 local function GetImproveFailure(unit, improvementType, improvements)
 	return SentientSystems_GetOrderFailure(unit, "improve", IsBuilder(GameInfo.Units[unit:GetUnitType()]), function()
 		if unit:GetMovesRemaining() <= 0 then

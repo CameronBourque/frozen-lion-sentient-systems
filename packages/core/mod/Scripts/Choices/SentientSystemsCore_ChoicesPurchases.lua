@@ -72,7 +72,6 @@ local function PurchaseOption(city, purchase, params, hash, formation)
 	return option, results
 end
 
--- Returns the parameters that name an item and the yield to buy it with.
 local function PurchaseParams(param, hash, purchase)
 	local params = {}
 

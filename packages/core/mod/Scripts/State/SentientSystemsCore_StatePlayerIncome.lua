@@ -51,7 +51,6 @@ local function RoundNearest(number)
 	return math.floor(number * 10 + 0.5) / 10
 end
 
--- Escapes the characters of a text that a pattern reads as magic.
 local function Escape(text)
 	return (text:gsub("%p", "%%%0"))
 end
@@ -489,7 +488,6 @@ local function GetExpenses(treasury, units, deals, cities)
 	return expenses
 end
 
--- Returns the income section.
 function SentientSystems_GetIncomeState(player)
 	local treasury = player:GetTreasury()
 	local totals = {

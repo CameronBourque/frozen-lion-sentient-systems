@@ -30,7 +30,6 @@ local function RoundNearest(number)
 	return math.floor(number * 10 + 0.5) / 10
 end
 
--- Returns whether the player has a finished Spaceport.
 local function HasSpaceport(other)
 	local spaceport = GameInfo.Districts["DISTRICT_SPACEPORT"].Index
 

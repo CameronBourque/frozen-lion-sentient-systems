@@ -57,7 +57,6 @@ local function AddPromotions(unit, state)
 	state.availablePromotions = GetAvailablePromotions(unit)
 end
 
--- Returns a list of the player's units on the map.
 function SentientSystems_GetUnitStates(player)
 	local units = {}
 
