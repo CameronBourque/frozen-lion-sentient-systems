@@ -2,7 +2,7 @@
 
 Status: open. The `government`, `policies`, and `governments` keys of `SentientSystems_GetChoices`, the player's government with its policy slots, the policies the player can slot, and every government, are confirmed in a running game with Gathering Storm. The legacy bonus percent is confirmed in files only.
 
-The calls the government and policy choices use, as the government screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
+The calls the government and policy choices use, as the government screen shows them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 
@@ -24,7 +24,7 @@ The calls the government and policy choices use, as the government screen shows 
 
 ## Method
 
-1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [choices/choices.md](choices.md#method), step 6, then read `SentientSystems_GetChoices(Game.GetLocalPlayer())`.
+1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [choices/production.md](production.md#method), step 4, then read `SentientSystems_GetChoices(Game.GetLocalPlayer())`.
 2. To see empty and filled slots, complete a civic, read the choices, then slot policies in the government screen, confirm, and read them again.
 3. To see the paid unlock, end the turn after a policy change. On a turn with no civic completed, the policies tab offers the unlock. Clicking it spends the gold, so reload the save afterwards.
 

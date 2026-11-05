@@ -24,7 +24,10 @@ The production choice counts the tiles from the placement file to decide what th
 
 The calls for each choice are in these findings:
 
-- **Production, purchases, techs, and civics.** [findings/choices/choices.md](../../../findings/choices/choices.md).
+- **Units, buildings, wonders, and projects.** [findings/choices/production.md](../../../findings/choices/production.md).
+- **Districts.** [findings/choices/districts.md](../../../findings/choices/districts.md).
+- **Purchases.** [findings/choices/purchases.md](../../../findings/choices/purchases.md).
+- **Techs and civics.** [findings/choices/research.md](../../../findings/choices/research.md).
 - **Government and policies.** [findings/choices/government.md](../../../findings/choices/government.md).
 - **Religion.** [findings/choices/religion.md](../../../findings/choices/religion.md).
 - **Envoys.** [findings/choices/city-states.md](../../../findings/choices/city-states.md).
@@ -43,7 +46,7 @@ The calls for each choice are in these findings:
 
 The UI script loads the file, and the bridge reads the call through the stash. It raises an error for an ID with no player or city, and for a type that isn't a district or a wonder.
 
-The calls are under **Placement tiles** in [findings/choices/choices.md](../../../findings/choices/choices.md). The shape is in [packages/core/bridge/src/placement/](../../../../packages/core/bridge/src/placement/).
+The calls are in [findings/choices/placement.md](../../../findings/choices/placement.md). The shape is in [packages/core/bridge/src/placement/](../../../../packages/core/bridge/src/placement/).
 
 ## Decisions
 

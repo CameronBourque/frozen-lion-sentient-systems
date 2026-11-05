@@ -2,7 +2,7 @@
 
 Status: open. The `spies` key of `SentientSystems_GetChoices`, the escape routes for the player's escaping spy, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the escape screen. A dragnet priority hasn't been seen in a game.
 
-The calls the spy choice uses, as the escape screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
+The calls the spy choice uses, as the escape screen shows them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 
@@ -23,7 +23,7 @@ The calls the spy choice uses, as the escape screen shows them. The other choice
 
 ## Method
 
-1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [choices/choices.md](choices.md#method), step 6, and send `SentientSystemsCore_Choices.lua` again so it calls it.
+1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [choices/production.md](production.md#method), step 4, and send `SentientSystemsCore_Choices.lua` again so it calls it.
 2. To put a spy in a rival city without the trip, send `UnitManager.InitUnit(0, "UNIT_SPY", x, y)` in `GameCore_Tuner` on the city's tile. It could start **Gain Sources**, **Listening Post**, and **Foment Unrest** at once. A spy that is caught after a mission has to escape, which is down to chance.
 
 ## Results

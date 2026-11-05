@@ -62,7 +62,7 @@ The calls the player section of the state uses. See [design/core/mod/state.md](.
 
 ## Method
 
-1. To read the player section before the `.modinfo` loads `SentientSystemsCore_StatePlayer.lua`, send the file with its comment lines removed, then `print(SentientSystems_EncodeJson(SentientSystems_GetPlayerState(Players[0])))`, as in [choices/choices.md](../choices/choices.md#method), step 6.
+1. To read the player section before the `.modinfo` loads `SentientSystemsCore_StatePlayer.lua`, send the file with its comment lines removed, then `print(SentientSystems_EncodeJson(SentientSystems_GetPlayerState(Players[0])))`, as in [choices/production.md](../choices/production.md#method), step 4.
 2. Compare each value with the top bar.
 3. For the Resources tab, send `SentientSystemsCore_StatePlayerResources.lua` the same way, with `print(SentientSystems_EncodeJson(SentientSystems_GetResourcesState(Players[0])))`, and compare with the screen's groups and strips. To see a strategic resource at 0, set it with `Players[0]:GetResources():ChangeResourceAmount(index, -amount)` in `GameCore_Tuner`.
 4. For the City Status tab, send `SentientSystemsCore_StateCities.lua` without its comments, then print each city's `growth.rate`, `amenities`, and `governor`, and compare with the tab.

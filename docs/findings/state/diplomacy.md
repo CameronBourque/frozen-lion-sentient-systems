@@ -42,7 +42,7 @@ The Relationship tab lists `GetDiplomaticAI():GetDiplomaticModifiers(player)` of
 
 ## Method
 
-1. To read the section before the `.modinfo` loads `SentientSystemsCore_StateDiplomacy.lua`, send the file without its comment lines, then `print(SentientSystems_EncodeJson(SentientSystems_GetDiplomacyState(Players[0])))`, as in [choices/choices.md](../choices/choices.md#method), step 6.
+1. To read the section before the `.modinfo` loads `SentientSystemsCore_StateDiplomacy.lua`, send the file without its comment lines, then `print(SentientSystems_EncodeJson(SentientSystems_GetDiplomacyState(Players[0])))`, as in [choices/production.md](../choices/production.md#method), step 4.
 2. To set a status without playing it, send in `GameCore_Tuner` `Players[0]:GetDiplomacy():SetHasDeclaredFriendship(2, true)` and the same on player 2 for 0, or `SetHasAllied`. Reload the save to undo it.
 3. Compare with the Intel Report of the player, in the diplomacy screen.
 4. For the proposals, end the turn so that an AI proposes a deal, then send `SentientSystemsCore_StateProposals.lua` without its comment lines, and `print(SentientSystems_EncodeJson(SentientSystems_GetProposalState(Players[0])))`. Compare with the deal screen.

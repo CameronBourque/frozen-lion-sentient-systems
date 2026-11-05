@@ -2,7 +2,7 @@
 
 Status: open. The `governors` section of `SentientSystems_GetState`, the player's governor titles and appointed governors, and the `governors` key of `SentientSystems_GetChoices`, the governors to appoint, the promotions to give, and the cities to assign them to, are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The state matches the Governors panel. The choice matches the panel and the assignment chooser's list for a governor with no city, and hasn't been compared with the details panel. The governor tree, `SentientSystems_GetGovernorTree`, is confirmed in the same game, and reads safely since the encoder escapes the percent sign, which crashed the game before. It matches the details panel. Secret Societies are confirmed in the same way, on a game with that mode, and match the panel and its details panel.
 
-The calls the governors in the state and the governor choice use, as the Governors panel and its screens show them. The other choices are in [choices/choices.md](../choices/choices.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
+The calls the governors in the state and the governor choice use, as the Governors panel and its screens show them. The other choices are in the [choices index](../choices/README.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
@@ -29,7 +29,7 @@ Rise and Fall adds `DLC/Expansion1/UI/Additions/GovernorPanel.lua`, with `Govern
 
 ## Method
 
-1. To read a state section that the `.modinfo` doesn't load yet, send the code as in [choices/choices.md](../choices/choices.md#method), step 6, and send `SentientSystemsCore_State.lua` again so it calls it.
+1. To read a state section that the `.modinfo` doesn't load yet, send the code as in [choices/production.md](../choices/production.md#method), step 4, and send `SentientSystemsCore_State.lua` again so it calls it.
 2. For a Secret Society, start a game with Secret Societies on, discover one, such as the Owls of Minerva by sending an envoy to a city-state, and join it with **Appoint**, or send the same operation. Opening the Governors panel and closing it clears the governor blocker, so reload the save to see it again. `Players[0]:GetGovernors():SetTitleConsidered(true)` clears it from the UI state.
 3. To appoint a governor without the panel, send `UI.RequestPlayerOperation(0, PlayerOperations.APPOINT_GOVERNOR, params)` in `SentientSystemsCore_UI`, with the governor's index in `params[PlayerOperations.PARAM_GOVERNOR_TYPE]`. It spends the title.
 

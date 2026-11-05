@@ -10,7 +10,7 @@ The UI script loads the file, and the bridge reads the call through the stash. I
 
 `SentientSystems_GetCivicTree(playerID)` in the same file returns the civic tree in the same form, with `researched` counting civics. The civic tree leaves out the screen's extra icons for envoys and governor titles.
 
-The calls are in [findings/choices/choices.md](../../../findings/choices/choices.md). The shape is in [packages/core/bridge/src/trees/research.ts](../../../../packages/core/bridge/src/trees/research.ts).
+The calls are in [findings/choices/research.md](../../../findings/choices/research.md). The shape is in [packages/core/bridge/src/trees/research.ts](../../../../packages/core/bridge/src/trees/research.ts).
 
 ## Governor tree
 

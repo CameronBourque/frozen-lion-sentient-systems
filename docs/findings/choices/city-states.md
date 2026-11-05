@@ -2,7 +2,7 @@
 
 Status: open. The `envoys` key of `SentientSystems_GetChoices`, the city-states the player can send envoys to, and the `envoys` section of `SentientSystems_GetState`, the player's envoy tokens and each met city-state's envoys and suzerain, are confirmed in a running game with Gathering Storm, with the files sent through the tuner, and match the City-States screen. The section's bonuses, suzerain bonuses, quests, and Influenced By lists are confirmed in the same game and match the screen. Its resources are confirmed in the same game for a luxury, and a strategic resource's amount per turn only in files.
 
-The calls the envoy choice and the envoys section of the state use, as the City-States screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
+The calls the envoy choice and the envoys section of the state use, as the City-States screen shows them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 
@@ -32,7 +32,7 @@ None open.
 
 ## Method
 
-1. To read a choice or a state section that the `.modinfo` doesn't load yet, send the code as in [choices/choices.md](choices.md#method), step 6. The full state and choices need `SentientSystemsCore_State.lua` and `SentientSystemsCore_Choices.lua` sent again too, so they call the new file.
+1. To read a choice or a state section that the `.modinfo` doesn't load yet, send the code as in [choices/production.md](production.md#method), step 4. The full state and choices need `SentientSystemsCore_State.lua` and `SentientSystemsCore_Choices.lua` sent again too, so they call the new file.
 2. To meet a city-state, send `Players[0]:GetDiplomacy():SetHasMet(id)` in `GameCore_Tuner`. Meeting one first gave the player 1 envoy there.
 3. To give envoys, send `Players[0]:GetInfluence():ChangeTokensToGive(n)` in `GameCore_Tuner`. `GiveFreeTokenToPlayer(id)` on a player's influence gives that player an envoy at the city-state, and does nothing until the player has met it.
 4. To give a city-state a resource, in `GameCore_Tuner`, put it on a tile the city-state owns with `ResourceBuilder.SetResourceType(plot, index, 1)`, and add its improvement with `ImprovementBuilder.SetImprovementType(plot, index, cityStateID)`.

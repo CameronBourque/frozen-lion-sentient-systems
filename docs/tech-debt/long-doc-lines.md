@@ -4,23 +4,22 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 113 Markdown files. 69 of them have a line over 300 characters, 468 lines in all, and 84 lines pass 600.
+A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 117 Markdown files. 73 of them have a line over 300 characters, 469 lines in all, and 83 lines pass 600.
 
 [findings/lua/state-list.md](../findings/lua/state-list.md) has the longest line, a 2,318-character list of state names.
 
-Seven files pass 12,000 characters, although only one passes 150 lines:
+Six files pass 12,000 characters, although none passes 150 lines:
 
 | File | Characters | Lines | Lines over 300 |
 | --- | --- | --- | --- |
-| [findings/choices/choices.md](../findings/choices/choices.md) | 29,225 | 137 | 43 |
-| [findings/actions/unit-orders.md](../findings/actions/unit-orders.md) | 25,712 | 134 | 36 |
-| [findings/state/state.md](../findings/state/state.md) | 21,358 | 151 | 23 |
-| [findings/state/player.md](../findings/state/player.md) | 18,019 | 87 | 23 |
-| [findings/state/governors.md](../findings/state/governors.md) | 14,416 | 54 | 20 |
-| [findings/tuner/commands.md](../findings/tuner/commands.md) | 13,127 | 114 | 11 |
-| [findings/lua/contexts.md](../findings/lua/contexts.md) | 12,526 | 147 | 9 |
+| [findings/actions/unit-orders.md](../findings/actions/unit-orders.md) | 25,723 | 133 | 36 |
+| [findings/state/state.md](../findings/state/state.md) | 21,365 | 150 | 23 |
+| [findings/state/player.md](../findings/state/player.md) | 18,032 | 86 | 23 |
+| [findings/state/governors.md](../findings/state/governors.md) | 14,427 | 53 | 20 |
+| [findings/tuner/commands.md](../findings/tuner/commands.md) | 13,138 | 113 | 11 |
+| [findings/lua/contexts.md](../findings/lua/contexts.md) | 12,525 | 146 | 9 |
 
-`scripts/check-docs/src/length.mjs` warns about files over 150 lines but not about long lines or file size.
+`scripts/check-docs/src/length.mjs` warns about long lines and large files, but doesn't fail on them.
 
 ## Proposal
 
@@ -45,10 +44,11 @@ A split moves the text unchanged, and a later commit shortens the lines, so each
    - `docs/design/core/mod/actions.md`: the action API.
 3. **Core mod lines.** Shorten the long lines in `docs/design/core/mod/`. If `actions.md` still passes 12,000 characters, make it a folder with one file per group of actions. Commit: `docs: shorten the lines in the core mod design`.
 4. **Choices split.** Split `choices.md` by its `###` sections into the files below, and remove `choices.md`. Commit: `docs: split the choices finding by topic`.
-   - `docs/findings/choices/production.md*`: units, buildings, districts, projects, and other modes.
-   - `docs/findings/choices/purchases.md*`: purchases and tile purchases.
-   - `docs/findings/choices/research.md*`: techs, civics, and the trees.
-   - `docs/findings/choices/placement.md*`: placement tiles.
+   - `docs/findings/choices/production.md`: units, buildings, projects, and other modes.
+   - `docs/findings/choices/districts.md`: districts, so that the production file stays under 12,000 characters.
+   - `docs/findings/choices/purchases.md`: purchases and tile purchases.
+   - `docs/findings/choices/research.md`: techs, civics, and the trees.
+   - `docs/findings/choices/placement.md`: placement tiles.
 5. **Unit orders split.** Move the builder jobs and adding production into `docs/findings/actions/builder-jobs.md*`, the attacks into `docs/findings/actions/attacks.md*`, and the air moves into `docs/findings/actions/air-moves.md*`. Commit: `docs: split the unit orders finding by topic`.
 6. **State split.** Move the end-turn blockers into `docs/findings/state/end-turn-blockers.md*`, and the rival cities and rival units into `docs/findings/state/rivals.md*`. Commit: `docs: split the state finding by topic`.
 7. **Player split.** Move the Yields, Resources, and City Status tabs into `docs/findings/state/reports.md*`, and the Era Progress panel into `docs/findings/state/eras.md*`. Commit: `docs: split the player finding by topic`.

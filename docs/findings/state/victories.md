@@ -50,7 +50,7 @@ The calls the victories use, as the Overall tab in `WorldRankings.lua` and its G
 
 ## Method
 
-1. Send `SentientSystemsCore_StateVictories.lua` through the tuner as in [choices/choices.md](../choices/choices.md#method), step 6, then `print(SentientSystems_EncodeJson(SentientSystems_GetVictoryState(Players[Game.GetLocalPlayer()])))`.
+1. Send `SentientSystemsCore_StateVictories.lua` through the tuner as in [choices/production.md](../choices/production.md#method), step 4, then `print(SentientSystems_EncodeJson(SentientSystems_GetVictoryState(Players[Game.GetLocalPlayer()])))`.
 2. Open World Rankings, **Overall**, and compare the order of the icons of each victory and each tooltip with the state's.
 3. For the Science tab, send `SentientSystemsCore_StateVictoriesScience.lua` first, then `print(SentientSystems_EncodeJson(SentientSystems_GetVictoryState(Players[Game.GetLocalPlayer()]).science[1].stages))`, and compare each bar and tooltip. To start a stage with the tuner, send `Players[0]:GetTechs():SetTech(GameInfo.Technologies["TECH_ROCKETRY"].Index, true)` to `GameCore_Tuner`, and end the turn for the UI state to see it. `Players[0]:GetStats():ChangeScienceVictoryPoints(n)` in `GameCore_Tuner` changes the light years.
 4. For the other tabs, send `SentientSystemsCore_StateVictoriesCulture.lua`, `Domination`, and `Religion` first, then `SentientSystemsCore_StateVictories.lua` without its `SentientSystems_Include` lines, and compare each row of the Culture, Domination, Religion, and Diplomacy tabs, and each tooltip, with the state's keys.

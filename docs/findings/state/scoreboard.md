@@ -24,7 +24,7 @@ The calls the scoreboard uses, as the Score tab in `WorldRankings.lua` and the l
 
 ## Method
 
-1. Send `SentientSystemsCore_StateScoreboard.lua` through the tuner as in [choices/choices.md](../choices/choices.md#method), step 6, then `print(SentientSystems_EncodeJson(SentientSystems_GetScoreboardState(Players[Game.GetLocalPlayer()])))`.
+1. Send `SentientSystemsCore_StateScoreboard.lua` through the tuner as in [choices/production.md](../choices/production.md#method), step 4, then `print(SentientSystems_EncodeJson(SentientSystems_GetScoreboardState(Players[Game.GetLocalPlayer()])))`.
 2. Open World Rankings, **Score**, turn on **Show Details**, and compare each number with the state's. Compare the leader panel's numbers at the top right.
 
 ## Results

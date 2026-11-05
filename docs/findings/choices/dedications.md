@@ -2,7 +2,7 @@
 
 Status: open. The `dedications` key of `SentientSystems_GetChoices`, the dedications the player may make for the era that began, is confirmed in a running game with Gathering Storm and matches the dedication popup, for a golden, a dark, a heroic, and a normal age.
 
-The calls the dedication choice uses, as the dedication popup shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
+The calls the dedication choice uses, as the dedication popup shows them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

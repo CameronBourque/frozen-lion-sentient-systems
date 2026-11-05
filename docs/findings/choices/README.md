@@ -4,7 +4,11 @@ The game calls the choices use to list each choice's legal options, as the game'
 
 | File | Topic |
 | --- | --- |
-| [choices.md](choices.md) | The calls the choices use to list each choice's legal options, as the game's screens list them |
+| [production.md](production.md) | The calls the production choice uses for units, buildings, wonders, and projects, as the production panel lists them |
+| [districts.md](districts.md) | The calls the production choice uses for districts, as the production panel lists them |
+| [purchases.md](purchases.md) | The calls the gold, faith, and tile purchases use, as the purchase tabs and the purchase lens list them |
+| [research.md](research.md) | The calls the tech and civic choices and the tech and civic trees use, as the choosers and tree screens show them |
+| [placement.md](placement.md) | The calls the placement tiles use, as the placement view shows where a district or a wonder can go |
 | [government.md](government.md) | The calls the government and policy choices use, as the government screen shows them |
 | [religion.md](religion.md) | The calls the religion choices use, as the religion screens show them |
 | [great-people.md](great-people.md) | The calls the great person choice and the great people in the state use, as the Great People screen shows them |
