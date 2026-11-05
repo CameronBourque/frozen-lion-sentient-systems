@@ -5,7 +5,9 @@ How docs are organized. These rules apply to every file under `docs/`, to packag
 ## Structure
 
 - **One topic per file.** Aim for under 150 lines. If two files are always read together, merge them.
-- **Keep lines to 300 characters and files to 12,000.** A line is a paragraph, a bullet, or a table row, and it holds one thought. A file over the limit splits by topic. A design file becomes a folder with a `README.md` index. A finding splits into findings in its topic folder.
+- **Keep lines to 300 characters and files to 12,000.** A line is a paragraph, a bullet, or a table row, and it holds one thought. Link targets don't count toward its length.
+
+  A file over the limit splits by topic. A design file becomes a folder with a `README.md` index. A finding splits into findings in its topic folder.
 - **Start each file with a one- or two-sentence summary.** The folder index reuses it.
 - **Every folder has a `README.md` index.** The index has one row per file or subfolder. Add each new file to its folder's index.
 - **Use relative links.** Readers and tools can follow them.
@@ -93,7 +95,9 @@ Where each kind of fact lives:
 
 The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there.
 
-Files over 150 lines or 12,000 characters, and lines over 300 characters, get a warning, not a failure. The line check skips fenced code. Both length checks skip changelogs, which release-please writes.
+Files over 150 lines or 12,000 characters, and lines over 300 characters, get a warning, not a failure.
+
+The line check skips fenced code, and leaves link targets out of a line's length, because a reader doesn't see them. The file check counts them, because an agent reads them. Both length checks skip changelogs, which release-please writes.
 
 ## Local-only docs
 

@@ -4,7 +4,7 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 127 Markdown files. 48 of them have a line over 300 characters, 163 lines in all, and 25 lines pass 600.
+A line is a paragraph, a bullet, or a table row, and its length leaves out link targets. `scripts/check-docs/` reads 127 Markdown files. 46 of them have a line over 300 characters, 145 lines in all, and 18 lines pass 600.
 
 [findings/lua/state-list.md](../findings/lua/state-list.md) has the longest line, a 2,318-character list of state names.
 
@@ -19,7 +19,7 @@ Two files pass 12,000 characters, although none passes 150 lines:
 
 ## Proposal
 
-No line passes 300 characters, and no file passes 12,000. The limits apply to every file the check reads, except `packages/core/CHANGELOG.md`, which release-please writes.
+No line passes 300 characters, not counting link targets, and no file passes 12,000, counting them. The limits apply to every file the check reads, except `packages/core/CHANGELOG.md`, which release-please writes.
 
 Table rows and findings get the same line limit. A reason over 300 characters holds more than one thought, so the row keeps a short reason and links to the text that explains it. A long result row becomes a list, and each item keeps its date and source.
 

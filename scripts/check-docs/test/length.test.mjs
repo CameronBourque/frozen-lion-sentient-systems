@@ -34,6 +34,28 @@ describe("length", () => {
 		expect(check({ "docs/a.md": lines(code) })).toEqual(["docs/a.md:1: length: line of 302 characters. Keep lines to 300"]);
 	});
 
+	test("leaves link targets out of the line length", () => {
+		const link = `[a](${"b".repeat(MAX_LINE_LENGTH)})`;
+
+		expect(check({ "docs/a.md": lines(link) })).toEqual([]);
+		expect(check({ "docs/a.md": lines("a".repeat(MAX_LINE_LENGTH) + link) })).toEqual([
+			"docs/a.md:1: length: line of 303 characters. Keep lines to 300",
+		]);
+	});
+
+	test("counts a link target inside a code span", () => {
+		const code = "`a](" + "b".repeat(MAX_LINE_LENGTH) + ")`";
+
+		expect(check({ "docs/a.md": lines(code) })).toEqual(["docs/a.md:1: length: line of 306 characters. Keep lines to 300"]);
+	});
+
+	test("counts link targets in the file length", () => {
+		const row = `[a](${"b".repeat(95)})`;
+		const text = Array.from({ length: MAX_FILE_LENGTH / 100 + 1 }, () => row).join("\n");
+
+		expect(check({ "docs/a.md": text })).toEqual(["docs/a.md:1: length: 12,220 characters. Keep files to 12,000 and split by topic"]);
+	});
+
 	test("warns only over the file length", () => {
 		// 120 rows of 99 characters and 119 newlines, plus one, make 12,000.
 		const fits = Array.from({ length: MAX_FILE_LENGTH / 100 }, () => "a".repeat(99)).join("\n") + "a";
