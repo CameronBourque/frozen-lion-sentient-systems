@@ -1,10 +1,6 @@
--- The rules about governors that the state, the choice, and the tree share:
--- which governors are Secret Societies, which of their promotions the Governors
--- panel hides, and the text it shows in their place.
--- SentientSystemsCore_StateGovernors.lua,
--- SentientSystemsCore_ChoicesGovernors.lua, and
--- SentientSystemsCore_TreesGovernors.lua load this file. The checks follow
--- GovernorSupport.lua.
+-- The governor rules that the state, the choice, and the tree share: which
+-- governors are Secret Societies, and which promotions the panel hides.
+-- Follows GovernorSupport.lua.
 
 include("SentientSystemsCore_Common")
 

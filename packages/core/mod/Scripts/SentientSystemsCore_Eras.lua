@@ -1,8 +1,6 @@
--- The rules about ages that the era state and the dedication choice share:
--- which age a player is in, and the text of a dedication's bonus for it.
--- SentientSystemsCore_StatePlayerEra.lua and
--- SentientSystemsCore_ChoicesDedications.lua load this file. The checks follow
--- EraProgressPanel.lua and DedicationPopup.lua.
+-- The age rules that the era state and the dedication choice share: which age
+-- a player is in, and a dedication's bonus text. Follows EraProgressPanel.lua
+-- and DedicationPopup.lua.
 
 include("SentientSystemsCore_Common")
 

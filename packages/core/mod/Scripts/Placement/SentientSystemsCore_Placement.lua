@@ -1,10 +1,6 @@
--- The placement tiles: where a city can place a district or a wonder, on tiles
--- it owns or could buy, with each district's adjacency bonus on each tile, as
--- the placement view shows them when the player picks one. The bridge reads
--- them for one district or wonder at a time, in a call of their own, and the
--- production choice counts them. The UI script and the production choice load
--- this file. The shape is in bridge/src/placement/placement.ts. The calls
--- follow AdjacencyBonusSupport.lua.
+-- The placement tiles: where a city can place a district or wonder, with each
+-- district's adjacency bonus, as the placement view shows them. Follows
+-- AdjacencyBonusSupport.lua. Shape: bridge/src/placement/placement.ts.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
