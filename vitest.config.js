@@ -22,6 +22,9 @@ export default defineConfig({
 				// Only lists the Lua files and prints. Its logic is in
 				// check.mjs, which the tests cover.
 				"scripts/lua-comments/src/index.mjs",
+				// Only lists the yml files and prints. Its logic is in
+				// check.mjs, which the tests cover.
+				"scripts/yml-comments/src/index.mjs",
 				// Only runs busted and luacov and reads the report. Its logic
 				// is in summary.mjs, which the tests cover.
 				"scripts/lua-coverage/src/index.mjs",
