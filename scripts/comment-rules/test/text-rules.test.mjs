@@ -1,7 +1,7 @@
 // Tests for text-rules.mjs: each rule catches a comment and lets one through.
 
 import { describe, expect, test } from "vitest";
-import { TEXT_RULES } from "../src/text-rules.mjs";
+import { findText, TEXT_RULES } from "../src/text-rules.mjs";
 
 const rule = (name) => TEXT_RULES.find((r) => r.name === name);
 
@@ -75,5 +75,26 @@ describe("TEXT_RULES", () => {
 		const names = TEXT_RULES.map((r) => r.name);
 
 		expect(new Set(names).size).toBe(names.length);
+	});
+});
+
+describe("findText", () => {
+	const broken = "-- copied from line 12";
+
+	test("returns the message of every rule a comment breaks", () => {
+		expect(findText('-- line 12 holds {"id": 1}')).toHaveLength(2);
+	});
+
+	test("returns nothing for a comment that follows the rules", () => {
+		expect(findText("-- the first line")).toEqual([]);
+	});
+
+	test("skips a comment that opts out with a reason", () => {
+		expect(findText(`${broken} comment-lint-ignore: quotes an error`)).toEqual([]);
+	});
+
+	test("does not skip an opt-out with no reason", () => {
+		expect(findText(`${broken} comment-lint-ignore:`)).toHaveLength(1);
+		expect(findText(`${broken} comment-lint-ignore:   `)).toHaveLength(1);
 	});
 });

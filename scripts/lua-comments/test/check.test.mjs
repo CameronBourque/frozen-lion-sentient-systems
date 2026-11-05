@@ -54,6 +54,12 @@ describe("checkComments", () => {
 		expect(exitCode).toBe(1);
 	});
 
+	test("lets through a comment that opts out with a reason", () => {
+		const text = "local x = 1\n-- line 12 comment-lint-ignore: quotes an error\n";
+
+		expect(checkComments({ "a.lua": text }).lines).toEqual([]);
+	});
+
 	test("lets through code that names a line number", () => {
 		expect(checkComments({ "a.lua": 'local s = "line 12"\n' }).lines).toEqual([]);
 	});

@@ -57,6 +57,14 @@ describe("comment-rules/text-rules", () => {
 		expect(lint("// one\n// two\n// three\n// four\n")).toHaveLength(1);
 	});
 
+	test("lets through a comment that opts out with a reason", () => {
+		expect(lint("const a = 1;\n// line 12 comment-lint-ignore: quotes an error\n")).toEqual([]);
+	});
+
+	test("reports a comment that opts out with no reason", () => {
+		expect(lint("const a = 1;\n// line 12 comment-lint-ignore:\n")).toHaveLength(1);
+	});
+
 	test("lets through code that names a line number", () => {
 		expect(lint('const s = "line 12";\n')).toEqual([]);
 	});
