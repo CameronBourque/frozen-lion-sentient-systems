@@ -54,8 +54,6 @@ return function(env, world, ctx)
 			buildingsByHash[hashes[building.type]] = building
 		end
 
-		-- A building's yield for an index and a yield type, from
-		-- building.yields, which maps a YieldTypes name to an amount.
 		function city.GetBuildingYield(_, index, yieldType)
 			return ((buildings[index] or {}).yields or {})[yieldType:gsub("^YIELD_", "")] or 0
 		end
@@ -68,8 +66,6 @@ return function(env, world, ctx)
 				HasBuilding = function(_, index)
 					return buildings[index].built ~= false
 				end,
-				-- The great works in a building, from building.greatWorks, each
-				-- with type.
 				GetNumGreatWorkSlots = function(_, index)
 					return #(buildings[index].greatWorks or {})
 				end,

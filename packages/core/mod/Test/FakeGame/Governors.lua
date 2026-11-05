@@ -200,9 +200,6 @@ return function(env, world, ctx)
 					CanEarnPromotion = function(_, _, promotionHash)
 						return earnable[promotionHash] == true
 					end,
-					-- Whether a city can take a governor, from
-					-- governorData.cannotAssignTo, with the game's failure
-					-- reasons.
 					CanAssignGovernor = function(_, _, city)
 						local reasons = (governorData.cannotAssignTo or {})[city:GetOwner() .. ":" .. city:GetID()]
 

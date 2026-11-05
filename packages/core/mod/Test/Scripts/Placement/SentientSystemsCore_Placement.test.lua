@@ -14,7 +14,6 @@ local function Load(options)
 	end
 end
 
--- Returns the row of a GameInfo table whose column is typeName.
 local function Row(rows, column, typeName)
 	for row in rows() do
 		if row[column] == typeName then

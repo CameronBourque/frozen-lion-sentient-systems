@@ -21,8 +21,6 @@ return function(env, world, ctx)
 	end
 
 	ctx.OnPlayer(function(player, data)
-		-- The player's points toward each class of great person, from
-		-- data.greatPeoplePoints by class type, each with points and perTurn.
 		player.GetGreatPeoplePoints = function()
 			local function Points(classIndex)
 				return (data.greatPeoplePoints or {})[env.GameInfo.GreatPersonClasses[classIndex].GreatPersonClassType] or {}
@@ -39,8 +37,6 @@ return function(env, world, ctx)
 		end
 	end)
 
-	-- The great people on offer, from world.greatPeople, by the GameInfo index
-	-- of each individual.
 	env.Game.GetGreatPeople = function()
 		local byIndex = {}
 

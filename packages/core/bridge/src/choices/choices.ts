@@ -49,8 +49,6 @@ export const CHOICES = z.object({
 
 export type Choices = z.infer<typeof CHOICES>;
 
-// Reads the choices of the player with ID playerID. Every failure comes back as
-// an error that says what went wrong, instead of an exception.
 export function readChoices(client: TunerClient, playerID: number): Promise<StashResult<Choices>> {
 	return readStash(client, `SentientSystems_GetChoices(${playerID})`, CHOICES, "choices");
 }

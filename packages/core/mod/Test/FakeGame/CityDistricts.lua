@@ -29,9 +29,6 @@ return function(env, world, ctx)
 				IsPillaged = function()
 					return district.pillaged == true
 				end,
-				-- The district's yield and adjacency bonus for a
-				-- GameInfo.Yields index, from district.yields and
-				-- district.adjacency, which map a YieldTypes name to an amount.
 				GetYield = function(_, yieldIndex)
 					return (district.yields or {})[YIELD_NAMES[yieldIndex]] or 0
 				end,

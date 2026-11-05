@@ -50,8 +50,6 @@ export const TREE = z.object({
 
 export type Tree = z.infer<typeof TREE>;
 
-// Reads the tech tree of the player with ID playerID. Every failure comes back
-// as an error that says what went wrong, instead of an exception.
 export function readTechTree(client: TunerClient, playerID: number): Promise<StashResult<Tree>> {
 	return readStash(client, `SentientSystems_GetTechTree(${playerID})`, TREE, "tech tree");
 }

@@ -46,8 +46,6 @@ export const STATE = z.object({
 
 export type State = z.infer<typeof STATE>;
 
-// Reads the state of the player with ID playerID. Every failure comes back as
-// an error that says what went wrong, instead of an exception.
 export function readState(client: TunerClient, playerID: number): Promise<StashResult<State>> {
 	return readStash(client, `SentientSystems_GetState(${playerID})`, STATE, "state");
 }

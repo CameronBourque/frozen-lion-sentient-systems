@@ -11,8 +11,6 @@ local function ReligionOf(players)
 	return env.SentientSystems_GetState(0):match("\"religion\":(%b[])")
 end
 
--- Returns the entry of a player in a list of entries, or the first unmet one
--- for nil.
 local function Entry(json, id)
 	for entry in json:gmatch("%b{}") do
 		if id == nil and entry:find("\"unmet\":true", 1, true) then

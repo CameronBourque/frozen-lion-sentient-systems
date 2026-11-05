@@ -53,9 +53,6 @@ return function(env, world, ctx)
 	end
 
 	ctx.OnCity(function(city, data)
-		-- The religions in the city, from data.religions, each with type and
-		-- followers, and the majority religion, from data.majority, by their
-		-- GameInfo indexes.
 		city.GetReligion = function()
 			return {
 				GetMajorityReligion = function()
@@ -135,8 +132,6 @@ return function(env, world, ctx)
 			GetName = function(_, index)
 				return env.GameInfo.Religions[index].Name
 			end,
-			-- Each founded religion, with its index, founder, and belief
-			-- indexes.
 			GetReligions = function()
 				local religions = {}
 

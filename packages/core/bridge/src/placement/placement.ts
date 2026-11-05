@@ -34,9 +34,6 @@ export type Placement = z.infer<typeof PLACEMENT>;
 // Lua call as a string, so it must hold nothing that needs escaping.
 const TYPE_NAME = /^[A-Z0-9_]+$/;
 
-// Reads where the city with ID cityID, of the player with ID playerID, can
-// place the district or wonder typeName. Every failure comes back as an error
-// that says what went wrong, instead of an exception.
 export async function readPlacement(client: TunerClient, playerID: number, cityID: number, typeName: string): Promise<StashResult<Placement>> {
 	if (!TYPE_NAME.test(typeName)) {
 		return { ok: false, error: `${JSON.stringify(typeName)} isn't a type name, such as DISTRICT_CAMPUS` };

@@ -50,9 +50,6 @@ return function(env, world, ctx)
 	end)
 
 
-	-- The artifact of each digging archaeologist, by its index, with the site's
-	-- type, the acting and target players, and the acting player's era, by its
-	-- GameInfo index.
 	env.Game.GetArtifactByIndex = function(index)
 		for _, data in pairs(world.players or {}) do
 			local artifact = data.archaeologist and data.archaeologist.artifact

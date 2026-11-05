@@ -31,7 +31,6 @@ local function SetPlayers(players)
 	end
 end
 
--- Calls each handler that the script added to the event.
 local function Fire(event, ...)
 	for _, handler in ipairs(env.Events[event].handlers) do
 		handler(...)

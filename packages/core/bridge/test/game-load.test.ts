@@ -45,7 +45,6 @@ describe("onLoadEvent", () => {
 		readLine(line, logger, (event) => onLoadEvent(event, client, logger, () => path.join(folder, `${++files}.log`)));
 	}
 
-	// The event names in a log file, one for each line.
 	function events(file: string): unknown[] {
 		return fs.readFileSync(path.join(folder, file), "utf8").split("\n").filter((line) => line !== "").map((line) => (JSON.parse(line) as { event: string }).event);
 	}

@@ -227,7 +227,6 @@ describe("Logger files", () => {
 		fs.rmSync(folder, { recursive: true, force: true });
 	});
 
-	// The records in a log file, one for each line.
 	function records(file: string): unknown[] {
 		return fs.readFileSync(file, "utf8").split("\n").filter((line) => line !== "").map((line): unknown => JSON.parse(line));
 	}
