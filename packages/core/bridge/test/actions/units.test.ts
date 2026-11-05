@@ -57,6 +57,43 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 9437197, { action: "improve", improvement: "IMPROVEMENT_FARM" })).toEqual({ ok: true });
 	});
 
+	test("unitAction passes the route of a road as text", async () => {
+		answer("SentientSystems_UnitAction(0, 9437197, \"build_road\", nil, nil, \"ROUTE_RAILROAD\")", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 9437197, { action: "build_road", route: "ROUTE_RAILROAD" })).toEqual({ ok: true });
+	});
+
+	test("unitAction passes a road with no route, a job, and an upgrade, with no type", async () => {
+		answer("SentientSystems_UnitAction(0, 9437197, \"build_road\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "build_road" })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9437197, \"harvest\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "harvest" })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9437197, \"add_production\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "add_production" })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9437197, \"upgrade\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "upgrade" })).toEqual({ ok: true });
+	});
+
+	test("unitAction passes the tile of an air move and a priority target", async () => {
+		answer("SentientSystems_UnitAction(0, 9306120, \"rebase\", 43, 38, nil)", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 9306120, { action: "rebase", x: 43, y: 38 })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9306120, \"priority_target\", 44, 39, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9306120, { action: "priority_target", x: 44, y: 39 })).toEqual({ ok: true });
+	});
+
+	test("unitAction passes the unit to join as a number", async () => {
+		answer("SentientSystems_UnitAction(0, 9437197, \"form_corps\", nil, nil, 9502792)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "form_corps", with: 9502792 })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9437197, \"exit_formation\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "exit_formation" })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes a promotion as text, with its quotes escaped", async () => {
 		answer("SentientSystems_UnitAction(0, 5636113, \"promote\", nil, nil, \"PROMOTION_\\\"HULL\")", FAILED);
 

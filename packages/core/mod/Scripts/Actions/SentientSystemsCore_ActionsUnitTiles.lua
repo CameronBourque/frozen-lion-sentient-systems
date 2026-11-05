@@ -95,13 +95,14 @@ local function GetImprovements(unit, parameters)
 	return improvements
 end
 
--- Whether a kind of unit has build charges, which makes it a builder.
-local function IsBuilder(row)
+-- Whether a kind of unit has build charges, which makes it a builder. The job
+-- orders use this too.
+function SentientSystems_IsBuilder(row)
 	return row.BuildCharges > 0
 end
 
 local function GetImproveFailure(unit, improvementType, improvements)
-	return SentientSystems_GetOrderFailure(unit, "improve", IsBuilder(GameInfo.Units[unit:GetUnitType()]), function()
+	return SentientSystems_GetOrderFailure(unit, "improve", SentientSystems_IsBuilder(GameInfo.Units[unit:GetUnitType()]), function()
 		if unit:GetMovesRemaining() <= 0 then
 			return "The unit has no moves left."
 		end

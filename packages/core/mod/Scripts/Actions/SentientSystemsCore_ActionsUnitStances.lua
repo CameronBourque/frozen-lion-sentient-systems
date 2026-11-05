@@ -14,7 +14,14 @@ local STANCES = {
 }
 
 -- How the reasons say an action, when its name is not the verb.
-local VERBS = { found_city = "found a city", improve = "build improvements" }
+local VERBS = {
+	found_city = "found a city",
+	improve = "build improvements",
+	build_road = "build roads",
+	remove_feature = "remove features",
+	harvest = "harvest resources",
+	remove_improvement = "remove improvements",
+}
 
 -- What a unit is doing, by activity, for the reason it can't take an order.
 -- A unit that is awake has no entry.

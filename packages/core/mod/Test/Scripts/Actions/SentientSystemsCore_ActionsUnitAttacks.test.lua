@@ -178,3 +178,46 @@ describe("attack", function()
 		end)
 	end)
 end)
+
+describe("priority_target", function()
+	local TILES = { { x = 22, y = 20, target = true }, { x = 21, y = 20, target = false } }
+	local READY = With(CROSSBOW, { canNow = { "priority_target" }, airTargets = { priority_target = TILES } })
+
+	local function Run(unit, x, y)
+		local env = Load(unit)
+
+		return env.SentientSystems_UnitAction(0, unit.id, "priority_target", x, y), env
+	end
+
+	it("requests the command with the tile of an escort", function()
+		local result, env = Run(READY, 22, 20)
+
+		assert.equal("{\"ok\":true}", result)
+		assert.same({
+			{
+				unit = CROSSBOW.id,
+				command = env.UnitCommandTypes.PRIORITY_TARGET,
+				parameters = { [env.UnitCommandTypes.PARAM_X] = 22, [env.UnitCommandTypes.PARAM_Y] = 20 },
+			},
+		}, env.requests)
+	end)
+
+	it("says the unit has no moves left", function()
+		assert.equal(Failed("The unit has no moves left."), (Run(With(READY, { moves = 0 }), 22, 20)))
+	end)
+
+	it("says no tile has a unit to pick out", function()
+		local none = With(READY, { airTargets = { priority_target = { { x = 21, y = 20, target = false } } } })
+		local reason = "No tile in range has a unit to pick out. Only some units, such as spec ops and air units, can pick a priority target."
+
+		assert.equal(Failed(reason), (Run(none, 22, 20)))
+	end)
+
+	it("lists the tiles that have one for another tile", function()
+		assert.equal(Failed("That tile isn't one the unit can pick a priority target on. The nearest that are (22, 20)."), (Run(READY, 21, 20)))
+	end)
+
+	it("fails when the game lists the tile but won't start it", function()
+		assert.equal(Failed("The game won't start that priority target."), (Run(With(READY, { canNow = {} }), 22, 20)))
+	end)
+end)

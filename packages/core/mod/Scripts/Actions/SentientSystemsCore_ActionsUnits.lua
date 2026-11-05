@@ -30,7 +30,7 @@ local function GetMoveFailure(playerID, unit, x, y)
 
 	-- Air units deploy or attack instead of moving. See Civ6Common.lua.
 	if GameInfo.Units[unit:GetUnitType()].Domain == "DOMAIN_AIR" then
-		return "Air units can't move with this action."
+		return "Air units can't move. They rebase, deploy, or attack instead."
 	end
 
 	if unit:GetMovesRemaining() <= 0 then
@@ -96,6 +96,13 @@ end
 
 SentientSystems_Include("SentientSystemsCore_ActionsUnitStances")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitTiles")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitJobs")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitProduction")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitUpgrade")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitFormations")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitTileOrders")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitAir")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitTransport")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitAttacks")
 
 -- Returns the names of the unit actions, sorted, for the reason an action name
@@ -113,8 +120,8 @@ local function GetActionNames()
 end
 
 -- Gives a unit an order and returns the result as JSON. type is the promotion
--- to take for promote, and the improvement to build for improve. x and y are
--- for the actions that name a tile.
+-- to take for promote, the improvement to build for improve, and the route to
+-- build for build_road. x and y are for the actions that name a tile.
 function SentientSystems_UnitAction(playerID, unitID, action, x, y, type)
 	return SentientSystems_RunAction("UnitAction", function()
 		local unit = UnitManager.GetUnit(playerID, unitID)
