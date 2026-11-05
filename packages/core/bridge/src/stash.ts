@@ -60,12 +60,10 @@ async function readPieces(client: TunerClient, call: string): Promise<string> {
 	return pieces.join("");
 }
 
-// The text for one schema issue, with the field's path in front.
 function describeIssue(issue: z.core.$ZodIssue, what: string): string {
 	return `${issue.path.join(".") || `the ${what}`}: ${issue.message}`;
 }
 
-// The error for a failed read, with what the user can do about it.
 function explainFailure(error: unknown, what: string): string {
 	if (error instanceof TunerMissingStateError) {
 		return `The core mod's state ${CORE_STATE} isn't loaded. Turn on Sentient Systems Core in Additional Content, then load a game`;

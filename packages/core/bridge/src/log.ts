@@ -62,12 +62,10 @@ export function hideHome(record: LogRecord, home: string): LogRecord {
 	return Object.fromEntries(Object.entries(record).map(([key, value]) => [key, typeof value === "string" ? value.replace(pattern, "~") : value])) as LogRecord;
 }
 
-// Whether a logger at one level writes a record at another.
 export function writesLevel(loggerLevel: LogLevel, recordLevel: LogLevel): boolean {
 	return LOG_LEVELS.indexOf(recordLevel) <= LOG_LEVELS.indexOf(loggerLevel);
 }
 
-// The console line for a record, with the local 12-hour time in front.
 export function formatConsole(record: LogRecord): string {
 	return `${new Date(record.time).toLocaleTimeString("en-US")}  ${CONSOLE_LABELS[record.level]}${record.msg}`;
 }

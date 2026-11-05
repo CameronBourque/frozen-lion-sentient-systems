@@ -46,7 +46,6 @@ const ending = "(?:(ok)|error:([\\s\\S]*)|state:(.*))";
 const beginPattern = new RegExp(`^${prefix}@@ss:begin:${id}$`);
 const endPattern = new RegExp(`^${prefix}@@ss:end:${id}:${ending}$`);
 
-// Returns undefined for a line that isn't a marker.
 export function parseMarker(text: string): Marker | undefined {
 	const begin = beginPattern.exec(text);
 

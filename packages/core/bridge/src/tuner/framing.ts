@@ -88,7 +88,6 @@ export class FrameDecoder {
 	}
 }
 
-// "O\0hello\0" becomes ["O", "hello"].
 function splitStrings(payload: Buffer): string[] {
 	// Without the null, the last string would be dropped with no sign that
 	// anything was lost.

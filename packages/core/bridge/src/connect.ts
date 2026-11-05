@@ -26,7 +26,6 @@ async function callCore(client: TunerClient, logger: Logger, lua: string): Promi
 	lines.forEach((line) => readLine(line, logger));
 }
 
-// The warning for a failed call, with what the user can do about it.
 function explainFailure(error: unknown): string {
 	if (error instanceof TunerMissingStateError) {
 		return `The core mod's state ${CORE_STATE} isn't loaded. Turn on Sentient Systems Core in Additional Content, then load a game. The bridge checks again when it reconnects`;

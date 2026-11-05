@@ -42,7 +42,6 @@ describe("readTechTree and readCivicTree", () => {
 		game.onCommand = (_stateIndex, lua) => (lua in results ? results[lua] : {});
 	}
 
-	// Answers the stash with one piece that holds json.
 	function stash(json: string): void {
 		answer({ [STASH]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [json] } });
 	}

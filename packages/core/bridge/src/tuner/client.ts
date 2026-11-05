@@ -324,8 +324,6 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 	}
 }
 
-// ["0", "Main State", "119", "InGame"] becomes [{ index: 0, name: "Main State"
-// }, { index: 119, name: "InGame" }].
 export function parseStates(strings: readonly string[]): LuaState[] {
 	const states: LuaState[] = [];
 

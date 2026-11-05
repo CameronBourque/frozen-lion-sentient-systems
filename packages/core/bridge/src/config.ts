@@ -47,7 +47,6 @@ export function parseConfig(text: string): ConfigResult {
 		: { ok: false, errors: parsed.error.issues.flatMap(describeIssue) };
 }
 
-// The text for one schema issue, with the field's path in front.
 function describeIssue(issue: z.core.$ZodIssue): string[] {
 	const path = issue.path.join(".");
 

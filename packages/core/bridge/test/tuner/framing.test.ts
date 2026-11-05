@@ -5,7 +5,6 @@ import { describe, expect, test } from "vitest";
 import { encodeFrame, FrameDecoder, FrameError, MAX_PAYLOAD_BYTES, Tag } from "../../src/tuner/framing.js";
 import { appReply } from "./captured.js";
 
-// Turns a dump such as "05000000 04000000 4150503a00" into bytes.
 function hex(dump: string): Buffer {
 	return Buffer.from(dump.replaceAll(" ", ""), "hex");
 }
