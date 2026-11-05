@@ -1,7 +1,6 @@
 // Builds the bridge into one executable in dist/, for the release workflow to
-// upload. Usage: npm run build:exe --workspace packages/core/bridge esbuild
-// bundles src/main.ts and its dependencies into build/main.cjs, and Node SEA
-// turns that file into the executable that sea-config.json names.
+// upload. esbuild bundles src/main.ts into build/main.cjs, and Node SEA turns
+// that file into the executable that sea-config.json names.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
