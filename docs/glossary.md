@@ -28,12 +28,14 @@ The one name for each thing in this project, and what it means. Use these names 
 | Log record | One entry in the bridge's log: the time, the level, a fixed event name, a message, and any fields. A log file holds one record on each line, as JSON | [logs.md](design/core/logs.md) |
 | Lua state | One Lua environment in the running game, such as `InGame` or `GameCore_Tuner`. The tuner lists the states and runs Lua in one of them. Use "context" only for the `.modinfo` `Context` attribute | [lua/contexts.md](findings/lua/contexts.md) |
 | Marker wrapper | The Lua the tuner client puts around each command. It prints `@@ss:begin:<id>` and `@@ss:end:<id>:<result>`, so the bridge knows which output belongs to which command | [tuner/commands.md](findings/tuner/commands.md#probe-results) |
+| Model tier | One of three levels of model, light, standard, and strong, that model routing picks for a model turn. Each tier is an operation in `models.yaml` | [model-routing.md](design/decision-support/model-routing.md#tiers) |
 | MVP | The minimum viable product: one agent finishes a full single-player game against the native AI. It is phase 1 | [phase-1/](roadmap/phase-1/README.md) |
 | Native AI | The game's built-in computer players | [slot-type.md](design/agents/slot-type.md) |
 | Opening book | A tree of plans for the first turns of a game. The agent picks an opening that fits its personality and start, and the opening branches as it learns more | [opening-books.md](design/decision-support/opening-books.md) |
 | Personality | A file that sets an agent's priorities, behavior rules, and narrator voice | [knowledge-files.md](design/knowledge-files.md#layers) |
 | Phase | One stage of the roadmap, with one gate, in `roadmap/phase-N/`. Write "phase 0" in lowercase in running text | [roadmap/](roadmap/README.md) |
 | Request function | A game function, such as `UnitManager.RequestOperation`, that asks the engine to do an action. The engine checks that the action is legal | [game-api.md](findings/game-api.md) |
+| Significance score | The bridge's score for how much a model turn matters, from its wake triggers, the decisions waiting, and the scoreboard. It sets the model tier | [model-routing.md](design/decision-support/model-routing.md#significance-score) |
 | Single executable application (SEA) | Node's way to build one executable that holds the Node runtime and a bundled program. The bridge ships as one | [build-tooling.md](findings/build-tooling.md) |
 | Spectator mode | A game setup option for agent-only games that lets you watch agents play | [cover-and-spectator.md](design/agents/cover-and-spectator.md#spectator-mode) |
 | Standing order | A multi-turn plan, such as a build list or a unit goal, that plain code in the bridge carries out each turn until it finishes or the agent cancels it | [standing-orders.md](design/decision-support/standing-orders.md#orders) |
