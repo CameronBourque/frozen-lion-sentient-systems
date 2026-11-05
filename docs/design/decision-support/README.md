@@ -9,3 +9,4 @@ Code and formats that narrow an agent's choices and cut its token use. The agent
 | [end-turn-check.md](end-turn-check.md) | The check for blockers and unused resources when the agent calls `end_turn` |
 | [opening-books.md](opening-books.md) | Opening books: branching plans for the first turns, picked by personality and start |
 | [model-routing.md](model-routing.md) | Model routing: the model tier for each turn, the significance score, and escalation |
+| [map-format.md](map-format.md) | Candidate formats for the map, from JSON tiles to region summaries, and the map quiz that picks one |
