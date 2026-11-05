@@ -1,6 +1,6 @@
 # Game actions
 
-Status: open. Moving a unit, checking its route, and ending the turn are confirmed in a running game. The other actions are not yet looked at.
+Status: open. Moving a unit, checking its route, the unit orders, and ending the turn are confirmed in a running game. The other actions are not yet looked at.
 
 The game calls the action API wraps, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](game-api.md). The core mod's result format is in [in-game-lua.md](../design/core/in-game-lua.md).
 
@@ -71,6 +71,18 @@ The call returned `{1}` for a tile inside the borders of a player at peace, and 
 
 A request sent straight to `RequestOperation`, as the core mod does, fires no event and opens no dialog, so our move checks for the war itself and refuses with a reason. Confirmed in files.
 
+### Unit orders
+
+`UnitPanel.lua` lists the orders. Fortify, sleep, skip turn, alert, and heal are unit operations, and wake, delete, and promote are unit commands. Confirmed in files. The panel checks an operation loosely first, with `CanStartOperation(unit, hash, nil, true)`, which fails only when the unit could never do it. It then checks for real, with `CanStartOperation(unit, hash, nil, false, OperationResultsTypes.NO_TARGETS)`. Commands use `CanStartCommand(unit, command, true)` and then `(unit, command, false)`. Confirmed on Windows on 2026-11-04.
+
+- `UnitOperationTypes` has no `SLEEP`, `SKIP_TURN`, or `HEAL`, so the value is nil and the check returns `false`. The panel reads each hash from `GameInfo.UnitOperations["UNITOPERATION_SLEEP"].Hash`. `UnitOperationTypes.FORTIFY` and `ALERT` exist, and the hash from `GameInfo` matches them.
+- The checks gave no failure reasons for these orders. `FAILURE_REASONS` was empty every time.
+- `UnitManager.GetActivityType(unit)` returns `ActivityTypes.ACTIVITY_AWAKE`, `SLEEP`, `HOLD` (skip turn), `SENTRY` (fortified or on alert), or `OPERATION`. A unit that isn't awake refused fortify, sleep, and skip until `UnitCommandTypes.WAKE` ran. A unit on alert still accepted alert.
+- Fortify made the unit's activity `OPERATION` with 0 fortify turns, and the unit refused wake and sleep until the turn changed. A trader on its route was `OPERATION` too, and refused every order.
+- Sleep was allowed for an air unit and refused for land units that can fortify.
+- `UnitManager.CanStartCommand(unit, UnitCommandTypes.PROMOTE, true, true)` returns the promotions in `UnitCommandResults.PROMOTIONS`. `RequestCommand(unit, PROMOTE, { [UnitCommandTypes.PARAM_PROMOTION_TYPE] = index })` took the promotion, with the `GameInfo.UnitPromotions` index. A second request for the same promotion found none to pick.
+- `RequestCommand(unit, UnitCommandTypes.DELETE)` removed a knight at once, with no dialog. The UI asks "are you sure" in `OnPromptToDeleteUnit` first, and has no call to answer for it.
+
 ### Ending the turn
 
 `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` ends the turn. It's in `Base/Assets/UI/ActionPanel.lua` at line 512. The base UI calls it in five places. Confirmed in files. Sent from `SentientSystemsCore_UI` in single player, it ended the turn, and the next `AGENT_TURN` line came 3 s later. Confirmed on Windows on 2026-10-23.
@@ -107,7 +119,8 @@ The bridge ran these steps in a single-player game, with one city and one unit.
 | `GetMoveToPathEx` for a reachable tile 9 away, and for a mountain | `SentientSystemsCore_UI` | 10 plots ending at the target with 4 turns, and an empty `plots` | 2026-11-04 |
 | `IsAttackChangeWarState` for a tile in the borders of a player at peace, and for the tiles around it | `SentientSystemsCore_UI` | `{1}`, and empty lists | 2026-11-04 |
 | `SentientSystems_MoveUnit` for a tile 2 away | `SentientSystemsCore_UI` | `ok`. The scout moved one tile and stopped with 0 moves | 2026-11-04 |
+| `SentientSystems_UnitAction` for fortify, skip, wake, promote, and delete on a knight and a caravel | `SentientSystemsCore_UI` | Each took effect. Delete removed the knight | 2026-11-04 |
 | `Game.GetCurrentGameTurn()`, `UI.CanEndTurn()`, and `GetFirstEndTurnBlocking` | `SentientSystemsCore_UI` | Turn 1, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 | `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` | `SentientSystemsCore_UI` | The turn ended. `AGENT_TURN 0` came 3 s later, and the same three calls returned turn 2, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23, and routes and the war test on 2026-11-04.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23, and routes, the war test, and the unit orders on 2026-11-04.

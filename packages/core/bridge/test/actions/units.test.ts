@@ -2,12 +2,14 @@
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { moveUnit } from "../../src/actions/units.js";
+import { moveUnit, unitAction } from "../../src/actions/units.js";
 import { CORE_STATE } from "../../src/connect.js";
 import { TunerClient } from "../../src/tuner/client.js";
 import { FakeGame } from "../tuner/fake-game.js";
 
-describe("moveUnit", () => {
+const FAILED = "{\"ok\":false,\"reason\":\"The unit has no moves left.\"}";
+
+describe("unit actions", () => {
 	let game: FakeGame;
 	let client: TunerClient;
 
@@ -24,12 +26,29 @@ describe("moveUnit", () => {
 		await game.close();
 	});
 
-	test("asks the core mod to move the player's unit to the tile", async () => {
-		const stash = "SentientSystems_Stash(SentientSystems_MoveUnit(0, 196608, 11, 10))";
+	// Answers the stash of the call with one piece that holds json.
+	function answer(call: string, json: string): void {
+		const stash = `SentientSystems_Stash(${call})`;
 
-		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":false,\"reason\":\"The unit has no moves left.\"}"] } })[lua] ?? {};
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [json] } })[lua] ?? {};
+	}
+
+	test("moveUnit asks the core mod to move the player's unit to the tile", async () => {
+		answer("SentientSystems_MoveUnit(0, 196608, 11, 10)", FAILED);
 
 		expect(await moveUnit(client, 0, 196608, 11, 10)).toEqual({ ok: false, reason: "The unit has no moves left." });
-		expect(game.commands[0]?.lua).toBe(stash);
+		expect(game.commands[0]?.lua).toBe("SentientSystems_Stash(SentientSystems_MoveUnit(0, 196608, 11, 10))");
+	});
+
+	test("unitAction asks the core mod for a stance", async () => {
+		answer("SentientSystems_UnitAction(0, 6160397, \"fortify\", nil, nil, nil)", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 6160397, { action: "fortify" })).toEqual({ ok: true });
+	});
+
+	test("unitAction passes a promotion as text, with its quotes escaped", async () => {
+		answer("SentientSystems_UnitAction(0, 5636113, \"promote\", nil, nil, \"PROMOTION_\\\"HULL\")", FAILED);
+
+		expect(await unitAction(client, 0, 5636113, { action: "promote", promotion: "PROMOTION_\"HULL" })).toEqual({ ok: false, reason: "The unit has no moves left." });
 	});
 });
