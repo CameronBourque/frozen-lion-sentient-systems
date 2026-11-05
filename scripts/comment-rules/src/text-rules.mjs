@@ -14,6 +14,15 @@ export const TEXT_RULES = [
 		},
 	},
 	{
+		name: "example",
+		// Tests hold examples. A phrase that introduces a quoted or code
+		// example fails, and one that names a kind of thing stays. A period
+		// ends the search, so a later sentence can quote.
+		find(text) {
+			if (/\b(?:such as|for example|for instance)\b[^."`]*["`]/i.test(text)) return "comment gives an example; write it as a test instead";
+		},
+	},
+	{
 		name: "json-shape",
 		// The zod schemas hold the JSON shapes, so a comment links to one. An
 		// object that opens with a quoted key, or a quoted key before a colon,

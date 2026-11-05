@@ -26,6 +26,28 @@ describe("line-number", () => {
 	});
 });
 
+describe("example", () => {
+	const { find } = rule("example");
+
+	test.each([
+		["such as a quote", '-- has a type such as "?1" and a status'],
+		["for example a code span", "// for example `npm run state`, which prints it"],
+		["for instance a quote", '-- for instance "Lua" is a proper noun'],
+		["any case", '-- Such as "this"'],
+	])("catches %s", (_, comment) => {
+		expect(find(comment)).toContain("test");
+	});
+
+	test.each([
+		["such as a name", "-- a district type, such as DISTRICT_CAMPUS, goes in"],
+		["no phrase", '-- the "units" field holds the list'],
+		["a quote in a later sentence", '-- a stance, such as fortify. It says "done"'],
+		["a phrase with nothing after it", "-- a kind of unit, such as"],
+	])("lets through %s", (_, comment) => {
+		expect(find(comment)).toBeUndefined();
+	});
+});
+
 describe("json-shape", () => {
 	const { find } = rule("json-shape");
 
