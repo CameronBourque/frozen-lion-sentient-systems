@@ -64,7 +64,7 @@ function proseOnly(line) {
 const smallWords = new Set(["a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "into", "nor", "of", "on", "or", "over", "per", "the", "to", "up", "via", "vs", "with"]);
 
 // Every word that the docs write in lowercase somewhere. A capitalized word
-// that is never written in lowercase, such as "Lua", is a proper noun.
+// that is never written in lowercase is a proper noun.
 function lowercaseWords(repo) {
 	const words = new Set();
 
@@ -76,8 +76,8 @@ function lowercaseWords(repo) {
 }
 
 // A heading is in Title Case when every ordinary word after the first is
-// capitalized. Small words such as "of", proper nouns, acronyms, and names with
-// inner capitals such as "FireTuner" don't count.
+// capitalized. Small words, proper nouns, acronyms, and names with inner
+// capitals don't count.
 function isTitleCase(heading, lowercase) {
 	const plain = heading
 		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1") // A link keeps only its text.

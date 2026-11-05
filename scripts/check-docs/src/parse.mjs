@@ -37,7 +37,7 @@ export function problem(file, line, rule, message) {
 // spaces, so the text rules skip code. Line numbers and columns stay the same.
 function blankCode(lines) {
 	const text = [];
-	let fence = null; // The open fence, such as "```", while inside a code block.
+	let fence = null; // The open fence while inside a code block.
 
 	for (const line of lines) {
 		const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1];
