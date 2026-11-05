@@ -54,7 +54,6 @@ return function(env, world, ctx)
 	ctx.OnUnit(function(unit, data)
 		local experience = data.experience
 
-		-- Returns the GameInfo indexes of a list of promotion types.
 		local function Indexes(types)
 			local list = {}
 

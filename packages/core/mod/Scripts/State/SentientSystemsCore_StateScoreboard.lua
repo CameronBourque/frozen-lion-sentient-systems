@@ -1,9 +1,6 @@
--- The scoreboard section of the state: each living major player's score, as the
--- Score tab of World Rankings shows it, and the leader panel's numbers for the
--- player and each player they have met. SentientSystemsCore_State.lua loads
--- this file. The shape is in bridge/src/state/scoreboard.ts. The numbers follow
--- ViewScore in WorldRankings.lua and UpdateStatValues in DiplomacyRibbon.lua
--- and DiplomacyRibbon_Expansion2.lua.
+-- The scoreboard section: each major player's score and the leader panel's
+-- numbers. Follows ViewScore in WorldRankings.lua and UpdateStatValues in
+-- DiplomacyRibbon.lua. Shape: bridge/src/state/scoreboard.ts.
 
 -- Rounds to the nearest whole number, as the game's Round does.
 local function Round(number)

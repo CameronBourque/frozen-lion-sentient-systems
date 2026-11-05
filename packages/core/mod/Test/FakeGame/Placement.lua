@@ -71,7 +71,6 @@ return function(env, world, ctx)
 	end
 
 	for index, plot in pairs(plots) do
-		-- The bonus of a district on the plot, for a YieldTypes value.
 		function plot.GetAdjacencyYield(_, _, _, districtIndex, yieldType)
 			local adjacency = (adjacencyAt[index] or {})[districtIndex] or {}
 
@@ -104,7 +103,6 @@ return function(env, world, ctx)
 			buildingsByHash[hashes[building.type]] = building
 		end
 
-		-- Returns the plot indexes of a list of tiles.
 		local function PlotIndexes(tiles)
 			local list = {}
 

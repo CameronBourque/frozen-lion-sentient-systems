@@ -27,7 +27,6 @@ describe("TunerClient", () => {
 		await once(client, "connected");
 	}
 
-	// How many frames with this tag the fake has received.
 	function sent(tag: number): number {
 		return game.received.filter((frame) => frame.tag === tag).length;
 	}
@@ -163,7 +162,6 @@ describe("TunerClient.run", () => {
 		await game.close();
 	});
 
-	// Resolves once the fake has received `count` commands in all.
 	async function commandCount(count: number): Promise<void> {
 		await vi.waitFor(() => expect(game.commands).toHaveLength(count));
 	}

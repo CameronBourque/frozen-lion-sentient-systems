@@ -1,15 +1,6 @@
-// The phase 0 gate: it lists your cities and units from the bridge, checks a
-// move into deep water, and moves one unit, following the method in
-// docs/findings/game-api.md. It prints each call, the Lua state it ran in, and
-// what came back, for the results table there. Run it with `npm run gate`, with
-// a game loaded and the core mod on. Options: `--unit <id>` picks the unit to
-// move, `--end-turn` ends the turn after the move and waits for the next turn
-// signal, `--read-only` prints the turn, cities, and units and stops before any
-// move, for the online test in docs/findings/tuner/multiplayer.md, and `--port
-// <port>` sets another port, such as `npm run gate -- --unit 131073
-// --end-turn`. In PowerShell, write the `--` as `'--'`, as docs/rules/code.md
-// says. Throwaway code: this file goes when the phase 1 action API does the
-// same from the bridge executable, as docs/roadmap/phase-1/README.md says.
+// The phase 0 gate: lists your cities and units, checks a move into deep water,
+// and moves one unit (docs/findings/game-api.md). Run it with `npm run gate`,
+// with a game loaded. Throwaway: it goes with the phase 1 action API.
 
 import { once } from "node:events";
 import { parseArgs } from "node:util";

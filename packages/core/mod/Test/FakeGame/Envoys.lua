@@ -83,7 +83,6 @@ return function(env, world, ctx)
 		end
 	end)
 
-	-- The quests from data.minor.quests, by the player they are for.
 	env.Game.GetQuestsManager = function()
 		local function Find(playerID, cityStateID, index)
 			local minor = world.players[cityStateID].minor or {}

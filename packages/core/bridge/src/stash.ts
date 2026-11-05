@@ -1,8 +1,6 @@
-// Reads JSON that the core mod builds and keeps in pieces, such as the state
-// and the choices. The tuner gives no reply to a command whose output passes
-// about 2 MiB, so the core mod's SentientSystems_Stash keeps the JSON in
-// pieces, and the bridge reads one piece per command and joins them.
-// docs/design/core/in-game-lua.md describes the stash.
+// Reads JSON that the core mod builds in pieces. The tuner gives no reply to a
+// command whose output passes about 2 MiB, so the bridge reads one piece per
+// command and joins them. docs/design/core/in-game-lua.md describes the stash.
 
 import type { z } from "zod";
 import { CORE_STATE } from "./connect.js";
@@ -12,11 +10,8 @@ export type StashResult<T> =
 	| { ok: true; value: T; bytes: number }
 	| { ok: false; error: string };
 
-// Runs the Lua call that builds the JSON, such as SentientSystems_GetState(0),
-// reads the JSON through the stash, and checks it against the schema. what
-// names the JSON in errors, such as "state". Every failure, from the tuner, the
-// game, the JSON, or the schema, comes back as an error that says what went
-// wrong, instead of an exception.
+// Runs the call, reads its JSON through the stash, and checks the schema. what
+// names the JSON in errors. A failure comes back as an error, not an exception.
 export async function readStash<T>(client: TunerClient, call: string, schema: z.ZodType<T>, what: string): Promise<StashResult<T>> {
 	let json: string;
 
@@ -65,13 +60,10 @@ async function readPieces(client: TunerClient, call: string): Promise<string> {
 	return pieces.join("");
 }
 
-// The text for one schema issue, with the field's path in front, such as
-// "cities.0.name: Invalid input".
 function describeIssue(issue: z.core.$ZodIssue, what: string): string {
 	return `${issue.path.join(".") || `the ${what}`}: ${issue.message}`;
 }
 
-// The error for a failed read, with what the user can do about it.
 function explainFailure(error: unknown, what: string): string {
 	if (error instanceof TunerMissingStateError) {
 		return `The core mod's state ${CORE_STATE} isn't loaded. Turn on Sentient Systems Core in Additional Content, then load a game`;

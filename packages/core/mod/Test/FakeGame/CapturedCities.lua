@@ -104,8 +104,6 @@ return function(env, world, ctx)
 				return false
 			end
 
-			-- The warmonger points of keeping or razing, from
-			-- data.captured.warmonger.
 			diplomacy.ComputeCityWarmongerPoints = function(_, _, _, raze)
 				local warmonger = data.captured.warmonger or {}
 

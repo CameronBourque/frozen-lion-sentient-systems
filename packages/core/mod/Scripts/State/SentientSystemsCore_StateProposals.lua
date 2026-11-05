@@ -1,6 +1,6 @@
--- The proposals section of the state: the deals that other players have
--- put to the player. The shape is in bridge/src/state/proposals.ts. The
--- checks follow DiplomacyDealView.lua.
+-- The proposals section: the deals other players have put to the player.
+-- Follows DiplomacyDealView.lua.
+-- Shape: bridge/src/state/proposals.ts.
 
 -- The deal item types, by the name of each in DealItemTypes.
 local KINDS = {
@@ -21,7 +21,6 @@ local CEDE_OCCUPIED = 1
 -- The deal items that the screen names with the game's own text.
 local NAMED = { city = true, greatWork = true, captive = true, unit = true, technology = true }
 
--- The kind of a deal item type, or nil for one that isn't known.
 local function GetKind(itemType)
 	for name, kind in pairs(KINDS) do
 		if DealItemTypes[name] == itemType then
@@ -53,7 +52,6 @@ local function AddAgreement(entry, item)
 	end
 end
 
--- Returns one deal item, as the screen shows it.
 local function GetItem(item, deal)
 	local kind = GetKind(item:GetType())
 	local parent = deal:GetItemParent(item)
@@ -89,7 +87,6 @@ local function GetItem(item, deal)
 	return entry
 end
 
--- Returns the items of a deal from the player and from the other player.
 local function GetItems(deal, playerID)
 	local asks, offers = {}, {}
 

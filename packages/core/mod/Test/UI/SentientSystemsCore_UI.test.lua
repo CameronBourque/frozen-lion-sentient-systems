@@ -4,8 +4,6 @@ local MOD_ID = "5D4B5856-E71F-492C-A434-A0938AF49451"
 
 local env
 
--- A player with an ID, whether a human plays it, and whether its turn is
--- active.
 local function Player(id, isHuman, isTurnActive)
 	return {
 		GetID = function()
@@ -20,7 +18,6 @@ local function Player(id, isHuman, isTurnActive)
 	}
 end
 
--- Sets the living players, by ID.
 local function SetPlayers(players)
 	env.Players = players
 	env.PlayerManager.GetAlive = function()
@@ -34,7 +31,6 @@ local function SetPlayers(players)
 	end
 end
 
--- Calls each handler that the script added to the event.
 local function Fire(event, ...)
 	for _, handler in ipairs(env.Events[event].handlers) do
 		handler(...)

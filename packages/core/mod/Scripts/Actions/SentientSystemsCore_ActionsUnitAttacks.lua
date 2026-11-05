@@ -72,7 +72,6 @@ local function GetAttackKind(unit)
 	return "melee"
 end
 
--- Returns why the unit can't attack x, y whatever its kind, or nil.
 local function GetAttackFailure(playerID, unit, x, y)
 	if x == nil or y == nil then
 		return "An attack needs the tile to hit."

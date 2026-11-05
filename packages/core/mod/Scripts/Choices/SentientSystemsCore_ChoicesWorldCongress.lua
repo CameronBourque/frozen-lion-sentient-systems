@@ -1,10 +1,6 @@
--- The World Congress choice: what the player decides in a session of the World
--- Congress, and looks at when one has ended, as the congress screen shows it.
--- SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/world-congress.ts. The checks follow PopulateResolutions,
--- PopulateProposals, PopulateReview, PopulateActiveEffects, and
--- PopulateEmergencyProposals in WorldCongressPopup.lua. Checked in a running
--- game for a Special Session only.
+-- The World Congress choice, as the congress screen shows it. Follows
+-- the Populate* functions in WorldCongressPopup.lua.
+-- Shape: bridge/src/choices/world-congress.ts.
 
 -- Returns a player's name as the game shows it: the leader's name once the
 -- player has met them, and the unmet player text before. See
@@ -17,7 +13,6 @@ local function GetPlayerName(playerID, localPlayerID)
 	return Locale.Lookup(PlayerConfigurations[playerID]:GetPlayerName())
 end
 
--- Returns a list as a sorted list of its numbers.
 local function Numbers(list)
 	local numbers = {}
 

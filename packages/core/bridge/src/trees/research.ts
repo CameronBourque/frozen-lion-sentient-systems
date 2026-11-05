@@ -1,9 +1,6 @@
-// Reads one player's tech tree or civic tree from the core mod, as the tree
-// screen shows it, so the agent can plan a route through the tree. The core mod
-// builds it as JSON in a call of its own, in
-// Scripts/Trees/SentientSystemsCore_TreesResearch.lua, and the bridge reads it
-// through the stash, in stash.ts. The civic tree leaves out the screen's extra
-// icons for envoys and governor titles.
+// Reads one player's tech or civic tree from the core mod, as the tree screen
+// shows it, through the stash in stash.ts. The civic tree leaves out the
+// screen's extra icons for envoys and governor titles.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -53,8 +50,6 @@ export const TREE = z.object({
 
 export type Tree = z.infer<typeof TREE>;
 
-// Reads the tech tree of the player with ID playerID. Every failure comes back
-// as an error that says what went wrong, instead of an exception.
 export function readTechTree(client: TunerClient, playerID: number): Promise<StashResult<Tree>> {
 	return readStash(client, `SentientSystems_GetTechTree(${playerID})`, TREE, "tech tree");
 }

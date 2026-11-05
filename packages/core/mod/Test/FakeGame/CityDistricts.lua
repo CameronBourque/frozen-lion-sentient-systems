@@ -4,7 +4,6 @@
 return function(env, world, ctx)
 	local indexes, YIELD_NAMES, List, Layout = ctx.indexes, ctx.YIELD_NAMES, ctx.List, ctx.Layout
 
-	-- The DefenseTypes values for a district's garrison and walls.
 	local DEFENSE_TYPES = { DISTRICT_GARRISON = 0, DISTRICT_OUTER = 1 }
 
 	env.DefenseTypes = DEFENSE_TYPES
@@ -30,9 +29,6 @@ return function(env, world, ctx)
 				IsPillaged = function()
 					return district.pillaged == true
 				end,
-				-- The district's yield and adjacency bonus for a
-				-- GameInfo.Yields index, from district.yields and
-				-- district.adjacency, which map a YieldTypes name to an amount.
 				GetYield = function(_, yieldIndex)
 					return (district.yields or {})[YIELD_NAMES[yieldIndex]] or 0
 				end,

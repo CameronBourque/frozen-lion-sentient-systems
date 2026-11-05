@@ -1,8 +1,5 @@
-// The schema for the World Congress choice: what the player decides in a
-// session of the World Congress, and looks at when one has ended, as the
-// congress screen shows it. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesWorldCongress.lua. The results of
-// a session's proposals aren't included.
+// The schema for the World Congress choice, as the congress screen shows it.
+// The results of a session's proposals aren't included.
 
 import { z } from "zod";
 

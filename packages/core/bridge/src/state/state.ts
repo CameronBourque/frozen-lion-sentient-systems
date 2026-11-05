@@ -1,10 +1,6 @@
-// Reads one player's state from the core mod: what blocks their turn, their
-// cities, units, revealed tiles, the rivals they can see, their religion, their
-// envoys, the great people on offer, their governors, the top bar's numbers,
-// the scores, and the victories. The core mod builds the state as JSON, and the
-// bridge reads it through the stash, in stash.ts. Each section's schema has its
-// own file in this folder, as each section of the core mod's Lua does, and
-// holds the section's shape.
+// Reads one player's state from the core mod, as JSON through the stash in
+// stash.ts. Each section's schema has its own file in this folder, as each
+// section of the core mod's Lua does.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -50,8 +46,6 @@ export const STATE = z.object({
 
 export type State = z.infer<typeof STATE>;
 
-// Reads the state of the player with ID playerID. Every failure comes back as
-// an error that says what went wrong, instead of an exception.
 export function readState(client: TunerClient, playerID: number): Promise<StashResult<State>> {
 	return readStash(client, `SentientSystems_GetState(${playerID})`, STATE, "state");
 }

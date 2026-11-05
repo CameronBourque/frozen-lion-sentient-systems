@@ -47,8 +47,6 @@ return function(env, world, ctx)
 		function player.GetCulture()
 			local culture = GetCulture()
 
-			-- The tourism of a plot, from the tile that a city of the player
-			-- owns there.
 			function culture.GetTourismAt(_, plotIndex)
 				for _, city in ipairs(data.cities or {}) do
 					for _, tile in ipairs(city.tiles or {}) do

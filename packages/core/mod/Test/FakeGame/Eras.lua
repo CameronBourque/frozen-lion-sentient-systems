@@ -35,7 +35,6 @@ return function(env, world, ctx)
 		end
 	end
 
-	-- A player's age, from its era.age.
 	local function AgeOf(id)
 		local era = ((world.players or {})[id] or {}).era
 

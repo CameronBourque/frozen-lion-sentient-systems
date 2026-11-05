@@ -1,8 +1,5 @@
 // Reads one player's governor tree from the core mod, as the Governors panel
-// shows it, so the agent can choose a governor to appoint and a promotion to
-// give. The core mod builds it as JSON in a call of its own, in
-// Scripts/Trees/SentientSystemsCore_TreesGovernors.lua, and the bridge reads it
-// through the stash, in stash.ts.
+// shows it, through the stash in stash.ts.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -51,7 +48,6 @@ export const GOVERNOR_TREE = z.object({
 
 export type GovernorTree = z.infer<typeof GOVERNOR_TREE>;
 
-// Reads the governor tree of the player with ID playerID.
 export function readGovernorTree(client: TunerClient, playerID: number): Promise<StashResult<GovernorTree>> {
 	return readStash(client, `SentientSystems_GetGovernorTree(${playerID})`, GOVERNOR_TREE, "governor tree");
 }

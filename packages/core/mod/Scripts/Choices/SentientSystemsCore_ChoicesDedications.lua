@@ -1,8 +1,6 @@
--- The dedication choice: the dedications the player may make for the era that
--- began, as the dedication popup offers them. SentientSystemsCore_Choices.lua
--- loads this file. The shape is in bridge/src/choices/dedications.ts. The
--- checks follow OnGameEraChanged and CreateCommemoration in
--- DedicationPopup.lua.
+-- The dedication choice, as the dedication popup offers it. Follows
+-- OnGameEraChanged and CreateCommemoration in DedicationPopup.lua.
+-- Shape: bridge/src/choices/dedications.ts.
 
 SentientSystems_Include("SentientSystemsCore_Eras")
 

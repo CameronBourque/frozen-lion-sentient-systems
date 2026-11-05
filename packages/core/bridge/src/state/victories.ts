@@ -1,8 +1,6 @@
-// The schema for the victories section of the state: how close each living
-// major player is to each victory, in the order the Overall tab of World
-// Rankings ranks them, with the numbers its icon tooltips show. The core mod
-// builds it in Scripts/State/SentientSystemsCore_StateVictories.lua. How each
-// tab was checked: docs/findings/state/victories.md.
+// The schema for the victories section of the state: how close each major
+// player is to each victory. How each tab was checked:
+// docs/findings/state/victories.md.
 
 import { z } from "zod";
 

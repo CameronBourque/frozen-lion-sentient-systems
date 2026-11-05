@@ -1,9 +1,6 @@
 // A stand-in for the game's tuner socket, for the connection and client tests.
-// It listens on a free local port and answers the handshake and commands the
-// way the capture and the probe show. It runs no Lua, so tests decide what each
-// command does. It does act out the marker wrapper from src/tuner/wrapper.ts:
-// it prints the markers, checks the state name the way ContextPtr:GetID()
-// would, and answers a command to a missing index with ERR:Invalid Lua State.
+// It runs no Lua, so tests decide what each command does, but it acts out the
+// marker wrapper from src/tuner/wrapper.ts.
 
 import { EventEmitter, once } from "node:events";
 import net from "node:net";

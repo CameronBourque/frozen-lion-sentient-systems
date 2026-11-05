@@ -1,9 +1,6 @@
-// The schemas for the government and policy choices: the player's government,
-// its policy slots, and the policy in each slot, as the government screen's My
-// Government tab shows them, the policies the player can slot, as its policy
-// catalog shows them, and every government, as its View Governments tab shows
-// them. The core mod builds them in
-// Scripts/Choices/SentientSystemsCore_ChoicesGovernment.lua.
+// The schemas for the government and policy choices, as the government
+// screen's My Government tab, policy catalog, and View Governments tab show
+// them.
 
 import { z } from "zod";
 

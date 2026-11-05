@@ -1,10 +1,6 @@
-// Prints one player's state, choices, tech tree, and civic tree from the
-// running game, as the agent will see them, and their sizes in bytes, with the
-// size of each section of the state and of the choices. Run it with `npm run
-// state`, with a game loaded. It reads the local player's. An argument such as
-// `npm run state -- 1` reads another player's. In PowerShell, write the `--` as
-// `'--'`, as docs/rules/code.md says. It exits with code 1 if any of them can't
-// be read.
+// Prints one player's state, choices, and trees as the agent will see them,
+// with their sizes in bytes. Run it with `npm run state`, with a game loaded.
+// Exits with code 1 if any can't be read.
 
 import { readChoices } from "../src/choices/choices.js";
 import { CORE_STATE } from "../src/connect.js";

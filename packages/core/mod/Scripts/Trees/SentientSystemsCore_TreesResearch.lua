@@ -1,9 +1,6 @@
--- Builds one player's tech tree or civic tree as JSON for the bridge, in a call
--- of its own, as the tree screen shows it, so the agent can plan a route
--- through the tree. It reads the tree from the running game, because the Tech
--- and Civic Shuffle mode changes it. See docs/design/core/in-game-lua.md. The
--- shape is in bridge/src/trees/research.ts. The checks follow GetCurrentData
--- and PopulateNode in TechTree.lua and CivicsTree.lua.
+-- Builds one player's tech or civic tree as JSON, read from the running game
+-- because Tech and Civic Shuffle changes it. Follows PopulateNode in
+-- TechTree.lua and CivicsTree.lua. Shape: bridge/src/trees/research.ts.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
@@ -179,7 +176,6 @@ local function PlayerProgress(tree, player)
 	return players
 end
 
--- Returns the tree of a kind for the player with ID playerID as JSON.
 local function GetTree(kindName, playerID)
 	local player = Players[playerID]
 

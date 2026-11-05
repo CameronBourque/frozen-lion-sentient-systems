@@ -9,7 +9,6 @@ local SAILING = {
 	unlocks = { "UNIT_GALLEY", "IMPROVEMENT_FISHING_BOATS" },
 }
 
--- Returns the tech choice JSON for player 0, whose techs are given.
 local function TechsWith(techs)
 	local env = Game.new()
 
@@ -19,7 +18,6 @@ local function TechsWith(techs)
 	return env.SentientSystems_GetChoices(0):match("\"techs\":(%b[])")
 end
 
--- Returns a copy of tech with the fields in changes.
 local function With(tech, changes)
 	local copy = {}
 
@@ -106,7 +104,6 @@ describe("SentientSystems_GetCivicChoices", function()
 		recommended = true,
 	}
 
-	-- Returns the civic choice JSON for player 0, whose civics are given.
 	local function CivicsWith(civics)
 		local env = Game.new()
 

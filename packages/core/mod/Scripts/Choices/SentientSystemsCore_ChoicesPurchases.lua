@@ -1,9 +1,6 @@
--- The purchase choice: what each of the player's cities can buy, as the
--- production panel's purchase tabs list it. SentientSystemsCore_Choices.lua
--- loads this file. The shape is in bridge/src/choices/purchases.ts. The checks
--- follow ComposeUnitForPurchase, ComposeBldgForPurchase, and
--- ComposeDistrictForPurchase in ProductionPanel.lua. The tiles to buy with gold
--- follow ShowPurchases in PlotInfo.lua.
+-- The purchase choice: what each city can buy, as the purchase tabs list it.
+-- Follows the Compose*ForPurchase functions in ProductionPanel.lua.
+-- Shape: bridge/src/choices/purchases.ts.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
@@ -75,7 +72,6 @@ local function PurchaseOption(city, purchase, params, hash, formation)
 	return option, results
 end
 
--- Returns the parameters that name an item and the yield to buy it with.
 local function PurchaseParams(param, hash, purchase)
 	local params = {}
 

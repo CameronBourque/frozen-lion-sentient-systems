@@ -8,7 +8,6 @@ return function(env, world, ctx)
 	env.GameInfo.Religions = ctx.TypedRows({}, "ReligionType")
 
 
-	-- Each belief in world.beliefs gets a row.
 	for _, belief in ipairs(world.beliefs or {}) do
 		AddRow("Beliefs", "BeliefType", belief.type)
 
@@ -20,7 +19,6 @@ return function(env, world, ctx)
 		row.tooMany = belief.tooMany
 	end
 
-	-- Each religion in world.religions gets a row.
 	for _, religion in ipairs(world.religions or {}) do
 		AddRow("Religions", "ReligionType", religion.type)
 
@@ -55,9 +53,6 @@ return function(env, world, ctx)
 	end
 
 	ctx.OnCity(function(city, data)
-		-- The religions in the city, from data.religions, each with type and
-		-- followers, and the majority religion, from data.majority, by their
-		-- GameInfo indexes.
 		city.GetReligion = function()
 			return {
 				GetMajorityReligion = function()
@@ -82,8 +77,6 @@ return function(env, world, ctx)
 		function player.GetReligion()
 			local religion = GetReligion()
 
-			-- The index of the player's pantheon belief, from data.pantheon, or
-			-- -1 for none.
 			function religion.GetPantheon()
 				return data.pantheon and indexes[data.pantheon] or -1
 			end
@@ -139,8 +132,6 @@ return function(env, world, ctx)
 			GetName = function(_, index)
 				return env.GameInfo.Religions[index].Name
 			end,
-			-- Each founded religion, with its index, founder, and belief
-			-- indexes.
 			GetReligions = function()
 				local religions = {}
 

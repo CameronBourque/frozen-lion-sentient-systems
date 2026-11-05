@@ -41,7 +41,6 @@ describe("Game.new", function()
 end)
 
 describe("the .modinfo file lists", function()
-	-- Returns the paths in a that b doesn't have.
 	local function Missing(a, b)
 		local have = {}
 		local missing = {}

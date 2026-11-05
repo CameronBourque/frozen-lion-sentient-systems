@@ -1,9 +1,6 @@
--- The production choice: what each of the player's cities can produce, as the
--- production panel lists it. SentientSystemsCore_Choices.lua loads this file.
--- The shape is in bridge/src/choices/production.ts. The checks follow GetData
--- in ProductionPanel.lua. The checks count the tiles from
--- SentientSystemsCore_Placement.lua, and the bridge reads the tiles themselves
--- with SentientSystems_GetPlacement.
+-- The production choice: what each city can produce, as the production panel
+-- lists it. Follows GetData in ProductionPanel.lua.
+-- Shape: bridge/src/choices/production.ts.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
@@ -21,7 +18,6 @@ local function CheckBlocked(buildQueue, params, option)
 	return results
 end
 
--- Returns the option to train a unit as a corps or an army, with its cost.
 local function FormationOption(buildQueue, row, formation, cost)
 	local option = { cost = cost, turns = buildQueue:GetTurnsLeft(row.Hash, formation) }
 
@@ -85,7 +81,6 @@ end
 local NO_SUITABLE_LOCATION_KEY = "LOC_DISTRICT_ZONE_NO_SUITABLE_LOCATION"
 local FLOODED_KEY = "LOC_DISTRICT_REPAIR_LOCATION_FLOODED"
 
--- Returns whether a list of failure reasons holds the reason.
 local function HasReason(reasons, reason)
 	for _, candidate in ipairs(reasons or {}) do
 		if candidate == reason then
@@ -178,8 +173,6 @@ local function GetDistrictOptions(city, purchasable)
 	return districts
 end
 
--- Returns the building or wonder option for a row, with its cost, turns,
--- progress, and repair.
 local function BuildingOption(buildQueue, row, pillaged)
 	local option = { type = row.BuildingType, cost = buildQueue:GetBuildingCost(row.Index), turns = buildQueue:GetTurnsLeft(row.Hash) }
 	local progress = buildQueue:GetBuildingProgress(row.Index)

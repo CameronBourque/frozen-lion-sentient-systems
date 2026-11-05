@@ -1,8 +1,6 @@
--- The income part of the player section: what the player makes each turn and
--- where it comes from, what the player pays, and the gold deals, as the Yields
--- tab of Reports shows them. SentientSystemsCore_StatePlayer.lua loads this
--- file. The shape is in bridge/src/state/income.ts. The checks follow GetData
--- and ViewYieldsPage in ReportScreen.lua.
+-- The income part of the player section, as the Yields tab of Reports shows
+-- it. Follows GetData and ViewYieldsPage in ReportScreen.lua.
+-- Shape: bridge/src/state/income.ts.
 
 -- The sources each yield's tooltip names, by the key they have in the state and
 -- the label that follows the amount in the game's English text, as in "+33 from
@@ -53,7 +51,6 @@ local function RoundNearest(number)
 	return math.floor(number * 10 + 0.5) / 10
 end
 
--- Escapes the characters of a text that a pattern reads as magic.
 local function Escape(text)
 	return (text:gsub("%p", "%%%0"))
 end
@@ -491,7 +488,6 @@ local function GetExpenses(treasury, units, deals, cities)
 	return expenses
 end
 
--- Returns the income section.
 function SentientSystems_GetIncomeState(player)
 	local treasury = player:GetTreasury()
 	local totals = {

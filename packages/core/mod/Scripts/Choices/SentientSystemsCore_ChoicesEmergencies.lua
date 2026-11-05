@@ -1,10 +1,6 @@
--- The emergency choice: the emergency the player has to look at, as the
--- emergency popup offers it. SentientSystemsCore_Choices.lua loads this file.
--- The shape is in bridge/src/choices/emergencies.ts. The checks follow
--- OnEmergencyAvailable and ShowEmergency in WorldCrisisPopup.lua and
--- ProcessEmergency_WorldCrisisPopup in WorldCrisisSupport.lua. Checked in a
--- running game against the popup of an ongoing emergency. The blocker's own
--- case, with join and reject, hasn't been seen.
+-- The emergency choice, as the emergency popup offers it. Follows
+-- OnEmergencyAvailable and ShowEmergency in WorldCrisisPopup.lua.
+-- Shape: bridge/src/choices/emergencies.ts.
 
 -- Returns the lines of a list of texts, as the popup shows them.
 local function Lines(list)

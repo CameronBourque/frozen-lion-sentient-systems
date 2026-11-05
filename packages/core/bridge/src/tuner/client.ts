@@ -1,9 +1,6 @@
-// The tuner protocol on top of a connection: the handshake, the Lua state list,
-// state lookup by name, and running Lua. Requests go out one at a time, through
-// one queue. Each command runs inside the marker wrapper from wrapper.ts, so
-// its output can be told apart from other prints.
-// docs/findings/tuner/protocol.md has the messages, and
-// docs/findings/tuner/commands.md has how the game runs commands.
+// The tuner protocol on top of a connection: the handshake, state lookup, and
+// running Lua through the marker wrapper in wrapper.ts, one request at a time.
+// docs/findings/tuner/protocol.md and commands.md have the details.
 
 import { EventEmitter } from "node:events";
 import { type ConnectionOptions, TunerConnection } from "./connection.js";
@@ -51,8 +48,7 @@ export class TunerStateError extends Error {
 
 // "connected" fires once the game answers the handshake, not when the socket
 // opens. "output" fires for each printed line that belongs to no command, such
-// as an event handler's print. The line keeps its state prefix, such as
-// "PlotInfo: ".
+// as an event handler's print. The line keeps its state prefix.
 export interface ClientEvents {
 	connected: [];
 	disconnected: [];
@@ -328,8 +324,6 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 	}
 }
 
-// ["0", "Main State", "119", "InGame"] becomes [{ index: 0, name: "Main State"
-// }, { index: 119, name: "InGame" }].
 export function parseStates(strings: readonly string[]): LuaState[] {
 	const states: LuaState[] = [];
 

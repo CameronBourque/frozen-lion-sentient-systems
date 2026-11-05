@@ -1,8 +1,6 @@
--- A fake of the game's Lua API for tests. It has only the calls the core mod
--- makes. The core here builds the shared GameInfo tables, a player's cities and
--- units, and the fake env. Each area of the game is a feature in FakeGame/,
--- which holds the docs for the world and player data it reads. A feature
--- registers with one line at the end of this file.
+-- A fake of the game's Lua API for tests, with only the calls the core mod
+-- makes. The core builds the shared GameInfo tables, cities, and units. Each
+-- area is a feature in FakeGame/ that registers at the end of this file.
 
 local FakeGame = {}
 
@@ -47,7 +45,6 @@ local function List(items)
 	}
 end
 
--- The width of the fake map, for plot indexes.
 local MAP_WIDTH = 100
 
 -- Returns the plot index of x and y, as Map.GetPlot(x, y):GetIndex() does.
@@ -65,7 +62,6 @@ local YIELD_ROWS = {
 	YIELD_FAITH = { Index = 5 },
 }
 
--- The YieldTypes values, as in the game.
 local YIELD_TYPES = { FOOD = 0, PRODUCTION = 1, GOLD = 2, SCIENCE = 3, CULTURE = 4, FAITH = 5 }
 
 -- The YieldTypes names by GameInfo.Yields index.
@@ -136,7 +132,6 @@ local function BuildCity(data, hashes, indexes, ownerID)
 	}
 end
 
--- A city with the calls that the features add to it.
 local function City(data, hashes, indexes, ownerID)
 	local city = BuildCity(data, hashes, indexes, ownerID)
 
@@ -195,7 +190,6 @@ local function BuildPlayer(id, data, hashes, indexes)
 		GetID = function()
 			return id
 		end,
-		-- The player's cities.
 		GetCities = function()
 			local list = List(cities)
 
@@ -210,7 +204,6 @@ local function BuildPlayer(id, data, hashes, indexes)
 
 			return list
 		end,
-		-- The player's units.
 		GetUnits = function()
 			return List(units)
 		end,
@@ -228,7 +221,6 @@ local function BuildPlayer(id, data, hashes, indexes)
 	}
 end
 
--- A player with the calls that the features add to it.
 local function Player(id, data, hashes, indexes)
 	local player = BuildPlayer(id, data, hashes, indexes)
 

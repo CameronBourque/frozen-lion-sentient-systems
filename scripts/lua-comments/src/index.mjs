@@ -1,7 +1,6 @@
 // Checks that no full-line comment in the repo's Lua files is over 80 columns.
-// Usage: node scripts/lua-comments/src/index.mjs Prints one line per problem as
-// file:line: message, and exits 1 if there are any. This file only reads and
-// prints. check.mjs holds the logic, so tests can reach it.
+// Prints one line per problem as file:line: message, and exits 1 if there are
+// any. The logic is in check.mjs.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";

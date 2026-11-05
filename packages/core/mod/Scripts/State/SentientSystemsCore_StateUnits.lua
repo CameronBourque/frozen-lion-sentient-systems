@@ -1,6 +1,5 @@
--- The units section of the state: the player's own units, as the unit panel
--- shows them. SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/units.ts.
+-- The units section: the player's own units, as the unit panel shows them.
+-- Shape: bridge/src/state/units.ts.
 
 -- The X position of a unit that isn't on the map. civ6-mcp skips these units.
 -- See docs/findings/game-api.md.
@@ -58,7 +57,6 @@ local function AddPromotions(unit, state)
 	state.availablePromotions = GetAvailablePromotions(unit)
 end
 
--- Returns a list of the player's units on the map.
 function SentientSystems_GetUnitStates(player)
 	local units = {}
 

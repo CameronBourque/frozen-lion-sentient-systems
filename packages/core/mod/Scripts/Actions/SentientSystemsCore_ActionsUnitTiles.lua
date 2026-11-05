@@ -1,6 +1,5 @@
 -- The unit orders that act on the unit's own tile: found city, improve, and
--- pillage. SentientSystemsCore_ActionsUnits.lua loads this file, after the
--- stances file, whose helpers it uses. The calls are in
+-- pillage. Uses the stances file's helpers. The calls are in
 -- docs/findings/actions/.
 
 -- Returns whether the player has revealed the tile. A city on a revealed tile
@@ -101,7 +100,6 @@ local function IsBuilder(row)
 	return row.BuildCharges > 0
 end
 
--- Returns why the unit can't build the improvement, from what it can build.
 local function GetImproveFailure(unit, improvementType, improvements)
 	return SentientSystems_GetOrderFailure(unit, "improve", IsBuilder(GameInfo.Units[unit:GetUnitType()]), function()
 		if unit:GetMovesRemaining() <= 0 then

@@ -17,8 +17,6 @@ local NO_GROWTH = "\"amenities\":{\"have\":0,\"mood\":\"HAPPINESS_CONTENT\",\"ne
 
 local ROME = { id = 65536, name = "LOC_CITY_NAME_ROME", x = 17, y = 14, population = 3 }
 
--- Returns an environment with the state script loaded into a fake game built
--- from world.
 local function Load(world)
 	local env = Game.new()
 
@@ -34,7 +32,6 @@ local function WithoutIncome(state)
 	return (state:gsub("\"income\":%b{},", ""):gsub("\"resources\":%b[],", ""))
 end
 
--- Returns a copy of city with the fields in changes.
 local function With(city, changes)
 	local copy = {}
 
@@ -232,7 +229,6 @@ describe("SentientSystems_GetCityStates", function()
 
 end)
 
--- Returns player 0's first city.
 local function FirstCity(env)
 	for _, city in env.Players[0]:GetCities():Members() do
 		return city

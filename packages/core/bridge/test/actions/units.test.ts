@@ -26,7 +26,6 @@ describe("unit actions", () => {
 		await game.close();
 	});
 
-	// Answers the stash of the call with one piece that holds json.
 	function answer(call: string, json: string): void {
 		const stash = `SentientSystems_Stash(${call})`;
 

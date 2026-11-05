@@ -1,8 +1,6 @@
-// What the bridge does each time it connects to the tuner: it calls the core
-// mod for its version and logs it, then asks whose turn is active, so a restart
-// in the middle of a turn doesn't miss the turn. A failure logs a warning and
-// never throws, because a game load resets the socket and the next connect
-// tries again. docs/design/core/bridge.md has the design.
+// On each connect to the tuner, logs the core mod's version and asks whose turn
+// is active. A failure warns and never throws: a game load resets the socket,
+// and the next connect tries again. docs/design/core/bridge.md has the design.
 
 import { readLine } from "./events.js";
 import type { Logger } from "./log.js";
@@ -28,7 +26,6 @@ async function callCore(client: TunerClient, logger: Logger, lua: string): Promi
 	lines.forEach((line) => readLine(line, logger));
 }
 
-// The warning for a failed call, with what the user can do about it.
 function explainFailure(error: unknown): string {
 	if (error instanceof TunerMissingStateError) {
 		return `The core mod's state ${CORE_STATE} isn't loaded. Turn on Sentient Systems Core in Additional Content, then load a game. The bridge checks again when it reconnects`;

@@ -28,7 +28,6 @@ return function(env, world, ctx)
 		return data.minor ~= nil
 	end
 
-	-- The players of some IDs.
 	local function Of(ids)
 		local list = {}
 

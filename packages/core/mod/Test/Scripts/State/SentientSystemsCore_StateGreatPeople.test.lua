@@ -13,7 +13,6 @@ local SUN_TZU = {
 	faith = { cost = 450 },
 }
 
--- Returns a copy of a great person with the fields given changed.
 local function With(person, changes)
 	local copy = {}
 

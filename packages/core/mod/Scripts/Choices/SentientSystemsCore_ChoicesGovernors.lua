@@ -1,12 +1,6 @@
--- The governor choice: the governors the player can appoint, the promotions
--- they can give their governors, and the cities they can assign them to, as the
--- Governors panel, its details panel, and its assignment chooser offer them.
--- Rise and Fall adds governors, so without it there is no choice.
--- SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/governors.ts. A Secret Society the player has discovered
--- can be appointed and promoted, but not assigned. The checks follow
--- GovernorPanel.lua, GovernorDetailsPanel.lua, and
--- GovernorAssignmentChooser.lua.
+-- The governor choice: appointments, promotions, and assignments, as the
+-- Governors panel and its choosers offer them. Needs Rise and Fall.
+-- Follows GovernorPanel.lua. Shape: bridge/src/choices/governors.ts.
 
 SentientSystems_Include("SentientSystemsCore_Governors")
 
@@ -64,7 +58,6 @@ local function GetPromotions(governors, governor, definition)
 	return promotions
 end
 
--- Returns the city as an assignment target.
 local function GetTarget(city, reasons)
 	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()), blocked = reasons }
 end

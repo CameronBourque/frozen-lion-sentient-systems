@@ -1,9 +1,6 @@
--- The tech and civic choices: the techs and civics the player can research now,
--- as the research and civics choosers list them.
--- SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/research.ts. The checks follow GetData in
--- ResearchChooser.lua and CivicsChooser.lua, and GetResearchData and
--- GetCivicData in TechAndCivicSupport.lua.
+-- The tech and civic choices, as the research and civics choosers list them.
+-- Follows GetData in ResearchChooser.lua and CivicsChooser.lua.
+-- Shape: bridge/src/choices/research.ts.
 
 -- The game's calls for techs and for civics. Each reads from the player's
 -- store: GetTechs for techs, and GetCulture for civics.

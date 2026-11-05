@@ -1,11 +1,6 @@
--- Builds one player's governor tree as JSON for the bridge, in a call of its
--- own, as the Governors panel and its details panel show it, so the agent can
--- choose which governor to appoint and which promotion to give. It reads the
--- tree from the running game. Rise and Fall adds governors, so without it the
--- tree is empty. See docs/design/core/in-game-lua.md. The shape is in
--- bridge/src/trees/governors.ts. The checks follow Refresh and
--- AddGovernorCandidate in GovernorPanel.lua, and CreatePromotionTree in
--- GovernorDetailsPanel.lua.
+-- Builds one player's governor tree as JSON, as the Governors panel shows it.
+-- Needs Rise and Fall. Follows Refresh and AddGovernorCandidate in
+-- GovernorPanel.lua. Shape: bridge/src/trees/governors.ts.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")

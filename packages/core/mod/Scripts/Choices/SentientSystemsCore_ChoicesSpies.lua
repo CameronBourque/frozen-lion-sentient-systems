@@ -1,7 +1,6 @@
--- The spy choice: the escape routes for the player's next escaping spy, as the
--- escape screen offers them. The game opens the same screen to choose a dragnet
--- priority. SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/spies.ts. The checks follow OnOpen in EspionageEscape.lua.
+-- The spy choice: escape routes for the next escaping spy, as the escape
+-- screen offers them. Follows OnOpen in EspionageEscape.lua.
+-- Shape: bridge/src/choices/spies.ts.
 
 -- The routes in the screen's order, each with the district it leaves by. Every
 -- city has a city center, so the screen always allows the last.

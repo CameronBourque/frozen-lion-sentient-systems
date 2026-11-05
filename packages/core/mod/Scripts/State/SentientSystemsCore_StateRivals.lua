@@ -1,8 +1,6 @@
--- The rivals section of the state: other players' cities and units that the
--- player can know about, as their city banners and unit flags show them. See
--- docs/findings/state/tile-visibility.md. SentientSystemsCore_State.lua loads
--- this file, after the cities and units files. The shape is in
--- bridge/src/state/rivals.ts.
+-- The rivals section: other players' cities and units the player can know
+-- about. Loads after cities and units. See
+-- docs/findings/state/tile-visibility.md. Shape: bridge/src/state/rivals.ts.
 
 -- Returns a list of the other living players' cities on tiles that the player
 -- with ID playerID has revealed. A city's banner shows on a revealed tile,

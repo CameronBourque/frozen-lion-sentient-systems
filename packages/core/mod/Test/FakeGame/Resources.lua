@@ -100,8 +100,6 @@ return function(env, world, ctx)
 				return cities
 			end
 
-			-- Whether a plot's resource can be extracted, from the tile's
-			-- extractable.
 			function resources.IsResourceExtractableAt(_, plot)
 				return plot.extractable == true
 			end

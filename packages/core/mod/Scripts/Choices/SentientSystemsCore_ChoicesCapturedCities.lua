@@ -1,10 +1,6 @@
--- The captured city choice: what the player can do with the next city they
--- captured, as the raze screen offers it, and with the next city that rebelled
--- to join them, as Rise and Fall's disloyal city screen offers it.
--- SentientSystemsCore_Choices.lua loads this file. The shape is in
--- bridge/src/choices/captured-cities.ts. The checks follow OnOpen in
--- RazeCity.lua and its replacement in RazeCity_Expansion2.lua, and OnOpen in
--- DisloyalCityChooser.lua.
+-- The captured city choice: what to do with a captured city (RazeCity.lua) or
+-- a rebelled one (DisloyalCityChooser.lua), as each screen offers it. Follows
+-- OnOpen in both. Shape: bridge/src/choices/captured-cities.ts.
 
 -- Returns the name of a CityDestroyDirectives value, which is how the choice
 -- names an option.
@@ -16,7 +12,6 @@ local function DirectiveName(directive)
 	end
 end
 
--- Returns a city as the screens show it.
 local function GetCity(city, kind)
 	return {
 		kind = kind,

@@ -48,7 +48,6 @@ describe("readGovernorTree", () => {
 		game.onCommand = (_stateIndex, lua) => (lua in results ? results[lua] : {});
 	}
 
-	// Answers the stash with one piece that holds json.
 	function stash(json: string): void {
 		answer({ [STASH]: { output: ["1"] }, [PIECE]: { output: [json] } });
 	}

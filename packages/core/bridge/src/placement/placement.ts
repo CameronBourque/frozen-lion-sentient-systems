@@ -1,9 +1,5 @@
-// Reads where a city can place one district or wonder: the tiles it owns where
-// it can go now, and the tiles it could buy where it could go, with each
-// district's adjacency bonus on each tile, as the placement view shows them.
-// The core mod builds them as JSON in
-// Scripts/Placement/SentientSystemsCore_Placement.lua, and the bridge reads
-// them through the stash, in stash.ts.
+// Reads where a city can place a district or wonder, with adjacency bonuses,
+// as the placement view shows it, through the stash in stash.ts.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
@@ -38,9 +34,6 @@ export type Placement = z.infer<typeof PLACEMENT>;
 // Lua call as a string, so it must hold nothing that needs escaping.
 const TYPE_NAME = /^[A-Z0-9_]+$/;
 
-// Reads where the city with ID cityID, of the player with ID playerID, can
-// place the district or wonder typeName. Every failure comes back as an error
-// that says what went wrong, instead of an exception.
 export async function readPlacement(client: TunerClient, playerID: number, cityID: number, typeName: string): Promise<StashResult<Placement>> {
 	if (!TYPE_NAME.test(typeName)) {
 		return { ok: false, error: `${JSON.stringify(typeName)} isn't a type name, such as DISTRICT_CAMPUS` };

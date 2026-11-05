@@ -1,6 +1,5 @@
-// The bridge's config file, sentient-systems.yaml. It holds settings for the
-// whole bridge: the log level and each provider's API key. Agent slots,
-// personalities, and sweat levels live in the save, not here.
+// The bridge's config file, sentient-systems.yaml: the log level and each
+// provider's API key. Agent slots and personalities live in the save.
 // docs/design/core/settings.md has the design.
 
 import { parseDocument } from "yaml";
@@ -18,8 +17,7 @@ const PROVIDER = z.strictObject({
 	apiKey: z.string().default(""),
 });
 
-// Strict objects, so a misspelled field, such as "loglevel", is an error and
-// not a silent default.
+// Strict objects, so a misspelled field is an error and not a silent default.
 const CONFIG = z.strictObject({
 	schemaVersion: z.literal(SCHEMA_VERSION),
 	logLevel: z.enum(LOG_LEVELS).default(DEFAULT_LOG_LEVEL),
@@ -34,9 +32,7 @@ export type ConfigResult =
 	| { ok: true; config: Config }
 	| { ok: false; errors: string[] };
 
-// Parses the file's text. Each error names the field it is about, such as
-// "logLevel: Invalid option: expected one of
-// "error"|"warn"|"info"|"decisions"|"debug"".
+// Parses the file's text. Each error names the field it is about.
 export function parseConfig(text: string): ConfigResult {
 	const document = parseDocument(text);
 
@@ -51,7 +47,6 @@ export function parseConfig(text: string): ConfigResult {
 		: { ok: false, errors: parsed.error.issues.flatMap(describeIssue) };
 }
 
-// The text for one schema issue, with the field's path in front.
 function describeIssue(issue: z.core.$ZodIssue): string[] {
 	const path = issue.path.join(".");
 

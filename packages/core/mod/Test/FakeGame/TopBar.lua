@@ -16,7 +16,6 @@ return function(env, world, ctx)
 			return data.favor or 0
 		end
 
-		-- The player's trade routes, from data.trade with active and capacity.
 		function player.GetTrade()
 			local trade = data.trade or {}
 

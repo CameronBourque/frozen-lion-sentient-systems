@@ -1,8 +1,6 @@
--- Builds one player's view of the game as JSON for the bridge, from that
--- player's own data and visibility, never from the screen. Each section of the
--- state comes from its own file in this folder, and this file puts them
--- together. See docs/design/core/in-game-lua.md. The shapes are in
--- bridge/src/state/.
+-- Builds one player's view of the game as JSON, from their own data and
+-- visibility, never the screen. Each section has its own file here.
+-- See docs/design/core/in-game-lua.md. Shapes: bridge/src/state/.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")

@@ -1,8 +1,6 @@
--- Builds the legal options for each of one player's discrete choices as JSON
--- for the bridge, in a call of its own, so the agent reads them only when it
--- decides. Each choice comes from its own file in this folder, and this file
--- puts them together. See docs/design/core/in-game-lua.md. The shapes are in
--- bridge/src/choices/. A choice that the player can't make now is left out.
+-- Builds the legal options for each of one player's discrete choices as JSON,
+-- in a call of its own. A choice the player can't make now is left out.
+-- See docs/design/core/in-game-lua.md. Shapes: bridge/src/choices/
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")

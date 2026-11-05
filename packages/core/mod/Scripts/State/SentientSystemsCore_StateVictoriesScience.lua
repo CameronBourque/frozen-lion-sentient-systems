@@ -1,9 +1,6 @@
--- The science part of the victories section of the state: a player's stages
--- toward the science victory and the tasks of each, as the Science tab of World
--- Rankings shows them. The numbers follow PopulateScienceInstance and
--- GetTooltipForScienceProject in WorldRankings.lua and
--- WorldRankings_Expansion2.lua. SentientSystemsCore_StateVictories.lua loads
--- this file. The shape is in bridge/src/state/victories.ts.
+-- The science part of the victories section, as the Science tab of World
+-- Rankings shows it (PopulateScienceInstance, GetTooltipForScienceProject).
+-- Shape: bridge/src/state/victories.ts.
 
 -- The projects of each stage. Gathering Storm has four stages of one project,
 -- and the base game three.
@@ -33,7 +30,6 @@ local function RoundNearest(number)
 	return math.floor(number * 10 + 0.5) / 10
 end
 
--- Returns whether the player has a finished Spaceport.
 local function HasSpaceport(other)
 	local spaceport = GameInfo.Districts["DISTRICT_SPACEPORT"].Index
 
