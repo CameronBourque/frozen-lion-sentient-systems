@@ -14,11 +14,23 @@ None open.
 
 `Base/Assets/UI/AdjacencyBonusSupport.lua` finds the tiles where a district or a wonder can go. The expansions don't replace it. Confirmed in files.
 
-- **Tiles the city owns.** `CityManager.GetOperationTargets(city, CityOperationTypes.BUILD, params)`, with `params[CityOperationTypes.PARAM_DISTRICT_TYPE]` set to a district's hash, or `params[CityOperationTypes.PARAM_BUILDING_TYPE]` to a wonder's, returns plot indexes in `results[CityOperationResults.PLOTS]`. Confirmed in files and on Windows on 2026-10-26.
-- **Tiles to buy.** `CityManager.GetCommandTargets(city, CityCommandTypes.PURCHASE, params)`, with `params[CityCommandTypes.PARAM_PLOT_PURCHASE]` set to `UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE)`, returns the plot indexes the city could buy in `results[CityCommandResults.PLOTS]`. `plot:CanHaveDistrict(districtIndex, owner, cityID)` and `plot:CanHaveWonder(buildingIndex, owner, cityID)` check each one. Both work in `SentientSystemsCore_UI`. Rome had 17 tiles to buy. Confirmed in files and on Windows on 2026-10-26.
-- **Tiles to buy that the panel counts.** For a district, `IsShownIfPlotPurchaseable`, lines 155 to 169, keeps a tile to buy only when the district gets an adjacency bonus on it, or when the district has no adjacency bonuses. For a wonder, it keeps every tile that `CanHaveWonder` allows. Confirmed in files.
+- **Tiles the city owns.** `CityManager.GetOperationTargets(city, CityOperationTypes.BUILD, params)` returns plot indexes in `results[CityOperationResults.PLOTS]`.
+
+  For a district, `params[CityOperationTypes.PARAM_DISTRICT_TYPE]` is set to its hash, and for a wonder, `params[CityOperationTypes.PARAM_BUILDING_TYPE]`.
+
+  Confirmed in files and on Windows on 2026-10-26.
+- **Tiles to buy.** `CityManager.GetCommandTargets(city, CityCommandTypes.PURCHASE, params)` returns the plot indexes the city could buy in `results[CityCommandResults.PLOTS]`.
+
+  `params[CityCommandTypes.PARAM_PLOT_PURCHASE]` is set to `UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE)`.
+
+  `plot:CanHaveDistrict(districtIndex, owner, cityID)` and `plot:CanHaveWonder(buildingIndex, owner, cityID)` check each one. Both work in `SentientSystemsCore_UI`. Rome had 17 tiles to buy. Confirmed in files and on Windows on 2026-10-26.
+- **Tiles to buy that the panel counts.** For a district, `IsShownIfPlotPurchaseable`, lines 155 to 169, keeps a tile to buy only when the district gets an adjacency bonus on it, or when the district has no adjacency bonuses.
+
+  For a wonder, it keeps every tile that `CanHaveWonder` allows. Confirmed in files.
 - **Adjacency.** `plot:GetAdjacencyYield(playerID, cityID, districtIndex, yieldIndex)` returns a district's bonus on a tile for one yield. `GetAdjacentYieldBonusString`, lines 177 to 247, reads it for each yield. Confirmed in files and on Windows on 2026-10-26.
-- **Wonders with no tile the city owns.** When `CanProduce` refuses a wonder with `results[CityOperationResults.NO_SUITABLE_LOCATION]` set to `true`, the panel doesn't grey it out if it has a tile to buy, in `GetData`, lines 2041 to 2047. The Pyramids, the Great Bath, and Stonehenge each had no tile in Rome's territory and one tile to buy, and Rome's panel showed the Pyramids and the Great Bath in the same style as the buildings. Confirmed in files and on Windows on 2026-10-26.
+- **Wonders with no tile the city owns.** When `CanProduce` refuses a wonder with `results[CityOperationResults.NO_SUITABLE_LOCATION]` set to `true`, the panel doesn't grey it out if it has a tile to buy, in `GetData`, lines 2041 to 2047.
+
+  The Pyramids, the Great Bath, and Stonehenge each had no tile in Rome's territory and one tile to buy, and Rome's panel showed the Pyramids and the Great Bath in the same style as the buildings. Confirmed in files and on Windows on 2026-10-26.
 
 ## Method
 
@@ -29,8 +41,8 @@ None open.
 
 A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3 population, in `SentientSystemsCore_UI`:
 
-| Check | Result |
-| --- | --- |
-| `SentientSystems_GetPlacement` through `readPlacement`, for Rome | The campus had the same 3 tiles and 8 tiles to buy, with the same bonuses, 335 bytes. The Pyramids had no tile and 1 tile to buy, (17,17), 46 bytes. The granary raised `BUILDING_GRANARY isn't a district or a wonder`, and city 7 raised `no city 7 for player 0` |
+- **`SentientSystems_GetPlacement` through `readPlacement`, for Rome.** The campus had the same 3 tiles and 8 tiles to buy, with the same bonuses, 335 bytes.
+
+  The Pyramids had no tile and 1 tile to buy, (17,17), 46 bytes. The granary raised `BUILDING_GRANARY isn't a district or a wonder`, and city 7 raised `no city 7 for player 0`.
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.

@@ -4,7 +4,7 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 127 Markdown files. 83 of them have a line over 300 characters, 477 lines in all, and 82 lines pass 600.
+A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 127 Markdown files. 66 of them have a line over 300 characters, 314 lines in all, and 44 lines pass 600.
 
 [findings/lua/state-list.md](../findings/lua/state-list.md) has the longest line, a 2,318-character list of state names.
 

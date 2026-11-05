@@ -14,12 +14,30 @@ The calls the spy choice uses, as the escape screen shows them. The other choice
 
 `Base/Assets/UI/Popups/EspionageEscape.lua` draws the escape screen, and no expansion replaces it. `NotificationPanel.lua`, lines 220 and 221, opens it for both `SPY_CHOOSE_ESCAPE_ROUTE` and `SPY_CHOOSE_DRAGNET_PRIORITY`. Confirmed in files.
 
-- **Spy.** `OnOpen`, lines 36 to 113, finds the spy with the player's `GetDiplomacy():GetNextEscapingSpyID()` and `GetUnits():FindID`, and the city with `Cities.GetPlotPurchaseCity` on the spy's tile. It shows the spy's `GetName()`, `GetLootName()`, and `GetPursuingSpyName()`, which is empty for the police, as `LOC_ESPIONAGE_ESCAPE_PURSUIT_POLICE`, or a counterspy's name, as `LOC_ESPIONAGE_ESCAPE_PURSUIT_COUNTERSPY`. On turn 48, Laurenza escaped from Istanbul, player 4's city, with "None" as loot, chased by the police. Confirmed in files and on Windows on 2026-10-27.
-- **Routes.** Lines 71 to 106 show four routes, **Airplane**, **Boat**, **Vehicle**, and **Foot**, which leave by the aerodrome, harbor, commercial hub, and city center. Each open route shows its district's `TravelTime` from `GameInfo.Districts`, 1 to 4, as **Turns to return**, and a route that is off shows `LOC_ESPIONAGE_ESCAPE_NO_DISTRICT` in its place, as the choice does. The first three are off unless the city's `GetDistricts():HasDistrict(index, true, true)` is `true`, and **Foot** is always on. Istanbul had none of the three. The open routes share `LOC_ESPIONAGE_ESCAPE_TOOLTIP`, which says the police watch the quick exits more. Confirmed in files and on Windows on 2026-10-27.
-- **Dragnet priority.** It is the defender's side: the game's text calls it **Choose Pursuit Priority**, for when "an enemy Spy has been detected", to choose which escape route to close off with the police. No file of the game's UI handles it apart from the escape screen, which reads the player's own escaping spy, so a defender with none would get no spy there. In many hours of play, with rival spies caught, killed, and let go, it never came up, so it looks unused. Confirmed in files, and by play.
+- **Spy.** `OnOpen`, lines 36 to 113, finds the spy with the player's `GetDiplomacy():GetNextEscapingSpyID()` and `GetUnits():FindID`, and the city with `Cities.GetPlotPurchaseCity` on the spy's tile.
+
+  It shows the spy's `GetName()`, `GetLootName()`, and `GetPursuingSpyName()`, which is empty for the police, as `LOC_ESPIONAGE_ESCAPE_PURSUIT_POLICE`, or a counterspy's name, as `LOC_ESPIONAGE_ESCAPE_PURSUIT_COUNTERSPY`.
+
+  On turn 48, Laurenza escaped from Istanbul, player 4's city, with "None" as loot, chased by the police. Confirmed in files and on Windows on 2026-10-27.
+- **Routes.** Lines 71 to 106 show four routes, **Airplane**, **Boat**, **Vehicle**, and **Foot**, which leave by the aerodrome, harbor, commercial hub, and city center.
+
+  Each open route shows its district's `TravelTime` from `GameInfo.Districts`, 1 to 4, as **Turns to return**, and a route that is off shows `LOC_ESPIONAGE_ESCAPE_NO_DISTRICT` in its place, as the choice does.
+
+  The first three are off unless the city's `GetDistricts():HasDistrict(index, true, true)` is `true`, and **Foot** is always on. Istanbul had none of the three.
+
+  The open routes share `LOC_ESPIONAGE_ESCAPE_TOOLTIP`, which says the police watch the quick exits more. Confirmed in files and on Windows on 2026-10-27.
+- **Dragnet priority.** It is the defender's side: the game's text calls it **Choose Pursuit Priority**, for when "an enemy Spy has been detected", to choose which escape route to close off with the police.
+
+  No file of the game's UI handles it apart from the escape screen, which reads the player's own escaping spy, so a defender with none would get no spy there. In many hours of play, with rival spies caught, killed, and let go, it never came up, so it looks unused. Confirmed in files, and by play.
 - **Sending.** Each button sends `PlayerOperations.SET_ESCAPE_ROUTE` with the district's index in `PARAM_DISTRICT_TYPE`. Confirmed in files.
-- **Crash.** `GetDiplomacy():GetNextPursuedSpyID()`, which the screen never calls, crashed the game with an access violation while a spy was escaping, and with no pursued spy. Reading the choices with no spy escaping crashed it too, the first time the spy file ran with no escape, which points at `GetNextEscapingSpyID()` with none to give. The screen calls it only from a blocker's notification, so the choice checks for `ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE` or `_DRAGNET_PRIORITY` first, with `SentientSystems_HasBlocker` in `SentientSystemsCore_Common.lua`. Confirmed on Windows on 2026-10-27.
-- **Left out.** The choice leaves out spies travelling to a city, which are off the map and found with `GetNumSpiesOffMap()` and `GetNthOffMapSpy(i)`, each with `XLocation`, `YLocation`, `ReturnTurn`, `Name`, and `Level`, and the missions of spies in cities. Phase 3 adds spies to the state. Confirmed on Windows on 2026-10-27.
+- **Crash.** `GetDiplomacy():GetNextPursuedSpyID()`, which the screen never calls, crashed the game with an access violation while a spy was escaping, and with no pursued spy.
+
+  Reading the choices with no spy escaping crashed it too, the first time the spy file ran with no escape, which points at `GetNextEscapingSpyID()` with none to give.
+
+  The screen calls it only from a blocker's notification, so the choice checks for `ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE` or `_DRAGNET_PRIORITY` first, with `SentientSystems_HasBlocker` in `SentientSystemsCore_Common.lua`. Confirmed on Windows on 2026-10-27.
+- **Left out.** The choice leaves out spies travelling to a city, which are off the map and found with `GetNumSpiesOffMap()` and `GetNthOffMapSpy(i)`, each with `XLocation`, `YLocation`, `ReturnTurn`, `Name`, and `Level`, and the missions of spies in cities.
+
+  Phase 3 adds spies to the state. Confirmed on Windows on 2026-10-27.
 
 ## Method
 
