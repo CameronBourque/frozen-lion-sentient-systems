@@ -3,7 +3,7 @@
 // no Lua tool, so this covers the Lua ones.
 
 import { checkHeader } from "../../comment-rules/src/header-rule.mjs";
-import { TEXT_RULES } from "../../comment-rules/src/text-rules.mjs";
+import { findText } from "../../comment-rules/src/text-rules.mjs";
 
 // The same limit as the comments option of max-len in eslint.config.js.
 export const LIMIT = 80;
@@ -18,7 +18,8 @@ export function width(line) {
 
 // One entry per rule. find gets a full-line comment and the column limit, and
 // returns a message when the comment breaks the rule, or undefined when it
-// doesn't. The text rules are shared with the ESLint rule for TypeScript.
+// doesn't. The text rules are shared with the ESLint rule for TypeScript, and
+// run through findText.
 export const RULES = [
 	{
 		name: "line-width",
@@ -28,7 +29,6 @@ export const RULES = [
 			if (columns > limit) return `comment is ${columns} columns, over ${limit}`;
 		},
 	},
-	...TEXT_RULES,
 ];
 
 // Returns the line spans of the full-line comments that come before the first
@@ -59,11 +59,9 @@ export function checkComments(files, limit = LIMIT) {
 		fileLines.forEach((line, index) => {
 			if (!/^\s*--/.test(line)) return;
 
-			for (const rule of RULES) {
-				const message = rule.find(line, limit);
+			const messages = [...RULES.map((rule) => rule.find(line, limit)), ...findText(line)];
 
-				if (message) lines.push(`${file}:${index + 1}: ${message}`);
-			}
+			for (const message of messages.filter(Boolean)) lines.push(`${file}:${index + 1}: ${message}`);
 		});
 	}
 

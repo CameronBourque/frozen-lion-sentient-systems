@@ -2,7 +2,7 @@
 // JavaScript or TypeScript file. The Lua check runs the same rules.
 
 import { checkHeader } from "./header-rule.mjs";
-import { TEXT_RULES } from "./text-rules.mjs";
+import { findText } from "./text-rules.mjs";
 
 const textRules = {
 	meta: {
@@ -17,10 +17,8 @@ const textRules = {
 				const firstCode = context.sourceCode.getFirstToken(program);
 
 				for (const comment of comments) {
-					for (const rule of TEXT_RULES) {
-						const message = rule.find(comment.value);
-
-						if (message) context.report({ loc: comment.loc, messageId: "broken", data: { message } });
+					for (const message of findText(comment.value)) {
+						context.report({ loc: comment.loc, messageId: "broken", data: { message } });
 					}
 				}
 

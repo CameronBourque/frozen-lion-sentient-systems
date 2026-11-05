@@ -3,6 +3,8 @@
 
 // One entry per rule. find gets the text of one comment and returns a message
 // when it breaks the rule, or undefined when it doesn't.
+const OPT_OUT = /comment-lint-ignore:\s*\S/;
+
 export const TEXT_RULES = [
 	{
 		name: "line-number",
@@ -32,3 +34,11 @@ export const TEXT_RULES = [
 		},
 	},
 ];
+
+// Returns the messages of the text rules that a comment breaks. A comment that
+// holds "comment-lint-ignore:" and a reason skips them.
+export function findText(text) {
+	if (OPT_OUT.test(text)) return [];
+
+	return TEXT_RULES.map((rule) => rule.find(text)).filter(Boolean);
+}
