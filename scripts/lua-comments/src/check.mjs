@@ -2,6 +2,7 @@
 // ESLint checks the TypeScript and JavaScript comments, and the CI lint job has
 // no Lua tool, so this covers the Lua ones.
 
+import { checkHeader } from "../../comment-rules/src/header-rule.mjs";
 import { TEXT_RULES } from "../../comment-rules/src/text-rules.mjs";
 
 // The same limit as the comments option of max-len in eslint.config.js.
@@ -30,13 +31,32 @@ export const RULES = [
 	...TEXT_RULES,
 ];
 
-// Returns one "file:line: message" per problem in a full-line comment, and the
-// exit code. A comment after code on the same line isn't checked.
+// Returns the line spans of the full-line comments that come before the first
+// code in a file, for the header rule.
+function leadingComments(lines) {
+	const spans = [];
+
+	for (const [index, line] of lines.entries()) {
+		if (/^\s*--/.test(line)) spans.push({ start: index + 1, end: index + 1 });
+		else if (line.trim() !== "") break;
+	}
+
+	return spans;
+}
+
+// Returns one "file:line: message" per problem in a full-line comment or file
+// header, and the exit code. A comment after code on the same line isn't
+// checked.
 export function checkComments(files, limit = LIMIT) {
 	const lines = [];
 
 	for (const [file, text] of Object.entries(files)) {
-		text.split(/\r?\n/).forEach((line, index) => {
+		const fileLines = text.split(/\r?\n/);
+		const header = checkHeader(leadingComments(fileLines));
+
+		if (header) lines.push(`${file}:${header.line}: ${header.message}`);
+
+		fileLines.forEach((line, index) => {
 			if (!/^\s*--/.test(line)) return;
 
 			for (const rule of RULES) {
