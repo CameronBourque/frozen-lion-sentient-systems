@@ -5,9 +5,11 @@ import js from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import commentRules from "./scripts/comment-rules/src/eslint-rule.mjs";
 
-// The same layout rules for JavaScript and TypeScript.
+// The same layout and comment rules for JavaScript and TypeScript.
 const stylisticRules = {
+	"comment-rules/text-rules": "error",
 	"@stylistic/indent": ["error", "tab"],
 	"@stylistic/no-trailing-spaces": "error",
 	// Only comment lines are limited. The code limit is above the longest
@@ -39,7 +41,7 @@ export default [
 	{
 		files: ["**/*.{js,mjs}"],
 		languageOptions: { globals: globals.node },
-		plugins: { "@stylistic": stylistic },
+		plugins: { "@stylistic": stylistic, "comment-rules": commentRules },
 		rules: stylisticRules,
 	},
 
@@ -53,7 +55,7 @@ export default [
 			// package's tsconfig.json.
 			parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
 		},
-		plugins: { "@stylistic": stylistic },
+		plugins: { "@stylistic": stylistic, "comment-rules": commentRules },
 		rules: {
 			...stylisticRules,
 			// An unawaited promise fails silently in socket code.

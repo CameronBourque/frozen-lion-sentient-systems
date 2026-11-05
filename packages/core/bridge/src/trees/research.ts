@@ -6,29 +6,29 @@ import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 
-// A node of the tree. A node the player hasn't revealed, in the Tech and Civic
-// Shuffle mode, has a type such as "?1" and only era, status, turns, progress,
-// and prerequisites, as the screen shows an Unrevealed box. The numbers follow
-// the tree's order and link the hidden nodes within one read. The boost,
-// unlocks, description, and recommended fields work as in the research choices,
-// in ../choices/research.ts, and the screen shows no boost, progress, or
-// advisor's pick for a researched node.
+// A node of the tree. In Tech and Civic Shuffle mode the screen shows a node
+// the player hasn't revealed as an Unrevealed box, so it keeps only era,
+// status, turns, progress, and prerequisites.
 const NODE = z.object({
-	type: z.string(),
+	type: z.string().describe(
+		"An unrevealed node has a question mark and a number instead, in the tree's order. The numbers link the hidden nodes within one read.",
+	),
 	era: z.string(),
 	status: z.enum(["researched", "current", "ready", "blocked"]),
 	cost: z.number().optional().describe("Left out for an unrevealed node."),
 	turns: z.number().optional().describe(
 		"There while it is above 0 and the node isn't researched. For the node in research, it is the turns left.",
 	),
-	progress: z.number().optional().describe("There while it is above 0."),
+	progress: z.number().optional().describe("There while it is above 0. Never on a researched node."),
 	prerequisites: z.array(z.string()).describe(
 		"By type, or by number such as ?1 for an unrevealed node, as the screen's lines link it.",
 	),
-	boost: z.object({ percent: z.number(), trigger: z.string(), triggered: z.boolean() }).optional(),
-	unlocks: z.array(z.string()).optional(),
-	description: z.string().optional(),
-	recommended: z.literal(true).optional(),
+	boost: z.object({ percent: z.number(), trigger: z.string(), triggered: z.boolean() }).optional().describe(
+		"Left out for an unrevealed or researched node. Works as in ../choices/research.ts.",
+	),
+	unlocks: z.array(z.string()).optional().describe("Works as in ../choices/research.ts."),
+	description: z.string().optional().describe("Works as in ../choices/research.ts."),
+	recommended: z.literal(true).optional().describe("The advisor's pick. Never on a researched node."),
 });
 
 // The player or a player they have met, as the timeline at the bottom of the

@@ -56,6 +56,13 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
 ## Lint and test
 
 - `npm run lint` runs ESLint with the rules in `eslint.config.js`. It checks tabs, trailing spaces, and blank lines: one after a run of definitions, one before and after each block, and one before `return`. It also runs `scripts/lua-comments/`, which fails on a full-line Lua comment over 80 columns, counting a tab as 4 and a character as 1. ESLint can't read Lua, and the CI `lint` job has no Lua tool.
+- Lint also checks these [comment rules](#comments), in Lua and in TypeScript, from the shared code in `scripts/comment-rules/`. A broken rule fails the build.
+  - A file header over three lines. The header is the first comment before any code, up to the first blank line.
+  - A line number, such as "line 12" or "lines 3 to 5".
+  - "such as", "for example", or "for instance" followed by a quoted or code example.
+  - A JSON shape: `{` followed by a quote, or a quoted key before a colon.
+  - These are heuristics, so a comment can opt out of the last three by holding `comment-lint-ignore:` and a short reason. A marker with no reason skips nothing, and it covers only its own comment line. The header and line width checks have no opt-out.
+  - Lint can't see a comment that restates the next line of code, or a data shape written as prose. Those stay with review.
 - `npm test` runs Vitest. Put code in a `src/` folder and tests in a `test/` folder beside it, in each package and script folder. `test/` mirrors `src/`, so the tests for `src/tuner/framing.ts` go in `test/tuner/framing.test.ts`. Shared test helpers go in `test/` too. Give each rule a case that it catches and a case that it lets through.
 - `npm run coverage` runs the tests and measures coverage. Statements, branches, functions, and lines must each stay at 98% or more, or the run fails. To leave a file out, add it to the coverage `exclude` list in `vitest.config.js` with a comment that gives the reason. It runs `npm run coverage:lua` first, which writes the Lua fixtures that `test/contract.test.ts` reads.
 - The CI `test` job installs Lua 5.1.5, LuaRocks, busted, and luacov, and runs `npm run coverage`. It puts the TypeScript and Lua coverage tables in the job summary and uploads the HTML report as the `coverage-report` artifact.

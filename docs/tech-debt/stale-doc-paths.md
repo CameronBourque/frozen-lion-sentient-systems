@@ -26,7 +26,7 @@ Leave a bare file name, such as `game-api.md`, alone, because it has no folder t
 
 1. Should the check also read the link text, or only backticks and comments? Link text is for readers, and a mismatch with the target is a stale name, not a broken path.
 2. Which roots count when a path has no `docs/` prefix: the repo root, `docs/`, or the file's own folder?
-3. Should code comments be checked here, or in the lint with the other comment rules in [comment-lint.md](comment-lint.md)?
+3. Should code comments be checked here, or in the lint with the other comment rules, in `scripts/comment-rules/`?
 
 ## Done when
 

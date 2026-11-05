@@ -1,6 +1,9 @@
-// Finds full-line Lua comments over the column limit in docs/rules/code.md.
+// Finds Lua comments that break the comment rules in docs/rules/code.md.
 // ESLint checks the TypeScript and JavaScript comments, and the CI lint job has
 // no Lua tool, so this covers the Lua ones.
+
+import { checkHeader } from "../../comment-rules/src/header-rule.mjs";
+import { findText } from "../../comment-rules/src/text-rules.mjs";
 
 // The same limit as the comments option of max-len in eslint.config.js.
 export const LIMIT = 80;
@@ -13,18 +16,52 @@ export function width(line) {
 	return [...line.replaceAll("\t", " ".repeat(TAB_WIDTH))].length;
 }
 
-// Returns one "file:line: message" per full-line comment over the limit, and
-// the exit code. A comment after code on the same line isn't checked.
+// One entry per rule. find gets a full-line comment and the column limit, and
+// returns a message when the comment breaks the rule, or undefined when it
+// doesn't. The text rules are shared with the ESLint rule for TypeScript, and
+// run through findText.
+export const RULES = [
+	{
+		name: "line-width",
+		find(line, limit) {
+			const columns = width(line);
+
+			if (columns > limit) return `comment is ${columns} columns, over ${limit}`;
+		},
+	},
+];
+
+// Returns the line spans of the full-line comments that come before the first
+// code in a file, for the header rule.
+function leadingComments(lines) {
+	const spans = [];
+
+	for (const [index, line] of lines.entries()) {
+		if (/^\s*--/.test(line)) spans.push({ start: index + 1, end: index + 1 });
+		else if (line.trim() !== "") break;
+	}
+
+	return spans;
+}
+
+// Returns one "file:line: message" per problem in a full-line comment or file
+// header, and the exit code. A comment after code on the same line isn't
+// checked.
 export function checkComments(files, limit = LIMIT) {
 	const lines = [];
 
 	for (const [file, text] of Object.entries(files)) {
-		text.split(/\r?\n/).forEach((line, index) => {
-			const columns = width(line);
+		const fileLines = text.split(/\r?\n/);
+		const header = checkHeader(leadingComments(fileLines));
 
-			if (/^\s*--/.test(line) && columns > limit) {
-				lines.push(`${file}:${index + 1}: comment is ${columns} columns, over ${limit}`);
-			}
+		if (header) lines.push(`${file}:${header.line}: ${header.message}`);
+
+		fileLines.forEach((line, index) => {
+			if (!/^\s*--/.test(line)) return;
+
+			const messages = [...RULES.map((rule) => rule.find(line, limit)), ...findText(line)];
+
+			for (const message of messages.filter(Boolean)) lines.push(`${file}:${index + 1}: ${message}`);
 		});
 	}
 
