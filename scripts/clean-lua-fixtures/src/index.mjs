@@ -8,7 +8,7 @@ import path from "node:path";
 
 const folder = path.resolve(import.meta.dirname, "../../../packages/core/bridge/test/lua-fixtures");
 // The top-level calls that Test/Game.lua records, which it names the same way.
-const calls = ["GetState", "GetChoices", "GetTechTree", "GetCivicTree", "GetGovernorTree", "GetPlacement"];
+const calls = ["GetState", "GetChoices", "GetTechTree", "GetCivicTree", "GetGovernorTree", "GetPlacement", "MoveUnit"];
 
 fs.rmSync(folder, { recursive: true, force: true });
 

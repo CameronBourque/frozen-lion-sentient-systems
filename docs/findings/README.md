@@ -10,6 +10,7 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [lua-contexts.md](lua-contexts.md) | Lua states and what each one can call |
 | [state-list.md](state-list.md) | The Lua state list, and how it changes over a session and during a load |
 | [game-api.md](game-api.md) | Game calls for cities, units, turns, and properties |
+| [game-actions.md](game-actions.md) | The game calls the actions use to move units and end the turn, and the reasons their checks give |
 | [game-state.md](game-state.md) | The calls the state serializer uses for cities, units, tiles, and end-turn blockers |
 | [game-choices.md](game-choices.md) | The calls the choices use to list each choice's legal options, as the game's screens list them |
 | [game-government.md](game-government.md) | The calls the government and policy choices use, as the government screen shows them |

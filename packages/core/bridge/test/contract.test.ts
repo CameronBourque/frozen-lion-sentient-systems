@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
 import type { z } from "zod";
+import { ACTION_RESULT } from "../src/actions/actions.js";
 import { CHOICES } from "../src/choices/choices.js";
 import { PLACEMENT } from "../src/placement/placement.js";
 import { STATE } from "../src/state/state.js";
@@ -23,6 +24,7 @@ const CALLS: Record<string, z.ZodType> = {
 	GetCivicTree: TREE,
 	GetGovernorTree: GOVERNOR_TREE,
 	GetPlacement: PLACEMENT,
+	MoveUnit: ACTION_RESULT,
 };
 
 function fixtureNames(call: string): string[] {

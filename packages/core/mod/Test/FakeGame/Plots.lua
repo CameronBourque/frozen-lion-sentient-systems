@@ -119,6 +119,12 @@ return function(env, world, ctx)
 			IsImprovementPillaged = function()
 				return data.improvementPillaged == true
 			end,
+			IsWater = function()
+				return data.water == true
+			end,
+			IsImpassable = function()
+				return data.impassable == true
+			end,
 			GetRouteType = function()
 				return data.route and indexes[data.route] or -1
 			end,
