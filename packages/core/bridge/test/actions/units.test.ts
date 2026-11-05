@@ -74,10 +74,13 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 9437197, { action: "upgrade" })).toEqual({ ok: true });
 	});
 
-	test("unitAction passes the tile of an air move", async () => {
+	test("unitAction passes the tile of an air move and a priority target", async () => {
 		answer("SentientSystems_UnitAction(0, 9306120, \"rebase\", 43, 38, nil)", "{\"ok\":true}");
 
 		expect(await unitAction(client, 0, 9306120, { action: "rebase", x: 43, y: 38 })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9306120, \"priority_target\", 44, 39, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9306120, { action: "priority_target", x: 44, y: 39 })).toEqual({ ok: true });
 	});
 
 	test("unitAction passes the unit to join as a number", async () => {

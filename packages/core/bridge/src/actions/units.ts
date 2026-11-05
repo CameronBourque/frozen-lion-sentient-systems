@@ -12,7 +12,7 @@ export type UnitOrder =
 	| { action: "promote"; promotion: string }
 	| { action: "build_road"; route?: string }
 	| { action: "improve"; improvement: string }
-	| { action: "attack" | "rebase" | "deploy" | "airlift" | "paradrop"; x: number; y: number };
+	| { action: "attack" | "priority_target" | "rebase" | "deploy" | "airlift" | "paradrop"; x: number; y: number };
 
 // Moves a unit to a tile by the game's own path, over as many turns as it
 // takes. An ok result means the game took the request, not that the unit has
@@ -21,9 +21,10 @@ export function moveUnit(client: TunerClient, playerID: number, unitID: number, 
 	return sendAction(client, `SentientSystems_MoveUnit(${playerID}, ${unitID}, ${x}, ${y})`);
 }
 
-// Gives a unit an order, such as a stance, an upgrade, a job on its tile, or
-// an attack, or an air move to a tile. A promotion, an improvement, a route, or
-// the unit to join a formation with goes in its own field.
+// Gives a unit an order, such as a stance, an upgrade, a job on its tile, an
+// attack or priority target, or an air move to a tile. A promotion, an
+// improvement, a route, or the unit to join a formation with goes in its own
+// field.
 export function unitAction(client: TunerClient, playerID: number, unitID: number, order: UnitOrder): Promise<ActionResult> {
 	const type = "promotion" in order ? order.promotion : "improvement" in order ? order.improvement : "route" in order ? order.route : "with" in order ? order.with : undefined;
 	const argument = type === undefined ? "nil" : JSON.stringify(type);

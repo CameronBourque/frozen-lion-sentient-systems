@@ -8,6 +8,7 @@ Add the unit orders that the unit actions leave out and that need no choice firs
 2. **Upgrade.** Add `upgrade`, from the upgrade command in `UnitPanel.lua`. Read the unit it becomes, the gold it costs, and the resources it needs, and return the shortfall as the reason. Commit: `feat(core): add the upgrade action`.
 3. **Formations.** Add `form_corps`, `form_army`, `enter_formation`, and `exit_formation`. Read the calls from `UnitPanel.lua` and `WorldInput.lua`, including `OnUnitActionClicked_EnterFormation`, which names the other unit. Commit: `feat(core): add the formation actions`.
 4. **Air movement.** Add `rebase` and `deploy` for air units, and `airlift` and `paradrop` for land units, which name a target tile in `x` and `y`. Return a reason when the tile is out of range, and make the move action's reason for an air unit name these. Commit: `feat(core): add the air movement actions`.
+5. **Priority target.** Add `priority_target`, which names a tile in `x` and `y` and hits the support or civilian unit that a military unit escorts. Read the command from `WorldInput_Expansion1.lua`, and return a reason when the tile has none. Commit: `feat(core): add the priority target action`.
 
 ## Done when
 

@@ -1,4 +1,4 @@
--- The attack order. SentientSystemsCore_ActionsUnits.lua loads this file. The
+-- The attack orders. SentientSystemsCore_ActionsUnits.lua loads this file. The
 -- calls are in docs/findings/actions/.
 
 -- The most targets a reason lists before it gives a count.
@@ -162,3 +162,18 @@ SentientSystems_AddUnitAction("attack", function(playerID, unit, x, y)
 
 	return RangedAttack(unit, kind == "air" and UnitOperationTypes.AIR_ATTACK or UnitOperationTypes.RANGE_ATTACK, x, y)
 end)
+
+-- A priority target hits the support or civilian unit that a military unit
+-- escorts on a tile, instead of the military unit. The game marks the tiles
+-- that have one. Spec ops and air units have it.
+SentientSystems_AddTileOrders({
+	priority_target = {
+		command = "PRIORITY_TARGET",
+		verb = "pick a priority target",
+		noun = "priority target",
+		prep = "on",
+		moves = true,
+		marked = true,
+		none = "No tile in range has a unit to pick out. Only some units, such as spec ops and air units, can pick a priority target.",
+	},
+})

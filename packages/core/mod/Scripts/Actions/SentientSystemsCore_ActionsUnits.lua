@@ -99,7 +99,9 @@ SentientSystems_Include("SentientSystemsCore_ActionsUnitTiles")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitJobs")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitUpgrade")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitFormations")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitTileOrders")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitAir")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitTransport")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitAttacks")
 
 -- Returns the names of the unit actions, sorted, for the reason an action name
