@@ -20,7 +20,7 @@ It is a call of its own, so the agent reads it only when it chooses a governor t
 
 It includes the Secret Societies the player has discovered, and leaves out the governors the player could never appoint. Like the state, it is empty without Rise and Fall.
 
-The calls are in [findings/state/governors.md](../../../findings/state/governors.md). The shape is in [packages/core/bridge/src/trees/governors.ts](../../../../packages/core/bridge/src/trees/governors.ts).
+The calls are in [findings/choices/governor-tree.md](../../../findings/choices/governor-tree.md). The shape is in [packages/core/bridge/src/trees/governors.ts](../../../../packages/core/bridge/src/trees/governors.ts).
 
 ## Decisions
 

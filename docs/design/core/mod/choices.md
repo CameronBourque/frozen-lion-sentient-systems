@@ -35,7 +35,7 @@ The calls for each choice are in these findings:
 - **Captured cities.** [findings/choices/captured-cities.md](../../../findings/choices/captured-cities.md).
 - **Spies.** [findings/choices/spies.md](../../../findings/choices/spies.md).
 - **Artifacts.** [findings/choices/artifacts.md](../../../findings/choices/artifacts.md).
-- **Governors.** [findings/state/governors.md](../../../findings/state/governors.md).
+- **Governors.** [findings/choices/governors.md](../../../findings/choices/governors.md).
 - **Dedications.** [findings/choices/dedications.md](../../../findings/choices/dedications.md).
 - **Emergencies.** [findings/choices/emergencies.md](../../../findings/choices/emergencies.md).
 - **World Congress.** [findings/choices/world-congress.md](../../../findings/choices/world-congress.md).

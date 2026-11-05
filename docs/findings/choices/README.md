@@ -19,3 +19,5 @@ The game calls the choices use to list each choice's legal options, as the game'
 | [world-congress.md](world-congress.md) | The calls the World Congress choice uses, as the congress screen shows them |
 | [emergencies.md](emergencies.md) | The calls the emergency choice uses, as the emergency popup shows it, not yet confirmed in a running game |
 | [city-states.md](city-states.md) | The calls the envoy choice and the envoys and city-state details in the state use, as the City-States screen shows them |
+| [governors.md](governors.md) | The calls the governor choice uses, as the Governors panel and the assignment chooser show them |
+| [governor-tree.md](governor-tree.md) | The calls the governor tree and the Secret Societies use, as the Governors panel and its details panel show them |
