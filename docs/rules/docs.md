@@ -5,6 +5,7 @@ How docs are organized. These rules apply to every file under `docs/`, to packag
 ## Structure
 
 - **One topic per file.** Aim for under 150 lines. If two files are always read together, merge them.
+- **Keep lines to 300 characters and files to 12,000.** A line is a paragraph, a bullet, or a table row, and it holds one thought. A file over the limit splits by topic. A design file becomes a folder with a `README.md` index. A finding splits into findings in its topic folder.
 - **Start each file with a one- or two-sentence summary.** The folder index reuses it.
 - **Every folder has a `README.md` index.** The index has one row per file or subfolder. Add each new file to its folder's index.
 - **Use relative links.** Readers and tools can follow them.
@@ -90,7 +91,9 @@ Where each kind of fact lives:
 
 `scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, doc paths in backticks and link text, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes. Lint checks the doc paths in code comments, as that section also describes.
 
-The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there. Files over 150 lines get a warning, not a failure.
+The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there.
+
+Files over 150 lines or 12,000 characters, and lines over 300 characters, get a warning, not a failure. The line check skips fenced code. Both length checks skip changelogs, which release-please writes.
 
 ## Local-only docs
 
