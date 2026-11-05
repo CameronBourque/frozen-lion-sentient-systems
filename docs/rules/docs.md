@@ -104,7 +104,7 @@ To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo roo
 
 The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there.
 
-Files over 150 lines or 12,000 characters, and lines over 300 characters, get a warning, not a failure.
+A line over 300 characters or a file over 12,000 characters fails the check. A file over 150 lines gets a warning, not a failure.
 
 The line check skips fenced code, and leaves link targets out of a line's length, because a reader doesn't see them. The file check counts them, because an agent reads them. Both length checks skip changelogs, which release-please writes.
 

@@ -17,7 +17,7 @@ describe("length", () => {
 		expect(warning.line).toBe(MAX_LINES + 1);
 	});
 
-	test("warns only on a line over the line length", () => {
+	test("fails only on a line over the line length", () => {
 		expect(check({ "docs/a.md": lines("a".repeat(MAX_LINE_LENGTH)) })).toEqual([]);
 		expect(check({ "docs/a.md": lines("Short.", "a".repeat(MAX_LINE_LENGTH + 1)) })).toEqual([
 			"docs/a.md:2: length: line of 301 characters. Keep lines to 300",
@@ -56,7 +56,7 @@ describe("length", () => {
 		expect(check({ "docs/a.md": text })).toEqual(["docs/a.md:1: length: 12,220 characters. Keep files to 12,000 and split by topic"]);
 	});
 
-	test("warns only over the file length", () => {
+	test("fails only over the file length", () => {
 		// 120 rows of 99 characters and 119 newlines, plus one, make 12,000.
 		const fits = Array.from({ length: MAX_FILE_LENGTH / 100 }, () => "a".repeat(99)).join("\n") + "a";
 
@@ -64,6 +64,14 @@ describe("length", () => {
 		expect(check({ "docs/a.md": fits + "a" })).toEqual([
 			"docs/a.md:1: length: 12,001 characters. Keep files to 12,000 and split by topic",
 		]);
+	});
+
+	test("fails, not warns, on a long line or a large file", () => {
+		const [line] = checkLength(buildRepo({ "docs/a.md": lines("a".repeat(MAX_LINE_LENGTH + 1)) }));
+		const [file] = checkLength(buildRepo({ "docs/a.md": lines(...Array(MAX_FILE_LENGTH / 100 + 1).fill("a".repeat(99))) }));
+
+		expect(line.warning).toBeUndefined();
+		expect(file.warning).toBeUndefined();
 	});
 
 	test("skips changelogs", () => {
