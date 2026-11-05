@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.6.0...core-v0.7.0) (2026-11-05)
+
+
+### Features
+
+* **core:** add the unit actions ([#45](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/45)) ([30462d5](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/30462d5e3b44922a942b867f083e8346ccb14906))
+
 ## [0.6.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.5.0...core-v0.6.0) (2026-10-30)
 
 
