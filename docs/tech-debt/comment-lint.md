@@ -1,11 +1,12 @@
 # Lint the comment rules
 
-Make lint catch the comment rules that it can't check today, so a violation fails the build instead of waiting for a review. Depends on [comment-cleanup.md](comment-cleanup.md), which makes the existing files pass.
+Make lint catch the comment rules that it can't check today, so a violation fails the build instead of waiting for a review.
 
 ## Now
 
 - `npm run lint` checks the length of a comment line, in `scripts/lua-comments/` for Lua and in the `@stylistic/max-len` rule for TypeScript.
 - The rest of the [comment rules](../rules/code.md#comments) have no check: the one-to-three line file header, no data shapes, no examples, and no line numbers.
+- The existing files follow those rules, after a cleanup that also removed comments that restate the next line of code. A script can't see those, so they stay with review.
 
 ## Proposal
 
