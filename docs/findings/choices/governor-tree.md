@@ -27,7 +27,7 @@ The panel's files are in [state/governors.md](../state/governors.md#governors-pa
   The text of one promotion holds a curly apostrophe, and 11 hold a percent sign. Confirmed in files and on Windows on 2026-10-27.
 - **Printing the tree.** The first attempts to read the tree crashed the game with an access violation, three times. The game's log reads printed text as a printf format, and a `% s` in a promotion's description made it read a pointer that was never passed.
 
-  See [tuner/commands.md](../tuner/commands.md#what-we-know-now). The JSON encoder now writes `%` as `\u0025`. Confirmed on Windows on 2026-10-27.
+  See [tuner/printing.md](../tuner/printing.md#what-we-know-now). The JSON encoder now writes `%` as `\u0025`. Confirmed on Windows on 2026-10-27.
 - **Secret Societies.** `GameInfo.GovernorsCannotAssign()` has a row with `CannotAssign` of `true` for each society: Owls of Minerva, Hermetic Order, Voidsingers, and Sanguine Pact.
 
   Its governor is the society, with the society's name, the title **Secret Society**, and a description.

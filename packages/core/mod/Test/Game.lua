@@ -1,6 +1,6 @@
 -- Loads core mod files for tests, into an environment that matches the game's
 -- Lua, Havok Script, which is Lua 5.1.5 less five functions. See
--- docs/findings/lua/contexts.md#lua-51-comparison.
+-- docs/findings/lua/dialect.md#lua-51-comparison.
 
 local Game = {}
 

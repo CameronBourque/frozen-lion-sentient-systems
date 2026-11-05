@@ -41,7 +41,7 @@ The socket resets right after the click, and the `GAME_READY` line reaches the b
 
 When the handler raises a Lua error, the helper prints `ERROR <handler> <message>` in its place. The functions the bridge calls, such as `SentientSystems_Resync()`, aren't wrapped, because the tuner already returns their errors to the call.
 
-The game's Lua puts the stack trace in the error message, so the line carries the trace without the `debug` library, which UI states don't have. See [findings/lua/contexts.md](../../../findings/lua/contexts.md#the-core-mods-states).
+The game's Lua puts the stack trace in the error message, so the line carries the trace without the `debug` library, which UI states don't have. See [findings/lua/dialect.md](../../../findings/lua/dialect.md#what-we-know-now).
 
 The helper escapes each backslash as `\\`, each newline as `\n`, and each percent sign as `\p`. The whole error then arrives as one line, and the game's log doesn't read a `%` as a printf format code.
 

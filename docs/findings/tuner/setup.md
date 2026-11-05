@@ -12,12 +12,12 @@ How a player turns on the FireTuner server, and what that costs them. [design/di
 
 The setup notes come from the [civ6-mcp README](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/README.md) at commit `dd20190`, read on 2026-10-16.
 
-| Item | Value | Status | Source |
-| --- | --- | --- | --- |
-| Switch in the file | `EnableTuner 1` under `[Debug]` in `AppOptions.txt`. The default is `0` | Confirmed | `AppOptions.txt`, line 75, on 2026-10-16 |
-| SDK requirement | None. On Windows, the base game opens the tuner port with the SDK uninstalled. The civ6-mcp README says the tuner server is part of the SDK, which installs from the Steam library, under **Tools**. That's wrong for this build. FireTuner itself still comes only with the SDK | Confirmed | [Results](#results), 2026-10-23 |
-| macOS | The menu doesn't show the toggle. Set `EnableTuner 1` in `AppOptions.txt` | Unconfirmed | civ6-mcp README, "1. Configure Civ 6" |
-| Linux | The menu doesn't show the toggle. The tuner needs the native Linux build, because Proton and Wine builds don't open it | Unconfirmed | civ6-mcp README, "1. Configure Civ 6" and "Linux: additional notes" |
+- **Switch in the file.** `EnableTuner 1` under `[Debug]` in `AppOptions.txt`. The default is `0`. Confirmed. Source: `AppOptions.txt`, line 75, on 2026-10-16.
+- **SDK requirement.** None. On Windows, the base game opens the tuner port with the SDK uninstalled. The civ6-mcp README says the tuner server is part of the SDK, which installs from the Steam library, under **Tools**.
+
+  That's wrong for this build. FireTuner itself still comes only with the SDK. Confirmed. Source: [Results](#results), 2026-10-23.
+- **macOS.** The menu doesn't show the toggle. Set `EnableTuner 1` in `AppOptions.txt`. Unconfirmed. Source: civ6-mcp README, "1. Configure Civ 6".
+- **Linux.** The menu doesn't show the toggle. The tuner needs the native Linux build, because Proton and Wine builds don't open it. Unconfirmed. Source: civ6-mcp README, "1. Configure Civ 6" and "Linux: additional notes".
 
 ## Method
 

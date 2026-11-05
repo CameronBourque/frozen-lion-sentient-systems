@@ -4,16 +4,9 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row, and its length leaves out link targets. `scripts/check-docs/` reads 127 Markdown files. 46 of them have a line over 300 characters, 145 lines in all, and 18 lines pass 600.
+A line is a paragraph, a bullet, or a table row, and its length leaves out link targets. `scripts/check-docs/` reads 129 Markdown files. 38 of them have a line over 300 characters, 101 lines in all, and 12 lines pass 600.
 
-[findings/lua/state-list.md](../findings/lua/state-list.md) has the longest line, a 2,318-character list of state names.
-
-Two files pass 12,000 characters, although none passes 150 lines:
-
-| File | Characters | Lines | Lines over 300 |
-| --- | --- | --- | --- |
-| [findings/tuner/commands.md](../findings/tuner/commands.md) | 13,138 | 113 | 11 |
-| [findings/lua/contexts.md](../findings/lua/contexts.md) | 12,525 | 146 | 9 |
+[design/core/logs.md](../design/core/logs.md) has the longest line, at 938 characters. No file passes 12,000 characters.
 
 `scripts/check-docs/src/length.mjs` warns about long lines and large files, but doesn't fail on them.
 
@@ -52,7 +45,7 @@ A split moves the text unchanged, and a later commit shortens the lines, so each
 9. **Choices lines.** Shorten the long lines in `docs/findings/choices/`. Commit: `docs: shorten the lines in the choices findings`.
 10. **State lines.** Shorten the long lines in `docs/findings/state/`. Commit: `docs: shorten the lines in the state findings`.
 11. **Actions lines.** Shorten the long lines in `docs/findings/actions/`. Commit: `docs: shorten the lines in the action findings`.
-12. **Other findings lines.** Shorten the long lines in `docs/findings/lua/`, `docs/findings/tuner/`, and the top-level findings. Cut `commands.md` and `contexts.md` under 12,000 characters, or split one by topic if a cut loses facts. Commit: `docs: shorten the lines in the other findings`.
+12. **Other findings lines.** Shorten the long lines in the lua, tuner, and top-level findings. Split out `docs/findings/tuner/printing.md` and `docs/findings/lua/dialect.md`, so `commands.md` and `contexts.md` are under 12,000. Commit: `docs: shorten the lines in the other findings`.
 13. **Design lines.** Shorten the long lines in `docs/design/`, outside the core mod folder. Commit: `docs: shorten the lines in the design docs`.
 14. **Other lines.** Shorten the long lines in `docs/roadmap/`, `docs/rules/`, `docs/risks.md`, `docs/overview.md`, and the package READMEs. Commit: `docs: shorten the lines in the other docs`.
 15. **Fail.** Make both checks fail instead of warn, and update [rules/docs.md](../rules/docs.md#automated-check) to match. Delete this file and its row in the tech-debt index. Commit: `chore: fail on long doc lines and large doc files`.
