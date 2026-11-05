@@ -28,7 +28,7 @@ These are the first kinds of order. The list is partial.
 | Research path | A target tech or civic | The target is researched |
 | Repeat | One action each time it becomes possible, such as renewing a trade route | The agent cancels it |
 
-Where the game already keeps a multi-turn plan, the order uses it. A unit's move to a far tile already lasts several turns through the game's pathfinding. Whether the game's own production queue can hold a build list is unconfirmed, and it needs a [finding](../../findings/README.md) first.
+Where the game already keeps a multi-turn plan, the order uses it. A unit's move to a far tile already lasts several turns through the game's pathfinding. Whether the game's own production queue can hold a build list is unconfirmed. The [Action API: cities](../../roadmap/phase-1/action-api-cities.md) step checks it.
 
 ## Running orders
 
