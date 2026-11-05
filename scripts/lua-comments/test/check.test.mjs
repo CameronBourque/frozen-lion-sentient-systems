@@ -58,6 +58,23 @@ describe("checkComments", () => {
 		expect(checkComments({ "a.lua": 'local s = "line 12"\n' }).lines).toEqual([]);
 	});
 
+	test("names the line of a file header over three lines", () => {
+		const { lines, exitCode } = checkComments({ "a.lua": "\n-- 1\n-- 2\n-- 3\n-- 4\n\nlocal x = 1\n" });
+
+		expect(lines).toEqual(["a.lua:2: file header is 4 lines, over 3"]);
+		expect(exitCode).toBe(1);
+	});
+
+	test("lets through a header at three lines and comments after code", () => {
+		const text = "-- 1\n-- 2\n-- 3\n\nlocal x = 1\n-- 4\n-- 5\n-- 6\n-- 7\n";
+
+		expect(checkComments({ "a.lua": text }).lines).toEqual([]);
+	});
+
+	test("ends the header at a blank line", () => {
+		expect(checkComments({ "a.lua": "-- 1\n-- 2\n\n-- 3\n-- 4\nlocal x\n" }).lines).toEqual([]);
+	});
+
 	test("checks every file", () => {
 		const { lines } = checkComments({ "a.lua": overLimit, "b.lua": overLimit });
 

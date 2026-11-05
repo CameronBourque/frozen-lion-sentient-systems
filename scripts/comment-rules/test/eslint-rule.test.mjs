@@ -38,6 +38,25 @@ describe("comment-rules/text-rules", () => {
 		expect(lint("// the first line of the file\nconst a = 1;\n")).toEqual([]);
 	});
 
+	test("reports a file header over three lines, at the header", () => {
+		const messages = lint("// one\n// two\n// three\n// four\n\nconst a = 1;\n");
+
+		expect(messages).toHaveLength(1);
+		expect(messages[0]).toMatchObject({ line: 1, message: "file header is 4 lines, over 3" });
+	});
+
+	test("lets through a header of three lines and a comment after code", () => {
+		expect(lint("// one\n// two\n// three\n\nconst a = 1;\n// four\n// five\n// six\n// seven\n")).toEqual([]);
+	});
+
+	test("starts the header after a shebang", () => {
+		expect(lint("#!/usr/bin/env node\n// one\n// two\n// three\n\nconst a = 1;\n")).toEqual([]);
+	});
+
+	test("reports a file that is only a long comment", () => {
+		expect(lint("// one\n// two\n// three\n// four\n")).toHaveLength(1);
+	});
+
 	test("lets through code that names a line number", () => {
 		expect(lint('const s = "line 12";\n')).toEqual([]);
 	});
