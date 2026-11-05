@@ -2,7 +2,7 @@
 
 Status: open. The `pantheon` and `religion` keys of `SentientSystems_GetChoices`, the pantheon beliefs the player can found a pantheon with and the religions and beliefs they can found a religion with, and the `religion` section of `SentientSystems_GetState`, the player's pantheon, progress toward a religion, and founded religion, are confirmed in a running game with Gathering Storm. The faith for the next pantheon is confirmed through its call, not through the state.
 
-The calls the religion choices and the religion section of the state use, as the game's religion screens show them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the religion choices and the religion section of the state use, as the game's religion screens show them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

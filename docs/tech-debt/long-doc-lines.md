@@ -4,16 +4,15 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 107 Markdown files. 71 of them have a line over 300 characters, 486 lines in all, and 93 lines pass 600.
+A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 113 Markdown files. 76 of them have a line over 300 characters, 486 lines in all, and 94 lines pass 600.
 
-[design/core/in-game-lua.md](../design/core/in-game-lua.md) has the longest line. Its Action API bullet is 5,729 characters and holds every action. The file has one `##` section, a list of bullets, and one Decisions table for all of them.
+[design/core/mod/actions.md](../design/core/mod/actions.md) has the longest line. Its Action API section is one paragraph of 5,717 characters that holds every action.
 
-Eight files pass 12,000 characters, although only one passes 150 lines:
+Seven files pass 12,000 characters, although only one passes 150 lines:
 
 | File | Characters | Lines | Lines over 300 |
 | --- | --- | --- | --- |
 | [findings/choices/choices.md](../findings/choices/choices.md) | 29,225 | 137 | 43 |
-| [design/core/in-game-lua.md](../design/core/in-game-lua.md) | 26,763 | 80 | 19 |
 | [findings/actions/unit-orders.md](../findings/actions/unit-orders.md) | 25,712 | 134 | 36 |
 | [findings/state/state.md](../findings/state/state.md) | 21,358 | 151 | 23 |
 | [findings/state/player.md](../findings/state/player.md) | 18,019 | 87 | 23 |
@@ -37,13 +36,13 @@ A split moves the text unchanged, and a later commit shortens the lines, so each
 
 1. **Checks.** In `scripts/check-docs/src/length.mjs`, warn on a line over 300 characters and a file over 12,000, with tests. State both limits in [rules/docs.md](../rules/docs.md#structure) and its check section. Commit: `chore: warn on long doc lines and large doc files`.
 2. **Core mod folder.** Move `in-game-lua.md` into the files below, unchanged. Each file gets the Decisions rows that explain it. Update the core index and every link and doc path to `in-game-lua.md`, in docs and code comments. Commit: `docs: split the core mod design into a folder`.
-   - `docs/design/core/mod/README.md*`: the summary, the index, the checkpoint ID, and the Civilopedia lookup.
-   - `docs/design/core/mod/lines.md*`: tagged lines, turn events, resync, the load line, the load signal, the version report, and errors.
-   - `docs/design/core/mod/json.md*`: the JSON encoder and the stash.
-   - `docs/design/core/mod/state.md*`: the state serializer and `SentientSystems_GetState`.
-   - `docs/design/core/mod/choices.md*`: the choices and placement.
-   - `docs/design/core/mod/trees.md*`: the tech, civic, and governor trees.
-   - `docs/design/core/mod/actions.md*`: the action API.
+   - `docs/design/core/mod/README.md`: the summary, the index, the checkpoint ID, and the Civilopedia lookup.
+   - `docs/design/core/mod/lines.md`: tagged lines, turn events, resync, the load line, the load signal, the version report, and errors.
+   - `docs/design/core/mod/json.md`: the JSON encoder and the stash.
+   - `docs/design/core/mod/state.md`: the state serializer and `SentientSystems_GetState`.
+   - `docs/design/core/mod/choices.md`: the choices and placement.
+   - `docs/design/core/mod/trees.md`: the tech, civic, and governor trees.
+   - `docs/design/core/mod/actions.md`: the action API.
 3. **Core mod lines.** Shorten the long lines in `docs/design/core/mod/`. If `actions.md` still passes 12,000 characters, make it a folder with one file per group of actions. Commit: `docs: shorten the lines in the core mod design`.
 4. **Choices split.** Split `choices.md` by its `###` sections into the files below, and remove `choices.md`. Commit: `docs: split the choices finding by topic`.
    - `docs/findings/choices/production.md*`: units, buildings, districts, projects, and other modes.

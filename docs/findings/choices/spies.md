@@ -2,7 +2,7 @@
 
 Status: open. The `spies` key of `SentientSystems_GetChoices`, the escape routes for the player's escaping spy, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the escape screen. A dragnet priority hasn't been seen in a game.
 
-The calls the spy choice uses, as the escape screen shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the spy choice uses, as the escape screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

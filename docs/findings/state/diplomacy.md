@@ -2,7 +2,7 @@
 
 Status: open. The `diplomacy` section of `SentientSystems_GetState`, the status of each met player, is confirmed in a running game with Gathering Storm, with the file sent through the tuner. It matches the Intel Report for one player, at war with another, and for a declared friendship and an alliance set with the tuner. A denouncement is checked in the fake game only. The `proposals` section, the deals other players put to the player, is confirmed against a pending proposal with gold, resources, an agreement, and a city with its great works and resources, and against an alliance with a third-party war that the player proposed. A research agreement item isn't confirmed. The relationship reasons, agendas, grievances, and the other players' relationships are confirmed on a save at turn 26 with Gathering Storm, and the promises are left out.
 
-The calls the diplomacy status and the proposals use, as the Intel Report in `DiplomacyActionView.lua` and the deal screen in `DiplomacyDealView.lua` show them. See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the diplomacy status and the proposals use, as the Intel Report in `DiplomacyActionView.lua` and the deal screen in `DiplomacyDealView.lua` show them. See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 

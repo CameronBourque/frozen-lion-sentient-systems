@@ -2,7 +2,7 @@
 
 Status: open. The `artifacts` key of `SentientSystems_GetChoices`, whose artifact the player's archaeologist uncovers, is confirmed in a running game with Gathering Storm and matches the artifact screen, for a tribal village and a battlefield.
 
-The calls the artifact choice uses, as the artifact screen shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the artifact choice uses, as the artifact screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

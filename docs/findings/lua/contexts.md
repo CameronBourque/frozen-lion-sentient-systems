@@ -32,7 +32,7 @@ Turns run one player at a time. An unfiltered print with the time, from `Events.
 
 ### Where actions can come from
 
-The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](../game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/in-game-lua.md](../../design/core/in-game-lua.md).
+The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](../game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/mod/actions.md](../../design/core/mod/actions.md).
 
 The core mod's own UI state has `UnitManager.RequestOperation` and `UI.RequestAction`. See [the core mod's states](#the-core-mods-states). A move requested there takes effect. The bridge sent `RequestOperation` to `SentientSystemsCore_UI`, the unit moved one tile on the map, and `GameCore_Tuner` read its new position 1 s later. Confirmed in single player on Windows on 2026-10-23. The calls are in [game-api.md](../actions/move-unit.md#moving-a-unit).
 

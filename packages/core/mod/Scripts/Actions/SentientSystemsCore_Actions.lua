@@ -1,5 +1,5 @@
 -- The result every action returns to the bridge, as JSON. See
--- docs/design/core/in-game-lua.md.
+-- docs/design/core/mod/actions.md.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")

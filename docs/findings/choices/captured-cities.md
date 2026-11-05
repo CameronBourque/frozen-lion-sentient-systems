@@ -2,7 +2,7 @@
 
 Status: open. The `capturedCities` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons and tooltips. Its rebelled city, from Rise and Fall's disloyal city screen, is confirmed in the same game and matches that screen.
 
-The calls the captured city choice uses, as the raze and disloyal city screens show them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the captured city choice uses, as the raze and disloyal city screens show them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

@@ -1,6 +1,6 @@
 // Reads JSON that the core mod builds in pieces. The tuner gives no reply to a
 // command whose output passes about 2 MiB, so the bridge reads one piece per
-// command and joins them. docs/design/core/in-game-lua.md describes the stash.
+// command and joins them. docs/design/core/mod/json.md describes the stash.
 
 import type { z } from "zod";
 import { CORE_STATE } from "./connect.js";

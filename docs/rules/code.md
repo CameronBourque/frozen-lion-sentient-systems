@@ -6,9 +6,9 @@ Rules for code in every package. Each architecture rule links to the design deci
 
 - [Only core talks to the game. Feature mods use the core API and never call FireTuner or game Lua directly](../design/architecture.md#core-boundary).
 - [Move code into core only when a second mod needs it](../design/architecture.md#core-boundary).
-- [Actions go through the game's own request functions, so the game checks legality](../design/core/in-game-lua.md).
-- [Agent state comes from the player's visibility data, never from the screen](../design/core/in-game-lua.md#decisions).
-- [Every failed action returns a reason](../design/core/in-game-lua.md#decisions).
+- [Actions go through the game's own request functions, so the game checks legality](../design/core/mod/actions.md).
+- [Agent state comes from the player's visibility data, never from the screen](../design/core/mod/state.md#decisions).
+- [Every failed action returns a reason](../design/core/mod/actions.md#decisions).
 - [Every action tool has a required `reason` field](../design/agents/narration-and-messaging.md#narrator-panel).
 - [The API key never goes into a game setup parameter](../design/core/settings.md).
 - [A file format change bumps that file's schema version and ships a migration](../design/versioning.md#bump-rules).

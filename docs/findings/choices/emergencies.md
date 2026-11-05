@@ -2,7 +2,7 @@
 
 Status: open. The `emergencies` key of `SentientSystems_GetChoices`, the emergency the player has to look at, matches the popup of an ongoing Betrayal Emergency in a running game with Gathering Storm. It isn't confirmed for the blocker's own case, with **Join** and **Reject**: the emergency started through a World Congress Special Session and showed no blocker. The choice reads only while `ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION` is up, so it was checked with its gate bypassed.
 
-The calls the emergency choice uses, as the emergency popup shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the emergency choice uses, as the emergency popup shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

@@ -2,7 +2,7 @@
 
 Status: open. The `victories` section of `SentientSystems_GetState`, the progress toward each victory in the order of the Overall tab of World Rankings, is confirmed in a game with Gathering Storm on turn 403 with 20 players: the order of all five victories and the tooltips match the Overall tab. The Science tab's stages and tasks match the tab's tooltips with one stage done. The Culture, Domination, Religion, and Diplomacy tabs' details are in the state and read on a second save, where the numbers match the screenshots. The light years bar and the details of a team game have not been compared.
 
-The calls the victories use, as the Overall tab in `WorldRankings.lua` and its Gathering Storm replacement, `WorldRankings_Expansion2.lua`, show them. See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the victories use, as the Overall tab in `WorldRankings.lua` and its Gathering Storm replacement, `WorldRankings_Expansion2.lua`, show them. See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 

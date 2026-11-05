@@ -26,5 +26,5 @@ The gate passed on 2026-10-23, and the phase is done.
 | Hotseat and online games | [tuner/multiplayer.md](../../findings/tuner/multiplayer.md#results) |
 | The single executable and the release download | [build-tooling.md](../../findings/build-tooling.md#results) |
 | The bridge's design | [bridge.md](../../design/core/bridge.md) |
-| The core mod's Lua | [in-game-lua.md](../../design/core/in-game-lua.md) |
+| The core mod's Lua | [design/core/mod/](../../design/core/mod/README.md) |
 | TypeScript choices | [rules/code.md](../../rules/code.md#typescript) |

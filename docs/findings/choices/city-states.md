@@ -2,7 +2,7 @@
 
 Status: open. The `envoys` key of `SentientSystems_GetChoices`, the city-states the player can send envoys to, and the `envoys` section of `SentientSystems_GetState`, the player's envoy tokens and each met city-state's envoys and suzerain, are confirmed in a running game with Gathering Storm, with the files sent through the tuner, and match the City-States screen. The section's bonuses, suzerain bonuses, quests, and Influenced By lists are confirmed in the same game and match the screen. Its resources are confirmed in the same game for a luxury, and a strategic resource's amount per turn only in files.
 
-The calls the envoy choice and the envoys section of the state use, as the City-States screen shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the envoy choice and the envoys section of the state use, as the City-States screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

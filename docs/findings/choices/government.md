@@ -2,7 +2,7 @@
 
 Status: open. The `government`, `policies`, and `governments` keys of `SentientSystems_GetChoices`, the player's government with its policy slots, the policies the player can slot, and every government, are confirmed in a running game with Gathering Storm. The legacy bonus percent is confirmed in files only.
 
-The calls the government and policy choices use, as the government screen shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the government and policy choices use, as the government screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

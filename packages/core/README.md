@@ -25,7 +25,7 @@ A state section is one key of the table that `SentientSystems_GetState` returns.
 | Lua test | `mod/Test/Scripts/State/SentientSystemsCore_State<Name>.test.lua` |
 | Schema | `bridge/src/state/<name>.ts` |
 | Schema key | The import and the key in `bridge/src/state/state.ts` |
-| Key table | The key table in [in-game-lua.md](../../docs/design/core/in-game-lua.md) |
+| Key table | The key table in [design/core/mod/state.md](../../docs/design/core/mod/state.md) |
 | Finding | The finding for the screen, and its row in the [findings index](../../docs/findings/README.md) |
 
 The contract test checks the schema against the JSON that the Lua test records, so a section needs no TypeScript test.
@@ -57,5 +57,5 @@ A choice is one key of the table that `SentientSystems_GetChoices` returns. It h
 | Lua test | `mod/Test/Scripts/Choices/SentientSystemsCore_Choices<Name>.test.lua` |
 | Schema | `bridge/src/choices/<name>.ts` |
 | Schema key | The import and the key in `bridge/src/choices/choices.ts` |
-| Key table | The key table in [in-game-lua.md](../../docs/design/core/in-game-lua.md) |
+| Key table | The key table in [design/core/mod/choices.md](../../docs/design/core/mod/choices.md) |
 | Finding | The finding for the screen, and its row in the [findings index](../../docs/findings/README.md) |

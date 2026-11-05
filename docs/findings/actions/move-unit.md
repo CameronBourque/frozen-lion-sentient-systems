@@ -2,7 +2,7 @@
 
 Status: open. Moving a unit, checking a move, checking a route, and the war dialog are confirmed in a running game. The civ6-mcp move path is not.
 
-The game calls the move action wraps, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md).
+The game calls the move action wraps, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md).
 
 ## Questions
 

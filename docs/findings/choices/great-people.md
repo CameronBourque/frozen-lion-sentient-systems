@@ -2,7 +2,7 @@
 
 Status: open. The `greatPeople` key of `SentientSystems_GetChoices`, the great people the player can recruit or pass, and the `greatPeople` section of `SentientSystems_GetState`, each great person on offer with their effects, patronage, and each player's progress, are confirmed in a running game with Gathering Storm, with the files sent through the tuner, and match the Great People screen.
 
-The calls the great person choice and the great people section of the state use, as the Great People screen shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the great person choice and the great people section of the state use, as the Great People screen shows them. The other choices are in [choices/choices.md](choices.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 

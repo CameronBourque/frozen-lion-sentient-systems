@@ -2,7 +2,7 @@
 
 Status: open. The unit orders, the orders on a unit's tile, the builder jobs, adding production, upgrades, formations, and air moves are confirmed in a running game, and attacks are confirmed except the priority target.
 
-The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
+The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 
 ## Questions
 

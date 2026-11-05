@@ -2,7 +2,7 @@
 
 Status: open. The `governors` section of `SentientSystems_GetState`, the player's governor titles and appointed governors, and the `governors` key of `SentientSystems_GetChoices`, the governors to appoint, the promotions to give, and the cities to assign them to, are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The state matches the Governors panel. The choice matches the panel and the assignment chooser's list for a governor with no city, and hasn't been compared with the details panel. The governor tree, `SentientSystems_GetGovernorTree`, is confirmed in the same game, and reads safely since the encoder escapes the percent sign, which crashed the game before. It matches the details panel. Secret Societies are confirmed in the same way, on a game with that mode, and match the panel and its details panel.
 
-The calls the governors in the state and the governor choice use, as the Governors panel and its screens show them. The other choices are in [choices/choices.md](../choices/choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the governors in the state and the governor choice use, as the Governors panel and its screens show them. The other choices are in [choices/choices.md](../choices/choices.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 

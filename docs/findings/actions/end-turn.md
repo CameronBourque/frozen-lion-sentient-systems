@@ -2,7 +2,7 @@
 
 Status: open. Ending the turn is confirmed in a running game. How the end-turn blockers interact with it is open.
 
-The game call the end turn action wraps, with the Lua state it runs in and where we found it. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md).
+The game call the end turn action wraps, with the Lua state it runs in and where we found it. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md).
 
 ## Questions
 

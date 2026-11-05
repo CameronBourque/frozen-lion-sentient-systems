@@ -1,6 +1,6 @@
 -- Builds one player's view of the game as JSON, from their own data and
 -- visibility, never the screen. Each section has its own file here.
--- See docs/design/core/in-game-lua.md. Shapes: bridge/src/state/.
+-- See docs/design/core/mod/state.md. Shapes: bridge/src/state/.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")

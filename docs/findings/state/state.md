@@ -2,7 +2,7 @@
 
 Status: open. `SentientSystems_GetState` with cities, units, revealed tiles, revealed rival cities, visible rival units, and end-turn blockers is confirmed in a running game. The list of `EndTurnBlockingTypes` values is confirmed in files and in a running game.
 
-The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. What a player can know about each tile and the rivals on it is in [state/tile-visibility.md](tile-visibility.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
+The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. What a player can know about each tile and the rivals on it is in [state/tile-visibility.md](tile-visibility.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 

@@ -15,5 +15,5 @@ In a running game, each action works once from the bridge. `endTurn` without `fo
 ## Record
 
 - Each request function, its Lua state, and its result, in `findings/actions/end-turn.md`.
-- The reasons, in [in-game-lua.md](../../design/core/in-game-lua.md).
+- The reasons, in [design/core/mod/actions.md](../../design/core/mod/actions.md).
 - The rows of each action, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md).
