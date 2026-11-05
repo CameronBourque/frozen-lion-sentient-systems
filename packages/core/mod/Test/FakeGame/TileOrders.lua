@@ -1,10 +1,11 @@
--- Air moves. Fakes the rebase and deploy operations, the airlift and paradrop
--- commands, their target tiles, and the paradrop type tag. A unit's airTargets
--- hold the tiles for each action, and its canNow says what the game allows.
+-- Tile orders: rebase, deploy, airlift, paradrop, and priority target, their
+-- target tiles, and the paradrop type tag. A unit's airTargets hold the tiles
+-- for each action, and its canNow says what the game allows.
 
 return function(env, world, ctx)
 	local PlotIndex = ctx.PlotIndex
-	local OPERATIONS, COMMANDS = { [30] = "rebase", [31] = "deploy" }, { [32] = "airlift", [33] = "paradrop" }
+	local OPERATIONS = { [30] = "rebase", [31] = "deploy" }
+	local COMMANDS = { [32] = "airlift", [33] = "paradrop", [36] = "priority_target" }
 
 	env.UnitOperationTypes.REBASE = 30
 	env.UnitOperationTypes.DEPLOY = 31
@@ -12,6 +13,7 @@ return function(env, world, ctx)
 	env.UnitCommandTypes.PARADROP = 33
 	env.UnitCommandTypes.PARAM_X = 34
 	env.UnitCommandTypes.PARAM_Y = 35
+	env.UnitCommandTypes.PRIORITY_TARGET = 36
 	env.UnitCommandResults.PLOTS = 830
 
 	local tags = {}
@@ -36,15 +38,17 @@ return function(env, world, ctx)
 		return false
 	end
 
-	-- Returns the plot indexes of the tiles for the action.
+	-- Returns the plot indexes of the tiles for the action, and what marks each
+	-- one for the order that marks its targets.
 	local function Plots(unit, name)
-		local plots = {}
+		local plots, modifiers = {}, {}
 
 		for i, tile in ipairs(unit.airTargets[name] or {}) do
 			plots[i] = PlotIndex(tile.x, tile.y)
+			modifiers[i] = tile.target and env.CityCommandResults.MODIFIER_IS_TARGET or 0
 		end
 
-		return plots
+		return plots, modifiers
 	end
 
 	local getOperationTargets, canStartOperation = env.UnitManager.GetOperationTargets, env.UnitManager.CanStartOperation
@@ -71,7 +75,9 @@ return function(env, world, ctx)
 			return getCommandTargets(unit, command)
 		end
 
-		return { [env.UnitCommandResults.PLOTS] = Plots(unit, COMMANDS[command]) }
+		local plots, modifiers = Plots(unit, COMMANDS[command])
+
+		return { [env.UnitCommandResults.PLOTS] = plots, [env.CityCommandResults.MODIFIERS] = modifiers }
 	end
 
 	env.UnitManager.CanStartCommand = function(unit, command, ...)

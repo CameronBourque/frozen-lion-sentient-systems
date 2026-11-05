@@ -1,6 +1,6 @@
 # Unit orders and attacks
 
-Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, formations, air moves, and attacks are confirmed in a running game.
+Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, formations, and air moves are confirmed in a running game, and attacks are confirmed except the priority target.
 
 The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 
@@ -72,7 +72,7 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
 - **Deploy.** The same fighter listed 218 tiles up to 10 away, including plain land. The request kept the unit in its city and set its activity to `ACTIVITY_INTERCEPT`. It passed with no moves left.
 - **Airlift.** An infantry unit in a city with an airport listed 12 tiles around the aerodrome of the other city with an airport, and landed on one of them with no moves left. Infantry on the aerodrome tile and on a tile next to it listed targets too, and a city with no airport listed none. A frigate on the water next to an aerodrome with an airport listed none, where infantry on the aerodrome listed 9. In `GameCore_Tuner`, `WorldBuilder.CityManager():CreateDistrict` and `CreateBuilding` built the aerodrome, the hangar, and the airport.
 - **Paradrop.** Spec ops, the only unit with `CLASS_PARADROP` in `GameInfo.TypeTags`, listed about 130 tiles up to 7 away from a city, and about 200 from a tile with an airstrip. It landed 3 tiles away with no moves left. Infantry failed, and so did spec ops on a bare tile.
-- A unit with no moves failed rebase, airlift, and paradrop. `CanStartCommand(unit, command, nil, parameters)` ignored the tile, and `CanStartCommand(unit, command, parameters)` checked it.
+- Airlift and paradrop are for land units, and air units rebase instead. A unit with no moves failed rebase, airlift, and paradrop. `CanStartCommand(unit, command, nil, parameters)` ignored the tile, and `CanStartCommand(unit, command, parameters)` checked it.
 - The checks give no reasons and no results besides the tiles.
 
 ### Attacks
