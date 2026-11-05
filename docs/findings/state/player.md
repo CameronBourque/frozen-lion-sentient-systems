@@ -14,9 +14,13 @@ The calls the player section of the state uses, as the top bar shows them. The R
 
 `TopPanel.lua` draws the bar. The Rise and Fall file, `TopPanel_Expansion1.lua`, only changes the bar's background for a golden or dark age, and the Gathering Storm file, `TopPanel_Expansion2.lua`, adds the favor button and the strategic stockpiles. Confirmed in files.
 
-- **Science and culture.** `RefreshYields` shows `GetTechs():GetScienceYield()` and `GetCulture():GetCultureYield()` per turn, in the number format `{1: number +#,###.#;-#,###.#}`, which rounds to the nearest tenth. They were 123.50390625 and 216.62109375, and the bar showed +123.5 and +216.6. Confirmed in files and on Windows on 2026-10-29.
+- **Science and culture.** `RefreshYields` shows `GetTechs():GetScienceYield()` and `GetCulture():GetCultureYield()` per turn, in the number format `{1: number +#,###.#;-#,###.#}`, which rounds to the nearest tenth.
+
+  They were 123.50390625 and 216.62109375, and the bar showed +123.5 and +216.6. Confirmed in files and on Windows on 2026-10-29.
 - **Faith.** `GetReligion():GetFaithBalance()` in the format `#,###.#`, and `GetFaithYield()` per turn. They were 2357.01 and 109, and the bar showed 2,357 and +109. Confirmed in files and on Windows on 2026-10-29.
-- **Gold.** The balance is `GetTreasury():GetGoldBalance()` rounded down, and the income per turn is `GetGoldYield()` less `GetTotalMaintenance()`, so the upkeep is already taken off. They were 9610.84 and 475.08 less 210, and the bar showed 9,610 and +265. Confirmed in files and on Windows on 2026-10-29.
+- **Gold.** The balance is `GetTreasury():GetGoldBalance()` rounded down, and the income per turn is `GetGoldYield()` less `GetTotalMaintenance()`, so the upkeep is already taken off.
+
+  They were 9610.84 and 475.08 less 210, and the bar showed 9,610 and +265. Confirmed in files and on Windows on 2026-10-29.
 - **Tourism.** `GetStats():GetTourism()` rounded to a tenth. The bar hides it at 0, as a turn 1 game showed, but the state always has it. It was 92 in a late save and 0 on turn 1. Confirmed in files and on Windows on 2026-10-29.
 - **Trade routes.** `RefreshTrade` shows `GetTrade():GetNumOutgoingRoutes()` over `GetOutgoingRouteCapacity()`, and hides the button when the capacity is 0. They were 17 and 20. Confirmed in files and on Windows on 2026-10-29.
 - **Favor.** With Gathering Storm only, the override of `RefreshYields` shows `GetFavor()` and `GetFavorPerTurn()`, which a player has only with that expansion. They were 335 and +3. Confirmed in files and on Windows on 2026-10-29.

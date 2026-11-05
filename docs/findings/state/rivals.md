@@ -2,7 +2,9 @@
 
 Status: confirmed. Revealed rival cities and visible rival units in `SentientSystems_GetState` are confirmed in a running game.
 
-The calls the state serializer uses to list the rival cities and units one player can see, with the Lua state each one runs in. What a player can know about each tile and the rivals on it is in [state/tile-visibility.md](tile-visibility.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
+The calls the state serializer uses to list the rival cities and units one player can see, with the Lua state each one runs in.
+
+What a player can know about each tile and the rivals on it is in [state/tile-visibility.md](tile-visibility.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
@@ -12,11 +14,19 @@ None open.
 
 ### Rival cities
 
-`PlayerManager.GetAlive()` lists every living player, and each player's cities come from `GetCities():Members()`, as for the player's own. City IDs repeat across players: Rome and Râ-Kedet both had ID 65536. `city:IsCapital()` tells whether a city is its owner's capital. The city banner reads a city's defense from its city center, for the player's own cities and for rivals', `Players[owner]:GetDistricts():FindID(city:GetDistrictID())`. That district's `GetDefenseStrength()` is the banner's defense number, rounded with `math.floor(x + 0.5)`. `GetDamage` and `GetMaxDamage` with `DefenseTypes.DISTRICT_GARRISON` give the garrison's health, and with `DefenseTypes.DISTRICT_OUTER` the walls' health, whose most is 0 for a city with no walls. See `CityBanner:UpdateStats` in `DLC/Expansion1/UI/CityBanners/CityBannerManager.lua`, lines 1209 to 1260. Confirmed in files and on Windows on 2026-10-24.
+`PlayerManager.GetAlive()` lists every living player, and each player's cities come from `GetCities():Members()`, as for the player's own. City IDs repeat across players: Rome and Râ-Kedet both had ID 65536. `city:IsCapital()` tells whether a city is its owner's capital.
+
+The city banner reads a city's defense from its city center, for the player's own cities and for rivals', `Players[owner]:GetDistricts():FindID(city:GetDistrictID())`. That district's `GetDefenseStrength()` is the banner's defense number, rounded with `math.floor(x + 0.5)`.
+
+`GetDamage` and `GetMaxDamage` with `DefenseTypes.DISTRICT_GARRISON` give the garrison's health, and with `DefenseTypes.DISTRICT_OUTER` the walls' health, whose most is 0 for a city with no walls.
+
+See `CityBanner:UpdateStats` in `DLC/Expansion1/UI/CityBanners/CityBannerManager.lua`, lines 1209 to 1260. Confirmed in files and on Windows on 2026-10-24.
 
 ### Rival units
 
-Each living player's units come from `GetUnits():Members()`, with the same calls as the player's own. Unit IDs repeat across players: player 0's scout and player 1's builder both had ID 196608, and both warriors had ID 131073. A rival unit is visible to the player when `PlayersVisibility[playerID]:IsVisible(x, y)` and `IsUnitVisible(unit)` are both `true`. See [state/tile-visibility.md](tile-visibility.md#rival-cities-and-units). Confirmed on Windows on 2026-10-24.
+Each living player's units come from `GetUnits():Members()`, with the same calls as the player's own. Unit IDs repeat across players: player 0's scout and player 1's builder both had ID 196608, and both warriors had ID 131073.
+
+A rival unit is visible to the player when `PlayersVisibility[playerID]:IsVisible(x, y)` and `IsUnitVisible(unit)` are both `true`. See [state/tile-visibility.md](tile-visibility.md#rival-cities-and-units). Confirmed on Windows on 2026-10-24.
 
 ## Method
 
