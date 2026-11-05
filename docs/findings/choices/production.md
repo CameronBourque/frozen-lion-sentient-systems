@@ -2,7 +2,7 @@
 
 Status: open. `SentientSystems_GetChoices` with the units, buildings, wonders, and projects each city can produce is confirmed in a running game. The districts are in [choices/districts.md](districts.md). Corps and armies are confirmed in files only.
 
-The calls the production choice uses to list what each city can produce, as the production panel lists them. The other choices are in the [choices index](README.md). The end-turn blockers that the choices resolve are in [state/state.md](../state/state.md#end-turn-blockers). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
+The calls the production choice uses to list what each city can produce, as the production panel lists them. The other choices are in the [choices index](README.md). The end-turn blockers that the choices resolve are in [state/end-turn-blockers.md](../state/end-turn-blockers.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 
