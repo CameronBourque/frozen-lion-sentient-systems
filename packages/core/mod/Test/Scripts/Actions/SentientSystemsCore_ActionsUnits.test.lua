@@ -125,6 +125,6 @@ describe("SentientSystems_UnitAction", function()
 	end)
 
 	it("fails for an action it doesn't know, and lists the actions", function()
-		assert.equal(Failed("Unknown unit action dance. The actions are alert, attack, build_road, delete, fortify, found_city, harvest, heal, improve, pillage, promote, remove_feature, remove_improvement, repair, skip, sleep, upgrade, wake."), Load(KNIGHT).SentientSystems_UnitAction(0, KNIGHT.id, "dance"))
+		assert.equal(Failed("Unknown unit action dance. The actions are alert, attack, build_road, delete, enter_formation, exit_formation, form_army, form_corps, fortify, found_city, harvest, heal, improve, pillage, promote, remove_feature, remove_improvement, repair, skip, sleep, upgrade, wake."), Load(KNIGHT).SentientSystems_UnitAction(0, KNIGHT.id, "dance"))
 	end)
 end)

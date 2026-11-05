@@ -74,6 +74,14 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 9437197, { action: "upgrade" })).toEqual({ ok: true });
 	});
 
+	test("unitAction passes the unit to join as a number", async () => {
+		answer("SentientSystems_UnitAction(0, 9437197, \"form_corps\", nil, nil, 9502792)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "form_corps", with: 9502792 })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9437197, \"exit_formation\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "exit_formation" })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes a promotion as text, with its quotes escaped", async () => {
 		answer("SentientSystems_UnitAction(0, 5636113, \"promote\", nil, nil, \"PROMOTION_\\\"HULL\")", FAILED);
 

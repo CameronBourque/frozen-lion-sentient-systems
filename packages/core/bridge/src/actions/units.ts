@@ -7,7 +7,8 @@ import { type ActionResult, sendAction } from "./actions.js";
 export type UnitOrder =
 	| { action: "fortify" | "sleep" | "skip" | "alert" | "heal" | "wake" | "delete" | "found_city" | "pillage" }
 	| { action: "remove_feature" | "harvest" | "repair" | "remove_improvement" }
-	| { action: "upgrade" }
+	| { action: "upgrade" | "exit_formation" }
+	| { action: "form_corps" | "form_army" | "enter_formation"; with: number }
 	| { action: "promote"; promotion: string }
 	| { action: "build_road"; route?: string }
 	| { action: "improve"; improvement: string }
@@ -21,9 +22,10 @@ export function moveUnit(client: TunerClient, playerID: number, unitID: number, 
 }
 
 // Gives a unit an order, such as a stance, an upgrade, a job on its tile, or
-// an attack. A promotion, an improvement, or a route goes in its own field.
+// an attack. A promotion, an improvement, a route, or the unit to join a
+// formation with goes in its own field.
 export function unitAction(client: TunerClient, playerID: number, unitID: number, order: UnitOrder): Promise<ActionResult> {
-	const type = "promotion" in order ? order.promotion : "improvement" in order ? order.improvement : "route" in order ? order.route : undefined;
+	const type = "promotion" in order ? order.promotion : "improvement" in order ? order.improvement : "route" in order ? order.route : "with" in order ? order.with : undefined;
 	const argument = type === undefined ? "nil" : JSON.stringify(type);
 	const tile = order.action === "attack" ? `${order.x}, ${order.y}` : "nil, nil";
 

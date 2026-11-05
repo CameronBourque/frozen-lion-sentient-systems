@@ -1,12 +1,12 @@
--- Unit orders. Fakes the stance, tile, job, wake, delete, and upgrade orders
--- and a unit's activity, and keeps each request in env.requests. A unit's route
--- and reasons are what the game's check returns. Units.lua fakes promote.
+-- Unit orders: the stance, tile, job, wake, delete, upgrade, and formation
+-- orders and a unit's activity. Each request goes in env.requests. A unit's
+-- route and reasons are what the game returns. Units.lua fakes promote.
 
 return function(env, world, ctx)
 	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106,
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
 	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
-	local COMMANDS = { wake = 110, delete = 111, upgrade = 113 }
+	local COMMANDS = { wake = 110, delete = 111, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
 	local rows, upgrades = {}, {}
@@ -36,6 +36,18 @@ return function(env, world, ctx)
 	env.UnitCommandTypes.WAKE = COMMANDS.wake
 	env.UnitCommandTypes.DELETE = COMMANDS.delete
 	env.UnitCommandTypes.UPGRADE = COMMANDS.upgrade
+	env.UnitCommandTypes.FORM_CORPS = COMMANDS.form_corps
+	env.UnitCommandTypes.FORM_ARMY = COMMANDS.form_army
+	env.UnitCommandTypes.ENTER_FORMATION = COMMANDS.enter_formation
+	env.UnitCommandTypes.EXIT_FORMATION = COMMANDS.exit_formation
+	env.UnitCommandTypes.PARAM_UNIT_PLAYER = 113
+	env.UnitCommandTypes.PARAM_UNIT_ID = 114
+	env.UnitCommandResults.UNITS = 829
+	env.GameInfo.UnitCommands = ctx.TypedRows({
+		[0] = { CommandType = "UNITCOMMAND_FORM_CORPS", PrereqCivic = "CIVIC_NATIONALISM" },
+		{ CommandType = "UNITCOMMAND_FORM_ARMY", PrereqCivic = "CIVIC_MOBILIZATION" },
+		{ CommandType = "UNITCOMMAND_ENTER_FORMATION" },
+	}, "CommandType")
 	env.UnitCommandResults.UNIT_TYPE = 827
 	env.UnitCommandResults.FAILURE_REASONS = 828
 	env.GameInfo.UnitUpgrades = ctx.Callable(upgrades)
@@ -50,6 +62,7 @@ return function(env, world, ctx)
 			row.FoundCity = unit.type == "UNIT_SETTLER"
 			row.BuildCharges = (unit.type == "UNIT_BUILDER" or unit.type == "UNIT_MILITARY_ENGINEER") and 3 or 0
 			row.Combat = unit.type == "UNIT_KNIGHT" and 50 or 0
+			row.FormationClass = unit.formationClass or "FORMATION_CLASS_LAND_COMBAT"
 
 			-- An upgrade is a chain of steps, and a step may need a tech.
 			local from = unit.type
@@ -177,6 +190,10 @@ return function(env, world, ctx)
 		} or nil
 	end
 
+	env.UnitManager.GetCommandTargets = function(unit)
+		return { [env.UnitCommandResults.UNITS] = unit.partners }
+	end
+
 	env.UnitManager.RequestCommand = function(unit, command, parameters)
 		env.requests[#env.requests + 1] = { unit = unit.GetID(), command = command, parameters = parameters }
 	end
@@ -194,6 +211,7 @@ return function(env, world, ctx)
 		unit.route = data.route
 		unit.reasons = data.reasons
 		unit.upgrade = data.upgrade
+		unit.partners = data.partners or {}
 
 		function unit.GetBuildCharges()
 			return data.charges or 0

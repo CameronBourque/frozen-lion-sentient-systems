@@ -1,6 +1,6 @@
 # Unit orders and attacks
 
-Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, and attacks are confirmed in a running game.
+Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, formations, and attacks are confirmed in a running game.
 
 The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 
@@ -54,6 +54,16 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
 - `GetUpgradeCost()` returned the cost for a unit with no moves and for one with a missing step, and 0 for a builder, a settler, and the great people, so the cost alone doesn't say whether an upgrade exists.
 - `GameInfo.UnitUpgrades` has a row for each `Unit` and `UpgradeUnit`, and the row of each unit in `GameInfo.Units` has `PrereqTech` and `PrereqCivic`. In the UI state, `HasTech` still returned true after `SetTech(index, false)`, so the reason that names a missing step wasn't checked in the running game.
 
+### Formations
+
+`GameInfo.UnitCommands` has `ENTER_FORMATION`, `EXIT_FORMATION`, `FORM_CORPS`, and `FORM_ARMY`. The corps needs the civic Nationalism and the army needs Mobilization, as `PrereqCivic` says in `UnitCommands.xml`. For `ENTER_FORMATION`, `UnitPanel.lua` calls `CanStartCommand(unit, hash, nil, true)`, reads the units in `UnitCommandResults.UNITS`, each with a player and an ID, and adds one button for each. `OnUnitActionClicked_EnterFormation` requests the command with `PARAM_UNIT_PLAYER` and `PARAM_UNIT_ID` of the chosen unit. A corps and an army use an interface mode. `WorldInput.lua` takes each unit on the clicked tile, checks `FORM_CORPS` or `FORM_ARMY` with those two parameters, and requests it. `UnitManager.GetCommandTargets(unit, command)` returns the same list in `UNITS`. Exit has no parameters, and the panel's loop requests it with `RequestCommand(unit, command)`. Confirmed in files. Confirmed on Windows on 2026-11-05:
+
+- **Corps.** The other unit has to be of the same kind and on an adjacent tile. Three knights on one tile didn't list each other, and a knight next to them listed all three. A knight formed a corps with the knight next to it. The other knight was gone, `GetMilitaryFormation()` was 1, and the unit had no moves left. A unit with no moves failed the loose check and had no targets. A partner with no moves was still listed. Two builders next to each other failed, and their `FormationClass` is `FORMATION_CLASS_CIVILIAN`.
+- **Army.** The player had Nationalism and lacked Mobilization, and the check failed. After `SetCivic(index, true)` in `GameCore_Tuner`, a corps listed an adjacent knight that was not in a formation, and that knight listed the corps. They formed an army, with `GetMilitaryFormation()` of 2. The other knight was gone.
+- **Enter and exit.** A knight and a crossbowman on a tile with a builder listed the builder, and the builder listed them. Two knights on a tile didn't list each other. After a knight entered, both units had `GetFormationUnitCount()` of 2 on the same tile, and exit was allowed for both. Exit took them back to 1. The plain check of `ENTER_FORMATION` returned false where the check with results returned true. A medic, which is a support unit, listed the knights and the crossbowman but not the builder, and the builder did not list the medic. A frigate on a coast tile listed an embarked builder and an embarked knight, and each of them listed the frigate, but two frigates didn't list each other. A medic with a knight and a frigate with the builder entered through the action, and each pair's count rose to 2.
+- A corps and an army failed the check for exit with moves restored, and `RestoreMovement` in `GameCore_Tuner` gave the moves back.
+- The checks give only the `UNITS` list and no reasons. A request changed the units after the call returned, not inside it.
+
 ### Attacks
 
 `WorldInput.lua` and `Civ6Common.lua` make three attack calls, and `RequestMoveOperation` picks one. Confirmed in files. Confirmed on Windows on 2026-11-04:
@@ -75,7 +85,8 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
 2. **Orders on the unit's tile.** Call the check and the request for found city, build improvement, and pillage with the unit on a tile that allows the order and on one that doesn't, and print `FAILURE_REASONS`.
 3. **Builder jobs.** Check and request each job with an engineer or a builder on a tile that allows it and on one that doesn't, print the results of a check with `OperationResultsTypes.ALL`, and read the tile and the unit's charges afterward. In `GameCore_Tuner`, `ImprovementBuilder.SetImprovementPillaged(plot, true)` and `RouteBuilder.SetRoutePillaged(plotIndex, true)` set up a pillaged tile.
 4. **Upgrade.** Call the loose check and the real check with results for units that can upgrade and units that can't, then request it and read the gold and the unit afterward. In `GameCore_Tuner`, `ChangeGoldBalance`, `ChangeResourceAmount` on `GetResources()`, and `SetTech` change the gold, the strategic resources, and the techs.
-5. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
+5. **Formations.** List `GetCommandTargets` for each command, check with the other unit's player and ID, request it, and read `GetMilitaryFormation()`, `GetFormationUnitCount()`, and the moves afterward. In `GameCore_Tuner`, `InitUnit` spawns the units, `RestoreMovement` and `ChangeMovesRemaining` set the moves, and `SetCivic` gives a civic.
+6. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
 
 ## Results
 
@@ -87,6 +98,7 @@ The bridge ran these steps in a single-player game.
 | `SentientSystems_UnitAction` for `improve`, `found_city`, and `pillage` | `SentientSystemsCore_UI` | A farm was started, a city was founded, and an enemy improvement was pillaged. The reasons came from the checks in the Lua | 2026-11-04 |
 | `SentientSystems_UnitAction` for `build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` | `SentientSystemsCore_UI` | Each took effect once, and each gave a reason for one illegal case: a road on a railroad, a remove feature with no feature, a harvest on a farm, a repair of an unpillaged tile, and a repair in a drought | 2026-11-05 |
 | `SentientSystems_UnitAction` for `upgrade` on a crossbowman, a caravel, a builder, a unit with no moves, and a unit short of gold or a resource | `SentientSystemsCore_UI` | The crossbowman became a machine gun and cost 180 gold. Each other case gave a reason: the territory, no upgrade, no moves, gold, and the resource | 2026-11-05 |
+| `SentientSystems_UnitAction` for `form_corps`, `form_army`, `enter_formation`, and `exit_formation` | `SentientSystemsCore_UI` | A musketman formed a corps and then an army, and a knight entered and left a builder's tile formation. Each other case gave a reason: no unit named, a unit that can't join, a builder, no moves, a corps that can't exit, and a missing civic | 2026-11-05 |
 | `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs and upgrades on 2026-11-05.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs, upgrades, and formations on 2026-11-05.
