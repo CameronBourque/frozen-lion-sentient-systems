@@ -75,7 +75,7 @@ After the agent leaves the book, its standing orders stay active until it change
 
 We write the first openings by hand. Each opening is a file in the `openings/` folder of the [knowledge files](../knowledge-files.md#file-layout).
 
-Decision records log the opening the agent picked, each branch it took, and the turn and reason it left the book. The game review metrics in `docs/design/decision-support/game-review.md*` at the end of the book, such as the number of cities and the score against the native AI on that turn, show which openings work on which starts. Those results tune the weights and the branches.
+Decision records log the opening the agent picked, each branch it took, and the turn and reason it left the book. The [game review](game-review.md#metrics-line) metrics at the end of the book, such as the number of cities and the score against the native AI on that turn, show which openings work on which starts. Those results tune the weights and the branches.
 
 ## Open questions
 
