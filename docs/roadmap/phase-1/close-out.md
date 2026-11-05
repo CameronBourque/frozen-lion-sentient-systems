@@ -5,7 +5,7 @@ Close the phase in the docs, and release core and the agent players mod. Part of
 ## Tasks
 
 1. **Close the phase.** Follow the steps in [rules/docs.md](../../rules/docs.md#roadmap). Commit: `docs: close phase 1`.
-2. **Risks.** In [risks.md](../../risks.md), update the game state and cost per game rows with the measured numbers from `findings/agent-runs.md`. Commit: `docs: update the state size and cost risks`.
+2. **Risks.** In [risks.md](../../risks.md), update the game state and cost per game rows with the measured numbers from `docs/findings/agent-runs.md*`. Commit: `docs: update the state size and cost risks`.
 3. **Release.** Merge the release-please PRs for core and for the agent players mod.
 
 ## Done when

@@ -16,5 +16,5 @@ In a running game, `lookup("settler")` finds the settler, `lookupPage("UNIT_SETT
 
 ## Record
 
-- The Civilopedia calls and the state they run in, in a new finding, `findings/civilopedia.md`. Add it to the [findings index](../../findings/README.md).
+- The Civilopedia calls and the state they run in, in a new finding, `docs/findings/civilopedia.md*`. Add it to the [findings index](../../findings/README.md).
 - The lookup, in [in-game-lua.md](../../design/core/in-game-lua.md).

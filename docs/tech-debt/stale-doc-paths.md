@@ -6,11 +6,11 @@ Make a path to a doc that no longer exists fail the build when the path is writt
 
 - `npm run check-docs` checks each Markdown link: the file or folder must exist, and the `#anchor` must match a heading. See `scripts/check-docs/src/links.mjs`.
 - It doesn't read paths outside a link's target. When the findings moved into topic folders, the check passed while these still named the old files:
-  - link text, such as `[findings/game-state.md](../../findings/state/state.md)`,
-  - paths in backticks in the roadmap steps, such as `findings/actions-end-turn.md`,
-  - paths in the comments of `.ts` and `.lua` files and in `ci.yml`, such as `docs/findings/tuner-protocol.md`.
+  - link text that kept a file's old path,
+  - paths in backticks in the roadmap steps,
+  - paths in the comments of `.ts` and `.lua` files and in `ci.yml`.
 - A search for the old names found them, and the move fixed them by hand.
-- Unfinished roadmap steps name docs they will create, such as `docs/reference/tools.md`, so a plain existence check would fail on correct text.
+- Unfinished roadmap steps name docs they will create, so a plain existence check would fail on correct text.
 
 ## Proposal
 
@@ -26,10 +26,10 @@ A doc that doesn't exist yet is written from `docs/` with a trailing `*`, such a
 ## Tasks
 
 1. **Resolver.** Add the shared module that finds doc paths in a line of text, resolves them, and handles the `*`, with tests for a path that exists, one that doesn't, a bare file name, a starred path that doesn't exist, and a starred path that does. Commit: `chore: resolve doc paths in text`.
-2. **Markdown check.** Add the check to `scripts/check-docs/src/`, wired into `run.mjs`, for backtick spans and link text, with tests. Commit: `chore: check doc paths in Markdown text`.
+2. **Markdown check.** Add the check to `scripts/check-docs/src/`, wired into `run.mjs`, for backtick spans and link text, with tests. Write `docs/` and a `*` on the planned paths it finds in the docs, so the check passes. Commit: `chore: check doc paths in Markdown text`.
 3. **Comment rule.** Add the rule to `scripts/comment-rules/` for TypeScript and Lua comments, with tests. Commit: `chore: lint doc paths in comments`.
 4. **Yml comments.** Extend the comment rule to `.yml` files, with tests. Commit: `chore: lint doc paths in yml comments`.
-5. **Fix and record.** Fix the stale paths the checks find. Write `docs/` and a `*` on the planned ones. List the checks in [rules/docs.md](../rules/docs.md#automated-check) and [rules/code.md](../rules/code.md#lint-and-test), and add the `*` convention to the docs rules. Delete this file and its row in the [index](README.md). Commit: `docs: fix stale doc paths`.
+5. **Fix and record.** Fix the stale paths the comment checks find, and write `docs/` and a `*` on the planned ones. List the checks in [rules/docs.md](../rules/docs.md#automated-check) and [rules/code.md](../rules/code.md#lint-and-test), and add the `*` convention to the docs rules. Delete this file and its row in the [index](README.md). Commit: `docs: fix stale doc paths`.
 
 ## Done when
 
