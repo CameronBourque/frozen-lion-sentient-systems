@@ -14,5 +14,5 @@ The agent plays the smoke test preset to turn 100 or later with no manual help, 
 
 ## Record
 
-- The run's numbers, in a new finding, `findings/agent-runs.md`. Add it to the [findings index](../../findings/README.md).
+- The run's numbers, in a new finding, `docs/findings/agent-runs.md*`. Add it to the [findings index](../../findings/README.md).
 - Any new limit defaults, in [turn-loop.md](../../design/agents/turn-loop.md).

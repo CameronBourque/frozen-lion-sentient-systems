@@ -8,6 +8,7 @@ How docs are organized. These rules apply to every file under `docs/`, to packag
 - **Start each file with a one- or two-sentence summary.** The folder index reuses it.
 - **Every folder has a `README.md` index.** The index has one row per file or subfolder. Add each new file to its folder's index.
 - **Use relative links.** Readers and tools can follow them.
+- **Name a doc by its path from `docs/`.** In backticks, in link text, and in code comments, write `docs/findings/game-api.md`, not `game-api.md`. A doc that isn't written yet gets a trailing `*`, such as `docs/example/new-file.md*`. Remove the `*` in the commit that adds the file.
 - **Describe the present and the plan.** A doc says how things are now and what comes next. When something changes, rewrite the text to match, and remove what no longer applies, such as old versions, replaced choices, and answered questions. Git keeps the history.
 
 ## No repetition
@@ -73,7 +74,7 @@ Where each kind of fact lives:
 
 ## Tech debt
 
-- Each debt is its own file in [tech-debt/](../tech-debt/README.md), with a one-line summary and these sections: `## Now`, `## Proposal`, `## Questions`, and `## Done when`.
+- Each debt is its own file in [tech-debt/](../tech-debt/README.md), with a one-line summary and these sections: `## Now`, `## Proposal`, `## Questions`, and `## Done when`. A planned debt has `## Tasks` in place of `## Questions`.
 - `## Now` says what the code or docs hold today, with paths and counts.
 - The index lists the files in the order to work on them.
 - When a debt is planned, answer its questions in the file and add `## Tasks`, one task per commit, as a roadmap step does. Cut `## Proposal` to a short summary of the approach, so the details live only in the tasks.
@@ -87,7 +88,7 @@ Where each kind of fact lives:
 
 ## Automated check
 
-`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes.
+`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, doc paths in backticks and link text, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes. Lint checks the doc paths in code comments, as that section also describes.
 
 The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there. Files over 150 lines get a warning, not a failure.
 

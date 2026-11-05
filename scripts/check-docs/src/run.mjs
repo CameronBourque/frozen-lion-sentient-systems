@@ -7,8 +7,9 @@ import { checkIndexes } from "./indexes.mjs";
 import { checkSections } from "./sections.mjs";
 import { checkWriting } from "./writing.mjs";
 import { checkLength } from "./length.mjs";
+import { checkDocPaths } from "./doc-paths.mjs";
 
-const checks = [checkLinks, checkIndexes, checkSections, checkWriting, checkLength];
+const checks = [checkLinks, checkIndexes, checkSections, checkWriting, checkLength, checkDocPaths];
 
 const format = (result) => `${result.file}:${result.line}: ${result.rule}: ${result.message}`;
 

@@ -87,3 +87,23 @@ describe("checkComments", () => {
 		expect(lines).toHaveLength(2);
 	});
 });
+
+describe("doc paths", () => {
+	const files = new Set(["docs/findings/game-api.md"]);
+	const docs = { exists: (p) => files.has(p) };
+
+	test("reports a path that doesn't exist", () => {
+		const { lines, exitCode } = checkComments({ "a.lua": "local x = 1\n-- see docs/findings/old.md\n" }, undefined, docs);
+
+		expect(lines).toEqual(["a.lua:2: docs/findings/old.md does not exist"]);
+		expect(exitCode).toBe(1);
+	});
+
+	test("lets through a path that exists and a planned path", () => {
+		expect(checkComments({ "a.lua": "-- see docs/findings/game-api.md\n-- and docs/reference/tools.md*\n" }, undefined, docs).lines).toEqual([]);
+	});
+
+	test("skips the rule when no docs are given", () => {
+		expect(checkComments({ "a.lua": "-- see docs/findings/old.md\n" }).lines).toEqual([]);
+	});
+});

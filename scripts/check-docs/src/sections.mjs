@@ -28,7 +28,8 @@ const kinds = [
 	{
 		name: "tech debt file",
 		matches: (p) => p.startsWith("docs/tech-debt/") && !isReadme(p),
-		headings: ["Now", "Proposal", "Questions", "Done when"],
+		headings: ["Now", "Proposal", "Done when"],
+		oneOf: [["Questions", "Tasks"]],
 	},
 ];
 
@@ -51,6 +52,12 @@ function checkKind(doc, kind) {
 
 	for (const heading of kind.headings ?? []) {
 		if (!names.has(heading)) found.push(problem(doc.path, 1, "sections", `${kind.name} is missing ## ${heading}`));
+	}
+
+	for (const group of kind.oneOf ?? []) {
+		if (!group.some((heading) => names.has(heading))) {
+			found.push(problem(doc.path, 1, "sections", `${kind.name} is missing ${group.map((heading) => `## ${heading}`).join(" or ")}`));
+		}
 	}
 
 	for (const { label, pattern } of kind.lines ?? []) {

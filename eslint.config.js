@@ -10,6 +10,7 @@ import commentRules from "./scripts/comment-rules/src/eslint-rule.mjs";
 // The same layout and comment rules for JavaScript and TypeScript.
 const stylisticRules = {
 	"comment-rules/text-rules": "error",
+	"comment-rules/doc-paths": "error",
 	"@stylistic/indent": ["error", "tab"],
 	"@stylistic/no-trailing-spaces": "error",
 	// Only comment lines are limited. The code limit is above the longest

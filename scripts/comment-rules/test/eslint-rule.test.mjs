@@ -3,7 +3,7 @@
 
 import { Linter } from "eslint";
 import { describe, expect, test } from "vitest";
-import commentRules from "../src/eslint-rule.mjs";
+import commentRules, { docPathsRule } from "../src/eslint-rule.mjs";
 
 const linter = new Linter();
 const config = [
@@ -67,5 +67,44 @@ describe("comment-rules/text-rules", () => {
 
 	test("lets through code that names a line number", () => {
 		expect(lint('const s = "line 12";\n')).toEqual([]);
+	});
+});
+
+describe("comment-rules/doc-paths", () => {
+	const files = new Set(["docs/findings/game-api.md"]);
+	const docLinter = new Linter();
+	const docConfig = [
+		{
+			plugins: { "comment-rules": { rules: { "doc-paths": docPathsRule({ exists: (p) => files.has(p) }) } } },
+			rules: { "comment-rules/doc-paths": "error" },
+		},
+	];
+	const lintDocs = (code) => docLinter.verify(code, docConfig);
+
+	test("reports a path that doesn't exist, at the comment's position", () => {
+		const messages = lintDocs("const a = 1;\n// see docs/findings/old.md\n");
+
+		expect(messages).toHaveLength(1);
+		expect(messages[0]).toMatchObject({ line: 2, column: 1, message: "docs/findings/old.md does not exist" });
+	});
+
+	test("reports a path in a block comment", () => {
+		expect(lintDocs("/* see docs/findings/old.md */\nconst a = 1;\n")).toHaveLength(1);
+	});
+
+	test("lets through a path that exists, a planned path, and code", () => {
+		expect(lintDocs("// see docs/findings/game-api.md\n// and docs/reference/tools.md*\nconst s = 'docs/findings/old.md';\n")).toEqual([]);
+	});
+
+	test("reports a planned path that exists", () => {
+		expect(lintDocs("// see docs/findings/game-api.md*\n")).toHaveLength(1);
+	});
+
+	test("is part of the plugin, with the real docs", () => {
+		const real = new Linter();
+		const config = [{ plugins: { "comment-rules": commentRules }, rules: { "comment-rules/doc-paths": "error" } }];
+
+		expect(real.verify("// see docs/findings/game-api.md\n", config)).toEqual([]);
+		expect(real.verify("// see docs/findings/old.md\n", config)).toHaveLength(1);
 	});
 });

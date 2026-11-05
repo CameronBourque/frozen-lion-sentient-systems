@@ -2,6 +2,7 @@
 // ESLint checks the TypeScript and JavaScript comments, and the CI lint job has
 // no Lua tool, so this covers the Lua ones.
 
+import { findDocPathProblems } from "../../comment-rules/src/doc-path-rule.mjs";
 import { checkHeader } from "../../comment-rules/src/header-rule.mjs";
 import { findText } from "../../comment-rules/src/text-rules.mjs";
 
@@ -46,8 +47,9 @@ function leadingComments(lines) {
 
 // Returns one "file:line: message" per problem in a full-line comment or file
 // header, and the exit code. A comment after code on the same line isn't
-// checked.
-export function checkComments(files, limit = LIMIT) {
+// checked. `docs` says which files exist, for the doc path rule, which is
+// skipped without it.
+export function checkComments(files, limit = LIMIT, docs = undefined) {
 	const lines = [];
 
 	for (const [file, text] of Object.entries(files)) {
@@ -59,7 +61,7 @@ export function checkComments(files, limit = LIMIT) {
 		fileLines.forEach((line, index) => {
 			if (!/^\s*--/.test(line)) return;
 
-			const messages = [...RULES.map((rule) => rule.find(line, limit)), ...findText(line)];
+			const messages = [...RULES.map((rule) => rule.find(line, limit)), ...findText(line), ...(docs ? findDocPathProblems(line, docs) : [])];
 
 			for (const message of messages.filter(Boolean)) lines.push(`${file}:${index + 1}: ${message}`);
 		});

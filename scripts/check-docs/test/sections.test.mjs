@@ -30,14 +30,16 @@ describe("sections", () => {
 		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/README.md": "# Phase 0\n" }))).toEqual([]);
 	});
 
-	test("a tech debt file needs its sections, and Tasks is optional", () => {
-		const debt = lines("# D", "## Now", "## Proposal", "## Questions", "## Done when");
+	test("a tech debt file needs its sections, and Questions or Tasks", () => {
+		const open = lines("# D", "## Now", "## Proposal", "## Questions", "## Done when");
+		const planned = lines("# D", "## Now", "## Proposal", "## Tasks", "## Done when");
 
-		expect(checkSections(buildRepo({ "docs/tech-debt/d.md": debt }))).toEqual([]);
-		expect(messages(checkSections(buildRepo({ "docs/tech-debt/d.md": lines("# D", "## Now", "## Tasks") })))).toEqual([
+		expect(checkSections(buildRepo({ "docs/tech-debt/d.md": open }))).toEqual([]);
+		expect(checkSections(buildRepo({ "docs/tech-debt/d.md": planned }))).toEqual([]);
+		expect(messages(checkSections(buildRepo({ "docs/tech-debt/d.md": lines("# D", "## Now") })))).toEqual([
 			"docs/tech-debt/d.md:1: sections: tech debt file is missing ## Proposal",
-			"docs/tech-debt/d.md:1: sections: tech debt file is missing ## Questions",
 			"docs/tech-debt/d.md:1: sections: tech debt file is missing ## Done when",
+			"docs/tech-debt/d.md:1: sections: tech debt file is missing ## Questions or ## Tasks",
 		]);
 	});
 

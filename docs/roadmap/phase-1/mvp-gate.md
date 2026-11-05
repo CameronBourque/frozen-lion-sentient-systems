@@ -16,6 +16,6 @@ The agent finishes a full game on the MVP gate preset with no manual help, and t
 
 ## Record
 
-- The game's numbers, in `findings/agent-runs.md`.
+- The game's numbers, in `docs/findings/agent-runs.md*`.
 - The state size and any trims, in [testing.md](../../design/testing.md#state-size) and [in-game-lua.md](../../design/core/in-game-lua.md).
 - The cost per game, for the mod description, in [distribution.md](../../design/distribution.md#decisions).
