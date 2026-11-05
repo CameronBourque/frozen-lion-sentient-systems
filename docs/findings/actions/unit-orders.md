@@ -6,6 +6,9 @@ The game calls the unit order and attack actions wrap, with the Lua state each r
 
 ## Questions
 
+1. Does `UNITCOMMAND_PRIORITY_TARGET` mark the tile of an enemy escort, and does a request hit the escort? Setup needs an enemy military unit that escorts a civilian or support unit within reach of a spec ops or air unit, in sight. See [Attacks](#attacks).
+2. Do a builder or an engineer get the wonder, district, and project production commands, with Qin Shi Huang of China, Montezuma of the Aztecs, or a Royal Society built in a Government Plaza? See [Add production](#add-production).
+
 ## What we know now
 
 ### Unit orders
