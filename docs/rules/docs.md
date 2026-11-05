@@ -38,6 +38,7 @@ Where each kind of fact lives:
 
 ## Findings
 
+- Findings sit in topic folders under [findings/](../findings/README.md), and each folder has a `README.md` index. Put a new finding in the folder for its topic. Make a new folder when a topic has no home, and add it to the top index.
 - Each finding has one of two statuses:
   - **Confirmed.** Tested in a running game, or read directly from the game's own files.
   - **Unconfirmed.** From community sources, or a guess. Test it before code depends on it.
