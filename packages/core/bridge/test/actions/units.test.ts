@@ -57,6 +57,20 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 9437197, { action: "improve", improvement: "IMPROVEMENT_FARM" })).toEqual({ ok: true });
 	});
 
+	test("unitAction passes the route of a road as text", async () => {
+		answer("SentientSystems_UnitAction(0, 9437197, \"build_road\", nil, nil, \"ROUTE_RAILROAD\")", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 9437197, { action: "build_road", route: "ROUTE_RAILROAD" })).toEqual({ ok: true });
+	});
+
+	test("unitAction passes a road with no route, and a job, with no type", async () => {
+		answer("SentientSystems_UnitAction(0, 9437197, \"build_road\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "build_road" })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9437197, \"harvest\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "harvest" })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes a promotion as text, with its quotes escaped", async () => {
 		answer("SentientSystems_UnitAction(0, 5636113, \"promote\", nil, nil, \"PROMOTION_\\\"HULL\")", FAILED);
 

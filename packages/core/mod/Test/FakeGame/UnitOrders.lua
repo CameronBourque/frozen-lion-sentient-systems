@@ -1,10 +1,11 @@
--- Unit orders. Fakes the stance, found city, pillage, improve, wake, and delete
--- operations and a unit's activity, and keeps each request in env.requests.
--- FakeGame/Units.lua fakes promote, and FakeGame/Plots.lua the plots.
+-- Unit orders. Fakes the stance, tile, job, wake, and delete operations and a
+-- unit's activity, and keeps each request in env.requests. A unit's route and
+-- reasons are what the game's check returns. Units.lua fakes promote.
 
 return function(env, world, ctx)
-	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106 }
-	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY" }
+	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106,
+		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
+	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
 	local COMMANDS = { wake = 110, delete = 111 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
@@ -27,8 +28,9 @@ return function(env, world, ctx)
 
 	ctx.TypedRows(env.GameInfo.UnitOperations, "OperationType")
 	env.ActivityTypes = { ACTIVITY_AWAKE = 1, ACTIVITY_SLEEP = 2, ACTIVITY_HOLD = 3, ACTIVITY_SENTRY = 4, ACTIVITY_OPERATION = 5 }
-	env.OperationResultsTypes = { NO_TARGETS = 1 }
-	env.UnitOperationResults = { IMPROVEMENTS = 20 }
+	env.OperationResultsTypes = { NO_TARGETS = 1, ALL = 2 }
+	env.UnitOperationResults = { IMPROVEMENTS = 20, ROUTE_TYPE = 21, FAILURE_REASONS = 22 }
+	env.GameInfo.Route_ValidBuildUnits = ctx.Callable({ { RouteType = "ROUTE_ANCIENT_ROAD", UnitType = "UNIT_MILITARY_ENGINEER" } })
 	env.UnitOperationTypes.BUILD_IMPROVEMENT = 6
 	env.UnitOperationTypes.PARAM_IMPROVEMENT_TYPE = 7
 	env.UnitCommandTypes.WAKE = COMMANDS.wake
@@ -42,7 +44,7 @@ return function(env, world, ctx)
 			local row = env.GameInfo.Units[ctx.indexes[unit.type]]
 
 			row.FoundCity = unit.type == "UNIT_SETTLER"
-			row.BuildCharges = unit.type == "UNIT_BUILDER" and 3 or 0
+			row.BuildCharges = (unit.type == "UNIT_BUILDER" or unit.type == "UNIT_MILITARY_ENGINEER") and 3 or 0
 			row.Combat = unit.type == "UNIT_KNIGHT" and 50 or 0
 
 			for _, name in ipairs(unit.improvements or {}) do
@@ -78,6 +80,21 @@ return function(env, world, ctx)
 			return false
 		end,
 		IsImpassable = function()
+			return false
+		end,
+		GetFeatureType = function()
+			return -1
+		end,
+		GetResourceType = function()
+			return -1
+		end,
+		GetResourceTypeHash = function()
+			return 0
+		end,
+		GetRouteType = function()
+			return -1
+		end,
+		IsRoutePillaged = function()
 			return false
 		end,
 	}
@@ -121,7 +138,10 @@ return function(env, world, ctx)
 			return canStartOperation(unit, operation, target, testOnly, withResults)
 		end
 
-		return Has(testOnly == true and unit.canEver or unit.canNow, name)
+		return Has(testOnly == true and unit.canEver or unit.canNow, name), {
+			[env.UnitOperationResults.ROUTE_TYPE] = unit.route,
+			[env.UnitOperationResults.FAILURE_REASONS] = unit.reasons,
+		}
 	end
 
 	env.UnitManager.CanStartCommand = function(unit, command, testOnly, withResults)
@@ -148,6 +168,8 @@ return function(env, world, ctx)
 		unit.canNow = data.canNow or {}
 		unit.improvements = data.improvements or {}
 		unit.canBuild = data.canBuild or {}
+		unit.route = data.route
+		unit.reasons = data.reasons
 
 		function unit.GetBuildCharges()
 			return data.charges or 0

@@ -6,7 +6,9 @@ import { type ActionResult, sendAction } from "./actions.js";
 
 export type UnitOrder =
 	| { action: "fortify" | "sleep" | "skip" | "alert" | "heal" | "wake" | "delete" | "found_city" | "pillage" }
+	| { action: "remove_feature" | "harvest" | "repair" | "remove_improvement" }
 	| { action: "promote"; promotion: string }
+	| { action: "build_road"; route?: string }
 	| { action: "improve"; improvement: string }
 	| { action: "attack"; x: number; y: number };
 
@@ -19,9 +21,10 @@ export function moveUnit(client: TunerClient, playerID: number, unitID: number, 
 
 // Gives a unit an order: a stance, a wake, a delete, a promotion, a job on the
 // tile it stands on, or an attack on a tile. A promotion or an improvement is a
-// type from the unit's choices.
+// type from the unit's choices. A road takes the route the game would build,
+// and a route that differs is refused with the one it would build.
 export function unitAction(client: TunerClient, playerID: number, unitID: number, order: UnitOrder): Promise<ActionResult> {
-	const type = "promotion" in order ? order.promotion : "improvement" in order ? order.improvement : undefined;
+	const type = "promotion" in order ? order.promotion : "improvement" in order ? order.improvement : "route" in order ? order.route : undefined;
 	const argument = type === undefined ? "nil" : JSON.stringify(type);
 	const tile = order.action === "attack" ? `${order.x}, ${order.y}` : "nil, nil";
 

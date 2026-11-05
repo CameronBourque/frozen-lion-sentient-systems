@@ -1,6 +1,6 @@
 # Unit orders and attacks
 
-Status: open. The unit orders, the orders on a unit's tile, and attacks are confirmed in a running game.
+Status: open. The unit orders, the orders on a unit's tile, the builder jobs, and attacks are confirmed in a running game.
 
 The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 
@@ -32,6 +32,17 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
 - Pillage was allowed for a knight on an unpillaged improvement in the territory of a player at war, and refused on the player's own farm. After the request, the improvement was pillaged and the check refused a second pillage.
 - Units placed with `GameCore_Tuner`'s `UnitManager.InitUnit` take these orders like any other.
 
+### Builder jobs
+
+`UnitPanel.lua` has no code for the builder jobs. They are plain unit operations with no interface mode, so the panel's loop checks each one loosely and then for real, and `OnUnitActionClicked` requests it with `RequestOperation(unit, hash)` and no parameters. `UnitOperationTypes` has `BUILD_ROUTE`, `REMOVE_FEATURE`, `HARVEST_RESOURCE`, `REPAIR`, `REPAIR_ROUTE`, and `REMOVE_IMPROVEMENT`, and each matches the hash in `GameInfo.UnitOperations`. Confirmed in files. Confirmed on Windows on 2026-11-05:
+
+- Each request took effect within a second, and the unit had no moves left. Remove feature and harvest used a build charge, and the road, the repairs, and remove improvement used none.
+- **Road.** Only a Military Engineer builds roads, and `GameInfo.Route_ValidBuildUnits` lists it for each route. A builder failed the loose check on every tile. The operation has no route parameter. The game builds the best route the player has, `ROUTE_RAILROAD` here, and the check returns it as text in `UnitOperationResults.ROUTE_TYPE` with the cost in `ADDITIONAL_DESCRIPTION`. An engineer could build on a tile with an older route and on a tile with a pillaged route, and it passed the loose check but failed the real one on a tile that had a railroad.
+- **Remove feature.** `GameInfo.Features` has `Removable` and `RemoveTech` for each feature. A check with `OperationResultsTypes.ALL` returns the feature in `FEATURE_TYPE` and its yields in `ADDITIONAL_DESCRIPTION`. A jungle with an improvement failed the real check, and passed it after the improvement was removed. A forest on a tile nobody owns failed the loose check, and passed it once `WorldBuilder.CityManager():SetPlotOwner` gave the tile to the player.
+- **Harvest.** `GameInfo.Resource_Harvests` has a row, with `PrereqTech`, for each resource that can be harvested. Wheat, rice, and bananas passed. A resource with no row failed the loose check, and so did wheat with a farm and stone with a quarry.
+- **Repair.** `REPAIR` repairs a pillaged improvement, and `REPAIR_ROUTE` repairs a pillaged route. Each failed on a tile that had only the other kind. It is the only job that gave a failure reason, "cannot be repaired while a drought is in progress", for two pillaged improvements.
+- **Remove improvement.** It removed two different improvements with no dialog.
+
 ### Attacks
 
 `WorldInput.lua` and `Civ6Common.lua` make three attack calls, and `RequestMoveOperation` picks one. Confirmed in files. Confirmed on Windows on 2026-11-04:
@@ -51,7 +62,8 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
 
 1. **Unit orders.** For each order, call the loose check and then the real check, then request it. Read `UnitManager.GetActivityType(unit)` and the unit's moves before and after.
 2. **Orders on the unit's tile.** Call the check and the request for found city, build improvement, and pillage with the unit on a tile that allows the order and on one that doesn't, and print `FAILURE_REASONS`.
-3. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
+3. **Builder jobs.** Check and request each job with an engineer or a builder on a tile that allows it and on one that doesn't, print the results of a check with `OperationResultsTypes.ALL`, and read the tile and the unit's charges afterward. In `GameCore_Tuner`, `ImprovementBuilder.SetImprovementPillaged(plot, true)` and `RouteBuilder.SetRoutePillaged(plotIndex, true)` set up a pillaged tile.
+4. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
 
 ## Results
 
@@ -61,6 +73,7 @@ The bridge ran these steps in a single-player game.
 | --- | --- | --- | --- |
 | `SentientSystems_UnitAction` for fortify, skip, wake, promote, and delete on a knight and a caravel | `SentientSystemsCore_UI` | Each took effect. Delete removed the knight | 2026-11-04 |
 | `SentientSystems_UnitAction` for `improve`, `found_city`, and `pillage` | `SentientSystemsCore_UI` | A farm was started, a city was founded, and an enemy improvement was pillaged. The reasons came from the checks in the Lua | 2026-11-04 |
+| `SentientSystems_UnitAction` for `build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` | `SentientSystemsCore_UI` | Each took effect once, and each gave a reason for one illegal case: a road on a railroad, a remove feature with no feature, a harvest on a farm, a repair of an unpillaged tile, and a repair in a drought | 2026-11-05 |
 | `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs on 2026-11-05.
