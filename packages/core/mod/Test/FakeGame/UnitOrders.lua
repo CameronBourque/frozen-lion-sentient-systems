@@ -54,7 +54,6 @@ return function(env, world, ctx)
 
 	ctx.TypedRows(env.GameInfo.Improvements, "ImprovementType")
 
-	-- Returns whether the list has the name.
 	local function Has(list, name)
 		for _, item in ipairs(list) do
 			if item == name then
@@ -65,7 +64,6 @@ return function(env, world, ctx)
 		return false
 	end
 
-	-- What a plot without data answers.
 	local EMPTY_PLOT = {
 		GetOwner = function()
 			return -1
@@ -84,7 +82,6 @@ return function(env, world, ctx)
 		end,
 	}
 
-	-- A plot from the world's data, or an empty one, with its index.
 	env.Map.GetPlot = function(x, y)
 		local index = PlotIndex(x, y)
 
@@ -95,8 +92,6 @@ return function(env, world, ctx)
 		}, { __index = ctx.plots[index] or EMPTY_PLOT })
 	end
 
-	-- The distance in tiles, which the fake takes as the larger of the two
-	-- differences.
 	env.Map.GetPlotDistance = function(x1, y1, x2, y2)
 		return math.max(math.abs(x1 - x2), math.abs(y1 - y2))
 	end

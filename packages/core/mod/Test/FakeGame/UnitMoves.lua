@@ -58,7 +58,6 @@ return function(env, world, ctx)
 		unit.blocked = data.blocked == true
 		unit.startsWar = data.startsWar or {}
 
-		-- The fake's component ID is the unit itself.
 		function unit.GetComponentID()
 			return unit
 		end
