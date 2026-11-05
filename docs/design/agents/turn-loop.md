@@ -11,7 +11,7 @@ The loop starts when the bridge sees the turn-start event for an agent slot. It 
 3. Take the agent's other actions.
 4. End the turn.
 
-Plain code handles trivial cases without the LLM, such as fortifying idle units and setting scouts to auto-explore. Quick movement and quick combat stay on during agent turns.
+Plain code handles trivial cases without the LLM, such as fortifying idle units and setting scouts to auto-explore. Quick movement and quick combat stay on during agent turns. [Standing orders](../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
 
 ## Tools
 

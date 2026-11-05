@@ -34,8 +34,11 @@ The one name for each thing in this project, and what it means. Use these names 
 | Request function | A game function, such as `UnitManager.RequestOperation`, that asks the engine to do an action. The engine checks that the action is legal | [game-api.md](findings/game-api.md) |
 | Single executable application (SEA) | Node's way to build one executable that holds the Node runtime and a bundled program. The bridge ships as one | [build-tooling.md](findings/build-tooling.md) |
 | Spectator mode | A game setup option for agent-only games that lets you watch agents play | [cover-and-spectator.md](design/agents/cover-and-spectator.md#spectator-mode) |
+| Standing order | A multi-turn plan, such as a build list or a unit goal, that plain code in the bridge carries out each turn until it finishes or the agent cancels it | [standing-orders.md](design/decision-support/standing-orders.md#orders) |
+| State diff | The changes since the agent's last model turn, which the bridge sends in place of the full state | [standing-orders.md](design/decision-support/standing-orders.md#state-diff) |
 | Step | One unit of work in a phase, in its own file `NN-short-name.md` | [rules/docs.md](rules/docs.md#roadmap) |
 | Sweat level | How hard an agent pushes toward victory: no sweat, balanced, or super sweat | [sweat-level.md](design/agents/sweat-level.md) |
 | Tuner | The debug server inside the game. FireTuner and the bridge connect to it over TCP | [tuner/setup.md](findings/tuner/setup.md) |
 | Turn signal | The tagged line that the core mod prints when a human player's turn starts, such as `[SENTIENTSYSTEMS] AGENT_TURN 0` | [architecture.md](design/architecture.md#turn-signal) |
+| Wake trigger | An event that makes the bridge run the model on an agent turn, such as a war declaration or a failed order step. With no wake trigger, standing orders play the turn | [standing-orders.md](design/decision-support/standing-orders.md#wake-triggers) |
 | Windows Sandbox | A clean, throwaway copy of Windows built into Windows 10 and 11 Pro, Enterprise, and Education. It tests the executable on a machine with no Node | [build-tooling.md](findings/build-tooling.md#method) |
