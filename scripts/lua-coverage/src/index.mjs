@@ -1,7 +1,6 @@
 // Runs the core mod's Lua tests with luacov, prints the coverage summary, and
-// exits 1 below the threshold. Usage: npm run coverage:lua. It needs busted and
-// luacov, as docs/rules/code.md says. This file only runs commands and reads
-// files. summary.mjs holds the logic, so tests can reach it.
+// exits 1 below the threshold. It needs busted and luacov, as
+// docs/rules/code.md says. The logic is in summary.mjs.
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";

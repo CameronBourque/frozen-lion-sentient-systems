@@ -1,7 +1,6 @@
 // Checks the mechanical parts of docs/rules/docs.md and docs/rules/writing.md.
-// Usage: node scripts/check-docs/src/index.mjs Prints one line per problem as
-// file:line: rule: message, and exits 1 if there are any. This file only reads
-// and prints. run.mjs holds the logic, so tests can reach it.
+// Prints one line per problem as file:line: rule: message, and exits 1 if there
+// are any. The logic is in run.mjs.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";

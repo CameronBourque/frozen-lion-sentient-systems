@@ -1,11 +1,5 @@
-// The writing rules from docs/rules/writing.md that a pattern can check.
-//
-// Each rule has a name, an example it catches, a global pattern, and a message,
-// which is a string or a function of the match. Optional fields:
-// - `source: "text"` checks the line with its URLs. Other rules see the line
-//   with URLs and link targets removed.
-// - `appliesTo(line)` limits the rule to some lines.
-// - `allow(line, match)` lets one match through.
+// The writing rules from docs/rules/writing.md that a pattern can check, each
+// a table entry with a name, an example it catches, a pattern, and a message.
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const monthName = `(?:${[...months, ...months.map((m) => m.slice(0, 3)), "Sept"].join("|")})\\.?`; // "October", "Oct", or "Oct."
