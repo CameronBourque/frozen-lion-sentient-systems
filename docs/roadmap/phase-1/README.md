@@ -23,22 +23,24 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 5 | State: map, cities, and units | The serializer for one player, filtered by visibility | `feat(core): add the state serializer` | Done. The step file is deleted. The state format and the stash are under **State serializer** and **Stash** in [in-game-lua.md](../../design/core/in-game-lua.md), and reading it is under **State** in [bridge.md](../../design/core/bridge.md). The state calls are in [game-state.md](../../findings/game-state.md), and what a player can know about each tile, the visibility layers, and the map reveal are in [tile-visibility.md](../../findings/tile-visibility.md). The Lua dialect is in [lua-contexts.md](../../findings/lua-contexts.md#lua-51-comparison), the output size limit is in [tuner-commands.md](../../findings/tuner-commands.md#what-we-know-now), and the Lua tests and coverage are under **Lint and test** in [code.md](../../rules/code.md#lint-and-test) |
 | 6 | State: choices, blockers, and scoreboard | End-turn blockers, legal options and purchases with details, placement tiles, the tech and civic trees, the player's overview, diplomacy status, and victory progress | `feat(core): add blockers, choices, trees, and the scoreboard` | Done. The step file is deleted. The format of the state, the choices, the placement tiles, the trees, the blockers, the player's overview, and the scoreboard is in [in-game-lua.md](../../design/core/in-game-lua.md), and `readPlacement` and the readers are in [bridge.md](../../design/core/bridge.md). The calls are in [game-state.md](../../findings/game-state.md), [game-choices.md](../../findings/game-choices.md), [game-player.md](../../findings/game-player.md), [game-diplomacy.md](../../findings/game-diplomacy.md), [game-scoreboard.md](../../findings/game-scoreboard.md), and [game-victories.md](../../findings/game-victories.md), and the state sizes are in [testing.md](../../design/testing.md#state-size) |
 | 7 | [Action API: units](action-api-units.md) | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | |
-| 8 | [Action API: cities](action-api-cities.md) | Production, districts and wonders, purchases, and tile purchases | `feat(core): add the city actions` | |
-| 9 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
-| 10 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, great person, and artifact blockers | `feat(core): add the religion, governor, and reward actions` | |
-| 11 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
-| 12 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
-| 13 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
-| 14 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
-| 15 | [Tool reference](tool-reference.md) | `docs/reference/tools.md` and the workflow that updates it | `ci: generate the tool reference` | |
-| 16 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
-| 17 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
-| 18 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
-| 19 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 20 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 21 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 22 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
-| 23 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
+| 8 | [Action API: unit jobs](action-api-unit-jobs.md) | Builder jobs, upgrades, formations, and air movement | `feat(core): add the unit job actions` | |
+| 9 | [Action API: special units](action-api-special-units.md) | Trade routes, great people, religious units, and spy missions, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | |
+| 10 | [Action API: cities](action-api-cities.md) | Production, districts and wonders, purchases, and tile purchases | `feat(core): add the city actions` | |
+| 11 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
+| 12 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, great person, and artifact blockers | `feat(core): add the religion, governor, and reward actions` | |
+| 13 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
+| 14 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
+| 15 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
+| 16 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
+| 17 | [Tool reference](tool-reference.md) | `docs/reference/tools.md` and the workflow that updates it | `ci: generate the tool reference` | |
+| 18 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
+| 19 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
+| 20 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
+| 21 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
+| 22 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
+| 23 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
+| 24 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
+| 25 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
 
 The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the action API and lookup steps.
 
