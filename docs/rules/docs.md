@@ -49,7 +49,9 @@ Where each kind of fact lives:
 - Each finding notes how it was checked and when.
 - Link an external source at a pinned commit or release, never a branch such as `main`, so the cited lines and sections stay where the link says. Name the short commit ID in the text.
 - When a test changes a finding, update it to the new result. Don't keep the old one.
-- When a question is answered, remove it from `## Questions`. Put a fact in `## What we know now` or `## Results`, and a choice in the `## Decisions` table of the design file it affects. A finding records facts, not decisions. Then update any doc that cites a question by its number, because the numbers shift.
+- When a question is answered, remove it from `## Questions`. Put a fact in `## What we know now` or `## Results`, and a choice in the `## Decisions` table of the design file it affects.
+
+  A finding records facts, not decisions. Then update any doc that cites a question by its number, because the numbers shift.
 - A finding file has these parts: a status line, `## Questions`, `## What we know now`, `## Method`, `## Results`, and a "Date checked" line.
 
 ## Roadmap
@@ -91,7 +93,11 @@ Where each kind of fact lives:
 
 ## Automated check
 
-`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, doc paths in backticks and link text, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes. Lint checks the doc paths in code comments, as that section also describes.
+`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, doc paths in backticks and link text, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length.
+
+Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`.
+
+To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes. Lint checks the doc paths in code comments, as that section also describes.
 
 The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there.
 

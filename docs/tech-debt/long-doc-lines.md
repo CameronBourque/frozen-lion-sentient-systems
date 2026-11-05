@@ -4,9 +4,9 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row, and its length leaves out link targets. `scripts/check-docs/` reads 129 Markdown files. 18 of them have a line over 300 characters, 47 lines in all, and 4 lines pass 600.
+A line is a paragraph, a bullet, or a table row, and its length leaves out link targets. `scripts/check-docs/` reads 129 Markdown files.
 
-[roadmap/phase-1/README.md](../roadmap/phase-1/README.md) has the longest line, at 857 characters. No file passes 12,000 characters.
+Only six lines pass 300 characters: the Done rows of the step table in [roadmap/phase-1/README.md](../roadmap/phase-1/README.md), up to 857 characters. Each lists every file that holds its step's results. No file passes 12,000 characters.
 
 `scripts/check-docs/src/length.mjs` warns about long lines and large files, but doesn't fail on them.
 
@@ -48,12 +48,16 @@ A split moves the text unchanged, and a later commit shortens the lines, so each
 12. **Other findings lines.** Shorten the long lines in the lua, tuner, and top-level findings. Split out `docs/findings/tuner/printing.md` and `docs/findings/lua/dialect.md`, so `commands.md` and `contexts.md` are under 12,000. Commit: `docs: shorten the lines in the other findings`.
 13. **Design lines.** Shorten the long lines in `docs/design/`, outside the core mod folder. Commit: `docs: shorten the lines in the design docs`.
 14. **Other lines.** Shorten the long lines in `docs/roadmap/`, `docs/rules/`, `docs/risks.md`, `docs/overview.md`, and the package READMEs. Commit: `docs: shorten the lines in the other docs`.
-15. **Fail.** Make both checks fail instead of warn, and update [rules/docs.md](../rules/docs.md#automated-check) to match. Delete this file and its row in the tech-debt index. Commit: `chore: fail on long doc lines and large doc files`.
+15. **Done steps.** Add `docs/roadmap/phase-0/done.md*` and `docs/roadmap/phase-1/done.md*`, with one section per finished step: its pull request, what it delivered, and where its results live. Commit: `docs: record finished steps in done files`.
+   - Each Done row in the step table links its section.
+   - Phase 0's Results table moves into its `done.md`.
+   - Update the roadmap rules in [rules/docs.md](../rules/docs.md#roadmap).
+16. **Fail.** Make both checks fail instead of warn, and update [rules/docs.md](../rules/docs.md#automated-check) to match. Delete this file and its row in the tech-debt index. Commit: `chore: fail on long doc lines and large doc files`.
 
 Each split updates the links to the moved text and its folder's index.
 
 ## Done when
 
-- No line passes 300 characters, and no file passes 12,000 characters, in every file the check reads except the changelog.
+- No line passes 300 characters, not counting link targets, and no file passes 12,000 characters, in every file the check reads except the changelog.
 - The checks fail on a longer line or a larger file, and their tests cover both.
 - [rules/docs.md](../rules/docs.md#automated-check) states both limits.

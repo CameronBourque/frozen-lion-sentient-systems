@@ -6,7 +6,9 @@ The minimum viable product is the full agent loop playing a whole single-player 
 
 ## Starting point
 
-Phase 0 is done. The bridge connects to the tuner, runs Lua in a named state, reads tagged lines, and resyncs the turn on connect. The core mod prints the turn signal, the load line, and the version. Requests from `SentientSystemsCore_UI` take effect, so the action API runs there. See [phase 0](../phase-0/README.md#results). `packages/core/bridge/scripts/gate.ts` is throwaway code that the [MCP server](mcp-server.md) step deletes.
+Phase 0 is done. The bridge connects to the tuner, runs Lua in a named state, reads tagged lines, and resyncs the turn on connect. The core mod prints the turn signal, the load line, and the version.
+
+Requests from `SentientSystemsCore_UI` take effect, so the action API runs there. See [phase 0](../phase-0/README.md#results). `packages/core/bridge/scripts/gate.ts` is throwaway code that the [MCP server](mcp-server.md) step deletes.
 
 Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design/agents/turn-loop.md), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md), [knowledge-files.md](../../design/knowledge-files.md).
 
@@ -46,8 +48,12 @@ The model client, personality and sweat level, and memory steps don't need the g
 
 ## Commits and pull requests
 
-Each task in a step file is one commit, and the task names its subject line. Each commit holds its own tests and passes `npm run lint`, `npm run coverage`, `npm run typecheck`, and `npm run check-docs` by itself. A commit that finds a fact also updates the finding or design file in the step's `## Record`.
+Each task in a step file is one commit, and the task names its subject line. Each commit holds its own tests and passes `npm run lint`, `npm run coverage`, `npm run typecheck`, and `npm run check-docs` by itself.
+
+A commit that finds a fact also updates the finding or design file in the step's `## Record`.
 
 Pull requests are squash-merged, so each PR title becomes one commit on `main`. Titles follow [rules/commits.md](../../rules/commits.md).
 
-In the smoke test and MVP gate steps, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump. The personality and sweat level PR touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
+In the smoke test and MVP gate steps, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump.
+
+The personality and sweat level PR touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.

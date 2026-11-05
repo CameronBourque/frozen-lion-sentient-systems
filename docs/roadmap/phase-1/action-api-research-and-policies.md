@@ -4,8 +4,12 @@ Add the actions for research, civics, policies, and a change of government. They
 
 ## Tasks
 
-1. **Research and civic.** Add `SentientSystems_SetResearch(playerID, tech)` and `SentientSystems_SetCivic(playerID, civic)`. Read the calls from `ResearchChooser.lua` and `CivicsChooser.lua`. Add `setResearch` and `setCivic` to `src/actions/research.ts`. Commit: `feat(core): add research and civic actions`.
-2. **Policies and government.** Add `SentientSystems_SetPolicies(playerID, slots)` and `SentientSystems_SetGovernment(playerID, government)`. Read the calls from `GovernmentScreen.lua`. Add `setPolicies` and `setGovernment` to `src/actions/policies.ts`. Commit: `feat(core): add policy and government actions`.
+1. **Research and civic.** Add `SentientSystems_SetResearch(playerID, tech)` and `SentientSystems_SetCivic(playerID, civic)`.
+
+   Read the calls from `ResearchChooser.lua` and `CivicsChooser.lua`. Add `setResearch` and `setCivic` to `src/actions/research.ts`. Commit: `feat(core): add research and civic actions`.
+2. **Policies and government.** Add `SentientSystems_SetPolicies(playerID, slots)` and `SentientSystems_SetGovernment(playerID, government)`.
+
+   Read the calls from `GovernmentScreen.lua`. Add `setPolicies` and `setGovernment` to `src/actions/policies.ts`. Commit: `feat(core): add policy and government actions`.
 
 ## Done when
 
