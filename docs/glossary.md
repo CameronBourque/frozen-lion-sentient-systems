@@ -4,7 +4,7 @@ The one name for each thing in this project, and what it means. Use these names 
 
 | Term | Meaning | Details |
 | --- | --- | --- |
-| Action API | The core mod's Lua functions that wrap the game's request functions. A failed action returns a reason | [in-game-lua.md](design/core/in-game-lua.md) |
+| Action API | The core mod's Lua functions that wrap the game's request functions. A failed action returns a reason | [design/core/mod/actions.md](design/core/mod/actions.md) |
 | Advisors mod | The feature mod that gives a human player read-only advisors, one per victory condition | [advisors.md](design/advisors.md) |
 | Agent | An LLM that plays Civ VI as a full player in an **Agent** slot. It is not the native AI | [knowledge-files.md](design/knowledge-files.md#file-layout) |
 | **Agent** slot | A player slot that an agent plays. The setup screen shows it as **Agent**. Which engine slot type holds it is open | [slot-type.md](design/agents/slot-type.md) |
@@ -14,7 +14,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Checkpoint ID | A UUID that a gameplay script writes into the save after each agent turn, so the bridge can restore the matching memory | [memory.md](design/memory.md#checkpoint-ids) |
 | Core | The core mod and the bridge together. They are one package, `packages/core`, with one version. Core is the only code that talks to the game | [core/](design/core/README.md) |
 | Core API | What core offers the feature mods. Feature mods reach the game only through it | [architecture.md](design/architecture.md#core-boundary) |
-| Core mod | The in-game Lua and `.modinfo` in `packages/core/mod`. It does not include the bridge | [in-game-lua.md](design/core/in-game-lua.md) |
+| Core mod | The in-game Lua and `.modinfo` in `packages/core/mod`. It does not include the bridge | [design/core/mod/](design/core/mod/README.md) |
 | Cover card | The full-screen card that hides the map during agent turns when a human plays | [cover-and-spectator.md](design/agents/cover-and-spectator.md#cover-card) |
 | Decision helper | Bridge code that reads the state and returns a ranked list of options for one kind of decision. It never acts | [helpers.md](design/decision-support/helpers.md) |
 | Deep strategic review | A mode of the agent loop that uses a stronger model and compacts the journal | [knowledge-files.md](design/knowledge-files.md#file-layout) |
@@ -25,7 +25,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Game review | The review after a game ends that finds turning points and blunders from the metrics lines and decision records, and writes lessons for you to review | [game-review.md](design/decision-support/game-review.md) |
 | Gate | The test at the end of a phase. It must pass before the next phase starts | [roadmap/](roadmap/README.md) |
 | Knowledge files | The concept guides, civ notes, opening books, personalities, sweat level files, and model table that teach agents the game | [knowledge-files.md](design/knowledge-files.md) |
-| Load signal | The two tagged lines the core mod prints during a load: `LOAD_READY` when the loading screen shows its button, and `GAME_READY <turn>` after the click | [in-game-lua.md](design/core/in-game-lua.md) |
+| Load signal | The two tagged lines the core mod prints during a load: `LOAD_READY` when the loading screen shows its button, and `GAME_READY <turn>` after the click | [design/core/mod/lines.md](design/core/mod/lines.md#load-signal) |
 | Log record | One entry in the bridge's log: the time, the level, a fixed event name, a message, and any fields. A log file holds one record on each line, as JSON | [logs.md](design/core/logs.md) |
 | Lua state | One Lua environment in the running game, such as `InGame` or `GameCore_Tuner`. The tuner lists the states and runs Lua in one of them. Use "context" only for the `.modinfo` `Context` attribute | [lua/contexts.md](findings/lua/contexts.md) |
 | Map quiz | An automatic test that asks each model tier questions about saved maps, with answers that code computed, to pick the map format | [map-format.md](design/decision-support/map-format.md#map-quiz) |

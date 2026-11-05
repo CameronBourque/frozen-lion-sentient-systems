@@ -15,7 +15,9 @@ Plain code handles trivial cases without the LLM, such as fortifying idle units 
 
 ## Tools
 
-There is one tool per kind of decision. For example, `move_unit` moves any unit, and `unit_action(unit, action, target)` covers fortify, found city, build improvement, and pillage. Cities, research, civics, policies, diplomacy, religion, governors, great people, and the World Congress follow the same pattern. The tool set must let an agent play any strategy it chooses.
+There is one tool per kind of decision. For example, `move_unit` moves any unit, and `unit_action(unit, action, target)` covers fortify, found city, build improvement, and pillage.
+
+Cities, research, civics, policies, diplomacy, religion, governors, great people, and the World Congress follow the same pattern. The tool set must let an agent play any strategy it chooses.
 
 For discrete choices, the agent picks from the legal options that `get_choices` returns. For spatial actions, the agent gives a destination, and the game's pathfinding plans multi-turn moves.
 
@@ -27,7 +29,9 @@ When an action fails, the agent gets the reason and decides again. The loop limi
 
 ## Decision records
 
-During testing, the agent records each important decision with its reason. It adds the short-term result on the next turn and the long-term result at its next deep strategic review. The records are noisy, and that is acceptable. You review them over time and turn useful patterns into [knowledge files](../knowledge-files.md).
+During testing, the agent records each important decision with its reason. It adds the short-term result on the next turn and the long-term result at its next deep strategic review.
+
+The records are noisy, and that is acceptable. You review them over time and turn useful patterns into [knowledge files](../knowledge-files.md).
 
 ## Decisions
 

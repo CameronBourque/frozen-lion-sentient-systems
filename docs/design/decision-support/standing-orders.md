@@ -4,7 +4,9 @@ A standing order is a multi-turn plan that plain code in the bridge carries out 
 
 ## Why
 
-Most turns in a Civ VI game are quiet. A city keeps building, an army keeps marching, and research follows the path the agent already chose. Running the model on each of those turns costs tokens and gives the model a chance to drop a plan it made a few turns ago. Standing orders keep the plan in code, and wake triggers bring the model back when something changes.
+Most turns in a Civ VI game are quiet. A city keeps building, an army keeps marching, and research follows the path the agent already chose.
+
+Running the model on each of those turns costs tokens and gives the model a chance to drop a plan it made a few turns ago. Standing orders keep the plan in code, and wake triggers bring the model back when something changes.
 
 The state diff solves the other half. An agent that sleeps through quiet turns must still see what happened, so it can cancel an order that no longer fits. The diff shows it those changes at a fraction of the size of the full state.
 

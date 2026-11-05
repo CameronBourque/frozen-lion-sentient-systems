@@ -1,6 +1,6 @@
 -- Builds the legal options for each of one player's discrete choices as JSON,
 -- in a call of its own. A choice the player can't make now is left out.
--- See docs/design/core/in-game-lua.md. Shapes: bridge/src/choices/
+-- See docs/design/core/mod/choices.md. Shapes: bridge/src/choices/
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")

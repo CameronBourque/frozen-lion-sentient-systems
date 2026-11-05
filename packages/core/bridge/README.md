@@ -16,9 +16,11 @@ Design: [docs/design/core/bridge.md](../../../docs/design/core/bridge.md). Proto
 
 Run each script from the repo root with `npm run <script> --workspace packages/core/bridge`, or from this folder with `npm run <script>`. The repo root has `lint`, `test`, and `coverage`, which cover every package.
 
-| Script | What it does |
-| --- | --- |
-| `dev` | Runs `src/main.ts` with `tsx`, with the config file `tmp/sentient-systems.yaml` at the repo root. Git ignores `tmp/`, so the API keys there stay out of commits. The first run writes an example there and exits. It connects to the game's tuner, retries until the game is running, logs the core mod's version and any active turn on each connect, and logs each line that the core mod prints. It runs until you press Ctrl+C |
-| `typecheck` | Type-checks `src/`, `test/`, and `scripts/` with `tsc`. It emits no files |
-| `build:exe` | Builds `dist/sentient-systems-bridge.exe` with esbuild and Node SEA. The release workflow runs it. See `scripts/build-exe.mjs` |
-| `state` | Prints the local player's [state](../../../docs/design/core/in-game-lua.md), then their choices, then their tech and civic trees, from the running game as JSON, the way the agent will see them, each with its size in bytes. An argument such as `npm run state -- 1` reads another player's. The repo root has `npm run state` too. It needs a loaded game, and it exits with code 1 if any of them can't be read, with the reason. The sizes and messages go to stderr, so `npm run state --silent > state.json` saves only the four JSON documents |
+- **`dev`.** Runs `src/main.ts` with `tsx`, with the config file `tmp/sentient-systems.yaml` at the repo root. Git ignores `tmp/`, so the API keys there stay out of commits. The first run writes an example there and exits.
+
+  It connects to the game's tuner, retries until the game is running, logs the core mod's version and any active turn on each connect, and logs each line that the core mod prints. It runs until you press Ctrl+C.
+- **`typecheck`.** Type-checks `src/`, `test/`, and `scripts/` with `tsc`. It emits no files.
+- **`build:exe`.** Builds `dist/sentient-systems-bridge.exe` with esbuild and Node SEA. The release workflow runs it. See `scripts/build-exe.mjs`.
+- **`state`.** Prints the local player's [state](../../../docs/design/core/mod/state.md), then their choices, then their tech and civic trees, from the running game as JSON, the way the agent will see them, each with its size in bytes. An argument such as `npm run state -- 1` reads another player's.
+
+  The repo root has `npm run state` too. It needs a loaded game, and it exits with code 1 if any of them can't be read, with the reason. The sizes and messages go to stderr, so `npm run state --silent > state.json` saves only the four JSON documents.

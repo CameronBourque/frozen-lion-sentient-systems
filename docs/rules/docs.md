@@ -5,6 +5,9 @@ How docs are organized. These rules apply to every file under `docs/`, to packag
 ## Structure
 
 - **One topic per file.** Aim for under 150 lines. If two files are always read together, merge them.
+- **Keep lines to 300 characters and files to 12,000.** A line is a paragraph, a bullet, or a table row, and it holds one thought. Link targets don't count toward its length.
+
+  A file over the limit splits by topic. A design file becomes a folder with a `README.md` index. A finding splits into findings in its topic folder.
 - **Start each file with a one- or two-sentence summary.** The folder index reuses it.
 - **Every folder has a `README.md` index.** The index has one row per file or subfolder. Add each new file to its folder's index.
 - **Use relative links.** Readers and tools can follow them.
@@ -46,12 +49,14 @@ Where each kind of fact lives:
 - Each finding notes how it was checked and when.
 - Link an external source at a pinned commit or release, never a branch such as `main`, so the cited lines and sections stay where the link says. Name the short commit ID in the text.
 - When a test changes a finding, update it to the new result. Don't keep the old one.
-- When a question is answered, remove it from `## Questions`. Put a fact in `## What we know now` or `## Results`, and a choice in the `## Decisions` table of the design file it affects. A finding records facts, not decisions. Then update any doc that cites a question by its number, because the numbers shift.
+- When a question is answered, remove it from `## Questions`. Put a fact in `## What we know now` or `## Results`, and a choice in the `## Decisions` table of the design file it affects.
+
+  A finding records facts, not decisions. Then update any doc that cites a question by its number, because the numbers shift.
 - A finding file has these parts: a status line, `## Questions`, `## What we know now`, `## Method`, `## Results`, and a "Date checked" line.
 
 ## Roadmap
 
-- Each phase is a folder, `roadmap/phase-N/`, with a `README.md` that holds the summary, the gate as one sentence, and a step table.
+- Each phase is a folder, `roadmap/phase-N/`, with a `README.md` that holds the summary, the gate as one sentence, and a step table. Its `done.md` records the finished steps.
 - **The step table's Status column is the only progress tracker.** Don't add checklists that repeat it. What each step must achieve lives in its "Done when".
 - **The step table's `#` column is the only place that sets the order.** Step files have no number in their names, and docs refer to a step by its name and a link, never by its number, so inserting a step renumbers one table and no link.
 - **One step is one pull request.** Split a phase into steps by what can be reviewed and released together. The step table has a PR title column, and a step's tasks are its commits. Two small steps can share a pull request, and the table says so.
@@ -63,14 +68,17 @@ Where each kind of fact lives:
   - `## Record`, which says which findings or design files to update.
 - A step's tasks are small: one commit each, described in a sentence or two. Don't give a task its own file or a step its own folder. The details live in findings and design. Turn a step into a folder only if its file passes 150 lines.
 - Steps link to a finding's `## Method` instead of restating a test procedure.
-- A step file exists only to get its results into findings and design. When a step is done and its `## Record` items are written, delete its file. Git keeps its history. In the step table, set its status to "Done" and link the files that hold its results.
+- A step file exists only to get its results into findings and design. When a step is done and its `## Record` items are written, delete its file. Git keeps its history.
+- **Record a finished step in the phase's `done.md`.** Add a `##` section named after the step, with its pull request, a sentence on what it delivered, and the files and sections that hold its results.
+
+  In the step table, set its status to "Done" and link that section, such as `Done. See [done.md](done.md#load-signal)`. The details stay out of the table, so its rows stay short.
 - If a step that isn't done yet links to a done step's file, copy what it needs from that file into the linking step, with whether and when each check passed. Then delete the done step's file.
 - To close a phase:
   1. Check that every step's status is Done.
   2. Update its status in [roadmap/README.md](../roadmap/README.md).
   3. Update [risks.md](../risks.md).
   4. Move what it proved into findings or design.
-  5. Delete any step files that remain. In the phase README, replace the step table with links to the findings and design files that now hold the results.
+  5. Delete any step files that remain. In the phase README, replace the step table with a short list of what the phase proved and a link to its `done.md`.
 
 ## Tech debt
 
@@ -88,9 +96,17 @@ Where each kind of fact lives:
 
 ## Automated check
 
-`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, doc paths in backticks and link text, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length. Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`. To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes. Lint checks the doc paths in code comments, as that section also describes.
+`scripts/check-docs/` checks the mechanical rules in this file and in [writing.md](writing.md): links and anchors, doc paths in backticks and link text, indexes, the required sections of findings, roadmap steps, design files, and tech debt files, the punctuation and word patterns, and file length.
 
-The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there. Files over 150 lines get a warning, not a failure.
+Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`.
+
+To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes. Lint checks the doc paths in code comments, as that section also describes.
+
+The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there.
+
+A line over 300 characters or a file over 12,000 characters fails the check. A file over 150 lines gets a warning, not a failure.
+
+The line check skips fenced code, and leaves link targets out of a line's length, because a reader doesn't see them. The file check counts them, because an agent reads them. Both length checks skip changelogs, which release-please writes.
 
 ## Local-only docs
 

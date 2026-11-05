@@ -60,7 +60,7 @@ end
 -- Escapes text for one tagged line: each backslash as \\, each newline as \n,
 -- and each percent sign as \p, because the game's log prints text as a printf
 -- format, where a raw % prints garbage or crashes the game. See
--- docs/findings/tuner/commands.md. The tuner sends each line of a print as its
+-- docs/findings/tuner/printing.md. The tuner sends each line of a print as its
 -- own line, and only the first one has the state's name in front.
 local function EscapeLine(text)
 	return (text:gsub("\\", "\\\\"):gsub("\r?\n", "\\n"):gsub("%%", "\\p"))

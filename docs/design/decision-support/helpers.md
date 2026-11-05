@@ -4,7 +4,9 @@ A decision helper is bridge code that reads the game state and returns a short, 
 
 ## Why helpers
 
-An agent that reasons over the raw state for each decision spends many tokens, and models are weak at spatial and numeric choices such as where to settle or which tile gets a district. Code makes those choices well and at almost no cost. A helper turns a large part of the state into a few lines the model can weigh.
+An agent that reasons over the raw state for each decision spends many tokens, and models are weak at spatial and numeric choices such as where to settle or which tile gets a district.
+
+Code makes those choices well and at almost no cost. A helper turns a large part of the state into a few lines the model can weigh.
 
 Helpers extend the plain code in [turn-loop.md](../agents/turn-loop.md#steps). Plain code acts on trivial cases without the model. A helper never acts. It ranks options, and the model picks one and writes the `reason`.
 
@@ -42,13 +44,17 @@ Every helper follows these rules:
 
 ## Weights
 
-A helper's score is a weighted sum of its factors. Each helper has default weights. A personality file and a sweat level file can override them. A warmonger weights strategic resources and chokepoints higher when it picks a settle site, and a builder weights district adjacency higher. Different weights keep two agents from playing the same game off the same helper.
+A helper's score is a weighted sum of its factors. Each helper has default weights. A personality file and a sweat level file can override them.
+
+A warmonger weights strategic resources and chokepoints higher when it picks a settle site, and a builder weights district adjacency higher. Different weights keep two agents from playing the same game off the same helper.
 
 At no sweat, the helper can add random noise to the scores. [sweat-level.md](../agents/sweat-level.md) notes that models default to reasonable play, so noise in the options is one way to make no sweat play loosely.
 
 ## Helpers and knowledge files
 
-Helpers and [knowledge files](../knowledge-files.md) split the work. A helper does the arithmetic. A concept guide says when to call the helper, how to read its result, and what the helper cannot judge. For example, the expansion guide tells the agent to call `suggest_settle_sites`, and then to decide for itself whether to settle toward a rival to claim land. Moving the arithmetic into code keeps the guides short.
+Helpers and [knowledge files](../knowledge-files.md) split the work. A helper does the arithmetic. A concept guide says when to call the helper, how to read its result, and what the helper cannot judge.
+
+For example, the expansion guide tells the agent to call `suggest_settle_sites`, and then to decide for itself whether to settle toward a rival to claim land. Moving the arithmetic into code keeps the guides short.
 
 Decision records log the helper's options and the rank of the option the agent chose. Over time the records show which helpers the agent ignores, and whether ignoring them won or lost. That data tunes the default weights and the guides.
 

@@ -2,7 +2,9 @@
 
 Status: open. Moving a unit, checking a move, checking a route, and the war dialog are confirmed in a running game. The civ6-mcp move path is not.
 
-The game calls the move action wraps, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md).
+The game calls the move action wraps, with the Lua state each runs in and where we found each call.
+
+"Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md).
 
 ## Questions
 
@@ -10,7 +12,9 @@ The game calls the move action wraps, with the Lua state each runs in and where 
 
 ### Moving a unit
 
-The UI's move path is `MoveUnitToPlot` in `Base/Assets/UI/Civ6Common.lua`, lines 102 to 169. Confirmed in files. The same calls move a unit when the bridge sends them to `SentientSystemsCore_UI`, if the target is in the unit's [reachable tiles](#checking-a-move). Confirmed on Windows on 2026-10-23. The core of the path:
+The UI's move path is `MoveUnitToPlot` in `Base/Assets/UI/Civ6Common.lua`, lines 102 to 169. Confirmed in files.
+
+The same calls move a unit when the bridge sends them to `SentientSystemsCore_UI`, if the target is in the unit's [reachable tiles](#checking-a-move). Confirmed on Windows on 2026-10-23. The core of the path:
 
 ```lua
 local tParameters = {};
@@ -34,23 +38,43 @@ civ6-mcp moves a unit with a shorter path than the UI, in [`build_move_unit`](ht
 
 - It checks `unit:GetMovesRemaining()`, then calls `UnitManager.CanStartOperation(unit, UnitOperationTypes.MOVE_TO, nil, true)` with no target parameters.
 - It adds the `ATTACK` modifier only when another player's unit is on the target tile.
-- After `RequestOperation`, it reads the unit's position again in a gameplay state, in [`build_unit_position_query`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L235). If the unit didn't reach the target, that query checks the target tile for water, mountains, and foreign borders to explain why.
+- After `RequestOperation`, it reads the unit's position again in a gameplay state, in [`build_unit_position_query`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L235).
+
+  If the unit didn't reach the target, that query checks the target tile for water, mountains, and foreign borders to explain why.
 
 The game's Lua also uses these calls: `CanStartCommand` and `RequestCommand` for unit commands, `GetOperationTargets`, `GetCommandTargets`, `GetMoveToPathEx`, and `FinishMoves`. Confirmed in files, not tested.
 
 ### Checking a move
 
-`CanStartOperation` for `MOVE_TO` doesn't check the target tile. For a land unit with moves left, it returned `true` for an adjacent tile outside the unit's reachable tiles, and for a deep-water tile 3 tiles away. A `RequestOperation` to the adjacent tile, from `SentientSystemsCore_UI` and from `InGame`, raised no error. The unit stayed on its tile with all its moves. Confirmed on Windows on 2026-10-23.
+`CanStartOperation` for `MOVE_TO` doesn't check the target tile. For a land unit with moves left, it returned `true` for an adjacent tile outside the unit's reachable tiles, and for a deep-water tile 3 tiles away.
+
+A `RequestOperation` to the adjacent tile, from `SentientSystemsCore_UI` and from `InGame`, raised no error. The unit stayed on its tile with all its moves. Confirmed on Windows on 2026-10-23.
 
 - With `true` as a fifth argument, `CanStartOperation(unit, UnitOperationTypes.MOVE_TO, nil, params, true)` returned `true, nil` for the deep-water tile. A move check gives no failure reasons. Confirmed on Windows on 2026-10-23.
-- `UnitManager.GetReachableMovement(unit)` returns the plot indexes the unit can reach this turn. The UI draws the movement range from it in `Base/Assets/UI/WorldView/SelectedUnit.lua`, line 53. Confirmed in files. The deep-water tile wasn't in the list, and a move to an adjacent tile from the list worked. Confirmed on Windows on 2026-10-23.
+- `UnitManager.GetReachableMovement(unit)` returns the plot indexes the unit can reach this turn. The UI draws the movement range from it in `Base/Assets/UI/WorldView/SelectedUnit.lua`, line 53.
+
+  Confirmed in files. The deep-water tile wasn't in the list, and a move to an adjacent tile from the list worked. Confirmed on Windows on 2026-10-23.
 - `Base/Assets/UI/Panels/UnitPanel.lua`, line 609, calls `UnitManager.CanStartOperation(pUnit, UnitOperationTypes.MOVE_TO, nil, false, false)` with the comment "No exclusion test, no results". Confirmed in files.
 
-For other operations and commands, civ6-mcp reads failure reasons from the same form. `local ok, result = UnitManager.CanStartOperation(unit, op, nil, params, true)` returns `result.FailureReasons`, a list of reason strings, when the check fails. `UnitManager.CanStartCommand` and `CityManager.CanStartCommand` return a table of reasons the same way. See [`build_improve_tile`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L1039), [`build_sacrifice_builder_charges`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L1266), and [`build_purchase_item`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/cities.py#L593). Unconfirmed, used by civ6-mcp.
+For other operations and commands, civ6-mcp reads failure reasons from the same form. `local ok, result = UnitManager.CanStartOperation(unit, op, nil, params, true)` returns `result.FailureReasons`, a list of reason strings, when the check fails.
+
+`UnitManager.CanStartCommand` and `CityManager.CanStartCommand` return a table of reasons the same way.
+
+See these civ6-mcp functions:
+
+- [`build_improve_tile`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L1039)
+- [`build_sacrifice_builder_charges`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/units.py#L1266)
+- [`build_purchase_item`](https://github.com/lmwilki/civ6-mcp/blob/dd2019056371b92ea4854e879ddf05a8cad95e8a/src/civ_mcp/lua/cities.py#L593)
+
+Unconfirmed, used by civ6-mcp.
 
 ### Checking a route
 
-`UnitManager.GetMoveToPathEx(unit, plotIndex)` returns the route the game's cursor draws, as `WorldInput.lua` reads it. Confirmed in files. The table has `plots`, the plot indexes from the first step to the target, `turns`, the turn each step is reached, and `obstacles`, `exitPortals`, and `entrancePortals`. It is the only check we found that covers a move over more than one turn. Confirmed on Windows on 2026-11-04, with a scout on turn 55:
+`UnitManager.GetMoveToPathEx(unit, plotIndex)` returns the route the game's cursor draws, as `WorldInput.lua` reads it. Confirmed in files.
+
+The table has `plots`, the plot indexes from the first step to the target, `turns`, the turn each step is reached, and `obstacles`, `exitPortals`, and `entrancePortals`.
+
+It is the only check we found that covers a move over more than one turn. Confirmed on Windows on 2026-11-04, with a scout on turn 55:
 
 - For a reachable tile the last plot is the target. A tile 9 away gave 10 plots and 4 turns.
 - For a tile with no route, such as an impassable mountain, `plots` is empty.
@@ -63,7 +87,9 @@ A `MOVE_TO` request for a far tile starts at once and uses the moves left. A sco
 
 ### The war dialog
 
-`MoveUnitToPlot` calls `CombatManager.IsAttackChangeWarState(unit:GetComponentID(), x, y)` when the player can see the tile. A result with entries means the move starts a war, and the first entry is the defending player. Instead of moving, it fires `LuaEvents.Civ6Common_ConfirmWarDialog`, which `DeclareWarPopup.lua` shows. Confirming calls `DiplomacyManager.RequestSession(attacker, defender, "DECLARE_SURPRISE_WAR")`, and nothing repeats the move, so the player moves again. Confirmed in files.
+`MoveUnitToPlot` calls `CombatManager.IsAttackChangeWarState(unit:GetComponentID(), x, y)` when the player can see the tile. A result with entries means the move starts a war, and the first entry is the defending player.
+
+Instead of moving, it fires `LuaEvents.Civ6Common_ConfirmWarDialog`, which `DeclareWarPopup.lua` shows. Confirming calls `DiplomacyManager.RequestSession(attacker, defender, "DECLARE_SURPRISE_WAR")`, and nothing repeats the move, so the player moves again. Confirmed in files.
 
 The call returned `{1}` for a tile inside the borders of a player at peace, and an empty list for the tiles around it. A move to a tile with a neutral unit on it was not an attack. Confirmed on Windows on 2026-11-04.
 
@@ -86,15 +112,15 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
 
 The bridge ran these steps in a single-player game, with one city and one unit.
 
-| Call | Lua state | Result | Date |
-| --- | --- | --- | --- |
-| `CanStartOperation` for a move to deep water at (43, 51), 3 tiles away | `SentientSystemsCore_UI` | `true` | 2026-10-23 |
-| The same check with `true` as a fifth argument | `SentientSystemsCore_UI` | `true, nil` | 2026-10-23 |
-| `GetReachableMovement` holds (43, 51) | `SentientSystemsCore_UI` | No | 2026-10-23 |
-| `CanStartOperation`, then `RequestOperation`, for (42, 50), adjacent and not reachable | `SentientSystemsCore_UI`, then `InGame` | The check passed, and the request raised no error. In `GameCore_Tuner`, `FindID` read the unit at (41, 49) with 2 moves left, 5 times over 5 s after each request | 2026-10-23 |
-| `CanStartOperation`, then `RequestOperation`, for (42, 49), adjacent and reachable | `SentientSystemsCore_UI` | The check passed. The unit moved on the map. In `GameCore_Tuner`, `FindID` read it at (42, 49) with 1 move left, 1 s after the request | 2026-10-23 |
-| `GetMoveToPathEx` for a reachable tile 9 away, and for a mountain | `SentientSystemsCore_UI` | 10 plots ending at the target with 4 turns, and an empty `plots` | 2026-11-04 |
-| `IsAttackChangeWarState` for a tile in the borders of a player at peace, and for the tiles around it | `SentientSystemsCore_UI` | `{1}`, and empty lists | 2026-11-04 |
-| `SentientSystems_MoveUnit` for a tile 2 away | `SentientSystemsCore_UI` | `ok`. The scout moved one tile and stopped with 0 moves | 2026-11-04 |
+- **`CanStartOperation` for a move to deep water at (43, 51), 3 tiles away.** `true`. Run in `SentientSystemsCore_UI` on 2026-10-23.
+- **The same check with `true` as a fifth argument.** `true, nil`. Run in `SentientSystemsCore_UI` on 2026-10-23.
+- **`GetReachableMovement` holds (43, 51).** No. Run in `SentientSystemsCore_UI` on 2026-10-23.
+- **`CanStartOperation`, then `RequestOperation`, for (42, 50), adjacent and not reachable.** The check passed, and the request raised no error.
+
+  In `GameCore_Tuner`, `FindID` read the unit at (41, 49) with 2 moves left, 5 times over 5 s after each request. Run in `SentientSystemsCore_UI`, then `InGame`, on 2026-10-23.
+- **`CanStartOperation`, then `RequestOperation`, for (42, 49), adjacent and reachable.** The check passed. The unit moved on the map. In `GameCore_Tuner`, `FindID` read it at (42, 49) with 1 move left, 1 s after the request. Run in `SentientSystemsCore_UI` on 2026-10-23.
+- **`GetMoveToPathEx` for a reachable tile 9 away, and for a mountain.** 10 plots ending at the target with 4 turns, and an empty `plots`. Run in `SentientSystemsCore_UI` on 2026-11-04.
+- **`IsAttackChangeWarState` for a tile in the borders of a player at peace, and for the tiles around it.** `{1}`, and empty lists. Run in `SentientSystemsCore_UI` on 2026-11-04.
+- **`SentientSystems_MoveUnit` for a tile 2 away.** `ok`. The scout moved one tile and stopped with 0 moves. Run in `SentientSystemsCore_UI` on 2026-11-04.
 
 Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves on 2026-10-23, and routes and the war test on 2026-11-04.

@@ -2,7 +2,7 @@
 
 The in-game half of core: turn events, the state serializer, the action API, checkpoint IDs, and Civilopedia lookup.
 
-Design: [docs/design/core/in-game-lua.md](../../../docs/design/core/in-game-lua.md). Game API findings: [docs/findings/game-api.md](../../../docs/findings/game-api.md) and [docs/findings/lua/contexts.md](../../../docs/findings/lua/contexts.md).
+Design: [docs/design/core/mod/](../../../docs/design/core/mod/README.md). Game API findings: [docs/findings/game-api.md](../../../docs/findings/game-api.md) and [docs/findings/lua/contexts.md](../../../docs/findings/lua/contexts.md).
 
 ## Tests
 
@@ -17,10 +17,16 @@ A directory junction links this folder into the game's user mods folder, so the 
 3. Start the game, open **Additional Content**, and turn on **Sentient Systems Core**.
 4. Start or load a game with the mod on.
 
-The script finds your Documents folder from the registry value `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\Personal`, so it works when OneDrive backs up your Documents folder. If it can't read the value, it warns and uses `%USERPROFILE%\Documents`. It makes the `Mods` folder if the game hasn't yet, but it needs the game to have started once.
+The script finds your Documents folder from the registry value `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders\Personal`, so it works when OneDrive backs up your Documents folder.
+
+If it can't read the value, it warns and uses `%USERPROFILE%\Documents`. It makes the `Mods` folder if the game hasn't yet, but it needs the game to have started once.
 
 Running it again is safe. If the link already points at this checkout, it says so and exits 0. If the link points at another folder, or a real folder is in its place, it prints the path, exits 1, and changes nothing.
 
-After a change, load the game again. You don't need to restart the game or turn the mod on again. This held for changes to the Lua files and to the `.modinfo` on 2026-10-22. After you add a file to the `.modinfo`, restart the game instead, because the game reads each mod's file list only when it starts. To try a change to a file in `Scripts/` without a load, send `SentientSystems_Include("<file name>")` to `SentientSystemsCore_UI` from the tuner, which reads the file from disk again. See [lua/contexts.md](../../../docs/findings/lua/contexts.md#the-core-mods-states).
+After a change, load the game again. You don't need to restart the game or turn the mod on again. This held for changes to the Lua files and to the `.modinfo` on 2026-10-22.
+
+After you add a file to the `.modinfo`, restart the game instead, because the game reads each mod's file list only when it starts.
+
+To try a change to a file in `Scripts/` without a load, send `SentientSystems_Include("<file name>")` to `SentientSystemsCore_UI` from the tuner, which reads the file from disk again. See [lua/contexts.md](../../../docs/findings/lua/contexts.md#the-core-mods-states).
 
 To remove the link, run `npm run link-mod -- --remove`. In PowerShell, write the `--` as `'--'`. It removes only a link, never a real folder. To remove it by hand, run `rmdir` on the junction in the `Mods` folder. `rmdir` without `/S` removes only the link and leaves this folder alone.

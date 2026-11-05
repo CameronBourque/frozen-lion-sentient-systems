@@ -34,11 +34,19 @@ Commit messages trigger the bumps. The commit format and which type bumps which 
 
 ## Release flow
 
-Release-please runs in manifest mode. It bumps only the packages whose files a commit touched. A commit's scope doesn't limit this, so a `feat(core)` commit that also touches `packages/agents` bumps agents too. The bridge and the core mod live in one package folder, `packages/core`, so they always share one version.
+Release-please runs in manifest mode. It bumps only the packages whose files a commit touched. A commit's scope doesn't limit this, so a `feat(core)` commit that also touches `packages/agents` bumps agents too.
 
-`exclude-paths` in `release-please-config.json` skips a commit for a package when every file the commit touched in that package is under an excluded folder. Each path is from the repo root and names a folder, not a file. The agents and advisors entries exclude their `Scripts` folders, which held only a `Version.lua` that `feat(core): add turn signal and resync` deleted. Neither package has a release yet, so without the exclusion that commit would bump each one to `0.1.0` with nothing in it. Remove each exclusion when its package makes its first release, or sooner if the package gets a `Scripts` folder again.
+The bridge and the core mod live in one package folder, `packages/core`, so they always share one version.
 
-Release-please keeps a release pull request open with the next versions and the changelogs. It rewrites that pull request only when the changelog notes change, so a change to `release-please-config.json` alone leaves the pull request as it was. To rebuild it, close the pull request, delete its branch, and run the **Release** workflow again. Merging the release pull request starts the release:
+`exclude-paths` in `release-please-config.json` skips a commit for a package when every file the commit touched in that package is under an excluded folder.
+
+Each path is from the repo root and names a folder, not a file. The agents and advisors entries exclude their `Scripts` folders, which held only a `Version.lua` that `feat(core): add turn signal and resync` deleted.
+
+Neither package has a release yet, so without the exclusion that commit would bump each one to `0.1.0` with nothing in it. Remove each exclusion when its package makes its first release, or sooner if the package gets a `Scripts` folder again.
+
+Release-please keeps a release pull request open with the next versions and the changelogs. It rewrites that pull request only when the changelog notes change, so a change to `release-please-config.json` alone leaves the pull request as it was.
+
+To rebuild it, close the pull request, delete its branch, and run the **Release** workflow again. Merging the release pull request starts the release:
 
 1. Release-please writes each new version into its package's `package.json` and its `.modinfo`.
 2. It tags each released package and creates its GitHub release.
@@ -47,7 +55,9 @@ Release-please keeps a release pull request open with the next versions and the 
 
 The GitHub release always comes before the Workshop upload. Each Workshop version of the core mod then has a matching bridge release.
 
-Each `.modinfo` holds the full version twice: in the `version` attribute on `<Mod>`, and in `<Properties><Version>`. A UI script reads the second one at runtime with `Modding.GetModProperty`. Gameplay states have no `Modding`, so only a UI script can read the version. The `.modinfo` is the only place the mod's version lives. See [findings/game-api.md](../findings/game-api.md#mod-metadata).
+Each `.modinfo` holds the full version twice: in the `version` attribute on `<Mod>`, and in `<Properties><Version>`. A UI script reads the second one at runtime with `Modding.GetModProperty`.
+
+Gameplay states have no `Modding`, so only a UI script can read the version. The `.modinfo` is the only place the mod's version lives. See [findings/game-api.md](../findings/game-api.md#mod-metadata).
 
 ## Runtime checks
 

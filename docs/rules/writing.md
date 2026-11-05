@@ -72,7 +72,9 @@ These patterns make text read as machine-written. Rewrite them.
 
 - **Inflated words.** Additionally, crucial, delve, enduring, enhance, foster, garner, interplay, intricate, landscape, pivotal, robust, seamless, showcase, tapestry, testament, underscore, vibrant. Use the plain word.
 - **Fancy ways to say "is".** "Serves as", "stands as", "boasts", and "features" become "is" or "has".
-- **Abstract metaphor nouns.** Substrate, wedge, vector, locus, vantage, nexus, primitive, harness, surface, bedrock, scaffolding, modality, paradigm, gold-plating, ratchet, evacuate, endgame, north star, flywheel. Use the concrete word: "base", "add", "way", "more than the job needs", "a limit that only tightens", "move out", "the last phase".
+- **Abstract metaphor nouns.** Substrate, wedge, vector, locus, vantage, nexus, primitive, harness, surface, bedrock, scaffolding, modality, paradigm, gold-plating, ratchet, evacuate, endgame, north star, flywheel.
+
+  Use the concrete word: "base", "add", "way", "more than the job needs", "a limit that only tightens", "move out", "the last phase".
 - **Mannered prose.** Aphorisms ("wire it or delete it"), rhetorical fragments, code described as if it were a person ("the plan holds it"), and figurative verbs ("rides along"). Say the literal thing.
 - **Empty "-ing" phrases.** "Highlighting...", "ensuring...", "reflecting...". Delete them, or make them a sentence that says what happens.
 - **Vague sources.** "Experts believe" or "some users report". Name the source, or delete the claim.

@@ -6,5 +6,6 @@ How the bridge reaches the game: turning on the tuner, the wire protocol, how co
 | --- | --- |
 | [protocol.md](protocol.md) | FireTuner port, frame format, and message types |
 | [commands.md](commands.md) | How the game runs commands, what replies carry, and output order |
+| [printing.md](printing.md) | The size limit on a command's output, and how the game's log reads printed text |
 | [setup.md](setup.md) | Turning on the tuner: the menu toggle, the SDK, and achievements |
 | [multiplayer.md](multiplayer.md) | What the tuner and the core mod can do in hotseat and online games |

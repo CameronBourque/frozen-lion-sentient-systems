@@ -6,24 +6,26 @@ The minimum viable product is the full agent loop playing a whole single-player 
 
 ## Starting point
 
-Phase 0 is done. The bridge connects to the tuner, runs Lua in a named state, reads tagged lines, and resyncs the turn on connect. The core mod prints the turn signal, the load line, and the version. Requests from `SentientSystemsCore_UI` take effect, so the action API runs there. See [phase 0](../phase-0/README.md#results). `packages/core/bridge/scripts/gate.ts` is throwaway code that the [MCP server](mcp-server.md) step deletes.
+Phase 0 is done. The bridge connects to the tuner, runs Lua in a named state, reads tagged lines, and resyncs the turn on connect. The core mod prints the turn signal, the load line, and the version.
+
+Requests from `SentientSystemsCore_UI` take effect, so the action API runs there. See [phase 0](../phase-0/done.md). `packages/core/bridge/scripts/gate.ts` is throwaway code that the [MCP server](mcp-server.md) step deletes.
 
 Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design/agents/turn-loop.md), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md), [knowledge-files.md](../../design/knowledge-files.md).
 
 ## Steps
 
-The `#` column sets the order, and a step's file has no number. A step is one pull request, and its tasks are its commits. Steps that share a pull request have the same title.
+The `#` column sets the order, and a step's file has no number. Each finished step has a section in [done.md](done.md). A step is one pull request, and its tasks are its commits. Steps that share a pull request have the same title.
 
 | # | Step | Covers | Pull request title | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Link the core mod | A script in place of the manual junction steps | `chore(core): add the mod link script` | Done. The step file is deleted, and the steps are in the [core mod README](../../../packages/core/mod/README.md#install-for-testing) |
-| 2 | Config file | Log level and provider keys | `feat(core): add the config file and structured logs` | Done. The step file is deleted, and the file is described in [settings.md](../../design/core/settings.md) |
-| 3 | Logs and errors | Structured logs at five levels, a log file per game, and `ERROR` lines from the core mod | `feat(core): add the config file and structured logs` | Done. The step file is deleted. The logs are in [logs.md](../../design/core/logs.md), the `ERROR` line is under **Errors** in [in-game-lua.md](../../design/core/in-game-lua.md), and the Lua facts are in [lua/contexts.md](../../findings/lua/contexts.md#the-core-mods-states) |
-| 4 | Load signal | How the bridge tells a load has finished | `feat(core): add the load signal` | Done. The step file is deleted. The lines are under **Load signal** in [in-game-lua.md](../../design/core/in-game-lua.md), the reset is under **Load reset** in [bridge.md](../../design/core/bridge.md) and **Log files** in [logs.md](../../design/core/logs.md), and the Lua facts are in [lua/state-list.md](../../findings/lua/state-list.md#state-list-over-a-session) |
-| 5 | State: map, cities, and units | The serializer for one player, filtered by visibility | `feat(core): add the state serializer` | Done. The step file is deleted. The state format and the stash are under **State serializer** and **Stash** in [in-game-lua.md](../../design/core/in-game-lua.md), and reading it is under **State** in [bridge.md](../../design/core/bridge.md). The state calls are in [state/state.md](../../findings/state/state.md), and what a player can know about each tile, the visibility layers, and the map reveal are in [state/tile-visibility.md](../../findings/state/tile-visibility.md). The Lua dialect is in [lua/contexts.md](../../findings/lua/contexts.md#lua-51-comparison), the output size limit is in [tuner/commands.md](../../findings/tuner/commands.md#what-we-know-now), and the Lua tests and coverage are under **Lint and test** in [code.md](../../rules/code.md#lint-and-test) |
-| 6 | State: choices, blockers, and scoreboard | End-turn blockers, legal options and purchases with details, placement tiles, the tech and civic trees, the player's overview, diplomacy status, and victory progress | `feat(core): add blockers, choices, trees, and the scoreboard` | Done. The step file is deleted. The format of the state, the choices, the placement tiles, the trees, the blockers, the player's overview, and the scoreboard is in [in-game-lua.md](../../design/core/in-game-lua.md), and `readPlacement` and the readers are in [bridge.md](../../design/core/bridge.md). The calls are in [state/state.md](../../findings/state/state.md), [choices/choices.md](../../findings/choices/choices.md), [state/player.md](../../findings/state/player.md), [state/diplomacy.md](../../findings/state/diplomacy.md), [state/scoreboard.md](../../findings/state/scoreboard.md), and [state/victories.md](../../findings/state/victories.md), and the state sizes are in [testing.md](../../design/testing.md#state-size) |
-| 7 | Action API: units | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | Done. The step file is deleted. The result format, the reasons, and the unit orders are under **Action API** in [in-game-lua.md](../../design/core/in-game-lua.md), the calls are in [actions/move-unit.md](../../findings/actions/move-unit.md), and the parts of an action are in the [core README](../../../packages/core/README.md#parts-of-an-action) |
-| 8 | Action API: unit jobs | Builder jobs, upgrades, formations, air movement, priority target, and adding production | `feat(core): add the unit job actions` | Done. The step file is deleted. The reasons and the orders are under **Action API** in [in-game-lua.md](../../design/core/in-game-lua.md), the calls are in [actions/unit-orders.md](../../findings/actions/unit-orders.md), and the parts of an action are in the [core README](../../../packages/core/README.md#parts-of-an-action) |
+| 1 | Link the core mod | A script in place of the manual junction steps | `chore(core): add the mod link script` | Done. See [done.md](done.md#link-the-core-mod) |
+| 2 | Config file | Log level and provider keys | `feat(core): add the config file and structured logs` | Done. See [done.md](done.md#config-file) |
+| 3 | Logs and errors | Structured logs at five levels, a log file per game, and `ERROR` lines from the core mod | `feat(core): add the config file and structured logs` | Done. See [done.md](done.md#logs-and-errors) |
+| 4 | Load signal | How the bridge tells a load has finished | `feat(core): add the load signal` | Done. See [done.md](done.md#load-signal) |
+| 5 | State: map, cities, and units | The serializer for one player, filtered by visibility | `feat(core): add the state serializer` | Done. See [done.md](done.md#state-map-cities-and-units) |
+| 6 | State: choices, blockers, and scoreboard | End-turn blockers, legal options and purchases, placement tiles, the tech and civic trees, the player's overview, diplomacy status, and victory progress | `feat(core): add blockers, choices, trees, and the scoreboard` | Done. See [done.md](done.md#state-choices-blockers-and-scoreboard) |
+| 7 | Action API: units | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | Done. See [done.md](done.md#action-api-units) |
+| 8 | Action API: unit jobs | Builder jobs, upgrades, formations, air movement, priority target, and adding production | `feat(core): add the unit job actions` | Done. See [done.md](done.md#action-api-unit-jobs) |
 | 9 | [Action API: special units](action-api-special-units.md) | Trade routes, great people, religious units, and spy missions, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | |
 | 10 | [Action API: cities](action-api-cities.md) | Production, districts and wonders, purchases, tile purchases, and the production queue | `feat(core): add the city actions` | |
 | 11 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
@@ -46,8 +48,12 @@ The model client, personality and sweat level, and memory steps don't need the g
 
 ## Commits and pull requests
 
-Each task in a step file is one commit, and the task names its subject line. Each commit holds its own tests and passes `npm run lint`, `npm run coverage`, `npm run typecheck`, and `npm run check-docs` by itself. A commit that finds a fact also updates the finding or design file in the step's `## Record`.
+Each task in a step file is one commit, and the task names its subject line. Each commit holds its own tests and passes `npm run lint`, `npm run coverage`, `npm run typecheck`, and `npm run check-docs` by itself.
+
+A commit that finds a fact also updates the finding or design file in the step's `## Record`.
 
 Pull requests are squash-merged, so each PR title becomes one commit on `main`. Titles follow [rules/commits.md](../../rules/commits.md).
 
-In the smoke test and MVP gate steps, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump. The personality and sweat level PR touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
+In the smoke test and MVP gate steps, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump.
+
+The personality and sweat level PR touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.

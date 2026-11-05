@@ -20,7 +20,9 @@ The map quiz tests each format. A format can also be a mix, such as region summa
 
 **JSON tiles.** The current format, one object for each revealed tile. It is the baseline for the quiz.
 
-**Character codes.** Each tile is a short code from a legend, such as `Gh+r` for grassland, hill, and river. The codes sit in rows, in the shape of the map, or in a list with coordinates. The legend goes in the system prompt, so the prompt cache holds it after the first call. A code of a few characters carries what a JSON object spells out with a key for each field.
+**Character codes.** Each tile is a short code from a legend, such as `Gh+r` for grassland, hill, and river. The codes sit in rows, in the shape of the map, or in a list with coordinates.
+
+The legend goes in the system prompt, so the prompt cache holds it after the first call. A code of a few characters carries what a JSON object spells out with a key for each field.
 
 **Region summaries.** Code splits the map into regions, such as the land around each city and each cluster of unclaimed land. Each region becomes one line of counts:
 
@@ -28,7 +30,9 @@ The map quiz tests each format. A format can also be a mix, such as region summa
 
 A summary loses the position of each tile, but many decisions need only the counts. The agent reads the full tiles of one region through a tool when it needs them.
 
-**Packed bits.** Each tile is a set of bit fields from a legend we define, written as hex or base64 text. We expect this format to fail. The model must decode bit fields in its head, it gets that kind of exact work wrong without saying so, and hex and base64 split into tokens unevenly, so the saving over character codes is small. It is in the quiz because a test costs little, and the result settles the question.
+**Packed bits.** Each tile is a set of bit fields from a legend we define, written as hex or base64 text. We expect this format to fail.
+
+The model must decode bit fields in its head, it gets that kind of exact work wrong without saying so, and hex and base64 split into tokens unevenly, so the saving over character codes is small. It is in the quiz because a test costs little, and the result settles the question.
 
 **Image.** A rendered picture of the visible map, for models that read images. An image costs a fixed number of tokens whatever the map holds, but models read exact positions from images poorly. The quiz checks how poorly.
 

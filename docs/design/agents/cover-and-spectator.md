@@ -4,7 +4,9 @@ What a human sees while agents play. When a human is in the game, a card hides t
 
 ## Cover card
 
-When a human plays in the game, a full-screen card covers the map during each agent turn. It shows text such as "Montezuma is thinking" and one status line. The agent plays under it through the API. The card is mandatory in that case, because a few seconds of an agent's view show you its unit positions.
+When a human plays in the game, a full-screen card covers the map during each agent turn. It shows text such as "Montezuma is thinking" and one status line.
+
+The agent plays under it through the API. The card is mandatory in that case, because a few seconds of an agent's view show you its unit positions.
 
 ## Spectator mode
 
@@ -12,7 +14,11 @@ Spectator mode is a game setup option. It unlocks only when every player is an a
 
 ## Map reveal
 
-A button switches the view between the full map and the current player's real view. The reveal must change rendering only. Some reveal mods mark tiles as revealed in the player's game data. That changes gameplay, not only rendering. FireTuner's **Reveal All** is one of them: it writes the player's visibility data, and **Unreveal All** leaves every tile revealed. See [findings/state/state.md](../../findings/state/tile-visibility.md#firetuners-map-reveal). The local observer view is the method to test first. See question 1 in [state/tile-visibility.md](../../findings/state/tile-visibility.md#questions). Test the chosen method before you use it.
+A button switches the view between the full map and the current player's real view. The reveal must change rendering only. Some reveal mods mark tiles as revealed in the player's game data.
+
+That changes gameplay, not only rendering. FireTuner's **Reveal All** is one of them: it writes the player's visibility data, and **Unreveal All** leaves every tile revealed.
+
+See [findings/state/tile-visibility.md](../../findings/state/tile-visibility.md#firetuners-map-reveal). The local observer view is the method to test first. See question 1 in [state/tile-visibility.md](../../findings/state/tile-visibility.md#questions). Test the chosen method before you use it.
 
 ## Decisions
 

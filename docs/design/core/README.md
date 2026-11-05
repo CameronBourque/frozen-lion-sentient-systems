@@ -4,7 +4,7 @@ Core is the core mod and the bridge. The core mod is the in-game Lua, and the br
 
 | File | Covers |
 | --- | --- |
-| [in-game-lua.md](in-game-lua.md) | The core mod: turn events, the state serializer, the action API, checkpoint IDs, and Civilopedia lookup |
+| [mod/](mod/README.md) | The core mod: turn events, the state serializer, the action API, checkpoint IDs, and Civilopedia lookup |
 | [bridge.md](bridge.md) | The bridge: tuner client, tagged lines, resync, version check, MCP server, model client, memory store |
 | [logs.md](logs.md) | The bridge's log records, levels, and log files |
 | [settings.md](settings.md) | The bridge's config file |

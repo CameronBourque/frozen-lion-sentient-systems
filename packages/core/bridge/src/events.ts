@@ -1,5 +1,5 @@
 // Turns the core mod's tagged lines into typed events.
-// docs/design/core/in-game-lua.md has the format.
+// docs/design/core/mod/lines.md has the format.
 
 import type { LogFields, Logger, LogLevel } from "./log.js";
 

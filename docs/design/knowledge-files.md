@@ -19,7 +19,9 @@ Concept guides hold judgment, and [decision helpers](decision-support/helpers.md
 
 ## Civ notes
 
-The mod ships notes for every Gathering Storm civ. A script generates them from the Civilopedia once, and you review them. When an agent meets a civ with no note, such as a modded civ, it writes one from that civ's Civilopedia and database entries. The bridge caches that note locally for later games.
+The mod ships notes for every Gathering Storm civ. A script generates them from the Civilopedia once, and you review them.
+
+When an agent meets a civ with no note, such as a modded civ, it writes one from that civ's Civilopedia and database entries. The bridge caches that note locally for later games.
 
 An agent uses the first note it finds, in this order:
 

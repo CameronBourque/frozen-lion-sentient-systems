@@ -32,10 +32,10 @@ Single player keeps one human, so it can't stand in for hotseat with the tuner o
 
 ### Online
 
-| Item | Value | Status |
-| --- | --- | --- |
-| Tuner | The game closes 4318 in an online game too, as in hotseat. With the host loaded into the map, `netstat` showed nothing on 4318, and the game listened on `127.0.0.1:4319` only. The bridge and `npm run gate -- --read-only` waited for the tuner and never connected. Port 4319 is no substitute. See [tuner/protocol.md](protocol.md#what-we-know-now) | Confirmed, 2026-10-23 |
-| Core mod | The mod runs, and `[SENTIENTSYSTEMS] AGENT_TURN 0` reached `Lua.log` once on each of turns 1 to 3. A program can read the log, but it can't send anything into the game | Confirmed, 2026-10-23 |
+- **Tuner.** The game closes 4318 in an online game too, as in hotseat. With the host loaded into the map, `netstat` showed nothing on 4318, and the game listened on `127.0.0.1:4319` only.
+
+  The bridge and `npm run gate -- --read-only` waited for the tuner and never connected. Port 4319 is no substitute. See [tuner/protocol.md](protocol.md#what-we-know-now). Confirmed, 2026-10-23.
+- **Core mod.** The mod runs, and `[SENTIENTSYSTEMS] AGENT_TURN 0` reached `Lua.log` once on each of turns 1 to 3. A program can read the log, but it can't send anything into the game. Confirmed, 2026-10-23.
 
 ## Rules for the test
 

@@ -4,14 +4,16 @@ How the bridge is built, checked, and released, and the workflow that keeps its 
 
 The TypeScript setup is in [rules/code.md](../../rules/code.md#typescript), and [findings/build-tooling.md](../../findings/build-tooling.md) tracks the executable build.
 
-- **Tool reference.** A script generates `docs/reference/tools.md*` from the MCP tool schemas. A `pull_request` workflow keeps it current in two jobs. The first job installs packages, runs the script, and uploads the file as an artifact, with no app token. The second job commits the file to the PR branch with the release app token and never runs `npm`. Dependabot PRs skip the second job, because workflows that Dependabot triggers can't read repository secrets.
+- **Tool reference.** A script generates `docs/reference/tools.md*` from the MCP tool schemas. A `pull_request` workflow keeps it current in two jobs. The first job installs packages, runs the script, and uploads the file as an artifact, with no app token.
+
+  The second job commits the file to the PR branch with the release app token and never runs `npm`. Dependabot PRs skip the second job, because workflows that Dependabot triggers can't read repository secrets.
 
 ## Decisions
 
 | Decision | Reason |
 | --- | --- |
 | Generate the tool reference from the tool schemas, and commit it | Each tool fact has one home, in the code. The model reads the same descriptions, so one text serves both. A tool change shows as a doc diff in its pull request |
-| Regenerate the tool reference in a two-job `pull_request` workflow that pushes with the release app token | PR code never runs where the token is. Pushes with an app token re-run the required checks, and the release app already has write access. Separate jobs also leave room for later jobs with other dependencies |
+| Regenerate the tool reference in a two-job `pull_request` workflow that pushes with the release app token | PR code never runs where the token is. An app token's push re-runs the required checks, and the release app can write. Separate jobs leave room for later jobs with other dependencies |
 | Node 26 for development, CI, and the executable | The executable ships with the Node version that builds it, so that version must be a supported LTS release. Node 26 is the LTS release with the longest support, and it builds the executable with `node --build-sea` |
 | The bridge is an npm workspace of the root package | One lockfile and one `npm ci`, so CI's tests can import the bridge's packages. The bridge and `typescript-eslint` share one TypeScript |
 | `tsx` runs TypeScript in development | It allows enums and other TypeScript features that Node's built-in type stripping can't run, which keeps code organized |

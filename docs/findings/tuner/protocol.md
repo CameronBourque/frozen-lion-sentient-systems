@@ -12,27 +12,35 @@ The unconfirmed rows below come from community sources, and nothing in the bridg
 
 ## What we know now
 
-Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/c21795250050447c89d42858afdf3decbac49bd8/docs/ARCHITECTURE.md), read at commit `c217952`, verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a), read at commit `dd20190`, is an MIT-licensed MCP server that lets LLM agents play full games. Sources read on 2026-10-16. The Windows capture on 2026-10-19 confirmed most of their framing and corrected some details. The dumps are in [Results](#results). How to turn the tuner on is in [tuner/setup.md](setup.md).
+Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/c21795250050447c89d42858afdf3decbac49bd8/docs/ARCHITECTURE.md), read at commit `c217952`, verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a), read at commit `dd20190`, is an MIT-licensed MCP server that lets LLM agents play full games.
 
-| Item | Value | Status | Source |
-| --- | --- | --- | --- |
-| Official client | `FireTuner2.exe` in the SDK | Confirmed | SDK folder |
-| Port | `127.0.0.1:4318`. The game process, `CivilizationVI`, listens on it. It also listens on `127.0.0.1:4319` | Confirmed | `netstat` and `Get-NetTCPConnection` on Windows, 2026-10-19 |
-| Port after a crash | After the game was ended from Task Manager and relaunched, it listened on 4318 and 4319 again under a new process ID. Steam did not need a restart. FireTuner kept retrying and reconnected by itself | Confirmed, one test | Windows, 2026-10-19 |
-| Second port | Port 4319 has no Lua states. In single player, `APP:` gets the normal reply, `LSQ:` gets an empty list, and `CMD:0:print` gets an empty tag 3 reply with no output. In hotseat, `APP:` got the normal reply, and the next request, apparently `LSQ:`, crashed the game with `EXCEPTION_ACCESS_VIOLATION` reading `0x0`. Never send requests to 4319 | Confirmed | Windows, 2026-10-22. civ6-logger ARCHITECTURE.md, "Two ports, and which Lua state to use", describes the same empty port |
-| Hotseat | The connection on 4318 drops when the game moves into the hotseat staging room. In the hotseat game, nothing listens on 4318, so no client can connect, even by hand. 4319 still listens. In single player, 4318 stays open | Confirmed | Windows, 2026-10-22 |
-| Listener gone | Once, in a single-player game that had run for about 4.5 hours through many bridge connects and loads, the game stopped listening on 4318 after the bridge disconnected. 4319 still listened, no other client held 4318, and FireTuner's connects got no answer. Two reloads of the save didn't bring it back, and a third did. The cause is unknown. See question 1 | Confirmed, seen once | `netstat` on Windows, 2026-10-22 |
-| Connections | The game accepts one client on 4318 at a time. While FireTuner was connected, 4318 was not in the listening state, and `Test-NetConnection 127.0.0.1 -Port 4318` failed. After FireTuner closed, the same test succeeded | Confirmed | Windows, 2026-10-19 |
-| Framing | A 4-byte little-endian length, a 4-byte little-endian signed tag, then the payload. The length counts payload bytes only, including the trailing null byte. Both directions use this format | Confirmed | [Frame format](#frame-format) |
-| Strings | The payload is UTF-8 strings, each ending in a null byte. A payload can hold several strings | Confirmed | [Message examples](#message-examples) |
-| Tags | Each reply carries the tag of its request: `APP:` uses 4, `LSQ:` uses 0, and `CMD:` uses 3. Output frames use -1 (`0xFFFFFFFF`). civ6-logger sends `LSQ:` with tag 4 | Confirmed | [Message examples](#message-examples) |
-| Handshake | FireTuner sends `APP:` with no name, then `LSQ:`. The game replies to `APP:` with three strings: `Civ6`, `Sid Meier's Civilization 6`, and the path of the game's `Base\Binaries\Debug` folder | Confirmed | [Message examples](#message-examples) |
-| State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state, in index order. `Main State` is 0. The names are in [lua/state-list.md](../lua/state-list.md#lua-state-list) | Confirmed | [Message examples](#message-examples) |
-| Run command | `CMD:<stateIndex>:<lua>` with tag 3 | Confirmed | [Message examples](#message-examples) |
-| Output | Each `print` arrives as a tag -1 frame with the payload `O\0<text>\0`. Text printed in any state except `Main State` starts with the state name and a colon, such as `InGame: hello` | Confirmed | [Message examples](#message-examples) |
-| End of a command | A tag 3 frame ends each command. On success its payload is one string, which holds the command's values. On a Lua error it is one string that starts with `ERR:` and holds the error and a stack trace, and no other tag 3 frame follows. What the values look like is in [tuner/commands.md](commands.md#what-we-know-now) | Confirmed | [Message examples](#message-examples) |
-| Merged frames | The output frame and the tag 3 frame arrived in one TCP segment, so one read can hold more than one frame | Confirmed | [Message examples](#message-examples) |
-| Recovery | After a bad handshake, the tuner often hangs until the game restarts | Unconfirmed | civ6-mcp README |
+Sources read on 2026-10-16. The Windows capture on 2026-10-19 confirmed most of their framing and corrected some details. The dumps are in [Results](#results). How to turn the tuner on is in [tuner/setup.md](setup.md).
+
+- **Official client.** `FireTuner2.exe` in the SDK. Confirmed. Source: SDK folder.
+- **Port.** `127.0.0.1:4318`. The game process, `CivilizationVI`, listens on it. It also listens on `127.0.0.1:4319`. Confirmed. Source: `netstat` and `Get-NetTCPConnection` on Windows, 2026-10-19.
+- **Port after a crash.** After the game was ended from Task Manager and relaunched, it listened on 4318 and 4319 again under a new process ID. Steam did not need a restart. FireTuner kept retrying and reconnected by itself. Confirmed, one test. Source: Windows, 2026-10-19.
+- **Second port.** Port 4319 has no Lua states. In single player, `APP:` gets the normal reply, `LSQ:` gets an empty list, and `CMD:0:print` gets an empty tag 3 reply with no output.
+
+  In hotseat, `APP:` got the normal reply, and the next request, apparently `LSQ:`, crashed the game with `EXCEPTION_ACCESS_VIOLATION` reading `0x0`.
+
+  Never send requests to 4319. Confirmed. Source: Windows, 2026-10-22. civ6-logger ARCHITECTURE.md, "Two ports, and which Lua state to use", describes the same empty port.
+- **Hotseat.** The connection on 4318 drops when the game moves into the hotseat staging room. In the hotseat game, nothing listens on 4318, so no client can connect, even by hand. 4319 still listens. In single player, 4318 stays open. Confirmed. Source: Windows, 2026-10-22.
+- **Listener gone.** Once, in a single-player game that had run for about 4.5 hours through many bridge connects and loads, the game stopped listening on 4318 after the bridge disconnected.
+
+  4319 still listened, no other client held 4318, and FireTuner's connects got no answer. Two reloads of the save didn't bring it back, and a third did. The cause is unknown. See question 1. Confirmed, seen once. Source: `netstat` on Windows, 2026-10-22.
+- **Connections.** The game accepts one client on 4318 at a time. While FireTuner was connected, 4318 was not in the listening state, and `Test-NetConnection 127.0.0.1 -Port 4318` failed. After FireTuner closed, the same test succeeded. Confirmed. Source: Windows, 2026-10-19.
+- **Framing.** A 4-byte little-endian length, a 4-byte little-endian signed tag, then the payload. The length counts payload bytes only, including the trailing null byte. Both directions use this format. Confirmed. Source: [Frame format](#frame-format).
+- **Strings.** The payload is UTF-8 strings, each ending in a null byte. A payload can hold several strings. Confirmed. Source: [Message examples](#message-examples).
+- **Tags.** Each reply carries the tag of its request: `APP:` uses 4, `LSQ:` uses 0, and `CMD:` uses 3. Output frames use -1 (`0xFFFFFFFF`). civ6-logger sends `LSQ:` with tag 4. Confirmed. Source: [Message examples](#message-examples).
+- **Handshake.** FireTuner sends `APP:` with no name, then `LSQ:`. The game replies to `APP:` with three strings: `Civ6`, `Sid Meier's Civilization 6`, and the path of the game's `Base\Binaries\Debug` folder. Confirmed. Source: [Message examples](#message-examples).
+- **State list.** Null-separated `<index>\0<name>\0` pairs, one per Lua state, in index order. `Main State` is 0. The names are in [lua/state-list.md](../lua/state-list.md#lua-state-list). Confirmed. Source: [Message examples](#message-examples).
+- **Run command.** `CMD:<stateIndex>:<lua>` with tag 3. Confirmed. Source: [Message examples](#message-examples).
+- **Output.** Each `print` arrives as a tag -1 frame with the payload `O\0<text>\0`. Text printed in any state except `Main State` starts with the state name and a colon, such as `InGame: hello`. Confirmed. Source: [Message examples](#message-examples).
+- **End of a command.** A tag 3 frame ends each command. On success its payload is one string, which holds the command's values.
+
+  On a Lua error it is one string that starts with `ERR:` and holds the error and a stack trace, and no other tag 3 frame follows. What the values look like is in [tuner/commands.md](commands.md#what-we-know-now). Confirmed. Source: [Message examples](#message-examples).
+- **Merged frames.** The output frame and the tag 3 frame arrived in one TCP segment, so one read can hold more than one frame. Confirmed. Source: [Message examples](#message-examples).
+- **Recovery.** After a bad handshake, the tuner often hangs until the game restarts. Unconfirmed. Source: civ6-mcp README.
 
 ## Method
 

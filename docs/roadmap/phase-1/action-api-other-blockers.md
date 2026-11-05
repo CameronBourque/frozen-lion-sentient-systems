@@ -1,6 +1,6 @@
 # Action API: other blockers
 
-Add the actions for the remaining blockers: captured and disloyal cities, espionage, the World Congress and emergencies, and era dedications. The blockers are in [state/state.md](../../findings/state/state.md#end-turn-blockers). Part of [phase 1](README.md).
+Add the actions for the remaining blockers: captured and disloyal cities, espionage, the World Congress and emergencies, and era dedications. The blockers are in [state/end-turn-blockers.md](../../findings/state/end-turn-blockers.md). Part of [phase 1](README.md).
 
 ## Tasks
 
@@ -16,5 +16,5 @@ In a running game, each action works once from the bridge, and each one returns 
 ## Record
 
 - Each request function, its Lua state, its result, and the setup that made its blocker appear, in a findings file of its own, with a row in the [findings index](../../findings/README.md).
-- The reasons, in [in-game-lua.md](../../design/core/in-game-lua.md).
+- The reasons, in [design/core/mod/actions.md](../../design/core/mod/actions.md).
 - The rows of each action, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md).

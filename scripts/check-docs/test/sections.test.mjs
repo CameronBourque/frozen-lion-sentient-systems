@@ -30,6 +30,10 @@ describe("sections", () => {
 		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/README.md": "# Phase 0\n" }))).toEqual([]);
 	});
 
+	test("a phase's done.md isn't a roadmap step", () => {
+		expect(checkSections(buildRepo({ "docs/roadmap/phase-0/done.md": "# Phase 0: finished steps\n" }))).toEqual([]);
+	});
+
 	test("a tech debt file needs its sections, and Questions or Tasks", () => {
 		const open = lines("# D", "## Now", "## Proposal", "## Questions", "## Done when");
 		const planned = lines("# D", "## Now", "## Proposal", "## Tasks", "## Done when");

@@ -15,7 +15,9 @@ After phase 1, a test matrix changes one setting at a time: map size, player cou
 
 ## Scenario tests
 
-A scenario test loads a save set at one hard moment, lets the agent play a few turns, and checks an outcome with code. A full game takes hours and mixes every decision together. A scenario takes a few turns and tests one decision, so it shows whether a change to a prompt, a guide, a [decision helper](decision-support/helpers.md), or a [model tier](decision-support/model-routing.md#tiers) helped.
+A scenario test loads a save set at one hard moment, lets the agent play a few turns, and checks an outcome with code. A full game takes hours and mixes every decision together.
+
+A scenario takes a few turns and tests one decision, so it shows whether a change to a prompt, a guide, a [decision helper](decision-support/helpers.md), or a [model tier](decision-support/model-routing.md#tiers) helped.
 
 A scenario has these parts:
 
@@ -49,11 +51,15 @@ Two checks cannot be automated. Agent players must be more fun to play against t
 
 Measurement sets the state size per turn. Phase 1 sends the full state, measures it, and trims. See the [risk](../risks.md).
 
-`npm run state` prints the size in bytes of the state, the choices, and each tree, and under the state and the choices, the size and share of each section, largest first. A section's size is its compact JSON. The sections add up to a little less than the total, which includes the braces and keys around them. The sizes are in bytes, not tokens.
+`npm run state` prints the size in bytes of the state, the choices, and each tree, and under the state and the choices, the size and share of each section, largest first.
+
+A section's size is its compact JSON. The sections add up to a little less than the total, which includes the braces and keys around them. The sizes are in bytes, not tokens.
 
 ### Sizes on turns 24 and 403
 
-Each part's size in bytes for the local player, in a single-player game with Gathering Storm on a Huge map (106 by 66 tiles), measured on 2026-10-29. The turn 24 save has 19 major players, 10 of them known to the player. The turn 403 save is the late game. The map is the largest the game has, so the tiles are as big as they get. A smaller map has fewer tiles.
+Each part's size in bytes for the local player, in a single-player game with Gathering Storm on a Huge map (106 by 66 tiles), measured on 2026-10-29.
+
+The turn 24 save has 19 major players, 10 of them known to the player. The turn 403 save is the late game. The map is the largest the game has, so the tiles are as big as they get. A smaller map has fewer tiles.
 
 | Part | Turn 24 | Turn 403 |
 | --- | --- | --- |

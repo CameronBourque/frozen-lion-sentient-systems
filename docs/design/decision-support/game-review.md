@@ -4,7 +4,9 @@ After a game ends, the game review finds where the agent fell behind and what it
 
 ## Why
 
-Decision records alone are noisy. A long game holds thousands of decisions, and reading them all costs more than the game did. Most of them did not matter. The review narrows the records to the turns that did matter, and turns them into lessons that tune the [knowledge files](../knowledge-files.md), the [helper weights](helpers.md#weights), the [opening books](opening-books.md), and the [model routing](model-routing.md) weights.
+Decision records alone are noisy. A long game holds thousands of decisions, and reading them all costs more than the game did. Most of them did not matter.
+
+The review narrows the records to the turns that did matter, and turns them into lessons that tune the [knowledge files](../knowledge-files.md), the [helper weights](helpers.md#weights), the [opening books](opening-books.md), and the [model routing](model-routing.md) weights.
 
 ## Why not grade each move
 
@@ -25,7 +27,9 @@ After each agent turn, the bridge writes one metrics line for each player to a f
 - the number of cities and the total population,
 - era score and progress toward each victory.
 
-Each line is a few hundred bytes, so a full game with eight players stays a few megabytes. The numbers come from the same calls as the [scoreboard](../../findings/state/scoreboard.md) and the victories section of the state. The scoreboard gives the leader panel's numbers only for players the agent has met, so the metrics line needs a core mod call of its own that reads them for every player.
+Each line is a few hundred bytes, so a full game with eight players stays a few megabytes. The numbers come from the same calls as the [scoreboard](../../findings/state/scoreboard.md) and the victories section of the state.
+
+The scoreboard gives the leader panel's numbers only for players the agent has met, so the metrics line needs a core mod call of its own that reads them for every player.
 
 The metrics include players the agent has not met. The agent never reads the metrics file during the game, so the file leaks nothing to the agent's play. The review runs after the game ends.
 
@@ -57,7 +61,9 @@ One game proves little, because luck and the start shape every result. Each pend
 
 ## Replays
 
-Replays are the last part to build, because each one plays many turns again. For the largest turning points only, the bridge loads the autosave from the start of the window and plays it again with a different choice, such as a campus in place of a second settler. Then it compares the metrics after the same number of turns. The comparison answers whether the other choice was better, on that start, without a grade.
+Replays are the last part to build, because each one plays many turns again. For the largest turning points only, the bridge loads the autosave from the start of the window and plays it again with a different choice, such as a campus in place of a second settler.
+
+Then it compares the metrics after the same number of turns. The comparison answers whether the other choice was better, on that start, without a grade.
 
 A replay needs an autosave on every turn, as the MVP gate preset in [testing.md](../testing.md) sets, and the checkpoint IDs, so the agent's memory matches each save.
 

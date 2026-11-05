@@ -1,10 +1,14 @@
 # Model routing
 
-Model routing picks a model tier for each model turn. Code scores how significant the turn is from the wake triggers that fired and the decisions waiting. The agent can also ask for a stronger model during its turn, within a budget. Cheap models play the routine turns, and strong models play the turns that decide the game.
+Model routing picks a model tier for each model turn. Code scores how significant the turn is from the wake triggers that fired and the decisions waiting.
+
+The agent can also ask for a stronger model during its turn, within a budget. Cheap models play the routine turns, and strong models play the turns that decide the game.
 
 ## Why
 
-The strong models cost many times more than the light ones for each token. Most model turns in a game are routine, such as picking the next build after an order finishes. A few turns decide the game, such as a war declaration, a choice of government, or the founding beliefs of a religion. One model for every turn either costs too much or plays the hard turns badly.
+The strong models cost many times more than the light ones for each token. Most model turns in a game are routine, such as picking the next build after an order finishes.
+
+A few turns decide the game, such as a war declaration, a choice of government, or the founding beliefs of a religion. One model for every turn either costs too much or plays the hard turns badly.
 
 Neither code nor the agent can judge significance alone:
 
@@ -47,7 +51,9 @@ Escalation has a budget, such as a number of escalations every 10 turns. When th
 
 A change of model starts a new prompt cache, so the first call after a change costs more. Routing therefore picks the tier once at the start of the turn and changes it only on escalation.
 
-[risks.md](../../risks.md) considers a spending limit in the settings. If the settings get one, routing drops the strong tier to standard when a game nears the limit, and logs a warning. If a tier's model fails, such as on a provider outage after retries, the turn falls back to the next tier down, and the bridge logs a warning.
+[risks.md](../../risks.md) considers a spending limit in the settings. If the settings get one, routing drops the strong tier to standard when a game nears the limit, and logs a warning.
+
+If a tier's model fails, such as on a provider outage after retries, the turn falls back to the next tier down, and the bridge logs a warning.
 
 ## Tuning
 
