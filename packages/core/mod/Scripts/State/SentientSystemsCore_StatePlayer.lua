@@ -1,10 +1,6 @@
--- The player section of the state: what the top bar shows about the player as a
--- whole. The numbers follow RefreshYields, RefreshTrade, and the favor override
--- in TopPanel.lua and TopPanel_Expansion2.lua. SentientSystemsCore_State.lua
--- loads this file. The shape is in bridge/src/state/player.ts. income,
--- resources, and era come from SentientSystemsCore_StatePlayerIncome.lua,
--- SentientSystemsCore_StatePlayerResources.lua, and
--- SentientSystemsCore_StatePlayerEra.lua.
+-- The player section, as the top bar shows it. Follows RefreshYields and
+-- RefreshTrade in TopPanel.lua and TopPanel_Expansion2.lua.
+-- Shape: bridge/src/state/player.ts.
 
 SentientSystems_Include("SentientSystemsCore_StatePlayerIncome")
 SentientSystems_Include("SentientSystemsCore_StatePlayerEra")

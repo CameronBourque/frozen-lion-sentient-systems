@@ -1,7 +1,6 @@
--- The blockers section of the state: what stops the end of the turn, as the
--- Next Turn button sees it, and the units that need orders.
--- SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/blockers.ts.
+-- The blockers section: what stops the end of the turn, as the Next Turn
+-- button sees it, and the units that need orders.
+-- Shape: bridge/src/state/blockers.ts.
 
 -- The key in the choices that resolves each blocker. A blocker that isn't here
 -- gets no choice: the unit blockers, which the units list resolves, and the

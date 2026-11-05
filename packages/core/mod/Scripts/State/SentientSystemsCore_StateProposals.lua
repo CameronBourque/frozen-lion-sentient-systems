@@ -1,6 +1,6 @@
--- The proposals section of the state: the deals that other players have
--- put to the player. The shape is in bridge/src/state/proposals.ts. The
--- checks follow DiplomacyDealView.lua.
+-- The proposals section: the deals other players have put to the player.
+-- Follows DiplomacyDealView.lua.
+-- Shape: bridge/src/state/proposals.ts.
 
 -- The deal item types, by the name of each in DealItemTypes.
 local KINDS = {

@@ -1,8 +1,6 @@
--- The envoys section of the state: the player's envoy tokens and influence, the
--- bonuses of each kind of city-state, and each met city-state, as the
--- City-States screen shows them. SentientSystemsCore_State.lua loads this file.
--- The shape is in bridge/src/state/envoys.ts. The checks follow GetData in
+-- The envoys section, as the City-States screen shows it. Follows GetData in
 -- CityStates.lua.
+-- Shape: bridge/src/state/envoys.ts.
 
 -- The fewest envoys that make a suzerain, which CityStates.lua also sets by
 -- hand.

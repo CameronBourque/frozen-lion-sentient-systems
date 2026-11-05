@@ -1,10 +1,6 @@
--- The victories section of the state: how close each living major player is to
--- each victory, in the order the Overall tab of World Rankings ranks them, with
--- the values its icon tooltips show. SentientSystemsCore_State.lua loads this
--- file. The shape is in bridge/src/state/victories.ts. The order and values
--- follow PopulateOverallInstance in WorldRankings.lua and g_victoryData in
--- WorldRankings_Expansion2.lua. The details of each victory come from
--- SentientSystemsCore_StateVictories*.lua.
+-- The victories section: how close each major player is to each victory, in
+-- the Overall tab order of World Rankings (PopulateOverallInstance).
+-- Shape: bridge/src/state/victories.ts.
 
 -- Returns whether the player is the other player or has met them. The tabs
 -- show who a player is only then.

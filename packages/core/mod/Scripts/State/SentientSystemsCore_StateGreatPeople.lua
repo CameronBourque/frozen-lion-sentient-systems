@@ -1,8 +1,6 @@
--- The great people section of the state: each great person on offer, with their
--- era, cost, effects, patronage costs, and each major player's progress toward
--- them, as the Great People screen shows them. SentientSystemsCore_State.lua
--- loads this file. The shape is in bridge/src/state/great-people.ts. The checks
--- follow PopulateData and AddRecruit in GreatPeoplePopup.lua.
+-- The great people section, as the Great People screen shows it. Follows
+-- PopulateData and AddRecruit in GreatPeoplePopup.lua.
+-- Shape: bridge/src/state/great-people.ts.
 
 -- The screen hides a patronage cost at or above this, which the game gives a
 -- great person the player can't earn.

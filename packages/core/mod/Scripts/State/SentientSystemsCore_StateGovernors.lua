@@ -1,11 +1,6 @@
--- The governors section of the state: the player's governor titles and each
--- appointed governor, with their city, how settled they are, their loyalty
--- pressure, and their promotions, as the Governors panel shows them. Rise and
--- Fall adds governors, so without it the section is left out.
--- SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/governors.ts. The checks follow Refresh and
--- AddGovernorAppointed in GovernorPanel.lua, and GetGovernorStatus in
--- GovernorSupport.lua.
+-- The governors section, as the Governors panel shows it. Follows Refresh and
+-- AddGovernorAppointed in GovernorPanel.lua, GetGovernorStatus in
+-- GovernorSupport.lua. Shape: bridge/src/state/governors.ts.
 
 SentientSystems_Include("SentientSystemsCore_Governors")
 

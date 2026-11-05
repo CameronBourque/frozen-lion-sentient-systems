@@ -1,6 +1,5 @@
--- The cities section of the state: the player's own cities, as the city panel
--- shows them. SentientSystemsCore_State.lua loads this file. The shape is in
--- bridge/src/state/cities.ts.
+-- The cities section: the player's own cities, as the city panel shows them.
+-- Shape: bridge/src/state/cities.ts.
 
 -- Each yield in the state, and its name in YieldTypes.
 local YIELDS = {

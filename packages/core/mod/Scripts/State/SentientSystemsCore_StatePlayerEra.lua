@@ -1,9 +1,6 @@
--- The era part of the player section, as the Era Progress panel shows it. Rise
--- and Fall adds ages, so without it the part is left out.
--- SentientSystemsCore_StatePlayer.lua loads this file. The shape is in
--- bridge/src/state/era.ts. The checks follow GetData, Refresh, and
--- PopulateCivilizationIcons in EraProgressPanel.lua in DLC/Expansion1 and
--- DLC/Expansion2, which are the same.
+-- The era part of the player section, as the Era Progress panel shows it.
+-- Follows GetData and Refresh in EraProgressPanel.lua.
+-- Shape: bridge/src/state/era.ts.
 
 SentientSystems_Include("SentientSystemsCore_Eras")
 

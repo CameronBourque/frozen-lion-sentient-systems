@@ -1,9 +1,6 @@
--- The resources part of the player section: each strategic, luxury, and bonus
--- resource the player has, as the Resources tab of Reports shows them.
--- SentientSystemsCore_StatePlayer.lua loads this file. The shape is in
--- bridge/src/state/resources.ts. The checks follow GetData, AddResourceData,
--- GetCityResourceData, and ViewResourcesPage in ReportScreen.lua, and
--- AppendXP2ResourceData and AddMiscResourceData in ReportScreen_Expansion2.lua.
+-- The resources part of the player section, as the Resources tab of Reports
+-- shows it. Follows GetData and AddResourceData in ReportScreen.lua.
+-- Shape: bridge/src/state/resources.ts.
 
 -- The class each resource class type has in the state.
 local CLASSES = {

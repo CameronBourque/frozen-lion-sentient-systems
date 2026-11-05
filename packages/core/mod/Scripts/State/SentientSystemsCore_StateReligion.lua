@@ -1,8 +1,6 @@
--- The religion section of the state: the player's pantheon, their progress
--- toward a religion, and the religion they founded with its followers, as the
--- religion screen's My Religion tab shows them. SentientSystemsCore_State.lua
--- loads this file. The shape is in bridge/src/state/religion.ts. The checks
--- follow ViewMyReligion and ViewReligion in ReligionScreen.lua.
+-- The religion section, as the My Religion tab of the religion screen shows
+-- it. Follows ViewMyReligion and ViewReligion in ReligionScreen.lua.
+-- Shape: bridge/src/state/religion.ts.
 
 -- Returns the religion the player founded, with the cities of every living
 -- player where it has followers, as the screen's cities panel lists them.

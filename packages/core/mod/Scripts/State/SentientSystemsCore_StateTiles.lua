@@ -1,8 +1,6 @@
--- The tiles section of the state: each tile the player has revealed, from the
--- player's own visibility data, never from the screen. A tile under fog reads
--- as it is now, as the game's tooltip shows it. See
--- docs/findings/state/tile-visibility.md. SentientSystemsCore_State.lua loads
--- this file. The shape is in bridge/src/state/tiles.ts.
+-- The tiles section: each revealed tile, from the player's own visibility
+-- data. See docs/findings/state/tile-visibility.md.
+-- Shape: bridge/src/state/tiles.ts.
 
 -- Returns the type of the plot's resource, or nil when the plot has none or the
 -- player can't see it yet. Some resources stay hidden until the player has a
