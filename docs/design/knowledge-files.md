@@ -8,6 +8,7 @@ Agents learn the game from files and the Civilopedia, not from web research. The
 | --- | --- | --- |
 | Concept guides | Strategy for any civ: expansion, district planning, eurekas, and archetypes such as domination or faith civs | Hand-written, tuned by trial and error |
 | Civ notes | Strategy for one civ: its ability, leader, unique units, and unique buildings | Shipped for Gathering Storm civs. Generated and cached for other civs |
+| Opening books | Plans for the first turns of a game, as trees that branch. See [decision-support/opening-books.md](decision-support/opening-books.md) | Hand-written, tuned from decision records |
 | Personalities | Priorities, behavior rules, narrator voice | Hand-written. The game's leader agendas are a starting point |
 | Sweat levels | The mindset for each level. See [agents/sweat-level.md](agents/sweat-level.md) | Hand-written, tuned from logs and playtests |
 | Model table | The model for each provider and operation | `models.yaml`, filled by testing |
@@ -33,6 +34,7 @@ Mod authors do not need a special format. A better Civilopedia entry gives a bet
 ```
 concepts/
 civ-notes/
+openings/
 overrides/
 personalities/
 	warmonger.md
