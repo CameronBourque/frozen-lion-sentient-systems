@@ -1,4 +1,5 @@
-// Tests for check.mjs: the width of a line and the comments over the limit.
+// Tests for check.mjs: the width of a line, the comments over the limit, and
+// that the shared text rules run on Lua comments.
 
 import { describe, expect, test } from "vitest";
 import { checkComments, LIMIT, width } from "../src/check.mjs";
@@ -44,6 +45,17 @@ describe("checkComments", () => {
 		const code = `local x = "${"a".repeat(LIMIT)}"`;
 
 		expect(checkComments({ "a.lua": `${code}\nlocal y = 1 ${overLimit}\n` }).lines).toEqual([]);
+	});
+
+	test("applies the shared text rules to a comment", () => {
+		const { lines, exitCode } = checkComments({ "a.lua": "local x = 1\n-- copied from line 12\n" });
+
+		expect(lines).toEqual(['a.lua:2: comment names "line 12"; name the function and its file instead']);
+		expect(exitCode).toBe(1);
+	});
+
+	test("lets through code that names a line number", () => {
+		expect(checkComments({ "a.lua": 'local s = "line 12"\n' }).lines).toEqual([]);
 	});
 
 	test("checks every file", () => {
