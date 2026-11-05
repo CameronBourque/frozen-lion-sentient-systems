@@ -35,13 +35,12 @@ interface Kind {
 const PLAYER_ID = /^\d+$/;
 // A game turn, from Game.GetCurrentGameTurn().
 const TURN = /^\d+$/;
-// A release version such as "0.1.0", with an optional suffix such as "-beta.1".
-// A mod with no version prints "nil".
+// A release version, with an optional suffix. A mod with no version prints
+// "nil".
 const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
-// A Lua state's name, from ContextPtr:GetID(), such as
-// "SentientSystemsCore_UI".
+// A Lua state's name, from ContextPtr:GetID().
 const CONTEXT = /^\w+$/;
-// An event handler's name, such as "OnPlayerTurnActivated".
+// An event handler's name.
 const HANDLER = /^\w+$/;
 // The escapes SentientSystems_CatchErrors writes, so an error with newlines
 // fits on one line: "\\" for a backslash, "\n" for a newline, and "\p" for a
@@ -56,9 +55,8 @@ const TRACEBACK = "\nstack traceback:\n";
 // uses it as it is.
 const GAME_NAME = "Sid Meier's Civilization VI";
 const GAME_FOLDER = `${GAME_NAME}\\`;
-// A path from its drive to the game's folder, such as "C:\Users\me\Documents\My
-// Games\Sid Meier's Civilization VI\". Each folder is one name and a backslash,
-// so the lazy match stops at the first game folder.
+// A path from its drive to the game's folder. Each folder is one name and a
+// backslash, so the lazy match stops at the first game folder.
 const DRIVE = String.raw`[A-Za-z]:\\`;
 const FOLDER = String.raw`[^\\\n]*\\`;
 const GAME_PATH = new RegExp(String.raw`${DRIVE}(?:${FOLDER})*?${GAME_NAME}\\`, "g");
@@ -125,8 +123,7 @@ export const KINDS: Kind[] = [
 	},
 ];
 
-// The name and colon the tuner puts before a state's prints, such as
-// "SentientSystemsCore_UI: ".
+// The name and colon the tuner puts before a state's prints.
 const STATE_PREFIX = /^\w+: /;
 
 // Removes the state prefix from a line of the client's output events. Main

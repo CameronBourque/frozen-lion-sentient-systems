@@ -14,16 +14,14 @@ export type LogLevel = typeof LOG_LEVELS[number];
 
 export const DEFAULT_LOG_LEVEL: LogLevel = "decisions";
 
-// Extra fields for a record, such as { playerId: 0 }. They can't replace the
-// record's own fields.
+// Extra fields for a record. They can't replace the record's own fields.
 export type LogFields = Record<string, unknown> & { time?: never; level?: never; event?: never; msg?: never };
 
 export interface LogRecord {
-	// UTC, in ISO 8601 form, such as "2026-10-23T23:19:11.042Z".
+	// UTC, in ISO 8601 form.
 	time: string;
 	level: LogLevel;
-	// A fixed name for each kind of line, such as "turn", so a filter doesn't
-	// match message text.
+	// A fixed name for each kind of line, so a filter skips the message text.
 	event: string;
 	// Reads on its own, because the console prints only the time and this.
 	msg: string;
@@ -69,15 +67,14 @@ export function writesLevel(loggerLevel: LogLevel, recordLevel: LogLevel): boole
 	return LOG_LEVELS.indexOf(recordLevel) <= LOG_LEVELS.indexOf(loggerLevel);
 }
 
-// The console line for a record, with the local 12-hour time in front, such as
-// "2:05:09 PM  warning: STATE_READY is not a known kind".
+// The console line for a record, with the local 12-hour time in front.
 export function formatConsole(record: LogRecord): string {
 	return `${new Date(record.time).toLocaleTimeString("en-US")}  ${CONSOLE_LABELS[record.level]}${record.msg}`;
 }
 
 // The log file for a game that starts at a time, in a logs folder next to the
-// config file, such as "logs/2026-10-23-181911.log". The name has the local
-// time, with no colons, which Windows doesn't allow in file names.
+// config file. The name has the local time, with no colons, which Windows
+// doesn't allow in file names.
 export function logFilePath(configPath: string, time: Date): string {
 	const pad = (value: number): string => String(value).padStart(2, "0");
 	const date = `${time.getFullYear()}-${pad(time.getMonth() + 1)}-${pad(time.getDate())}`;

@@ -17,8 +17,7 @@ const PROVIDER = z.strictObject({
 	apiKey: z.string().default(""),
 });
 
-// Strict objects, so a misspelled field, such as "loglevel", is an error and
-// not a silent default.
+// Strict objects, so a misspelled field is an error and not a silent default.
 const CONFIG = z.strictObject({
 	schemaVersion: z.literal(SCHEMA_VERSION),
 	logLevel: z.enum(LOG_LEVELS).default(DEFAULT_LOG_LEVEL),
@@ -33,9 +32,7 @@ export type ConfigResult =
 	| { ok: true; config: Config }
 	| { ok: false; errors: string[] };
 
-// Parses the file's text. Each error names the field it is about, such as
-// "logLevel: Invalid option: expected one of
-// "error"|"warn"|"info"|"decisions"|"debug"".
+// Parses the file's text. Each error names the field it is about.
 export function parseConfig(text: string): ConfigResult {
 	const document = parseDocument(text);
 
