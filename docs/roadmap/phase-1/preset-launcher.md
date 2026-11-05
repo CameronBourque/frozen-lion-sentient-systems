@@ -2,7 +2,7 @@
 
 Add a bridge tool that starts a test preset from the main menu, with a fixed map seed, so test runs need no clicks through the setup screen. The presets are in [testing.md](../../design/testing.md#presets). Part of [phase 1](README.md).
 
-This step depends on questions 1 and 2 in [state-list.md](../../findings/state-list.md#questions). If Lua can't press the loading screen's button, the tool waits for the player's click, and the [smoke test](smoke-test.md) and the [MVP gate](mvp-gate.md) still run.
+This step depends on questions 1 and 2 in [lua/state-list.md](../../findings/lua/state-list.md#questions). If Lua can't press the loading screen's button, the tool waits for the player's click, and the [smoke test](smoke-test.md) and the [MVP gate](mvp-gate.md) still run.
 
 ## Tasks
 
@@ -18,5 +18,5 @@ From the main menu, `npm run preset -- smoke` starts a game that matches the smo
 
 ## Record
 
-- The front-end calls and the answers to questions 1 and 2, in [state-list.md](../../findings/state-list.md). Remove the answered questions.
+- The front-end calls and the answers to questions 1 and 2, in [lua/state-list.md](../../findings/lua/state-list.md). Remove the answered questions.
 - The preset files and the launcher, in [testing.md](../../design/testing.md#presets).

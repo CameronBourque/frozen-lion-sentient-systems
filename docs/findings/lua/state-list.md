@@ -2,7 +2,7 @@
 
 Status: open. The state list, how it changes over a session, and what the tuner does during a load are confirmed in a running game on Windows. Whether a mod can run Lua in the front end, and whether Lua can press the loading screen's button, are open.
 
-The Lua states the tuner lists in a running game, and how the list changes when the player opens menus, quits to the main menu, or loads a save. What each state can call is in [lua-contexts.md](lua-contexts.md).
+The Lua states the tuner lists in a running game, and how the list changes when the player opens menus, quits to the main menu, or loads a save. What each state can call is in [lua/contexts.md](contexts.md).
 
 ## Questions
 
@@ -64,7 +64,7 @@ FireTuner listed 124 states in a Duel game with Gathering Storm rules, sorted by
 
 ### State lifecycle
 
-`watch-states` listed the states every 5 s on Windows on 2026-10-21, in the same game. The script's output showed up late, so the times in the table may lag the player's actions by an unknown amount. On 2026-10-23, four more `watch-states` loads, three with the core mod on and one with it off, matched this table. FireTuner listed the in-game states before the click in the same loads, so the client makes the difference, not the mod. `watch-states` shows only the frames that answer its own requests, so it can't show prints. The bridge shows them. See [tuner-protocol.md](tuner-protocol.md#what-we-know-now).
+`watch-states` listed the states every 5 s on Windows on 2026-10-21, in the same game. The script's output showed up late, so the times in the table may lag the player's actions by an unknown amount. On 2026-10-23, four more `watch-states` loads, three with the core mod on and one with it off, matched this table. FireTuner listed the in-game states before the click in the same loads, so the client makes the difference, not the mod. `watch-states` shows only the frames that answer its own requests, so it can't show prints. The bridge shows them. See [tuner/protocol.md](../tuner/protocol.md#what-we-know-now).
 
 | Time | What the player did | What the script saw |
 | --- | --- | --- |

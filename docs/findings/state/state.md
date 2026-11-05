@@ -2,7 +2,7 @@
 
 Status: open. `SentientSystems_GetState` with cities, units, revealed tiles, revealed rival cities, visible rival units, and end-turn blockers is confirmed in a running game. The list of `EndTurnBlockingTypes` values is confirmed in files and in a running game.
 
-The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. What a player can know about each tile and the rivals on it is in [tile-visibility.md](tile-visibility.md). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the state serializer uses to build one player's view of the game, with the Lua state each one runs in. The view must hold what that player can know and nothing more. What a player can know about each tile and the rivals on it is in [state/tile-visibility.md](tile-visibility.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -33,7 +33,7 @@ The calls the state serializer uses to build one player's view of the game, with
 
 ### Tiles
 
-`SentientSystems_GetState(playerID)` lists each plot, from 0 to `Map.GetPlotCount() - 1`, for which `PlayersVisibility[playerID]:IsRevealed(index)` is `true`. `Map.GetPlotByIndex(index)` gives the plot, whose `GetTerrainType()` and `GetFeatureType()` are indexes in `GameInfo.Terrains` and `GameInfo.Features`. `GetFeatureType()` returns -1 for a plot with no feature, and `GameInfo.Features[-1]` is `nil`. `GetResourceType()`, `GetDistrictType()`, `GetImprovementType()`, and `GetRouteType()` work the same way with `GameInfo.Resources`, `GameInfo.Districts`, `GameInfo.Improvements`, and `GameInfo.Routes`, and each table returns `nil` for -1. `GameInfo.Routes[0]` is `ROUTE_ANCIENT_ROAD`. `GetOwner()` returns a player ID, or -1 for no owner. `IsImprovementPillaged()` and `IsRoutePillaged()` tell whether the improvement or road is pillaged. The tooltip shows the same values, in `PlotToolTip.lua`, lines 197 to 480 and 633 to 685. Which of these a player can know is in [tile-visibility.md](tile-visibility.md). Confirmed on Windows on 2026-10-24.
+`SentientSystems_GetState(playerID)` lists each plot, from 0 to `Map.GetPlotCount() - 1`, for which `PlayersVisibility[playerID]:IsRevealed(index)` is `true`. `Map.GetPlotByIndex(index)` gives the plot, whose `GetTerrainType()` and `GetFeatureType()` are indexes in `GameInfo.Terrains` and `GameInfo.Features`. `GetFeatureType()` returns -1 for a plot with no feature, and `GameInfo.Features[-1]` is `nil`. `GetResourceType()`, `GetDistrictType()`, `GetImprovementType()`, and `GetRouteType()` work the same way with `GameInfo.Resources`, `GameInfo.Districts`, `GameInfo.Improvements`, and `GameInfo.Routes`, and each table returns `nil` for -1. `GameInfo.Routes[0]` is `ROUTE_ANCIENT_ROAD`. `GetOwner()` returns a player ID, or -1 for no owner. `IsImprovementPillaged()` and `IsRoutePillaged()` tell whether the improvement or road is pillaged. The tooltip shows the same values, in `PlotToolTip.lua`, lines 197 to 480 and 633 to 685. Which of these a player can know is in [state/tile-visibility.md](tile-visibility.md). Confirmed on Windows on 2026-10-24.
 
 ### Rival cities
 
@@ -41,11 +41,11 @@ The calls the state serializer uses to build one player's view of the game, with
 
 ### Rival units
 
-Each living player's units come from `GetUnits():Members()`, with the same calls as the player's own. Unit IDs repeat across players: player 0's scout and player 1's builder both had ID 196608, and both warriors had ID 131073. A rival unit is visible to the player when `PlayersVisibility[playerID]:IsVisible(x, y)` and `IsUnitVisible(unit)` are both `true`. See [tile-visibility.md](tile-visibility.md#rival-cities-and-units). Confirmed on Windows on 2026-10-24.
+Each living player's units come from `GetUnits():Members()`, with the same calls as the player's own. Unit IDs repeat across players: player 0's scout and player 1's builder both had ID 196608, and both warriors had ID 131073. A rival unit is visible to the player when `PlayersVisibility[playerID]:IsVisible(x, y)` and `IsUnitVisible(unit)` are both `true`. See [state/tile-visibility.md](tile-visibility.md#rival-cities-and-units). Confirmed on Windows on 2026-10-24.
 
 ### End-turn blockers
 
-`NotificationManager.GetFirstEndTurnBlocking(playerID)` returns one value of `EndTurnBlockingTypes`. Each value is a hash, such as -286188551 for `ENDTURN_BLOCKING_RESEARCH`, not an index, so the name comes from a reverse lookup in the table. Confirmed on Windows on 2026-10-24. See [ending the turn](game-actions.md#ending-the-turn). For `ENDTURN_BLOCKING_UNITS`, `ENDTURN_BLOCKING_STACKED_UNITS`, and `ENDTURN_BLOCKING_UNIT_NEEDS_ORDERS`, `DoEndTurn` in `Base/Assets/UI/ActionPanel.lua` calls `UI.SelectNextReadyUnit()`. For any other blocker, it finds the blocker's notification with `NotificationManager.FindEndTurnBlocking(blocker, playerID)` and activates it, and the notification's handler opens the screen. `DoEndTurn` is at lines 526 to 600. Each blocker's prompt text and notification icon are in `g_kMessageInfo` in `ActionPanel.lua`, lines 99 to 115, and in the expansions' replacements of it. The handlers are in `Base/Assets/UI/Panels/NotificationPanel.lua`, lines 200 to 221, and in its replacements. Confirmed in files.
+`NotificationManager.GetFirstEndTurnBlocking(playerID)` returns one value of `EndTurnBlockingTypes`. Each value is a hash, such as -286188551 for `ENDTURN_BLOCKING_RESEARCH`, not an index, so the name comes from a reverse lookup in the table. Confirmed on Windows on 2026-10-24. See [ending the turn](../actions/end-turn.md#ending-the-turn). For `ENDTURN_BLOCKING_UNITS`, `ENDTURN_BLOCKING_STACKED_UNITS`, and `ENDTURN_BLOCKING_UNIT_NEEDS_ORDERS`, `DoEndTurn` in `Base/Assets/UI/ActionPanel.lua` calls `UI.SelectNextReadyUnit()`. For any other blocker, it finds the blocker's notification with `NotificationManager.FindEndTurnBlocking(blocker, playerID)` and activates it, and the notification's handler opens the screen. `DoEndTurn` is at lines 526 to 600. Each blocker's prompt text and notification icon are in `g_kMessageInfo` in `ActionPanel.lua`, lines 99 to 115, and in the expansions' replacements of it. The handlers are in `Base/Assets/UI/Panels/NotificationPanel.lua`, lines 200 to 221, and in its replacements. Confirmed in files.
 
 `NotificationManager.GetAllEndTurnBlocking(playerID)` returns a list of every blocker, in the order the game resolves them, and its first entry is the value `GetFirstEndTurnBlocking` returns. A blocker appears once for each of its notifications, and `GetNumNotificationsOfActiveBlocker` in `ActionPanel.lua`, lines 465 to 477, counts the repeats. `ActionPanel.lua` reads the list at lines 166 and 468. Confirmed in files and on Windows on 2026-10-24.
 
@@ -94,7 +94,7 @@ No UI file names the other three values, `ENDTURN_BLOCKING_CITY_RANGE_ATTACK`, `
 2. Read `SentientSystems_GetState(Game.GetLocalPlayer())` through `SentientSystems_Stash` and `SentientSystems_PrintPiece`, parse it with `JSON.parse`, and compare it with the calls.
 3. To test a state file that the `.modinfo` doesn't list yet, without a restart, send the file's code without its comments to `SentientSystemsCore_UI`, then call its function.
 4. To list the values of `EndTurnBlockingTypes` in a running game, send `for k, v in pairs(EndTurnBlockingTypes) do print(v, k) end` to `SentientSystemsCore_UI`, and compare them with the table in [end-turn blockers](#end-turn-blockers).
-5. To change a file in `Scripts/` without a load, send `SentientSystems_Include("<file name>")` first. See [lua-contexts.md](lua-contexts.md#the-core-mods-states).
+5. To change a file in `Scripts/` without a load, send `SentientSystems_Include("<file name>")` first. See [lua/contexts.md](../lua/contexts.md#the-core-mods-states).
 
 ## Results
 

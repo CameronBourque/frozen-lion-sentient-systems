@@ -15,7 +15,7 @@ local YIELDS = {
 -- Returns what the city is producing, with the turns left, or nil when it
 -- produces nothing. A hash of 0 means nothing. GameInfo reads 0 as a row index,
 -- so GameInfo.Types[0] is the first row, not the production. See
--- docs/findings/game-state.md.
+-- docs/findings/state/state.md.
 local function GetProduction(city)
 	local queue = city:GetBuildQueue()
 	local hash = queue:GetCurrentProductionTypeHash()

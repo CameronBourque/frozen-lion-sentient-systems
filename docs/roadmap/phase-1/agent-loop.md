@@ -19,4 +19,4 @@ In a running game, the bridge executable plays 10 turns in a row with no manual 
 
 - The loop, the limits and their defaults, and the plain-code rules, in [turn-loop.md](../../design/agents/turn-loop.md).
 - The forced end turn at the limit, as a `## Decisions` row in [turn-loop.md](../../design/agents/turn-loop.md).
-- Which blockers a forced end turn skips, in [game-actions.md](../../findings/game-actions.md#ending-the-turn).
+- Which blockers a forced end turn skips, in [actions/end-turn.md](../../findings/actions/end-turn.md#ending-the-turn).

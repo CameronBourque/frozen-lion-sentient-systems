@@ -45,7 +45,7 @@ jobs:
           cache: npm
       - run: npm ci
       # npm run coverage also runs the Lua tests. The game's Lua matches Lua 5.1.5. See
-      # docs/findings/lua-contexts.md#lua-51-comparison.
+      # docs/findings/lua/contexts.md#lua-51-comparison.
       - uses: leafo/gh-actions-lua@v13
         with:
           luaVersion: "5.1.5"

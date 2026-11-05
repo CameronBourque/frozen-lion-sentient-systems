@@ -2,7 +2,7 @@
 // major player is to each victory, in the order the Overall tab of World
 // Rankings ranks them, with the numbers its icon tooltips show. The core mod
 // builds it in Scripts/State/SentientSystemsCore_StateVictories.lua. How each
-// tab was checked: docs/findings/game-victories.md.
+// tab was checked: docs/findings/state/victories.md.
 
 import { z } from "zod";
 

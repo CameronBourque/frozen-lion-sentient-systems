@@ -5,7 +5,7 @@
 // a game loaded and the core mod on. Options: `--unit <id>` picks the unit to
 // move, `--end-turn` ends the turn after the move and waits for the next turn
 // signal, `--read-only` prints the turn, cities, and units and stops before any
-// move, for the online test in docs/findings/multiplayer.md, and `--port
+// move, for the online test in docs/findings/tuner/multiplayer.md, and `--port
 // <port>` sets another port, such as `npm run gate -- --unit 131073
 // --end-turn`. In PowerShell, write the `--` as `'--'`, as docs/rules/code.md
 // says. Throwaway code: this file goes when the phase 1 action API does the

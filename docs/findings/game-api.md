@@ -2,7 +2,7 @@
 
 Status: open. Listing cities and units is confirmed in a running game. The rest is partly confirmed from game files. civ6-mcp's code covers more calls, unconfirmed.
 
-This file lists the game calls the bridge needs, apart from the actions, which are in [game-actions.md](game-actions.md), with the Lua state (gameplay or UI) and where we found each call. "Confirmed in files" means the game's own Lua uses the call that way. "Tested" means we ran it from the tuner. "Used by civ6-mcp" means [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a) calls it that way at commit `dd20190`, read on 2026-10-16. That code plays live games, but we haven't run the call ourselves, so it stays unconfirmed.
+This file lists the game calls the bridge needs, apart from the actions, which are in [the action findings](actions/move-unit.md), with the Lua state (gameplay or UI) and where we found each call. "Confirmed in files" means the game's own Lua uses the call that way. "Tested" means we ran it from the tuner. "Used by civ6-mcp" means [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a) calls it that way at commit `dd20190`, read on 2026-10-16. That code plays live games, but we haven't run the call ourselves, so it stays unconfirmed.
 
 ## Questions
 
@@ -46,7 +46,7 @@ Confirmed on Windows on 2026-10-22. The tuner is closed in hotseat, so the hotse
 
 ### Turn events
 
-See [lua-contexts.md](lua-contexts.md). The gameplay event is `GameEvents.PlayerTurnStarted`. The UI events are `Events.PlayerTurnActivated` and `Events.LocalPlayerTurnBegin`.
+See [lua/contexts.md](lua/contexts.md). The gameplay event is `GameEvents.PlayerTurnStarted`. The UI events are `Events.PlayerTurnActivated` and `Events.LocalPlayerTurnBegin`.
 
 ### Game properties (for checkpoint IDs)
 

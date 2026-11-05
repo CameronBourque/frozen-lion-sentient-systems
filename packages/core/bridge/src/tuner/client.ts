@@ -2,8 +2,8 @@
 // state lookup by name, and running Lua. Requests go out one at a time, through
 // one queue. Each command runs inside the marker wrapper from wrapper.ts, so
 // its output can be told apart from other prints.
-// docs/findings/tuner-protocol.md has the messages, and
-// docs/findings/tuner-commands.md has how the game runs commands.
+// docs/findings/tuner/protocol.md has the messages, and
+// docs/findings/tuner/commands.md has how the game runs commands.
 
 import { EventEmitter } from "node:events";
 import { type ConnectionOptions, TunerConnection } from "./connection.js";

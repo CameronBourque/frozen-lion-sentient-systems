@@ -2,7 +2,7 @@
 
 Status: open. The bridge's probe confirmed how commands run, what the tag 3 reply carries, how large output arrives, the output size limit, reply order, and unprompted output. The rule that picks how the game runs a command is still open.
 
-How the game runs a `CMD:` command and sends back its output. The wire format, message types, and byte dumps are in [tuner-protocol.md](tuner-protocol.md).
+How the game runs a `CMD:` command and sends back its output. The wire format, message types, and byte dumps are in [tuner/protocol.md](protocol.md).
 
 ## Questions
 
@@ -23,7 +23,7 @@ How the game runs a `CMD:` command and sends back its output. The wire format, m
 
 ## Method
 
-1. Turn on the tuner and start a game, as steps 1 and 2 of the [tuner protocol method](tuner-protocol.md#method) describe.
+1. Turn on the tuner and start a game, as steps 1 and 2 of the [tuner protocol method](protocol.md#method) describe.
 2. Close FireTuner, because the game takes one client at a time.
 3. Check out the probe script from commit `2291dc3`, the last commit on `main` that has it, and install its dependencies:
 
@@ -82,7 +82,7 @@ The chunk name in each error is the command text, not `_cmdr = {...}`, so the ma
   | 1,000,000, then 1,096,990 or 1,097,000 characters | No reply in 15 s | None |
   | 3 of 1,000,000 characters | No reply in 15 s | None |
 
-  On 2026-10-24, the bridge read 2,500,001 bytes of JSON, a list of 500,000 `"é"` strings, through the core mod's stash, one piece per command. See **Stash** in [in-game-lua.md](../design/core/in-game-lua.md). `SentientSystems_Stash` encoded the list and printed `3` in 1,012 ms. Each `SentientSystems_PrintPiece` command took 29 to 36 ms, for pieces of 1,000,000, 1,000,000, and 500,001 bytes. The joined pieces parsed with `JSON.parse` into 500,000 `"é"` strings, with no U+FFFD replacement characters. A `SentientSystems_PrintPiece(1)` after the last piece raised `no stashed piece 1`.
+  On 2026-10-24, the bridge read 2,500,001 bytes of JSON, a list of 500,000 `"é"` strings, through the core mod's stash, one piece per command. See **Stash** in [in-game-lua.md](../../design/core/in-game-lua.md). `SentientSystems_Stash` encoded the list and printed `3` in 1,012 ms. Each `SentientSystems_PrintPiece` command took 29 to 36 ms, for pieces of 1,000,000, 1,000,000, and 500,001 bytes. The joined pieces parsed with `JSON.parse` into 500,000 `"é"` strings, with no U+FFFD replacement characters. A `SentientSystems_PrintPiece(1)` after the last piece raised `no stashed piece 1`.
 
 - **Hello check.** `npm run hello` at commit `2291dc3` on Windows on 2026-10-21 listed 124 states and ran three commands in `InGame` through the marker wrapper. A one-line print and a command over three lines, with a `local` and a trailing `--` comment, both came back as expected. `print("before the error")` and then `error("boom")` came back as a runtime error with the print before it. The message was `[string "(function()..."]:6: boom`, then a stack trace of five calls through `error`, `pcall`, and the wrapper.
 - **Round-trip time.** From a send to its tag 3 reply took 18 to 54 ms, up to the 1,000,000-character print.

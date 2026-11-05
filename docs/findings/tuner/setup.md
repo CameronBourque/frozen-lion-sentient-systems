@@ -2,7 +2,7 @@
 
 Status: open. The Windows menu toggle and the tuner without the SDK are confirmed in a running game. The macOS and Linux builds are untested.
 
-How a player turns on the FireTuner server, and what that costs them. [design/distribution.md](../design/distribution.md) depends on these answers, because the bridge does this setup for nontechnical users. The wire protocol is in [tuner-protocol.md](tuner-protocol.md).
+How a player turns on the FireTuner server, and what that costs them. [design/distribution.md](../../design/distribution.md) depends on these answers, because the bridge does this setup for nontechnical users. The wire protocol is in [tuner/protocol.md](protocol.md).
 
 ## Questions
 
@@ -24,7 +24,7 @@ The setup notes come from the [civ6-mcp README](https://github.com/lmwilki/civ6-
 1. Close the game. Note the value of `EnableTuner` in `AppOptions.txt`, then set it to `0`.
 2. Start the game, open **Options**, and look for **Tuner (disables achievements)**. Turn it on, and close the game.
 3. Check whether `AppOptions.txt` now has `EnableTuner 1`.
-4. Start a game, and check whether port 4318 is listening, as step 2 of the [tuner protocol method](tuner-protocol.md#method) describes.
+4. Start a game, and check whether port 4318 is listening, as step 2 of the [tuner protocol method](protocol.md#method) describes.
 5. To check the SDK requirement, uninstall the SDK in Steam, or use a Windows machine without it, and repeat step 4.
 
 ## Results

@@ -1,6 +1,6 @@
 // Replies from the Windows capture, as strings, for the fake game and the
 // client tests. The bytes are in
-// docs/findings/tuner-protocol.md#message-examples.
+// docs/findings/tuner/protocol.md#message-examples.
 
 // The three strings the game sends back for APP:.
 export const appReply = [

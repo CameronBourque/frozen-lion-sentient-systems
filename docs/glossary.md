@@ -19,13 +19,13 @@ The one name for each thing in this project, and what it means. Use these names 
 | Deep strategic review | A mode of the agent loop that uses a stronger model and compacts the journal | [knowledge-files.md](design/knowledge-files.md#file-layout) |
 | Feature mod | The agent players mod or the advisors mod. Each has its own version and a required core range | [versioning.md](design/versioning.md#packages) |
 | Finding | A file in `findings/` that records what is true about the game or our tools, with a status of Confirmed or Unconfirmed | [rules/docs.md](rules/docs.md#findings) |
-| FireTuner | The SDK's debug program, `FireTuner2.exe`. The FireTuner protocol is the wire protocol it uses | [tuner-protocol.md](findings/tuner-protocol.md) |
+| FireTuner | The SDK's debug program, `FireTuner2.exe`. The FireTuner protocol is the wire protocol it uses | [tuner/protocol.md](findings/tuner/protocol.md) |
 | Gate | The test at the end of a phase. It must pass before the next phase starts | [roadmap/](roadmap/README.md) |
 | Knowledge files | The concept guides, civ notes, personalities, sweat level files, and model table that teach agents the game | [knowledge-files.md](design/knowledge-files.md) |
 | Load signal | The two tagged lines the core mod prints during a load: `LOAD_READY` when the loading screen shows its button, and `GAME_READY <turn>` after the click | [in-game-lua.md](design/core/in-game-lua.md) |
 | Log record | One entry in the bridge's log: the time, the level, a fixed event name, a message, and any fields. A log file holds one record on each line, as JSON | [logs.md](design/core/logs.md) |
-| Lua state | One Lua environment in the running game, such as `InGame` or `GameCore_Tuner`. The tuner lists the states and runs Lua in one of them. Use "context" only for the `.modinfo` `Context` attribute | [lua-contexts.md](findings/lua-contexts.md) |
-| Marker wrapper | The Lua the tuner client puts around each command. It prints `@@ss:begin:<id>` and `@@ss:end:<id>:<result>`, so the bridge knows which output belongs to which command | [tuner-commands.md](findings/tuner-commands.md#probe-results) |
+| Lua state | One Lua environment in the running game, such as `InGame` or `GameCore_Tuner`. The tuner lists the states and runs Lua in one of them. Use "context" only for the `.modinfo` `Context` attribute | [lua/contexts.md](findings/lua/contexts.md) |
+| Marker wrapper | The Lua the tuner client puts around each command. It prints `@@ss:begin:<id>` and `@@ss:end:<id>:<result>`, so the bridge knows which output belongs to which command | [tuner/commands.md](findings/tuner/commands.md#probe-results) |
 | MVP | The minimum viable product: one agent finishes a full single-player game against the native AI. It is phase 1 | [phase-1/](roadmap/phase-1/README.md) |
 | Native AI | The game's built-in computer players | [slot-type.md](design/agents/slot-type.md) |
 | Personality | A file that sets an agent's priorities, behavior rules, and narrator voice | [knowledge-files.md](design/knowledge-files.md#layers) |
@@ -35,6 +35,6 @@ The one name for each thing in this project, and what it means. Use these names 
 | Spectator mode | A game setup option for agent-only games that lets you watch agents play | [cover-and-spectator.md](design/agents/cover-and-spectator.md#spectator-mode) |
 | Step | One unit of work in a phase, in its own file `NN-short-name.md` | [rules/docs.md](rules/docs.md#roadmap) |
 | Sweat level | How hard an agent pushes toward victory: no sweat, balanced, or super sweat | [sweat-level.md](design/agents/sweat-level.md) |
-| Tuner | The debug server inside the game. FireTuner and the bridge connect to it over TCP | [tuner-setup.md](findings/tuner-setup.md) |
+| Tuner | The debug server inside the game. FireTuner and the bridge connect to it over TCP | [tuner/setup.md](findings/tuner/setup.md) |
 | Turn signal | The tagged line that the core mod prints when a human player's turn starts, such as `[SENTIENTSYSTEMS] AGENT_TURN 0` | [architecture.md](design/architecture.md#turn-signal) |
 | Windows Sandbox | A clean, throwaway copy of Windows built into Windows 10 and 11 Pro, Enterprise, and Education. It tests the executable on a machine with no Node | [build-tooling.md](findings/build-tooling.md#method) |

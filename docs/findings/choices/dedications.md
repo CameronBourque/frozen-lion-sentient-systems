@@ -2,7 +2,7 @@
 
 Status: open. The `dedications` key of `SentientSystems_GetChoices`, the dedications the player may make for the era that began, is confirmed in a running game with Gathering Storm and matches the dedication popup, for a golden, a dark, a heroic, and a normal age.
 
-The calls the dedication choice uses, as the dedication popup shows them. The other choices are in [game-choices.md](game-choices.md). See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the dedication choice uses, as the dedication popup shows them. The other choices are in [choices/choices.md](choices.md). See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -20,7 +20,7 @@ None open.
 - **Picks.** `GetPlayerNumAllowedCommemorations(playerID)` is how many the player must choose: 1 in a golden and a dark age, and 3 in a heroic age. **Confirm** works only when the player has chosen that many. The popup banner says "You may make three dedications". Confirmed in files and on Windows on 2026-10-28.
 - **Text.** In a golden age the popup shows the row's `GoldenAgeBonusDescription`, with `NormalAgeBonusDescription` after it when `IsPlayerAlwaysAllowedCommemorationQuest(playerID)` is true, which it was not. A dark age shows `DarkAgeBonusDescription`, and any other age `NormalAgeBonusDescription`. The golden text names the age's bonus, such as "Eurekas provide an additional 10% of technology costs", and the dark and normal texts name the era score the dedication gives, which were the same for each option in the dark age checked. The texts hold game markup, such as `[NEWLINE]` and `[ICON_TechBoosted]`. Confirmed in files and on Windows on 2026-10-28.
 - **Choosing.** Each pick sends `PlayerOperations.COMMEMORATE` with `PARAM_COMMEMORATION_TYPE` set to the row's index, once for each pick. Confirmed in files.
-- **Blocker first.** The choice reads the era's choices only while `ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE` is up, as the popup does, because a `GetNext` call with nothing waiting crashed the game for spies. See [game-spies.md](game-spies.md). Confirmed in files.
+- **Blocker first.** The choice reads the era's choices only while `ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE` is up, as the popup does, because a `GetNext` call with nothing waiting crashed the game for spies. See [choices/spies.md](spies.md). Confirmed in files.
 
 ## Method
 

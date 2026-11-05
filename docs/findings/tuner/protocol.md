@@ -2,7 +2,7 @@
 
 Status: confirmed. A Windows capture confirmed the port, the frame format, and each message type that FireTuner uses. One row from community sources is still unconfirmed on Windows, and one question about the port's listener is open.
 
-The wire format between a client and the game. How the game runs commands and sends back their output is in [tuner-commands.md](tuner-commands.md).
+The wire format between a client and the game. How the game runs commands and sends back their output is in [tuner/commands.md](commands.md).
 
 ## Questions
 
@@ -12,7 +12,7 @@ The unconfirmed rows below come from community sources, and nothing in the bridg
 
 ## What we know now
 
-Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/c21795250050447c89d42858afdf3decbac49bd8/docs/ARCHITECTURE.md), read at commit `c217952`, verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a), read at commit `dd20190`, is an MIT-licensed MCP server that lets LLM agents play full games. Sources read on 2026-10-16. The Windows capture on 2026-10-19 confirmed most of their framing and corrected some details. The dumps are in [Results](#results). How to turn the tuner on is in [tuner-setup.md](tuner-setup.md).
+Two open-source projects describe the protocol from their own use of it. [civ6-logger](https://github.com/PatrickJYKang/civ6-logger/blob/c21795250050447c89d42858afdf3decbac49bd8/docs/ARCHITECTURE.md), read at commit `c217952`, verified its notes on an Apple M4 Max. [civ6-mcp](https://github.com/lmwilki/civ6-mcp/tree/dd2019056371b92ea4854e879ddf05a8cad95e8a), read at commit `dd20190`, is an MIT-licensed MCP server that lets LLM agents play full games. Sources read on 2026-10-16. The Windows capture on 2026-10-19 confirmed most of their framing and corrected some details. The dumps are in [Results](#results). How to turn the tuner on is in [tuner/setup.md](setup.md).
 
 | Item | Value | Status | Source |
 | --- | --- | --- | --- |
@@ -27,10 +27,10 @@ Two open-source projects describe the protocol from their own use of it. [civ6-l
 | Strings | The payload is UTF-8 strings, each ending in a null byte. A payload can hold several strings | Confirmed | [Message examples](#message-examples) |
 | Tags | Each reply carries the tag of its request: `APP:` uses 4, `LSQ:` uses 0, and `CMD:` uses 3. Output frames use -1 (`0xFFFFFFFF`). civ6-logger sends `LSQ:` with tag 4 | Confirmed | [Message examples](#message-examples) |
 | Handshake | FireTuner sends `APP:` with no name, then `LSQ:`. The game replies to `APP:` with three strings: `Civ6`, `Sid Meier's Civilization 6`, and the path of the game's `Base\Binaries\Debug` folder | Confirmed | [Message examples](#message-examples) |
-| State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state, in index order. `Main State` is 0. The names are in [state-list.md](state-list.md#lua-state-list) | Confirmed | [Message examples](#message-examples) |
+| State list | Null-separated `<index>\0<name>\0` pairs, one per Lua state, in index order. `Main State` is 0. The names are in [lua/state-list.md](../lua/state-list.md#lua-state-list) | Confirmed | [Message examples](#message-examples) |
 | Run command | `CMD:<stateIndex>:<lua>` with tag 3 | Confirmed | [Message examples](#message-examples) |
 | Output | Each `print` arrives as a tag -1 frame with the payload `O\0<text>\0`. Text printed in any state except `Main State` starts with the state name and a colon, such as `InGame: hello` | Confirmed | [Message examples](#message-examples) |
-| End of a command | A tag 3 frame ends each command. On success its payload is one string, which holds the command's values. On a Lua error it is one string that starts with `ERR:` and holds the error and a stack trace, and no other tag 3 frame follows. What the values look like is in [tuner-commands.md](tuner-commands.md#what-we-know-now) | Confirmed | [Message examples](#message-examples) |
+| End of a command | A tag 3 frame ends each command. On success its payload is one string, which holds the command's values. On a Lua error it is one string that starts with `ERR:` and holds the error and a stack trace, and no other tag 3 frame follows. What the values look like is in [tuner/commands.md](commands.md#what-we-know-now) | Confirmed | [Message examples](#message-examples) |
 | Merged frames | The output frame and the tag 3 frame arrived in one TCP segment, so one read can hold more than one frame | Confirmed | [Message examples](#message-examples) |
 | Recovery | After a bad handshake, the tuner often hangs until the game restarts | Unconfirmed | civ6-mcp README |
 

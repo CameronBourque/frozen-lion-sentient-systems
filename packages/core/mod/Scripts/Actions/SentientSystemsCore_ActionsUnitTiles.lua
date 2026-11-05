@@ -1,7 +1,7 @@
 -- The unit orders that act on the unit's own tile: found city, improve, and
 -- pillage. SentientSystemsCore_ActionsUnits.lua loads this file, after the
 -- stances file, whose helpers it uses. The calls are in
--- docs/findings/game-actions.md.
+-- docs/findings/actions/.
 
 -- Returns whether the player has revealed the tile. A city on a revealed tile
 -- shows its banner, so the player knows it.

@@ -2,7 +2,7 @@
 
 Status: open. The `scoreboard` section of `SentientSystems_GetState`, the scores and the leader panel's numbers, is confirmed in a running game with Gathering Storm on turn 15, with the file sent through the tuner. It matches the Score tab of World Rankings, with its details, and the leader panel for two players that had met. The players they hadn't met, with their scores and categories and the tie order, are confirmed on a save at turn 3 with 12 players, one of them met. A favor above 0 is checked in the fake game only.
 
-The calls the scoreboard uses, as the Score tab in `WorldRankings.lua` and the leader panel in `DiplomacyRibbon.lua` show them. See [in-game-lua.md](../design/core/in-game-lua.md).
+The calls the scoreboard uses, as the Score tab in `WorldRankings.lua` and the leader panel in `DiplomacyRibbon.lua` show them. See [in-game-lua.md](../../design/core/in-game-lua.md).
 
 ## Questions
 
@@ -24,7 +24,7 @@ The calls the scoreboard uses, as the Score tab in `WorldRankings.lua` and the l
 
 ## Method
 
-1. Send `SentientSystemsCore_StateScoreboard.lua` through the tuner as in [game-choices.md](game-choices.md#method), step 6, then `print(SentientSystems_EncodeJson(SentientSystems_GetScoreboardState(Players[Game.GetLocalPlayer()])))`.
+1. Send `SentientSystemsCore_StateScoreboard.lua` through the tuner as in [choices/choices.md](../choices/choices.md#method), step 6, then `print(SentientSystems_EncodeJson(SentientSystems_GetScoreboardState(Players[Game.GetLocalPlayer()])))`.
 2. Open World Rankings, **Score**, turn on **Show Details**, and compare each number with the state's. Compare the leader panel's numbers at the top right.
 
 ## Results

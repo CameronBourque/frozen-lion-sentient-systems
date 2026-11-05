@@ -1,5 +1,5 @@
 // Tests for framing.ts. The expected bytes are the Windows capture in
-// docs/findings/tuner-protocol.md#message-examples.
+// docs/findings/tuner/protocol.md#message-examples.
 
 import { describe, expect, test } from "vitest";
 import { encodeFrame, FrameDecoder, FrameError, MAX_PAYLOAD_BYTES, Tag } from "../../src/tuner/framing.js";
