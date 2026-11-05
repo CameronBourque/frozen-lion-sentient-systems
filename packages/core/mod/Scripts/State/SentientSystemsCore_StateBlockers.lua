@@ -5,7 +5,7 @@
 
 -- The key in the choices that resolves each blocker. A blocker that isn't here
 -- gets no choice: the unit blockers, which the units list resolves, and the
--- values that no UI file names. See docs/findings/game-state.md.
+-- values that no UI file names. See docs/findings/state/state.md.
 local CHOICES = {
 	ENDTURN_BLOCKING_PRODUCTION = "production",
 	ENDTURN_BLOCKING_RESEARCH = "techs",

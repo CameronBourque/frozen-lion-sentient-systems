@@ -1,7 +1,7 @@
 // The marker wrapper: the Lua that the client puts around each command, and the
 // parser for the marker lines it prints. The markers tell the client which
 // output belongs to which command, because the game sends every print the same
-// way. docs/findings/tuner-commands.md has the probe results that this wrapper
+// way. docs/findings/tuner/commands.md has the probe results that this wrapper
 // is built on.
 
 // How a wrapped command ended, from its end marker.

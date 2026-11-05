@@ -18,7 +18,7 @@ end
 -- loaded. When no file has the name, include returns an empty list and raises
 -- no error, so this prints "[SENTIENTSYSTEMS] ERROR include <message>" for the
 -- bridge to log. The game finds a file added to the .modinfo only after a
--- restart. See docs/findings/lua-contexts.md.
+-- restart. See docs/findings/lua/contexts.md.
 function SentientSystems_Include(name)
 	local loaded = include(name)
 
@@ -38,7 +38,7 @@ end
 -- Returns whether any of the end-turn blockers named blocks the player's turn.
 -- Some of the game's calls for a blocker's screen crash the game when nothing
 -- is waiting, so a choice checks its blocker first. A name the game doesn't
--- have never blocks. See docs/findings/game-spies.md.
+-- have never blocks. See docs/findings/choices/spies.md.
 function SentientSystems_HasBlocker(playerID, ...)
 	local values = {}
 
@@ -60,7 +60,7 @@ end
 -- Escapes text for one tagged line: each backslash as \\, each newline as \n,
 -- and each percent sign as \p, because the game's log prints text as a printf
 -- format, where a raw % prints garbage or crashes the game. See
--- docs/findings/tuner-commands.md. The tuner sends each line of a print as its
+-- docs/findings/tuner/commands.md. The tuner sends each line of a print as its
 -- own line, and only the first one has the state's name in front.
 local function EscapeLine(text)
 	return (text:gsub("\\", "\\\\"):gsub("\r?\n", "\\n"):gsub("%%", "\\p"))

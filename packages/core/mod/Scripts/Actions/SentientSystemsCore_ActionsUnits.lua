@@ -1,5 +1,5 @@
 -- The unit actions. SentientSystemsCore_Actions.lua loads this file. The calls
--- are in docs/findings/actions-*.md.
+-- are in docs/findings/actions/.
 
 -- Returns why a move or an attack on x, y would start a war, or nil. The verb
 -- starts the reason. Civ6Common.lua opens a confirmation dialog here, which has

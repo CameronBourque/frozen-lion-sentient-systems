@@ -1,5 +1,5 @@
 -- The city actions. SentientSystemsCore_Actions.lua loads this file. The calls
--- are in docs/findings/actions-*.md.
+-- are in docs/findings/actions/.
 
 -- Orders a city to shoot at a tile in its range, and returns the result as
 -- JSON. A city's shot is a city command, and the UI shows no war dialog for it.
