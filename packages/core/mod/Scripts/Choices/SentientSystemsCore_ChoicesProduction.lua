@@ -1,9 +1,6 @@
--- The production choice: what each of the player's cities can produce, as the
--- production panel lists it. SentientSystemsCore_Choices.lua loads this file.
--- The shape is in bridge/src/choices/production.ts. The checks follow GetData
--- in ProductionPanel.lua. The checks count the tiles from
--- SentientSystemsCore_Placement.lua, and the bridge reads the tiles themselves
--- with SentientSystems_GetPlacement.
+-- The production choice: what each city can produce, as the production panel
+-- lists it. Follows GetData in ProductionPanel.lua.
+-- Shape: bridge/src/choices/production.ts.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 

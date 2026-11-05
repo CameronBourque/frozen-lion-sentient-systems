@@ -1,9 +1,6 @@
--- The religion choices: the pantheon beliefs the player can found a pantheon
--- with, as the pantheon chooser lists them, and the religions and beliefs the
--- player can found a religion with or add to it, as the religion screen lists
--- them. SentientSystemsCore_Choices.lua loads this file. The shapes are in
--- bridge/src/choices/religion.ts. The checks follow PantheonChooser.lua and
--- ReligionScreen.lua.
+-- The religion choices, as the pantheon chooser and the religion screen list
+-- them. Follows PantheonChooser.lua and ReligionScreen.lua.
+-- Shape: bridge/src/choices/religion.ts.
 
 -- Returns the pantheon choice. Returns nil unless the player can found a
 -- pantheon now, as the launch bar opens the chooser only then. See Realize and

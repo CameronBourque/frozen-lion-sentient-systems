@@ -1,11 +1,6 @@
--- The government and policy choices: the player's government, its policy slots,
--- and the policy in each slot, as the government screen's My Government tab
--- shows them, the policies the player can slot, as its policy catalog shows
--- them, and every government, as its View Governments tab shows them.
--- SentientSystemsCore_Choices.lua loads this file. The shapes are in
--- bridge/src/choices/government.ts. The checks follow GovernmentScreen.lua and
--- its replacements in DLC/Expansion1 and DLC/Expansion2. The dark age policies
--- that the Expansion1 screen marks as new at the start of an era aren't marked.
+-- The government and policy choices, as the government screen shows them.
+-- Follows GovernmentScreen.lua and its replacements in DLC/Expansion1 and 2.
+-- Shape: bridge/src/choices/government.ts.
 
 -- Returns the player's government and its policy slots. See
 -- PopulateLivePlayerData in GovernmentScreen.lua.

@@ -1,7 +1,6 @@
 -- The envoy choice: the city-states the player can send envoys to, as the
--- City-States screen's send mode offers them. SentientSystemsCore_Choices.lua
--- loads this file. The shape is in bridge/src/choices/envoys.ts. The checks
--- follow GetData and RealizeEnvoyChangeButtons in CityStates.lua.
+-- City-States screen offers them. Follows GetData in CityStates.lua.
+-- Shape: bridge/src/choices/envoys.ts.
 
 -- Returns the envoy choice. The screen's buttons allow a city-state the player
 -- has met and isn't at war with. Returns nil unless the player can send envoys

@@ -1,7 +1,6 @@
--- The great person choice: the great people the player can recruit or pass now,
--- as the Great People screen offers them. SentientSystemsCore_Choices.lua loads
--- this file. The shape is in bridge/src/choices/great-people.ts. The checks
--- follow PopulateData and AddRecruit in GreatPeoplePopup.lua.
+-- The great person choice, as the Great People screen offers it. Follows
+-- PopulateData and AddRecruit in GreatPeoplePopup.lua.
+-- Shape: bridge/src/choices/great-people.ts.
 
 -- Returns the great people the player can recruit or pass, in the screen's
 -- order. Returns nil when there are none. See AddRecruit in

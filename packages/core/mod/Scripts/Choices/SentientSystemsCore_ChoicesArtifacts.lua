@@ -1,7 +1,6 @@
--- The artifact choice: whose artifact the player's next digging archaeologist
--- uncovers, as the artifact screen offers it. SentientSystemsCore_Choices.lua
--- loads this file. The shape is in bridge/src/choices/artifacts.ts. The checks
--- follow OnOpen in ChooseArtifact.lua.
+-- The artifact choice: whose artifact the next digging archaeologist uncovers,
+-- as the artifact screen offers it. Follows OnOpen in ChooseArtifact.lua.
+-- Shape: bridge/src/choices/artifacts.ts.
 
 -- The explanation for each type of site, and whether it offers both players. A
 -- tribal village, a barbarian camp, and a heroic relic come from one player.
