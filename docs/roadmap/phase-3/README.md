@@ -12,6 +12,7 @@ This phase makes agents distinct and better. It adds personalities, all sweat le
 - Relationships memory and journal compaction
 - Deep strategic reviews with a stronger model
 - Fill `models.yaml` from testing
+- The decision support parts that the smoke test and MVP gate records point to, and the scenario tests that measure them. See [decision-support/](../../design/decision-support/README.md) and [testing.md](../../design/testing.md#scenario-tests)
 - Citizen focus and worked tiles in the state, with an action that changes them
 - Each city's next border expansion in the state
 - Trade routes in the state, and an action that sends a trader
