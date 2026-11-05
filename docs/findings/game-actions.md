@@ -1,12 +1,12 @@
 # Game actions
 
-Status: open. Moving a unit, checking its route, the unit orders, and ending the turn are confirmed in a running game. The other actions are not yet looked at.
+Status: open. Moving a unit, checking its route, the unit orders, the orders on a unit's tile, and ending the turn are confirmed in a running game. The other actions are not yet looked at.
 
 The game calls the action API wraps, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](game-api.md). The core mod's result format is in [in-game-lua.md](../design/core/in-game-lua.md).
 
 ## Questions
 
-1. What failure reasons do `CanStartOperation` and `CanStartCommand` give for found city, build improvement, pillage, and the attacks? The reasons for a move are checked by hand, as the move check below says.
+1. What failure reasons do `CanStartOperation` give for the attacks? The reasons for a move, the stances, found city, improve, and pillage are checked by hand, because the game gives none.
 
 ## What we know now
 
@@ -83,6 +83,18 @@ A request sent straight to `RequestOperation`, as the core mod does, fires no ev
 - `UnitManager.CanStartCommand(unit, UnitCommandTypes.PROMOTE, true, true)` returns the promotions in `UnitCommandResults.PROMOTIONS`. `RequestCommand(unit, PROMOTE, { [UnitCommandTypes.PARAM_PROMOTION_TYPE] = index })` took the promotion, with the `GameInfo.UnitPromotions` index. A second request for the same promotion found none to pick.
 - `RequestCommand(unit, UnitCommandTypes.DELETE)` removed a knight at once, with no dialog. The UI asks "are you sure" in `OnPromptToDeleteUnit` first, and has no call to answer for it.
 
+### Orders on the unit's tile
+
+Found city, build improvement, and pillage all act on the tile the unit stands on, as `UnitPanel.lua` does. Confirmed in files. Confirmed on Windows on 2026-11-04:
+
+- The game gives no failure reasons. `FAILURE_REASONS` was empty for a settler next to a city, for an improvement the builder couldn't build, and for a knight on a tile with nothing to pillage, whichever form of the check we used.
+- The loose check, `CanStartOperation(unit, hash, nil, true)`, depends on the tile and the unit's moves, not only on the kind of unit. A knight on its own farm and a builder with no moves both failed it. So the kind of unit comes from `GameInfo.Units`: `FoundCity`, `BuildCharges`, and `Combat`.
+- Found city is refused within `GlobalParameters.CITY_MIN_RANGE` (3) tiles of a city. A settler 3 tiles from a city was refused, and one 4 tiles away was allowed. It was allowed on a tile nobody owns. A settler moved there founded a city with `RequestOperation(unit, FOUND_CITY)`. The UI asks for confirmation first when a feature would be removed, which has no call to answer.
+- `CanStartOperation(unit, BUILD_IMPROVEMENT, nil, { X, Y }, true)` returns, in `UnitOperationResults.IMPROVEMENTS`, every improvement index the unit might build, 18 for a builder. Adding `PARAM_IMPROVEMENT_TYPE` to the parameters checks one for real. A builder on plains hills could build a farm, a mine, an alcazar, and a wind farm. The check accepts the index and the hash. The panel requests with the hash, and the request started a farm.
+- A builder in a city center can build nothing, and neither can a sleeping builder, until it wakes. A builder that has started a job has no moves left.
+- Pillage was allowed for a knight on an unpillaged improvement in the territory of a player at war, and refused on the player's own farm. After the request, the improvement was pillaged and the check refused a second pillage.
+- Units placed with `GameCore_Tuner`'s `UnitManager.InitUnit` take these orders like any other.
+
 ### Ending the turn
 
 `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` ends the turn. It's in `Base/Assets/UI/ActionPanel.lua` at line 512. The base UI calls it in five places. Confirmed in files. Sent from `SentientSystemsCore_UI` in single player, it ended the turn, and the next `AGENT_TURN` line came 3 s later. Confirmed on Windows on 2026-10-23.
@@ -120,7 +132,8 @@ The bridge ran these steps in a single-player game, with one city and one unit.
 | `IsAttackChangeWarState` for a tile in the borders of a player at peace, and for the tiles around it | `SentientSystemsCore_UI` | `{1}`, and empty lists | 2026-11-04 |
 | `SentientSystems_MoveUnit` for a tile 2 away | `SentientSystemsCore_UI` | `ok`. The scout moved one tile and stopped with 0 moves | 2026-11-04 |
 | `SentientSystems_UnitAction` for fortify, skip, wake, promote, and delete on a knight and a caravel | `SentientSystemsCore_UI` | Each took effect. Delete removed the knight | 2026-11-04 |
+| `SentientSystems_UnitAction` for `improve`, `found_city`, and `pillage` | `SentientSystemsCore_UI` | A farm was started, a city was founded, and an enemy improvement was pillaged. The reasons came from the checks in the Lua | 2026-11-04 |
 | `Game.GetCurrentGameTurn()`, `UI.CanEndTurn()`, and `GetFirstEndTurnBlocking` | `SentientSystemsCore_UI` | Turn 1, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 | `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` | `SentientSystemsCore_UI` | The turn ended. `AGENT_TURN 0` came 3 s later, and the same three calls returned turn 2, `true`, and `ENDTURN_BLOCKING_RESEARCH` | 2026-10-23 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23, and routes, the war test, and the unit orders on 2026-11-04.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves and the end turn on 2026-10-23, and routes, the war test, the unit orders, and the orders on a unit's tile on 2026-11-04.

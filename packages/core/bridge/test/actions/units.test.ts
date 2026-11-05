@@ -46,6 +46,12 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 6160397, { action: "fortify" })).toEqual({ ok: true });
 	});
 
+	test("unitAction passes an improvement as text", async () => {
+		answer("SentientSystems_UnitAction(0, 9437197, \"improve\", nil, nil, \"IMPROVEMENT_FARM\")", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 9437197, { action: "improve", improvement: "IMPROVEMENT_FARM" })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes a promotion as text, with its quotes escaped", async () => {
 		answer("SentientSystems_UnitAction(0, 5636113, \"promote\", nil, nil, \"PROMOTION_\\\"HULL\")", FAILED);
 
