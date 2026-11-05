@@ -1,15 +1,15 @@
--- Unit orders. Fakes the stance, tile, job, wake, and delete operations and a
--- unit's activity, and keeps each request in env.requests. A unit's route and
--- reasons are what the game's check returns. Units.lua fakes promote.
+-- Unit orders. Fakes the stance, tile, job, wake, delete, and upgrade orders
+-- and a unit's activity, and keeps each request in env.requests. A unit's route
+-- and reasons are what the game's check returns. Units.lua fakes promote.
 
 return function(env, world, ctx)
 	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106,
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
 	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
-	local COMMANDS = { wake = 110, delete = 111 }
+	local COMMANDS = { wake = 110, delete = 111, upgrade = 113 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
-	local rows = {}
+	local rows, upgrades = {}, {}
 
 	for name, hash in pairs(ACTIONS) do
 		rows[#rows + 1] = { OperationType = "UNITOPERATION_" .. (OPERATION_TYPES[name] or name:upper()), Hash = hash }
@@ -35,6 +35,10 @@ return function(env, world, ctx)
 	env.UnitOperationTypes.PARAM_IMPROVEMENT_TYPE = 7
 	env.UnitCommandTypes.WAKE = COMMANDS.wake
 	env.UnitCommandTypes.DELETE = COMMANDS.delete
+	env.UnitCommandTypes.UPGRADE = COMMANDS.upgrade
+	env.UnitCommandResults.UNIT_TYPE = 827
+	env.UnitCommandResults.FAILURE_REASONS = 828
+	env.GameInfo.UnitUpgrades = ctx.Callable(upgrades)
 	env.UnitCommandTypes.PARAM_PROMOTION_TYPE = 112
 	env.GlobalParameters = env.GlobalParameters or {}
 	env.GlobalParameters.CITY_MIN_RANGE = 3
@@ -46,6 +50,20 @@ return function(env, world, ctx)
 			row.FoundCity = unit.type == "UNIT_SETTLER"
 			row.BuildCharges = (unit.type == "UNIT_BUILDER" or unit.type == "UNIT_MILITARY_ENGINEER") and 3 or 0
 			row.Combat = unit.type == "UNIT_KNIGHT" and 50 or 0
+
+			-- An upgrade is a chain of steps, and a step may need a tech.
+			local from = unit.type
+
+			for _, step in ipairs(unit.upgrade and unit.upgrade.steps or {}) do
+				ctx.AddRow("Units", "UnitType", step.to)
+				upgrades[#upgrades + 1] = { Unit = from, UpgradeUnit = step.to }
+
+				local target = env.GameInfo.Units[ctx.indexes[step.to]]
+
+				target.PrereqTech = step.tech
+				target.PrereqCivic = step.civic
+				from = step.to
+			end
 
 			for _, name in ipairs(unit.improvements or {}) do
 				ctx.AddRow("Improvements", "ImprovementType", name)
@@ -151,7 +169,12 @@ return function(env, world, ctx)
 			return canStartCommand(unit, command, testOnly, withResults)
 		end
 
-		return Has(testOnly == true and unit.canEver or unit.canNow, name)
+		local steps = unit.upgrade and unit.upgrade.steps
+
+		return Has(testOnly == true and unit.canEver or unit.canNow, name), withResults and {
+			[env.UnitCommandResults.UNIT_TYPE] = steps and ctx.indexes[steps[#steps].to],
+			[env.UnitCommandResults.FAILURE_REASONS] = unit.reasons,
+		} or nil
 	end
 
 	env.UnitManager.RequestCommand = function(unit, command, parameters)
@@ -170,9 +193,14 @@ return function(env, world, ctx)
 		unit.canBuild = data.canBuild or {}
 		unit.route = data.route
 		unit.reasons = data.reasons
+		unit.upgrade = data.upgrade
 
 		function unit.GetBuildCharges()
 			return data.charges or 0
+		end
+
+		function unit.GetUpgradeCost()
+			return data.upgrade and data.upgrade.cost or 0
 		end
 	end)
 end

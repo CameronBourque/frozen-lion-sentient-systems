@@ -63,12 +63,15 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 9437197, { action: "build_road", route: "ROUTE_RAILROAD" })).toEqual({ ok: true });
 	});
 
-	test("unitAction passes a road with no route, and a job, with no type", async () => {
+	test("unitAction passes a road with no route, a job, and an upgrade, with no type", async () => {
 		answer("SentientSystems_UnitAction(0, 9437197, \"build_road\", nil, nil, nil)", "{\"ok\":true}");
 		expect(await unitAction(client, 0, 9437197, { action: "build_road" })).toEqual({ ok: true });
 
 		answer("SentientSystems_UnitAction(0, 9437197, \"harvest\", nil, nil, nil)", "{\"ok\":true}");
 		expect(await unitAction(client, 0, 9437197, { action: "harvest" })).toEqual({ ok: true });
+
+		answer("SentientSystems_UnitAction(0, 9437197, \"upgrade\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "upgrade" })).toEqual({ ok: true });
 	});
 
 	test("unitAction passes a promotion as text, with its quotes escaped", async () => {

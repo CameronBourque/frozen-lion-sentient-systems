@@ -1,6 +1,6 @@
 # Unit orders and attacks
 
-Status: open. The unit orders, the orders on a unit's tile, the builder jobs, and attacks are confirmed in a running game.
+Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, and attacks are confirmed in a running game.
 
 The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 
@@ -43,6 +43,17 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
 - **Repair.** `REPAIR` repairs a pillaged improvement, and `REPAIR_ROUTE` repairs a pillaged route. Each failed on a tile that had only the other kind. It is the only job that gave a failure reason, "cannot be repaired while a drought is in progress", for two pillaged improvements.
 - **Remove improvement.** It removed two different improvements with no dialog.
 
+### Upgrade
+
+`UnitPanel.lua` checks `UnitCommandTypes.UPGRADE` loosely with `UnitManager.CanStartCommand(unit, command, true)` and then for real with `CanStartCommand(unit, command, false, true)`. It reads the unit the upgrade makes from `UnitCommandResults.UNIT_TYPE`, an index in `GameInfo.Units`, and the cost from `unit:GetUpgradeCost()`. Its `AddUpgradeResourceCost` returns an empty string. `OnUnitActionClicked` requests it with `RequestCommand(unit, command)` and no parameters. Confirmed in files. Confirmed on Windows on 2026-11-05:
+
+- A fortified crossbowman passed the real check and upgraded to a machine gun. Its old ID was gone afterward, and the gold balance fell by the cost, 180.
+- The upgrade goes to the last unit of the chain, not the next one. `UNIT_TYPE` was Machine Gun for a crossbowman, which passes through Field Cannon, and Modern Armor for a knight, Mechanized Infantry for a musketman, Destroyer for a caravel, and Rocket Artillery for a bombard. The cost is that of the whole chain, and `GameInfo.UnitUpgrades` gives each step.
+- The real check returns `UnitCommandResults.FAILURE_REASONS`, a list of text, with a reason for each shortfall at once. The reasons were "Not enough [ICON_Gold] Gold in treasury.", "Insufficient Resources. 1 [ICON_RESOURCE_OIL] Oil required to upgrade this type of unit.", and "Must be in friendly territory.", which a caravel and a knight outside the borders got. The gold reason gives no amount.
+- The loose check fails, with no results table, for a unit with no moves left and for a kind of unit with no upgrade. It also failed for a crossbowman and a knight after `SetTech(index, false)` in `GameCore_Tuner` took away Ballistics, the tech of the next unit in their chain, though the last unit was still available. One missing step blocks the whole upgrade. A unit with 0.25 moves passed.
+- `GetUpgradeCost()` returned the cost for a unit with no moves and for one with a missing step, and 0 for a builder, a settler, and the great people, so the cost alone doesn't say whether an upgrade exists.
+- `GameInfo.UnitUpgrades` has a row for each `Unit` and `UpgradeUnit`, and the row of each unit in `GameInfo.Units` has `PrereqTech` and `PrereqCivic`. In the UI state, `HasTech` still returned true after `SetTech(index, false)`, so the reason that names a missing step wasn't checked in the running game.
+
 ### Attacks
 
 `WorldInput.lua` and `Civ6Common.lua` make three attack calls, and `RequestMoveOperation` picks one. Confirmed in files. Confirmed on Windows on 2026-11-04:
@@ -63,7 +74,8 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
 1. **Unit orders.** For each order, call the loose check and then the real check, then request it. Read `UnitManager.GetActivityType(unit)` and the unit's moves before and after.
 2. **Orders on the unit's tile.** Call the check and the request for found city, build improvement, and pillage with the unit on a tile that allows the order and on one that doesn't, and print `FAILURE_REASONS`.
 3. **Builder jobs.** Check and request each job with an engineer or a builder on a tile that allows it and on one that doesn't, print the results of a check with `OperationResultsTypes.ALL`, and read the tile and the unit's charges afterward. In `GameCore_Tuner`, `ImprovementBuilder.SetImprovementPillaged(plot, true)` and `RouteBuilder.SetRoutePillaged(plotIndex, true)` set up a pillaged tile.
-4. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
+4. **Upgrade.** Call the loose check and the real check with results for units that can upgrade and units that can't, then request it and read the gold and the unit afterward. In `GameCore_Tuner`, `ChangeGoldBalance`, `ChangeResourceAmount` on `GetResources()`, and `SetTech` change the gold, the strategic resources, and the techs.
+5. **Attacks.** Call `GetOperationTargets`, the check, and the request for a ranged, an air, and a melee unit, and for a city. Read the target's damage afterward.
 
 ## Results
 
@@ -74,6 +86,7 @@ The bridge ran these steps in a single-player game.
 | `SentientSystems_UnitAction` for fortify, skip, wake, promote, and delete on a knight and a caravel | `SentientSystemsCore_UI` | Each took effect. Delete removed the knight | 2026-11-04 |
 | `SentientSystems_UnitAction` for `improve`, `found_city`, and `pillage` | `SentientSystemsCore_UI` | A farm was started, a city was founded, and an enemy improvement was pillaged. The reasons came from the checks in the Lua | 2026-11-04 |
 | `SentientSystems_UnitAction` for `build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` | `SentientSystemsCore_UI` | Each took effect once, and each gave a reason for one illegal case: a road on a railroad, a remove feature with no feature, a harvest on a farm, a repair of an unpillaged tile, and a repair in a drought | 2026-11-05 |
+| `SentientSystems_UnitAction` for `upgrade` on a crossbowman, a caravel, a builder, a unit with no moves, and a unit short of gold or a resource | `SentientSystemsCore_UI` | The crossbowman became a machine gun and cost 180 gold. Each other case gave a reason: the territory, no upgrade, no moves, gold, and the resource | 2026-11-05 |
 | `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs on 2026-11-05.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs and upgrades on 2026-11-05.
