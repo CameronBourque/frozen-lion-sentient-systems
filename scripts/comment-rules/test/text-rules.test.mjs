@@ -26,6 +26,28 @@ describe("line-number", () => {
 	});
 });
 
+describe("json-shape", () => {
+	const { find } = rule("json-shape");
+
+	test.each([
+		["an object that opens with a key", '-- returns {"id": 1, "name": "x"}'],
+		["an object with spaces", '// the reply is { "units": [] }'],
+		["a quoted key before a colon", '// sends "playerId": the player to act for'],
+		["a key with a dash", '-- "city-id" : the city'],
+	])("catches %s", (_, comment) => {
+		expect(find(comment)).toContain("zod schema");
+	});
+
+	test.each([
+		["a quoted word", '-- the "units" field holds the list'],
+		["a colon in prose", "-- note: the game rounds down"],
+		["a brace without a key", "-- a table like { x, y }"],
+		["a quote then a colon far apart", '-- say "hi" and then: wait'],
+	])("lets through %s", (_, comment) => {
+		expect(find(comment)).toBeUndefined();
+	});
+});
+
 describe("TEXT_RULES", () => {
 	test("gives every rule a unique name", () => {
 		const names = TEXT_RULES.map((r) => r.name);
