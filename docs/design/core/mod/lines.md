@@ -4,15 +4,21 @@ The lines the core mod prints for the bridge: turn signals, load lines, the vers
 
 ## Tagged lines
 
-Every line the bridge must read has the form `[SENTIENTSYSTEMS] <KIND> <args>`, joined with spaces. `SentientSystems_Print` in `Scripts/SentientSystemsCore_Common.lua` prints them. The tuner adds the state's name in front, so the bridge receives lines such as `SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0`. See [findings/tuner/protocol.md](../../../findings/tuner/protocol.md#what-we-know-now).
+Every line the bridge must read has the form `[SENTIENTSYSTEMS] <KIND> <args>`, joined with spaces. `SentientSystems_Print` in `Scripts/SentientSystemsCore_Common.lua` prints them.
+
+The tuner adds the state's name in front, so the bridge receives lines such as `SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0`. See [findings/tuner/protocol.md](../../../findings/tuner/protocol.md#what-we-know-now).
 
 ## Turn events
 
-The UI script listens for `Events.PlayerTurnActivated` and prints `AGENT_TURN <playerID>` when an agent player's turn starts. One function, `IsAgentPlayer`, decides which players are agent players. For now it picks the human players. When agents can play any slot, only that function changes. The tuner connection carries that line to the bridge.
+The UI script listens for `Events.PlayerTurnActivated` and prints `AGENT_TURN <playerID>` when an agent player's turn starts. The tuner connection carries that line to the bridge.
+
+One function, `IsAgentPlayer`, decides which players are agent players. For now it picks the human players. When agents can play any slot, only that function changes.
 
 ## Resync
 
-`SentientSystems_Resync()` in the UI script prints `AGENT_TURN <playerID>` for each living agent player whose turn is active, the same line the turn event prints. The bridge calls it when it connects, so a restart in the middle of a turn doesn't miss the turn. Between turns it prints nothing.
+`SentientSystems_Resync()` in the UI script prints `AGENT_TURN <playerID>` for each living agent player whose turn is active, the same line the turn event prints. Between turns it prints nothing.
+
+The bridge calls it when it connects, so a restart in the middle of a turn doesn't miss the turn.
 
 ## Load line
 
@@ -20,11 +26,32 @@ Each time the UI script loads, including after a live reload, it prints `CORE_LO
 
 ## Load signal
 
-The UI script prints two lines during a load. `Events.LoadGameViewStateDone` prints `LOAD_READY` when the loading screen shows its button. The tuner carries the line, but runs no commands until the click. `Events.LoadScreenClose` prints `GAME_READY <turn>`, with the turn from `Game.GetCurrentGameTurn()`, when the button is clicked, by the player or by the game. Commands work from then on. The socket resets right after the click, and the line reaches the bridge first. In hotseat and other games where the game clicks the button, the two lines come one right after the other. See [findings/lua/state-list.md](../../../findings/lua/state-list.md#state-list-over-a-session).
+The UI script prints two lines during a load:
+
+- **`LOAD_READY`.** `Events.LoadGameViewStateDone` prints it when the loading screen shows its button. The tuner carries the line, but runs no commands until the click.
+- **`GAME_READY <turn>`.** `Events.LoadScreenClose` prints it, with the turn from `Game.GetCurrentGameTurn()`, when the button is clicked, by the player or by the game. Commands work from then on.
+
+The socket resets right after the click, and the `GAME_READY` line reaches the bridge first. In hotseat and other games where the game clicks the button, the two lines come one right after the other. See [findings/lua/state-list.md](../../../findings/lua/state-list.md#state-list-over-a-session).
 
 ## Errors
 
-`SentientSystems_CatchErrors(name, handler)` in `Scripts/SentientSystemsCore_Common.lua` returns the handler wrapped in `pcall`. Each event handler is added through it, such as `Events.PlayerTurnActivated.Add(SentientSystems_CatchErrors("OnPlayerTurnActivated", OnPlayerTurnActivated))`. When the handler raises a Lua error, the helper prints `ERROR <handler> <message>` in its place. The game's Lua puts the stack trace in the error message, so the line carries the trace without the `debug` library, which UI states don't have. See [findings/lua/contexts.md](../../../findings/lua/contexts.md#the-core-mods-states). The helper escapes each backslash as `\\`, each newline as `\n`, and each percent sign as `\p`, so the whole error arrives as one line, and the game's log doesn't read a `%` as a printf format code. The functions the bridge calls, such as `SentientSystems_Resync()`, aren't wrapped, because the tuner already returns their errors to the call. `SentientSystems_Include(name)` in the same file loads a file as `include` does. When the game knows no file by that name, `include` returns an empty list and raises no error, so the helper prints `ERROR include found no file named <name>` instead. That happens when a file is added to the `.modinfo` and the game isn't restarted. See [findings/lua/contexts.md](../../../findings/lua/contexts.md#the-core-mods-states). The scripts load every core mod file through it, except `SentientSystemsCore_Common`, which defines it.
+### Event handlers
+
+`SentientSystems_CatchErrors(name, handler)` in `Scripts/SentientSystemsCore_Common.lua` returns the handler wrapped in `pcall`. Each event handler is added through it, such as `Events.PlayerTurnActivated.Add(SentientSystems_CatchErrors("OnPlayerTurnActivated", OnPlayerTurnActivated))`.
+
+When the handler raises a Lua error, the helper prints `ERROR <handler> <message>` in its place. The functions the bridge calls, such as `SentientSystems_Resync()`, aren't wrapped, because the tuner already returns their errors to the call.
+
+The game's Lua puts the stack trace in the error message, so the line carries the trace without the `debug` library, which UI states don't have. See [findings/lua/contexts.md](../../../findings/lua/contexts.md#the-core-mods-states).
+
+The helper escapes each backslash as `\\`, each newline as `\n`, and each percent sign as `\p`. The whole error then arrives as one line, and the game's log doesn't read a `%` as a printf format code.
+
+### Missing files
+
+`SentientSystems_Include(name)` in the same file loads a file as `include` does. The scripts load every core mod file through it, except `SentientSystemsCore_Common`, which defines it.
+
+When the game knows no file by that name, `include` returns an empty list and raises no error. The helper prints `ERROR include found no file named <name>` instead.
+
+That happens when a file is added to the `.modinfo` and the game isn't restarted. See [findings/lua/contexts.md](../../../findings/lua/contexts.md#the-core-mods-states).
 
 ## Version report
 
@@ -40,4 +67,4 @@ The UI script prints two lines during a load. `Events.LoadGameViewStateDone` pri
 | The error helper uses `pcall`, not `xpcall` with `debug.traceback` | The error message already holds the stack trace, and UI states have no `debug` library. `pcall` also passes the handler's arguments, so the helper needs no closure |
 | The error helper escapes newlines and backslashes | The tuner sends each line of a print as its own line, and only the first one has the state's name. Without the escapes, the trace would arrive as untagged lines |
 | The turn signal comes from the UI state | The gameplay and UI events both fire once per human turn. The bridge already calls the UI state for the version report and for actions |
-| The load signal is two tagged lines from the loading screen's events | The bridge keeps its rule that it reads only tagged lines. `LOAD_READY` comes before the click, so the bridge can start the new game's log file there, and a later tool can press the button. `GAME_READY` reaches the bridge before the socket resets, so it needs no resync |
+| The load signal is two tagged lines from the loading screen's events | The bridge reads only tagged lines. `LOAD_READY` comes before the click, so the new log file and a later tool's click start there. `GAME_READY` arrives before the socket resets, so it needs no resync |

@@ -4,9 +4,9 @@ Many docs hold paragraphs, bullets, and table rows of thousands of characters, a
 
 ## Now
 
-A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 113 Markdown files. 76 of them have a line over 300 characters, 486 lines in all, and 94 lines pass 600.
+A line is a paragraph, a bullet, or a table row. `scripts/check-docs/` reads 113 Markdown files. 69 of them have a line over 300 characters, 468 lines in all, and 84 lines pass 600.
 
-[design/core/mod/actions.md](../design/core/mod/actions.md) has the longest line. Its Action API section is one paragraph of 5,717 characters that holds every action.
+[findings/lua/state-list.md](../findings/lua/state-list.md) has the longest line, a 2,318-character list of state names.
 
 Seven files pass 12,000 characters, although only one passes 150 lines:
 

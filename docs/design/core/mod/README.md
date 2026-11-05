@@ -19,6 +19,12 @@ A gameplay script writes the checkpoint ID described in [memory.md](../../memory
 
 It queries the `GameInfo` tables and localized text at runtime, so DLC and other mods are included. It also reads the Civilopedia's Concepts section for general rules such as movement, combat, and terrain.
 
+## JSON shapes
+
+The zod schemas in `packages/core/bridge/src/` are the only home of the JSON shapes. A field whose name doesn't say what it means gets a `.describe()` note.
+
+`z.toJSONSchema()` carries the `.describe()` notes, so the [MCP server step](../../../roadmap/phase-1/mcp-server.md) can give them to the model if it adds output schemas to the tools. That step decides it, because output schemas add tokens to every request.
+
 ## Decisions
 
 | Decision | Reason |
@@ -26,4 +32,4 @@ It queries the `GameInfo` tables and localized text at runtime, so DLC and other
 | Game facts come from the Civilopedia at runtime | It includes DLC and mods with no upkeep |
 | The core mod has no gameplay script until checkpoint IDs need one | Nothing else needs a gameplay state yet |
 | Each mod file name starts with the mod's prefix, such as `SentientSystemsCore_` | `include` finds a file by name among every enabled mod's imported files, so a generic name can load another mod's file |
-| The zod schemas in `packages/core/bridge/src/` are the only home of the JSON shapes, with `.describe()` notes for fields whose name doesn't say what they mean, and no reference is generated from them | Each schema file is 13 to 85 lines, so an agent reads the one it needs, where a generated file would be large. The shapes were once written in up to five places, and a copy that drifted misled the next reader. `z.toJSONSchema()` carries the `.describe()` notes, so the [MCP server step](../../../roadmap/phase-1/mcp-server.md) can give them to the model if it adds output schemas to the tools. That step decides it, because output schemas add tokens to every request |
+| The zod schemas are the only home of the JSON shapes, and no reference is generated from them | The shapes were once in up to five places, and a copy that drifted misled the next reader. Each schema file is 13 to 85 lines, so an agent reads the one it needs. A generated file would be large |

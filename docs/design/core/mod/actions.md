@@ -4,7 +4,88 @@ How the core mod runs actions through the game's own request functions, and the 
 
 ## Action API
 
-Each action wraps the request function the game's own UI calls, and the game checks legality. A failed action returns its reason. The reason comes from the game's check where it gives one, and from the API's own messages for common cases. The game's UI Lua files ship as plain text and show which call each screen makes. See the [action findings](../../../findings/actions/move-unit.md). Every action returns the same JSON, `{ "ok": true }` or `{ "ok": false, "reason": "<text>" }`, with no `reason` when it worked. `SentientSystems_RunAction(name, action)` in `Scripts/Actions/SentientSystemsCore_Actions.lua` builds it, and the UI script loads the file. The action is a function that returns nothing when it worked and the reason as text when it failed. A Lua error in it comes back as a failure with the error's first line, so the bridge always reads a reason. The bridge reads the result through the stash, and `sendAction` in [actions.ts](../../../../packages/core/bridge/src/actions/actions.ts) turns a failure to reach the game, or a reply that isn't a result, into a failed result with that error as the reason. The shape is the schema in the same file. `SentientSystems_MoveUnit(playerID, unitID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsUnits.lua`, which `Scripts/Actions/SentientSystemsCore_Actions.lua` loads, moves a unit by the game's own route. It checks the unit, the tile, the unit's moves, the war check, and the route, in that order, and returns the first failure as its reason. It never attacks and never declares war. `SentientSystems_UnitAction(playerID, unitID, action, x, y, type)` in the same file gives a unit a stance (`fortify`, `sleep`, `skip`, `alert`, `heal`), `wake`, `delete`, or `promote`, with the promotion in `type`. The game gives no reasons for these, so the reason says what the unit is doing and whether to wake it first. `attack` (with `x` and `y`) picks a melee, ranged, or air attack as the UI does, never starts a war, and lists the targets when the tile isn't one. `SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot. `found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile, and their reasons name what is wrong with the unit or the tile, such as the city that is too close. `build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` are the builder jobs, in `SentientSystemsCore_ActionsUnitJobs.lua`. `build_road` is for a Military Engineer and builds the best route the player has, so `type` is optional, and a route that differs is refused with the one the game would build. `repair` fixes a pillaged improvement, and a pillaged route when the improvement is whole. Their reasons come from the unit and the tile: the moves and build charges left, a missing feature or resource, a tech the player lacks, an improvement in the way, and a tile the player doesn't own. A resource the player can't see yet is not named. The game's own reason, such as a drought for a repair, comes back as it is. `add_production` has an engineer or builder add production to the item a city builds at the cost of a build charge, from the city for a building, and from the tile of a district, in `SentientSystemsCore_ActionsUnitProduction.lua`. The game allows one of four commands, by the kind of item, which a builder gets only through some leaders and buildings, and gives no reasons, so the core mod says when the unit is not a builder, has no moves, is outside a city, stands off the tile of the district, or the city builds nothing it can help. `upgrade` requests the game's upgrade command, in `SentientSystemsCore_ActionsUnitUpgrade.lua`. The game's reasons name the gold, the resources, and the territory, and the core mod adds the cost of the upgrade. The game upgrades a unit to the last unit of its chain, and one missing step blocks it, so the core mod names the unit in the chain that needs a tech or civic the player lacks. It also says when the unit has no moves left or no upgrade, because the game gives no reason for them. A fortified unit can upgrade. `form_corps`, `form_army`, `enter_formation`, and `exit_formation` are in `SentientSystemsCore_ActionsUnitFormations.lua`. The first three name the other unit by its ID, and a request without it returns the units that can join. The game gives no reasons, so the core mod says when the player lacks the civic, the unit is a civilian or has no moves, no unit is next to it, or a corps or an army can't be split. `rebase` and `deploy` are for air units, and `airlift` and `paradrop` for land units. They and `priority_target` take `x` and `y`. They are in `SentientSystemsCore_ActionsUnitAir.lua`, `SentientSystemsCore_ActionsUnitTransport.lua`, and the attacks file, and `SentientSystemsCore_ActionsUnitTileOrders.lua` runs them. The game lists the tiles each can go to, and a request for another tile returns the nearest ones that work. The game gives no other reasons, so the core mod says when the unit is of the wrong kind, has no moves left, or has no tile to go to, such as a paradrop from a tile that is not a city or an airstrip. A priority target hits the support or civilian unit that a military unit escorts, and the game marks the tiles that have one. The move action's reason for an air unit names rebase, deploy, and attack. The orders are in `Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua`, `SentientSystemsCore_ActionsUnitTiles.lua`, the jobs file, the production file, the upgrade file, the formations file, and the air and transport files, which register with `SentientSystems_AddUnitAction` in `SentientSystemsCore_ActionsUnits.lua`.
+Each action wraps the request function the game's own UI calls, and the game checks legality. A failed action returns its reason. The reason comes from the game's check where it gives one, and from the API's own messages for common cases.
+
+The game's UI Lua files ship as plain text and show which call each screen makes. See the [action findings](../../../findings/actions/move-unit.md).
+
+### Results
+
+Every action returns the same JSON, `{ "ok": true }` or `{ "ok": false, "reason": "<text>" }`, with no `reason` when it worked. `SentientSystems_RunAction(name, action)` in `Scripts/Actions/SentientSystemsCore_Actions.lua` builds it, and the UI script loads the file.
+
+The action is a function that returns nothing when it worked and the reason as text when it failed. A Lua error in it comes back as a failure with the error's first line, so the bridge always reads a reason.
+
+The bridge reads the result through the stash. `sendAction` in [actions.ts](../../../../packages/core/bridge/src/actions/actions.ts) turns a failure to reach the game, or a reply that isn't a result, into a failed result with that error as the reason. The shape is the schema in the same file.
+
+### Moves
+
+`SentientSystems_MoveUnit(playerID, unitID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsUnits.lua`, which `Scripts/Actions/SentientSystemsCore_Actions.lua` loads, moves a unit by the game's own route.
+
+It checks the unit, the tile, the unit's moves, the war check, and the route, in that order, and returns the first failure as its reason. It never attacks and never declares war. Its reason for an air unit names rebase, deploy, and attack.
+
+### Unit orders
+
+`SentientSystems_UnitAction(playerID, unitID, action, x, y, type)` in the same file runs the unit orders below. They are in `Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua`, `SentientSystemsCore_ActionsUnitTiles.lua`, and the files that each order names.
+
+Each order file registers its orders with `SentientSystems_AddUnitAction` in `SentientSystemsCore_ActionsUnits.lua`.
+
+### Stances
+
+`SentientSystems_UnitAction` gives a unit a stance (`fortify`, `sleep`, `skip`, `alert`, `heal`), `wake`, `delete`, or `promote`, with the promotion in `type`. The game gives no reasons for these, so the reason says what the unit is doing and whether to wake it first.
+
+### Attacks
+
+`attack` (with `x` and `y`) picks a melee, ranged, or air attack as the UI does, never starts a war, and lists the targets when the tile isn't one.
+
+`priority_target` takes `x` and `y`, and is in the attacks file. A priority target hits the support or civilian unit that a military unit escorts, and the game marks the tiles that have one.
+
+`SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot.
+
+### Orders on the unit's tile
+
+`found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile. Their reasons name what is wrong with the unit or the tile, such as the city that is too close.
+
+### Builder jobs
+
+`build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` are the builder jobs, in `SentientSystemsCore_ActionsUnitJobs.lua`.
+
+- `build_road` is for a Military Engineer and builds the best route the player has, so `type` is optional. A route that differs is refused with the one the game would build.
+- `repair` fixes a pillaged improvement, and a pillaged route when the improvement is whole.
+
+Their reasons come from the unit and the tile: the moves and build charges left, a missing feature or resource, a tech the player lacks, an improvement in the way, and a tile the player doesn't own.
+
+A resource the player can't see yet is not named. The game's own reason, such as a drought for a repair, comes back as it is.
+
+### Add production
+
+`add_production` has an engineer or builder add production to the item a city builds, at the cost of a build charge, in `SentientSystemsCore_ActionsUnitProduction.lua`. It works from the city for a building, and from the tile of a district.
+
+The game allows one of four commands, by the kind of item. A builder gets them only through some leaders and buildings.
+
+The game gives no reasons, so the core mod says when the unit is not a builder, has no moves, is outside a city, or stands off the tile of the district. It also says when the city builds nothing the unit can help.
+
+### Upgrade
+
+`upgrade` requests the game's upgrade command, in `SentientSystemsCore_ActionsUnitUpgrade.lua`. The game's reasons name the gold, the resources, and the territory, and the core mod adds the cost of the upgrade.
+
+The game upgrades a unit to the last unit of its chain, and one missing step blocks it. So the core mod names the unit in the chain that needs a tech or civic the player lacks.
+
+It also says when the unit has no moves left or no upgrade, because the game gives no reason for them. A fortified unit can upgrade.
+
+### Formations
+
+`form_corps`, `form_army`, `enter_formation`, and `exit_formation` are in `SentientSystemsCore_ActionsUnitFormations.lua`. The first three name the other unit by its ID, and a request without it returns the units that can join.
+
+The game gives no reasons, so the core mod says when the player lacks the civic, the unit is a civilian or has no moves, no unit is next to it, or a corps or an army can't be split.
+
+### Air and transport
+
+`rebase` and `deploy` are for air units, and `airlift` and `paradrop` for land units. They take `x` and `y`.
+
+They are in `SentientSystemsCore_ActionsUnitAir.lua` and `SentientSystemsCore_ActionsUnitTransport.lua`. `SentientSystemsCore_ActionsUnitTileOrders.lua` runs them, and `priority_target` too.
+
+The game lists the tiles each can go to, and a request for another tile returns the nearest ones that work.
+
+The game gives no other reasons, so the core mod says when the unit is of the wrong kind, has no moves left, or has no tile to go to. One case is a paradrop from a tile that is not a city or an airstrip.
 
 ## Decisions
 
