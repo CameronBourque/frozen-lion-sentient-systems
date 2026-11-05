@@ -2,6 +2,8 @@
 // ESLint checks the TypeScript and JavaScript comments, and the CI lint job has
 // no Lua tool, so this covers the Lua ones.
 
+import { TEXT_RULES } from "../../comment-rules/src/text-rules.mjs";
+
 // The same limit as the comments option of max-len in eslint.config.js.
 export const LIMIT = 80;
 // The same tab width as the tabWidth option of max-len.
@@ -15,7 +17,7 @@ export function width(line) {
 
 // One entry per rule. find gets a full-line comment and the column limit, and
 // returns a message when the comment breaks the rule, or undefined when it
-// doesn't.
+// doesn't. The text rules are shared with the ESLint rule for TypeScript.
 export const RULES = [
 	{
 		name: "line-width",
@@ -25,6 +27,7 @@ export const RULES = [
 			if (columns > limit) return `comment is ${columns} columns, over ${limit}`;
 		},
 	},
+	...TEXT_RULES,
 ];
 
 // Returns one "file:line: message" per problem in a full-line comment, and the
