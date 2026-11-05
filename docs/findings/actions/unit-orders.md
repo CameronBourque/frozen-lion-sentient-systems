@@ -1,6 +1,6 @@
 # Unit orders and attacks
 
-Status: open. The unit orders, the orders on a unit's tile, the builder jobs, upgrades, formations, and air moves are confirmed in a running game, and attacks are confirmed except the priority target.
+Status: open. The unit orders, the orders on a unit's tile, the builder jobs, adding production, upgrades, formations, and air moves are confirmed in a running game, and attacks are confirmed except the priority target.
 
 The game calls the unit order and attack actions wrap, with the Lua state each runs in and where we found each call. "Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [in-game-lua.md](../../design/core/in-game-lua.md). The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 
@@ -42,6 +42,15 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
 - **Harvest.** `GameInfo.Resource_Harvests` has a row, with `PrereqTech`, for each resource that can be harvested. Wheat, rice, and bananas passed. A resource with no row failed the loose check, and so did wheat with a farm and stone with a quarry.
 - **Repair.** `REPAIR` repairs a pillaged improvement, and `REPAIR_ROUTE` repairs a pillaged route. Each failed on a tile that had only the other kind. It is the only job that gave a failure reason, "cannot be repaired while a drought is in progress", for two pillaged improvements.
 - **Remove improvement.** It removed two different improvements with no dialog.
+
+### Add production
+
+The game has four unit commands that add production to the item a city is building at the cost of a build charge: `UNITCOMMAND_BUILDING_PRODUCTION`, `DISTRICT_PRODUCTION`, `WONDER_PRODUCTION`, and `PROJECT_PRODUCTION`. `UnitPanel.lua` has no code for them, so its loop checks each one loosely and then for real and requests it with `RequestCommand(unit, hash)` and no parameters. `UnitCommandTypes` lacks the building one, so the hash comes from `GameInfo.UnitCommands`. Confirmed in files. Confirmed on Windows on 2026-11-05, with a Flood Barrier in the queue of the city Avaricum:
+
+- A military engineer in the city passed the building command, and none of the other three. The request took Flood Barrier from 0 to 8 of 40, which is 20%, and took one build charge and all of the engineer's moves. A second engineer took it from 8 to 16.
+- The check then failed for an engineer with no moves left, so the moves matter.
+- A builder in the same city failed all four commands. An engineer in a city building a unit failed, and so did an engineer on a tile next to the city.
+- The checks give no reasons and no results. The district, wonder, and project commands weren't tried, because no city in the save was building such an item.
 
 ### Upgrade
 
@@ -95,7 +104,7 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
 
 1. **Unit orders.** For each order, call the loose check and then the real check, then request it. Read `UnitManager.GetActivityType(unit)` and the unit's moves before and after.
 2. **Orders on the unit's tile.** Call the check and the request for found city, build improvement, and pillage with the unit on a tile that allows the order and on one that doesn't, and print `FAILURE_REASONS`.
-3. **Builder jobs.** Check and request each job with an engineer or a builder on a tile that allows it and on one that doesn't, print the results of a check with `OperationResultsTypes.ALL`, and read the tile and the unit's charges afterward. In `GameCore_Tuner`, `ImprovementBuilder.SetImprovementPillaged(plot, true)` and `RouteBuilder.SetRoutePillaged(plotIndex, true)` set up a pillaged tile.
+3. **Builder jobs.** Check and request each job with an engineer or a builder on a tile that allows it and on one that doesn't, print the results of a check with `OperationResultsTypes.ALL`, and read the tile and the unit's charges afterward. In `GameCore_Tuner`, `ImprovementBuilder.SetImprovementPillaged(plot, true)` and `RouteBuilder.SetRoutePillaged(plotIndex, true)` set up a pillaged tile. To add production, check the four production commands with an engineer and a builder in a city that is building an item, and read the item's progress and the unit's charges afterward.
 4. **Upgrade.** Call the loose check and the real check with results for units that can upgrade and units that can't, then request it and read the gold and the unit afterward. In `GameCore_Tuner`, `ChangeGoldBalance`, `ChangeResourceAmount` on `GetResources()`, and `SetTech` change the gold, the strategic resources, and the techs.
 5. **Formations.** List `GetCommandTargets` for each command, check with the other unit's player and ID, request it, and read `GetMilitaryFormation()`, `GetFormationUnitCount()`, and the moves afterward. In `GameCore_Tuner`, `InitUnit` spawns the units, `RestoreMovement` and `ChangeMovesRemaining` set the moves, and `SetCivic` gives a civic.
 6. **Air moves.** List the targets, check with a tile, and request each order with air units, a spec ops unit, and an infantry unit in cities with and without an airport, and read the unit's tile, moves, and activity afterward.
@@ -110,9 +119,10 @@ The bridge ran these steps in a single-player game.
 | `SentientSystems_UnitAction` for fortify, skip, wake, promote, and delete on a knight and a caravel | `SentientSystemsCore_UI` | Each took effect. Delete removed the knight | 2026-11-04 |
 | `SentientSystems_UnitAction` for `improve`, `found_city`, and `pillage` | `SentientSystemsCore_UI` | A farm was started, a city was founded, and an enemy improvement was pillaged. The reasons came from the checks in the Lua | 2026-11-04 |
 | `SentientSystems_UnitAction` for `build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` | `SentientSystemsCore_UI` | Each took effect once, and each gave a reason for one illegal case: a road on a railroad, a remove feature with no feature, a harvest on a farm, a repair of an unpillaged tile, and a repair in a drought | 2026-11-05 |
+| `SentientSystems_UnitAction` for `add_production` by two military engineers and a builder | `SentientSystemsCore_UI` | An engineer in a city building a Flood Barrier added 20% of its cost and used a charge. Each other case gave a reason: a builder, an engineer in a city building something else, an engineer outside a city, and a unit that isn't a builder | 2026-11-05 |
 | `SentientSystems_UnitAction` for `upgrade` on a crossbowman, a caravel, a builder, a unit with no moves, and a unit short of gold or a resource | `SentientSystemsCore_UI` | The crossbowman became a machine gun and cost 180 gold. Each other case gave a reason: the territory, no upgrade, no moves, gold, and the resource | 2026-11-05 |
 | `SentientSystems_UnitAction` for `form_corps`, `form_army`, `enter_formation`, and `exit_formation` | `SentientSystemsCore_UI` | A musketman formed a corps and then an army, and a knight entered and left a builder's tile formation. Each other case gave a reason: no unit named, a unit that can't join, a builder, no moves, a corps that can't exit, and a missing civic | 2026-11-05 |
 | `SentientSystems_UnitAction` for `rebase`, `deploy`, `airlift`, and `paradrop` | `SentientSystemsCore_UI` | A fighter rebased and deployed, an infantry unit airlifted, and a spec ops unit paradropped. Each other case gave a reason: a tile out of range, a unit of the wrong kind, no moves, no airport, and no city or airstrip | 2026-11-05 |
 | `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs, upgrades, formations, and air moves on 2026-11-05.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the unit orders, the orders on a unit's tile, and attacks on 2026-11-04, and the builder jobs, adding production, upgrades, formations, and air moves on 2026-11-05.

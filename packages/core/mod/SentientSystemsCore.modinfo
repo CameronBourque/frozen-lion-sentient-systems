@@ -24,6 +24,7 @@
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTiles.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitJobs.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitProduction.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitUpgrade.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitFormations.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTileOrders.lua</File>
@@ -83,6 +84,7 @@
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTiles.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitJobs.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitProduction.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitUpgrade.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitFormations.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTileOrders.lua</File>

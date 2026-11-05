@@ -97,6 +97,7 @@ end
 SentientSystems_Include("SentientSystemsCore_ActionsUnitStances")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitTiles")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitJobs")
+SentientSystems_Include("SentientSystemsCore_ActionsUnitProduction")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitUpgrade")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitFormations")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitTileOrders")

@@ -70,6 +70,9 @@ describe("unit actions", () => {
 		answer("SentientSystems_UnitAction(0, 9437197, \"harvest\", nil, nil, nil)", "{\"ok\":true}");
 		expect(await unitAction(client, 0, 9437197, { action: "harvest" })).toEqual({ ok: true });
 
+		answer("SentientSystems_UnitAction(0, 9437197, \"add_production\", nil, nil, nil)", "{\"ok\":true}");
+		expect(await unitAction(client, 0, 9437197, { action: "add_production" })).toEqual({ ok: true });
+
 		answer("SentientSystems_UnitAction(0, 9437197, \"upgrade\", nil, nil, nil)", "{\"ok\":true}");
 		expect(await unitAction(client, 0, 9437197, { action: "upgrade" })).toEqual({ ok: true });
 	});
