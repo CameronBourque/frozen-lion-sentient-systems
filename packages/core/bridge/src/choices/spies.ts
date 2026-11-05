@@ -1,8 +1,5 @@
-// The schema for the spy choice: the escape routes for the player's next
-// escaping spy, as the escape screen offers them. The game opens the same
-// screen to choose a dragnet priority. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesSpies.lua. All text is in the
-// game's language.
+// The schema for the spy choice: the escape routes for the next escaping spy,
+// as the escape screen offers them. All text is in the game's language.
 
 import { z } from "zod";
 

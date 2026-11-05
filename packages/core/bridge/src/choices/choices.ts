@@ -1,8 +1,6 @@
-// Reads one player's choices from the core mod: the legal options for each
-// discrete choice. The core mod builds them as JSON in a call of its own, so
-// the agent reads them only when it decides, and the bridge reads them through
-// the stash, in stash.ts. Each choice's schema has its own file in this folder,
-// as each choice of the core mod's Lua does, and holds the choice's shape.
+// Reads one player's choices from the core mod, as JSON through the stash in
+// stash.ts, in a call of its own. Each choice's schema has its own file in
+// this folder, as each choice of the core mod's Lua does.
 
 import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";

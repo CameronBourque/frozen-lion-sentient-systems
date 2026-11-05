@@ -1,9 +1,6 @@
-// The schema for the governor choice: the governors the player can appoint, the
-// promotions they can give their governors, and the cities they can assign them
-// to, as the Governors panel, its details panel, and its assignment chooser
-// offer them. The core mod builds it in
-// Scripts/Choices/SentientSystemsCore_ChoicesGovernors.lua. All text is in the
-// game's language.
+// The schema for the governor choice: appointments, promotions, and
+// assignments, as the Governors panel offers them. All text is in the game's
+// language.
 
 import { z } from "zod";
 
