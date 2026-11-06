@@ -42,6 +42,7 @@
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesCapturedCities.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesSpies.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesTradeRoutes.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernors.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua</File>
@@ -102,6 +103,7 @@
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesCapturedCities.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesSpies.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesTradeRoutes.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesGovernors.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesDedications.lua</File>

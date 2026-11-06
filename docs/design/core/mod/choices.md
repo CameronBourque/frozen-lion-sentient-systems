@@ -6,7 +6,7 @@ The calls that list the legal options for each choice, and the tiles where a dis
 
 `SentientSystems_GetChoices(playerID)` returns the legal options for each discrete choice as JSON, in a call of its own, so the agent reads them only when it decides.
 
-The options include production and gold, faith, and tile purchases for each city, techs, civics, policies, and the options for each other end-turn blocker. Each blocker in the state names the choice that resolves it.
+The options include production and gold, faith, and tile purchases for each city, techs, civics, policies, the destinations of each idle trader, and the options for each other end-turn blocker. Each blocker in the state names the choice that resolves it.
 
 An option lists what its screen shows, such as turns to complete, boost status or the boost requirement, resource requirements, and prerequisites. Tile purchases list the tiles to buy, and the tiles where a district or a wonder can go come from the [placement call](#placement).
 
@@ -34,6 +34,7 @@ The calls for each choice are in these findings:
 - **Great people.** [findings/choices/great-people.md](../../../findings/choices/great-people.md).
 - **Captured cities.** [findings/choices/captured-cities.md](../../../findings/choices/captured-cities.md).
 - **Spies.** [findings/choices/spies.md](../../../findings/choices/spies.md).
+- **Trade routes.** [findings/choices/trade-routes.md](../../../findings/choices/trade-routes.md).
 - **Artifacts.** [findings/choices/artifacts.md](../../../findings/choices/artifacts.md).
 - **Governors.** [findings/choices/governors.md](../../../findings/choices/governors.md).
 - **Dedications.** [findings/choices/dedications.md](../../../findings/choices/dedications.md).

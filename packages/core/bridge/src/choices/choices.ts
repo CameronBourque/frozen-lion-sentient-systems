@@ -18,6 +18,7 @@ import { PURCHASE_CITY } from "./purchases.js";
 import { PANTHEON, RELIGION_CHOICE } from "./religion.js";
 import { RESEARCH_OPTION } from "./research.js";
 import { SPIES_CHOICE } from "./spies.js";
+import { TRADE_ROUTES_CHOICE } from "./trade-routes.js";
 import { WORLD_CONGRESS_CHOICE } from "./world-congress.js";
 
 // Not strict, so a choice from a newer core mod is dropped instead of failing
@@ -40,6 +41,7 @@ export const CHOICES = z.object({
 	greatPeople: GREAT_PEOPLE_CHOICE,
 	capturedCities: CAPTURED_CITIES_CHOICE,
 	spies: SPIES_CHOICE,
+	tradeRoutes: TRADE_ROUTES_CHOICE,
 	artifacts: ARTIFACTS_CHOICE,
 	governors: GOVERNORS_CHOICE,
 	dedications: DEDICATIONS_CHOICE,

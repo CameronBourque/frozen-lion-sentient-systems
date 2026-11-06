@@ -32,7 +32,7 @@ return function(env, world, ctx)
 						table.sort(origin, function(a, b)
 							return a.YieldIndex < b.YieldIndex
 						end)
-						routes[i] = { DestinationCityPlayer = route.player, DestinationCityID = route.id, OriginYields = origin }
+						routes[i] = { DestinationCityPlayer = route.player, DestinationCityID = route.id, TraderUnitID = route.trader, OriginYields = origin }
 					end
 
 					return routes
