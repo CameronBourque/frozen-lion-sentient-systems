@@ -4,6 +4,7 @@
 
 import { findDocPathProblems } from "../../comment-rules/src/doc-path-rule.mjs";
 import { checkHeader } from "../../comment-rules/src/header-rule.mjs";
+import { findStandalone } from "../../comment-rules/src/standalone-rule.mjs";
 import { findText } from "../../comment-rules/src/text-rules.mjs";
 
 // The same limit as the comments option of max-len in eslint.config.js.
@@ -45,6 +46,20 @@ function leadingComments(lines) {
 	return spans;
 }
 
+// Returns the full-line comments of a file as line spans with their text, and
+// the line numbers that hold code, for the stray comment rule.
+function commentsAndCode(lines) {
+	const spans = [];
+	const codeLines = new Set();
+
+	for (const [index, line] of lines.entries()) {
+		if (/^\s*--/.test(line)) spans.push({ start: index + 1, end: index + 1, text: line });
+		else if (line.trim() !== "") codeLines.add(index + 1);
+	}
+
+	return { spans, codeLines };
+}
+
 // Returns one "file:line: message" per problem in a full-line comment or file
 // header, and the exit code. A comment after code on the same line isn't
 // checked. `docs` says which files exist, for the doc path rule, which is
@@ -57,6 +72,10 @@ export function checkComments(files, limit = LIMIT, docs = undefined) {
 		const header = checkHeader(leadingComments(fileLines));
 
 		if (header) lines.push(`${file}:${header.line}: ${header.message}`);
+
+		const { spans, codeLines } = commentsAndCode(fileLines);
+
+		for (const problem of findStandalone(spans, codeLines)) lines.push(`${file}:${problem.line}: ${problem.message}`);
 
 		fileLines.forEach((line, index) => {
 			if (!/^\s*--/.test(line)) return;
