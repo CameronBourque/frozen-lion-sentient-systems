@@ -8,12 +8,12 @@ Each needs its choices read first, because the agent has to pick a target from a
 
 1. **Trade route choices.** Add the destinations a trader can reach to the choices, as the route chooser lists them, with each route's yields. Read the calls from `TradeRouteChooser.lua`. Commit: `feat(core): add trade route destinations to the choices`.
 2. **Trade routes.** Add `SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)`, which starts a route from the choices, and a `plunder` order for a military unit on an enemy trader. Add `tradeRoute` to `src/actions/trade.ts`. Commit: `feat(core): add the trade route actions`.
-3. **Great people.** Add `activate`, and the orders that give a great person's production to a district, a wonder, a project, or a building, and `harvest_wonder`.
+3. **Great people.** Add `activate`, which also gives a great engineer's production to a wonder, and `harvest_wonder`.
 
-   Read the commands from `UnitPanel.lua`, and return the unit's reason when the tile is wrong. Commit: `feat(core): add the great person actions`.
-4. **Religious units.** Add the orders to spread a religion, found one with a great prophet, heal followers, and condemn a heretic. Read the operations from `UnitPanel.lua`, and use a game with a religion. Commit: `feat(core): add the religious unit actions`.
-5. **Spy choices.** Add the missions a spy can start in a district to the choices, as the mission chooser lists them. Read the calls from `EspionageChooser.lua`. Commit: `feat(core): add spy missions to the choices`.
-6. **Spy missions.** Add `SentientSystems_SpyMission(playerID, unitID, mission)` and the counterspy order. Add `spyMission` to `src/actions/spies.ts`. Commit: `feat(core): add the spy mission actions`.
+   Read the commands from `UnitPanel.lua`, and return the game's reason when the tile is wrong. Commit: `feat(core): add the great person actions`.
+4. **Spy choices.** Add the missions a spy can start in a district to the choices, as the mission chooser lists them. Read the calls from `EspionageChooser.lua`. Commit: `feat(core): add spy missions to the choices`.
+5. **Spy missions.** Add `SentientSystems_SpyMission(playerID, unitID, mission)` and the counterspy order. Add `spyMission` to `src/actions/spies.ts`. Commit: `feat(core): add the spy mission actions`.
+6. **Religious units.** Add the orders to spread a religion, found one with a great prophet, heal followers, and condemn a heretic. Read the operations from `UnitPanel.lua`, and use a game with a religion that can still be founded. Commit: `feat(core): add the religious unit actions`.
 7. **Pillage roads.** Make the `pillage` action start the game's `UNITOPERATION_PILLAGE_ROUTE`, "Pillage Road", on an enemy tile with a road and no improvement to pillage. It refuses that tile now. Read how `UnitPanel.lua` offers it. Commit: `feat(core): pillage roads with the pillage action`.
 
 ## Done when
