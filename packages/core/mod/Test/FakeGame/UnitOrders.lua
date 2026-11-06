@@ -7,7 +7,7 @@ return function(env, world, ctx)
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
 	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
 	local COMMANDS = { wake = 110, delete = 111, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117,
-		plunder = 144, building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
+		plunder = 144, activate = 145, harvest_wonder = 146, building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
 	local rows, upgrades = {}, {}
@@ -49,6 +49,8 @@ return function(env, world, ctx)
 		[0] = { CommandType = "UNITCOMMAND_FORM_CORPS", PrereqCivic = "CIVIC_NATIONALISM" },
 		{ CommandType = "UNITCOMMAND_FORM_ARMY", PrereqCivic = "CIVIC_MOBILIZATION" },
 		{ CommandType = "UNITCOMMAND_ENTER_FORMATION" },
+		{ CommandType = "UNITCOMMAND_ACTIVATE_GREAT_PERSON", Hash = COMMANDS.activate },
+		{ CommandType = "UNITCOMMAND_HARVEST_WONDER", Hash = COMMANDS.harvest_wonder },
 		{ CommandType = "UNITCOMMAND_BUILDING_PRODUCTION", Hash = COMMANDS.building_production },
 		{ CommandType = "UNITCOMMAND_DISTRICT_PRODUCTION", Hash = COMMANDS.district_production },
 		{ CommandType = "UNITCOMMAND_WONDER_PRODUCTION", Hash = COMMANDS.wonder_production },

@@ -51,9 +51,10 @@ local function GetMissingPrereq(playerID, chain)
 	return nil
 end
 
--- Returns the reasons the game gives, joined, or nil. The game names the gold
--- and the resources the player lacks and the territory the unit must stand in.
-local function GetGameReasons(results)
+-- Returns the reasons the game gives for a command, joined, or nil. The game
+-- names the gold and the resources the player lacks and the territory the unit
+-- must stand in. The great person orders use this too.
+function SentientSystems_GetCommandReasons(results)
 	local reasons = results and results[UnitCommandResults.FAILURE_REASONS]
 
 	if reasons == nil or #reasons == 0 then
@@ -89,7 +90,7 @@ local function GetUpgradeFailure(playerID, unit, results)
 		return "The upgrade goes through " .. Locale.Lookup(step.Name) .. ", which needs " .. prereq .. "."
 	end
 
-	local reasons = GetGameReasons(results)
+	local reasons = SentientSystems_GetCommandReasons(results)
 
 	if reasons == nil then
 		return "The unit can't upgrade now."

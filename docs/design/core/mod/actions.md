@@ -48,6 +48,12 @@ Its reasons name a unit that isn't a trader, a trader that already has a route, 
 
 `plunder` is a unit order with no parameters, in the stances file. It plunders the enemy trade route on the unit's tile with the game's own command, for a unit with strength that isn't an air unit. The game gives no reasons for it, so the reason says what the tile needs.
 
+### Great people
+
+`activate` and `harvest_wonder` are unit orders with no parameters, in `SentientSystemsCore_ActionsUnitGreatPeople.lua`. `activate` uses a great person's ability, which for a great engineer is its production for a wonder.
+
+The game gives the reasons, such as the tile the person must stand on. See [great-people.md](../../../findings/actions/great-people.md).
+
 ### Orders on the unit's tile
 
 `found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile. Their reasons name what is wrong with the unit or the tile, such as the city that is too close.

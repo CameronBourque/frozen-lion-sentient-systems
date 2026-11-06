@@ -15,6 +15,8 @@ local STANCES = {
 -- How the reasons say an action, when its name is not the verb.
 local VERBS = {
 	found_city = "found a city",
+	activate = "activate a great person",
+	harvest_wonder = "harvest a wonder",
 	improve = "build improvements",
 	build_road = "build roads",
 	remove_feature = "remove features",
