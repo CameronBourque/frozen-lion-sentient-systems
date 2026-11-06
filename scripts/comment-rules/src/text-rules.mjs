@@ -1,10 +1,10 @@
 // Comment rules that read only the text of a comment, so the Lua check and the
 // ESLint rule for TypeScript share them. The rules are in docs/rules/code.md.
 
+import { hasOptOut } from "./opt-out.mjs";
+
 // One entry per rule. find gets the text of one comment and returns a message
 // when it breaks the rule, or undefined when it doesn't.
-export const OPT_OUT = /comment-lint-ignore:\s*\S/;
-
 export const TEXT_RULES = [
 	{
 		name: "line-number",
@@ -38,7 +38,7 @@ export const TEXT_RULES = [
 // Returns the messages of the text rules that a comment breaks. A comment that
 // holds "comment-lint-ignore:" and a reason skips them.
 export function findText(text) {
-	if (OPT_OUT.test(text)) return [];
+	if (hasOptOut(text)) return [];
 
 	return TEXT_RULES.map((rule) => rule.find(text)).filter(Boolean);
 }

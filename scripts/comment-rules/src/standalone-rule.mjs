@@ -2,7 +2,7 @@
 // comment block sits directly above the code it describes. The rule is in
 // docs/rules/code.md.
 
-import { OPT_OUT } from "./text-rules.mjs";
+import { hasOptOut } from "./opt-out.mjs";
 
 // A block shorter than this can stand alone, as a one-line section label.
 export const MIN_LINES = 2;
@@ -38,6 +38,6 @@ export function findStandalone(spans, codeLines) {
 		.filter((block, index) => !(index === 0 && block.start < firstCode))
 		.filter((block) => block.end - block.start + 1 >= MIN_LINES)
 		.filter((block) => !codeLines.has(block.end + 1))
-		.filter((block) => !block.texts.some((text) => OPT_OUT.test(text)))
+		.filter((block) => !block.texts.some(hasOptOut))
 		.map((block) => ({ line: block.start, message: "comment block stands alone; put it directly above the code it describes" }));
 }
