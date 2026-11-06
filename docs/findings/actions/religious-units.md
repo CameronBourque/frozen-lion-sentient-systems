@@ -1,6 +1,6 @@
 # Religious unit actions
 
-Status: open. Founding a religion, spreading it, removing a heresy, and healing are confirmed in a running game with Gathering Storm, with the files sent through the tuner. Condemning a heretic is confirmed in files only.
+Status: confirmed. Founding a religion, spreading it, removing a heresy, healing, and condemning a heretic are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
 
 The game calls the religious unit orders wrap, with the Lua state each runs in and the reasons their checks give. The religion itself, its name and beliefs, is chosen in the religion blocker's action, which a later step adds.
 
@@ -8,7 +8,7 @@ The core mod's result format is in [design/core/mod/actions.md](../../design/cor
 
 ## Questions
 
-1. Does `condemn_heretic` work? Any unit can take it against a religious unit of another religion, as the player reports, so the action doesn't limit it by kind. Its check was `false` for every unit seen, and no player was at war with the player, so the request is untested.
+None open.
 
 ## What we know now
 
@@ -24,7 +24,9 @@ The core mod's result format is in [design/core/mod/actions.md](../../design/cor
 - **Heal.** `UNITOPERATION_RELIGIOUS_HEAL`, for a row with `ReligiousHealCharges` above zero, which is the Guru.
 
   It heals the religious units on the Guru's tile and the tiles next to it, itself included. A wounded Knight on the tile didn't count, and a wounded Apostle did. Religious units can't stack, so a wounded Guru heals itself, since it is the one religious unit on its tile.
-- **Condemn.** `UNITCOMMAND_CONDEMN_HERETIC` has three reasons in the text.
+- **Condemn.** `UNITCOMMAND_CONDEMN_HERETIC` is open to any unit that shares a tile with a religious unit of another religion, owned by a player at war with it, so the action doesn't limit it by kind. The game gives its reasons, and the text has three.
+
+  A World Congress effect lets a player condemn the units of a religion whatever the war state, as the player reports. It is hard to get active, so it was not tested, and the war reason may not apply under it.
 
   A religious unit on the tile belongs to a player the unit is not at war with, adheres to the religion the player founded, or adheres to the dominant religion in most of the player's cities.
 - A unit's religion matters. A Missionary made by `UnitManager.InitUnit` has no religion, and spread was refused.
@@ -55,7 +57,10 @@ A single-player game on turn 403, on Windows, in `SentientSystemsCore_UI`:
 | A Guru bought with faith, next to and then with a wounded Knight, for `heal_followers` | Refused, with no reason from the game. The loose check was `false` on another tile and `true` on the Knight's, the real check `false` |
 | The same Guru on the tile of a wounded Apostle with the religion, 40 damage | `{"ok":true}`, and the Apostle's damage went to 0 |
 | An Inquisitor, in Ravenna where the player's religion is the majority, for `spread_religion` and `remove_heresy` | `spread_religion` was refused. `remove_heresy` returned `{"ok":true}`, and its charges went from 3 to 2. The effect on the city's other religions was not read |
-| An `InitUnit` Apostle, for `condemn_heretic` | Refused with no reason from the game. The action says what it needs |
+| A Knight on the tile of a Guru of player 10, who was at war with the player and followed Shinto, for `condemn_heretic` | `{"ok":true}`. The Guru was gone and the Knight had no moves left |
+| The followers of Shinto in the 12 cities within 8 tiles of the Guru, before and after | Samarobriva, a city of the player's 6 tiles away, went from 8 followers and 1071.5 pressure to 7 and 946.5. The other 11, including Thăng Long 2 tiles away, didn't change |
+| A Knight on the tile of a Missionary of player 1, who wasn't at war with the player, for `condemn_heretic` | The game's reason: "A Religious unit in this tile belongs to a player you are not at war with." |
+| A Knight with no religious unit on its tile | "It needs a religious unit of another religion, owned by a player at war with you, on its tile." |
 | An Apostle, for the inquisition and Evangelize Belief | Both checks were `true`. The actions are not part of this step |
 
 Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06.
