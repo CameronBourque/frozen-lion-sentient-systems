@@ -16,6 +16,11 @@ local STANCES = {
 local VERBS = {
 	found_city = "found a city",
 	activate = "activate a great person",
+	found_religion = "found a religion",
+	spread_religion = "spread a religion",
+	remove_heresy = "remove a heresy",
+	heal_followers = "heal followers",
+	condemn_heretic = "condemn a heretic",
 	harvest_wonder = "harvest a wonder",
 	improve = "build improvements",
 	build_road = "build roads",
@@ -103,7 +108,7 @@ local COMMAND_NAMES = { plunder = "PLUNDER_TRADE_ROUTE" }
 -- whether the kind of unit could ever do it, for a command whose loose check
 -- fails with the tile too, as DoOperation does. options.hint is the reason
 -- that fits the tile.
-local function DoCommand(unit, action, options)
+function SentientSystems_DoCommand(unit, action, options)
 	local command = UnitCommandTypes[COMMAND_NAMES[action] or action:upper()]
 	local kind = options and options.kind
 	local canEver
@@ -166,14 +171,14 @@ end
 
 for _, action in ipairs({ "wake", "delete" }) do
 	SentientSystems_AddUnitAction(action, function(_, unit)
-		return DoCommand(unit, action)
+		return SentientSystems_DoCommand(unit, action)
 	end)
 end
 
 -- Plunder is the command for an enemy trader on the unit's tile. The game gives
 -- no failure reasons for it, so the tile's hint says what it needs.
 SentientSystems_AddUnitAction("plunder", function(_, unit)
-	return DoCommand(unit, "plunder", {
+	return SentientSystems_DoCommand(unit, "plunder", {
 		kind = function(row)
 			return row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"
 		end,

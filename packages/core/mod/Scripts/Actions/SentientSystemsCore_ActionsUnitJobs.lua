@@ -38,8 +38,9 @@ local function FindHarvest(resourceType)
 end
 
 -- Returns the reasons the game gives for the operation, joined, or nil. Most of
--- these jobs give none, but a repair gives one for a drought.
-local function GetGameReasons(unit, hash)
+-- these jobs give none, but a repair gives one for a drought. The religious
+-- orders use this too.
+function SentientSystems_GetOperationReasons(unit, hash)
 	local _, results = UnitManager.CanStartOperation(unit, hash, nil, false, OperationResultsTypes.ALL)
 	local reasons = results and results[UnitOperationResults.FAILURE_REASONS]
 
@@ -212,7 +213,7 @@ local function GetRepairHint(unit, operation)
 		return "Nothing on the tile is pillaged."
 	end
 
-	return GetGameReasons(unit, GameInfo.UnitOperations[operation].Hash)
+	return SentientSystems_GetOperationReasons(unit, GameInfo.UnitOperations[operation].Hash)
 end
 
 SentientSystems_AddUnitAction("build_road", function(_, unit, _, _, type)

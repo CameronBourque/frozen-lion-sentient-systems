@@ -64,6 +64,14 @@ Their reasons name a spy that isn't ready, a spy in no city, the missions the sp
 
 The game's own reasons come back for a mission it lists as disabled. See [spies.md](../../../findings/actions/spies.md).
 
+### Religious units
+
+`found_religion`, `spread_religion`, `remove_heresy`, `heal_followers`, and `condemn_heretic` are unit orders with no parameters, in `SentientSystemsCore_ActionsUnitReligion.lua`.
+
+A prophet founds a religion on its Holy Site, and the religion's name and beliefs are chosen in the religion blocker's action.
+
+The game's reasons come back, such as the district a prophet must stand on. See [religious-units.md](../../../findings/actions/religious-units.md).
+
 ### Orders on the unit's tile
 
 `found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile. Their reasons name what is wrong with the unit or the tile, such as the city that is too close.

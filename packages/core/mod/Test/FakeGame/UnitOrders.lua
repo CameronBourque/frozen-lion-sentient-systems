@@ -3,11 +3,11 @@
 -- route and reasons are what the game returns. Units.lua fakes promote.
 
 return function(env, world, ctx)
-	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106,
+	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106, found_religion = 130, spread_religion = 131, heal_followers = 132, remove_heresy = 133,
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
-	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
+	local OPERATION_TYPES = { skip = "SKIP_TURN", heal_followers = "RELIGIOUS_HEAL", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
 	local COMMANDS = { wake = 110, delete = 111, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117,
-		plunder = 144, activate = 145, harvest_wonder = 146, building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
+		plunder = 144, condemn_heretic = 147, activate = 145, harvest_wonder = 146, building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
 	local rows, upgrades = {}, {}
@@ -36,6 +36,7 @@ return function(env, world, ctx)
 	env.UnitOperationTypes.PARAM_IMPROVEMENT_TYPE = 7
 	env.UnitCommandTypes.WAKE = COMMANDS.wake
 	env.UnitCommandTypes.PLUNDER_TRADE_ROUTE = COMMANDS.plunder
+	env.UnitCommandTypes.CONDEMN_HERETIC = COMMANDS.condemn_heretic
 	env.UnitCommandTypes.DELETE = COMMANDS.delete
 	env.UnitCommandTypes.UPGRADE = COMMANDS.upgrade
 	env.UnitCommandTypes.FORM_CORPS = COMMANDS.form_corps
@@ -70,6 +71,10 @@ return function(env, world, ctx)
 			row.FoundCity = unit.type == "UNIT_SETTLER"
 			row.BuildCharges = (unit.type == "UNIT_BUILDER" or unit.type == "UNIT_MILITARY_ENGINEER") and 3 or 0
 			row.Combat = unit.type == "UNIT_KNIGHT" and 50 or 0
+			row.FoundReligion = unit.type == "UNIT_GREAT_PROPHET"
+			row.SpreadCharges = unit.type == "UNIT_MISSIONARY" and 3 or 0
+			row.ReligiousHealCharges = unit.type == "UNIT_GURU" and 3 or 0
+			row.RequiresInquisition = unit.type == "UNIT_INQUISITOR"
 			row.FormationClass = unit.formationClass or "FORMATION_CLASS_LAND_COMBAT"
 
 			-- An upgrade is a chain of steps, and a step may need a tech.

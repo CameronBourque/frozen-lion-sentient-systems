@@ -6,7 +6,7 @@ import { type ActionResult, sendAction } from "./actions.js";
 
 export type UnitOrder =
 	| { action: "fortify" | "sleep" | "skip" | "alert" | "heal" | "wake" | "delete" | "found_city" | "pillage" | "plunder" }
-	| { action: "activate" | "harvest_wonder" }
+	| { action: "activate" | "harvest_wonder" | "found_religion" | "spread_religion" | "remove_heresy" | "heal_followers" | "condemn_heretic" }
 	| { action: "remove_feature" | "harvest" | "repair" | "remove_improvement" | "add_production" }
 	| { action: "upgrade" | "exit_formation" }
 	| { action: "form_corps" | "form_army" | "enter_formation"; with: number }
@@ -23,9 +23,9 @@ export function moveUnit(client: TunerClient, playerID: number, unitID: number, 
 }
 
 // Gives a unit an order, such as a stance, an upgrade, a job on its tile, a
-// plunder of the trade route through it, an attack or priority target, or an
-// air move to a tile. A promotion, an improvement, a route, or the unit to join
-// a formation with goes in its own field.
+// plunder of the trade route through it, a religious order, an attack or
+// priority target, or an air move to a tile. A promotion, an improvement, a
+// route, or the unit to join a formation with goes in its own field.
 export function unitAction(client: TunerClient, playerID: number, unitID: number, order: UnitOrder): Promise<ActionResult> {
 	const type = "promotion" in order ? order.promotion : "improvement" in order ? order.improvement : "route" in order ? order.route : "with" in order ? order.with : undefined;
 	const argument = type === undefined ? "nil" : JSON.stringify(type);

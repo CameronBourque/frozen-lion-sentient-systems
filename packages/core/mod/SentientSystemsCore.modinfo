@@ -27,6 +27,7 @@
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitProduction.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitUpgrade.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitGreatPeople.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitReligion.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitFormations.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTileOrders.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitAir.lua</File>
@@ -92,6 +93,7 @@
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitProduction.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitUpgrade.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitGreatPeople.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitReligion.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitFormations.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitTileOrders.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitAir.lua</File>
