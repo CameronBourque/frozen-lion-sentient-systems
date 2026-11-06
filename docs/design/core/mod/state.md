@@ -23,7 +23,8 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The Governors panel.** The appointed governors, their cities, and their promotions.
 - **The Religion screen.** The pantheon, the religion, and its followers.
 - **The diplomacy screens.** War or peace with each met player, proposed deals, relationships, grievances, and agendas.
-- **Their own screens.** Trade routes, spies, great works and tourism, and climate and disasters.
+- **The Trade Overview.** The player's routes, with the yields of both ends, and the routes of other players that end in the player's cities.
+- **Their own screens.** Spies, great works and tourism, and climate and disasters.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 
 The scoreboard lists every player in the screen's order. A met player has their ID and the values the screen shows, and an unmet player has only their place, as the screen shows a `?` icon.

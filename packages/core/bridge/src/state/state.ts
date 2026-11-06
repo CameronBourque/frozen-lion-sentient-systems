@@ -17,6 +17,7 @@ import { RELIGION } from "./religion.js";
 import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
 import { SCOREBOARD } from "./scoreboard.js";
 import { TILE } from "./tiles.js";
+import { TRADE } from "./trade.js";
 import { UNIT } from "./units.js";
 import { VICTORIES } from "./victories.js";
 
@@ -40,6 +41,7 @@ export const STATE = z.object({
 	greatPeople: GREAT_PEOPLE,
 	governors: GOVERNORS,
 	player: PLAYER,
+	trade: TRADE,
 	scoreboard: SCOREBOARD,
 	victories: VICTORIES,
 });

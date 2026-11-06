@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 
-const ROUTE_END = z.object({
+export const ROUTE_END = z.object({
 	yields: z.array(z.object({
 		type: z.string().describe("Such as YIELD_GOLD."),
 		amount: z.number().describe("Rounded to one decimal, as the chooser shows it."),

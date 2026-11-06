@@ -1,10 +1,11 @@
--- A city's yields. Fakes its yields, owned tiles, and trade routes.
+-- A city's yields. Fakes its yields, owned tiles, and the trade routes it
+-- sends out.
 -- FakeGame/Plots.lua and Income.lua read the tiles too.
 
 return function(env, world, ctx)
 	local YIELD_TYPES = ctx.YIELD_TYPES
 
-	ctx.OnCity(function(city, data)
+	ctx.OnCity(function(city, data, ownerID)
 		city.tiles = data.tiles or {}
 
 		function city.GetYield(_, yieldType)
@@ -32,7 +33,7 @@ return function(env, world, ctx)
 						table.sort(origin, function(a, b)
 							return a.YieldIndex < b.YieldIndex
 						end)
-						routes[i] = { DestinationCityPlayer = route.player, DestinationCityID = route.id, TraderUnitID = route.trader, OriginYields = origin }
+						routes[i] = { OriginCityPlayer = ownerID, OriginCityID = data.id, DestinationCityPlayer = route.player, DestinationCityID = route.id, TraderUnitID = route.trader, OriginYields = origin }
 					end
 
 					return routes

@@ -24,6 +24,7 @@ const STATE: State = {
 	diplomacy: [],
 	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 0, envoys: 0 }, cityStates: [] },
 	greatPeople: [],
+	trade: { outgoing: [], incoming: [] },
 	player: {
 		gold: { balance: 0, perTurn: 0 },
 		faith: { balance: 0, perTurn: 0 },

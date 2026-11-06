@@ -25,8 +25,9 @@ end
 -- Returns what one end of a potential route receives, as the yields the screen
 -- lists and the religious pressure on that end, and whether a trading post on
 -- the path adds to the origin. See GetYieldsForRoute and
--- GetReligiousPressureForCity in TradeSupport.lua.
-local function GetEnd(originCity, destinationCity, side)
+-- GetReligiousPressureForCity in TradeSupport.lua. The trade routes in the
+-- state use it too.
+function SentientSystems_GetRouteEnd(originCity, destinationCity, side)
 	local tradeManager = Game.GetTradeManager()
 	local originOwner, originID = originCity:GetOwner(), originCity:GetID()
 	local destinationOwner, destinationID = destinationCity:GetOwner(), destinationCity:GetID()
@@ -93,7 +94,7 @@ local function GetDestination(player, originCity, city)
 		return nil
 	end
 
-	local origin, pathBonus = GetEnd(originCity, city, "Origin")
+	local origin, pathBonus = SentientSystems_GetRouteEnd(originCity, city, "Origin")
 
 	return {
 		owner = city:GetOwner(),
@@ -104,7 +105,7 @@ local function GetDestination(player, originCity, city)
 		pathBonus = pathBonus,
 		quest = GetQuest(player:GetID(), city),
 		origin = origin,
-		destination = GetEnd(originCity, city, "Destination"),
+		destination = SentientSystems_GetRouteEnd(originCity, city, "Destination"),
 	}
 end
 

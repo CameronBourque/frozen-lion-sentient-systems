@@ -4,7 +4,7 @@ Add the trade routes and the spies to the state, as the Trade Overview and Espio
 
 ## Tasks
 
-1. **Trade routes.** Add the player's routes to the state: the outgoing routes, with each one's origin, destination, yields, and turns left, and the routes of other players that end in the player's cities.
+1. **Trade routes.** Add the player's routes to the state: the outgoing routes, with each one's origin, destination, trader, and yields, and the routes of other players that end in the player's cities.
 
    Read the calls from `Base/Assets/UI/TradeOverview.lua`, which has the **My Routes** and **Routes To My Cities** tabs. Commit: `feat(core): add the trade routes to the state`.
 2. **Operatives.** Add every spy the player has: idle, on a mission with its operation, city, and turns left, traveling with its destination and turns left, and captured.

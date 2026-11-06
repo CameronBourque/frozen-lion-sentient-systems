@@ -15,6 +15,7 @@ SentientSystems_Include("SentientSystemsCore_StateEnvoys")
 SentientSystems_Include("SentientSystemsCore_StateGreatPeople")
 SentientSystems_Include("SentientSystemsCore_StateGovernors")
 SentientSystems_Include("SentientSystemsCore_StatePlayer")
+SentientSystems_Include("SentientSystemsCore_StateTrade")
 SentientSystems_Include("SentientSystemsCore_StateProposals")
 SentientSystems_Include("SentientSystemsCore_StateScoreboard")
 SentientSystems_Include("SentientSystemsCore_StateVictories")
@@ -44,6 +45,7 @@ function SentientSystems_GetState(playerID)
 		greatPeople = SentientSystems_GetGreatPeopleState(player),
 		governors = SentientSystems_GetGovernorState(player),
 		player = SentientSystems_GetPlayerState(player),
+		trade = SentientSystems_GetTradeState(player),
 		proposals = SentientSystems_GetProposalState(player),
 		scoreboard = SentientSystems_GetScoreboardState(player),
 		victories = SentientSystems_GetVictoryState(player),
