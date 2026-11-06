@@ -10,4 +10,5 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [formations.md](formations.md) | The game calls that form corps, armies, and formations, and the units each lists |
 | [air-moves.md](air-moves.md) | The game calls rebase, deploy, airlift, and paradrop use, and the tiles each lists |
 | [attacks.md](attacks.md) | The game calls the ranged, air, melee, city, and priority target attacks use, and the war check |
+| [trade.md](trade.md) | The game calls that start a trade route and plunder one, and the reasons their checks give |
 | [end-turn.md](end-turn.md) | The game call that ends the turn, and how the end-turn blockers interact with it |

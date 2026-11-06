@@ -7,7 +7,7 @@ return function(env, world, ctx)
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
 	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
 	local COMMANDS = { wake = 110, delete = 111, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117,
-		building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
+		plunder = 144, building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
 	local rows, upgrades = {}, {}
@@ -35,6 +35,7 @@ return function(env, world, ctx)
 	env.UnitOperationTypes.BUILD_IMPROVEMENT = 6
 	env.UnitOperationTypes.PARAM_IMPROVEMENT_TYPE = 7
 	env.UnitCommandTypes.WAKE = COMMANDS.wake
+	env.UnitCommandTypes.PLUNDER_TRADE_ROUTE = COMMANDS.plunder
 	env.UnitCommandTypes.DELETE = COMMANDS.delete
 	env.UnitCommandTypes.UPGRADE = COMMANDS.upgrade
 	env.UnitCommandTypes.FORM_CORPS = COMMANDS.form_corps

@@ -8,7 +8,8 @@
 
 -- Returns the traders that already have a route, by unit ID. A trader is idle
 -- when no outgoing route names it. See GetIdleTradeUnits in TradeSupport.lua.
-local function GetBusyTraders(player)
+-- The trade route action uses this too.
+function SentientSystems_GetBusyTraders(player)
 	local busy = {}
 
 	for _, city in player:GetCities():Members() do
@@ -146,7 +147,7 @@ end
 -- destinations. Returns nil when there is none. The chooser opens only for a
 -- trader in a city, and an idle one is the only one that can start a route.
 function SentientSystems_GetTradeRouteChoices(player)
-	local busy = GetBusyTraders(player)
+	local busy = SentientSystems_GetBusyTraders(player)
 	local choices = {}
 
 	for _, unit in player:GetUnits():Members() do

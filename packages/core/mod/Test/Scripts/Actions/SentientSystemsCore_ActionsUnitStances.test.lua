@@ -32,7 +32,7 @@ local function Failed(reason)
 	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
 end
 
-describe("the stance, wake, delete, and promote actions", function()
+describe("the stance, wake, delete, plunder, and promote actions", function()
 	local KNIGHT = { id = 6160397, type = "UNIT_KNIGHT", x = 10, y = 10, moves = 2 }
 
 	-- Returns the unit with the actions that the game's checks allow.
@@ -73,6 +73,21 @@ describe("the stance, wake, delete, and promote actions", function()
 
 		assert.equal(Failed("The unit can't fortify now."), env.SentientSystems_UnitAction(0, KNIGHT.id, "fortify"))
 		assert.same({}, env.requests)
+	end)
+
+	it("requests the plunder command for a unit the game lets plunder now", function()
+		local env = Load(Allowing({ "plunder" }))
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, "plunder"))
+		assert.same({ { unit = KNIGHT.id, command = env.UnitCommandTypes.PLUNDER_TRADE_ROUTE } }, env.requests)
+	end)
+
+	it("fails to plunder for a unit with no strength, and explains the tile for one with", function()
+		assert.equal(Failed("This kind of unit can't plunder."), Load(With(KNIGHT, { type = "UNIT_SCOUT" })).SentientSystems_UnitAction(0, KNIGHT.id, "plunder"))
+		assert.equal(
+			Failed("No trade route of a player at war with you is on the tile, or it is immune to plunder."),
+			Load(KNIGHT).SentientSystems_UnitAction(0, KNIGHT.id, "plunder")
+		)
 	end)
 
 	it("tells a unit that isn't awake to wake first, when the game would wake it", function()

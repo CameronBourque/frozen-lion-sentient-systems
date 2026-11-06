@@ -40,6 +40,14 @@ Each order file registers its orders with `SentientSystems_AddUnitAction` in `Se
 
 `SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot.
 
+### Trade routes
+
+`SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)` in `Scripts/Actions/SentientSystemsCore_ActionsTrade.lua` starts a route from the city a trader stands in to a destination of the `tradeRoutes` choice. The city is named by its owner and its ID, as the choice lists it.
+
+Its reasons name a unit that isn't a trader, a trader that already has a route, a trader outside a city, and a player with no free route slot. A city the game refuses, or one with no path, gets one reason that points at the choice. See [trade.md](../../../findings/actions/trade.md).
+
+`plunder` is a unit order with no parameters, in the stances file. It plunders the enemy trade route on the unit's tile with the game's own command, for a unit with strength that isn't an air unit. The game gives no reasons for it, so the reason says what the tile needs.
+
 ### Orders on the unit's tile
 
 `found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile. Their reasons name what is wrong with the unit or the tile, such as the city that is too close.
