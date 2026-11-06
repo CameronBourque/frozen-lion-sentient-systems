@@ -9,6 +9,7 @@ import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
 import { DIPLOMACY } from "./diplomacy.js";
 import { ENVOYS } from "./envoys.js";
+import { ESPIONAGE } from "./espionage.js";
 import { GOVERNORS } from "./governors.js";
 import { GREAT_PEOPLE } from "./great-people.js";
 import { PLAYER } from "./player.js";
@@ -38,6 +39,7 @@ export const STATE = z.object({
 	proposals: PROPOSALS,
 	religion: RELIGION,
 	envoys: ENVOYS,
+	espionage: ESPIONAGE,
 	greatPeople: GREAT_PEOPLE,
 	governors: GOVERNORS,
 	player: PLAYER,
