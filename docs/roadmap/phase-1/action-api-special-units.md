@@ -1,6 +1,6 @@
 # Action API: special units
 
-Add the orders of the units that have their own screens and choices: traders, great people, religious units, and spies, and the road case of pillage.
+Add the orders of the units that have their own screens and choices: traders, great people, religious units, and spies, the road case of pillage, and the Privateer's raid.
 
 Each needs its choices read first, because the agent has to pick a target from a list, and each needs a game with the right unit in it, so each is its own task. Each adds its own Lua file under `Scripts/Actions/` and its own file in `src/actions/`. Part of [phase 1](README.md).
 
@@ -15,6 +15,9 @@ Each needs its choices read first, because the agent has to pick a target from a
 5. **Spy missions.** Add `SentientSystems_SpyMission(playerID, unitID, mission)`, the counterspy order, and the trip to a destination of the choice, which is `UNITOPERATION_SPY_TRAVEL_NEW_CITY`. Add `spyMission` to `src/actions/spies.ts`. Commit: `feat(core): add the spy mission actions`.
 6. **Religious units.** Add the orders to spread a religion, found one with a great prophet, remove a heresy, heal followers, and condemn a heretic. Read the operations from `UnitPanel.lua`, and use a game with a religion. Commit: `feat(core): add the religious unit actions`.
 7. **Pillage roads.** Make the `pillage` action start the game's `UNITOPERATION_PILLAGE_ROUTE`, "Pillage Road", on an enemy tile with a road and no improvement to pillage. It refuses that tile now. Read how `UnitPanel.lua` offers it. Commit: `feat(core): pillage roads with the pillage action`.
+8. **Coastal raid.** Check whether a Privateer's coastal raid, `UNITOPERATION_COASTAL_RAID`, works through the `attack` action, which handles melee, ranged, and air attacks. Buy a Privateer to test it.
+
+   Read how `WorldInput.lua` requests it. If `attack` doesn't, add the raid to it, with the target tiles the game lists. Commit: `feat(core): add the coastal raid action`, or `docs: record the coastal raid` if `attack` already works.
 
 ## Done when
 
