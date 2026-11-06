@@ -10,7 +10,7 @@ return function(env, world, ctx)
 
 	-- Each tech and civic gets a row, a hash, and a boost row when it has a
 	-- boost. The game's GetUnlockablesForTech and GetUnlockablesForCivic return
-	-- what one unlocks as { type, name, key } rows.
+	-- what one unlocks as rows.
 	local unlocksByType = {}
 
 	for _, data in pairs(world.players or {}) do

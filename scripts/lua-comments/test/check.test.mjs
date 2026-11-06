@@ -72,13 +72,26 @@ describe("checkComments", () => {
 	});
 
 	test("lets through a header at three lines and comments after code", () => {
-		const text = "-- 1\n-- 2\n-- 3\n\nlocal x = 1\n-- 4\n-- 5\n-- 6\n-- 7\n";
+		const text = "-- 1\n-- 2\n-- 3\n\nlocal x = 1\n-- 4\n-- 5\n-- 6\n-- 7\nlocal y = 2\n";
 
 		expect(checkComments({ "a.lua": text }).lines).toEqual([]);
 	});
 
 	test("ends the header at a blank line", () => {
 		expect(checkComments({ "a.lua": "-- 1\n-- 2\n\n-- 3\n-- 4\nlocal x\n" }).lines).toEqual([]);
+	});
+
+	test("names the first line of a comment block that stands alone", () => {
+		const { lines, exitCode } = checkComments({ "a.lua": "-- 1\n\nlocal x = 1\n\n-- 2\n-- 3\n\nlocal y = 2\n" });
+
+		expect(lines).toEqual(["a.lua:5: comment block stands alone; put it directly above the code it describes"]);
+		expect(exitCode).toBe(1);
+	});
+
+	test("lets through a block above code, a one-line comment, and an opt-out", () => {
+		const text = "local x = 1\n\n-- 2\n-- 3\nlocal y = 2\n\n-- section\n\n-- comment-lint-ignore: section\n-- 4\n\nlocal z = 3\n";
+
+		expect(checkComments({ "a.lua": text }).lines).toEqual([]);
 	});
 
 	test("checks every file", () => {

@@ -56,6 +56,8 @@ describe("json-shape", () => {
 		["an object with spaces", '// the reply is { "units": [] }'],
 		["a quoted key before a colon", '// sends "playerId": the player to act for'],
 		["a key with a dash", '-- "city-id" : the city'],
+		["a brace around bare names", "-- a table like { x, y }"],
+		["a brace around three names", "// rows as { type, name, key } rows"],
 	])("catches %s", (_, comment) => {
 		expect(find(comment)).toContain("zod schema");
 	});
@@ -63,7 +65,8 @@ describe("json-shape", () => {
 	test.each([
 		["a quoted word", '-- the "units" field holds the list'],
 		["a colon in prose", "-- note: the game rounds down"],
-		["a brace without a key", "-- a table like { x, y }"],
+		["a brace around one name", "-- a table like { x }"],
+		["a brace around a phrase", "-- a set written { all the units }"],
 		["a quote then a colon far apart", '-- say "hi" and then: wait'],
 	])("lets through %s", (_, comment) => {
 		expect(find(comment)).toBeUndefined();
