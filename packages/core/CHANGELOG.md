@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.9.0...core-v0.10.0) (2026-11-06)
+
+
+### Features
+
+* **lint:** fail stray comment blocks in TypeScript and Lua ([#61](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/61)) ([46dab0d](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/46dab0d4b0ae14b6a110965d207ba67718f46172))
+
 ## [0.9.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.8.0...core-v0.9.0) (2026-11-06)
 
 
