@@ -1,6 +1,6 @@
 -- The unit orders that act on the unit's own tile: found city, improve, and
--- pillage. Uses the stances file's helpers. The calls are in
--- docs/findings/actions/.
+-- pillage, of an improvement or a road. Uses the stances file's helpers. The
+-- calls are in docs/findings/actions/.
 
 -- Returns whether the player has revealed the tile. A city on a revealed tile
 -- shows its banner, so the player knows it.
@@ -52,24 +52,33 @@ local function GetFoundCityHint(playerID, unit)
 end
 
 -- Returns why the unit can't pillage its tile, or nil when nothing here
--- explains it. The game gives no reasons for the check.
+-- explains it. The game gives no reasons for the check. The tile has an
+-- improvement, a road, or both to pillage.
 local function GetPillageHint(playerID, unit)
 	local plot = Map.GetPlot(unit:GetX(), unit:GetY())
+	local improvement = plot:GetImprovementType() ~= -1
+	local road = plot:GetRouteType() ~= -1
 
 	if unit:GetMovesRemaining() <= 0 then
 		return "The unit has no moves left."
 	end
 
-	if plot:GetImprovementType() == -1 then
-		return "There is no improvement on the tile."
+	-- A unit with an ability for it pillages for less, which the game's check
+	-- allows, so this only explains a refusal.
+	if unit:GetMovesRemaining() < GlobalParameters.PILLAGE_MOVEMENT_COST then
+		return "Pillaging takes " .. GlobalParameters.PILLAGE_MOVEMENT_COST .. " moves, and the unit has " .. unit:GetMovesRemaining() .. "."
 	end
 
-	if plot:IsImprovementPillaged() then
-		return "The improvement is already pillaged."
+	if not improvement and not road then
+		return "There is no improvement or road on the tile."
+	end
+
+	if (not improvement or plot:IsImprovementPillaged()) and (not road or plot:IsRoutePillaged()) then
+		return "Nothing on the tile is left to pillage."
 	end
 
 	if plot:GetOwner() == playerID then
-		return "The improvement is yours."
+		return "The tile is yours."
 	end
 
 	return nil
@@ -154,15 +163,34 @@ SentientSystems_AddUnitAction("found_city", function(playerID, unit)
 	})
 end)
 
+-- Pillage takes the tile's improvement or district, and when the game won't
+-- but a road is there to take, it pillages the road. UnitPanel.lua lists them
+-- as two orders, "Pillage" and "Pillage Road". A tile with both takes two
+-- orders, the improvement first.
 SentientSystems_AddUnitAction("pillage", function(playerID, unit)
-	return SentientSystems_DoOperation(unit, "pillage", "UNITOPERATION_PILLAGE", {
+	local options = {
 		kind = function(row)
 			return row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"
 		end,
 		hint = function()
 			return GetPillageHint(playerID, unit)
 		end,
-	})
+	}
+	local failure = SentientSystems_DoOperation(unit, "pillage", "UNITOPERATION_PILLAGE", options)
+
+	if failure == nil then
+		return nil
+	end
+
+	local road = GameInfo.UnitOperations["UNITOPERATION_PILLAGE_ROUTE"].Hash
+
+	if options.kind(GameInfo.Units[unit:GetUnitType()]) and UnitManager.CanStartOperation(unit, road, nil, false, OperationResultsTypes.NO_TARGETS) then
+		UnitManager.RequestOperation(unit, road)
+
+		return nil
+	end
+
+	return failure
 end)
 
 SentientSystems_AddUnitAction("improve", function(_, unit, _, _, type)

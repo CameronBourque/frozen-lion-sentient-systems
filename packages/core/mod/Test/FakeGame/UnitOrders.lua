@@ -3,7 +3,7 @@
 -- route and reasons are what the game returns. Units.lua fakes promote.
 
 return function(env, world, ctx)
-	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106, found_religion = 130, spread_religion = 131, heal_followers = 132, remove_heresy = 133,
+	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106, pillage_route = 108, found_religion = 130, spread_religion = 131, heal_followers = 132, remove_heresy = 133,
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
 	local OPERATION_TYPES = { skip = "SKIP_TURN", heal_followers = "RELIGIOUS_HEAL", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
 	local COMMANDS = { wake = 110, delete = 111, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117,
@@ -63,6 +63,7 @@ return function(env, world, ctx)
 	env.UnitCommandTypes.PARAM_PROMOTION_TYPE = 112
 	env.GlobalParameters = env.GlobalParameters or {}
 	env.GlobalParameters.CITY_MIN_RANGE = 3
+	env.GlobalParameters.PILLAGE_MOVEMENT_COST = 3
 
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do

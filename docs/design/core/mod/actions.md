@@ -76,6 +76,8 @@ The game's reasons come back, such as the district a prophet must stand on. See 
 
 `found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile. Their reasons name what is wrong with the unit or the tile, such as the city that is too close.
 
+`pillage` takes the improvement or district first and the road when the game won't pillage the tile otherwise, so a tile with both takes two orders.
+
 ### Builder jobs
 
 `build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` are the builder jobs, in `SentientSystemsCore_ActionsUnitJobs.lua`.
