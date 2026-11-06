@@ -8,6 +8,12 @@ The core mod's result format is in [design/core/mod/actions.md](../../design/cor
 
 ## Questions
 
+1. Does the wonder built popup stop requests or the end turn call while it is open?
+
+   `Base/Assets/UI/Popups/WonderBuiltPopup.lua` shows it for the local player only, from `Events.WonderCompleted`, and sets the `CINEMATIC` interface mode until the player presses **Close**. It is not an end-turn blocker.
+
+   Can the mod skip it for an agent player, and do the other local-player cinematics, such as the natural wonder and era popups, need the same?
+
 ## What we know now
 
 ### Ending the turn
