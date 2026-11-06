@@ -36,6 +36,8 @@ Each order file registers its orders with `SentientSystems_AddUnitAction` in `Se
 
 `attack` (with `x` and `y`) picks a melee, ranged, or air attack as the UI does, never starts a war, and lists the targets when the tile isn't one.
 
+A ship's attack on a land tile it can raid is a coastal raid, and a refusal lists the raid tiles with the targets in range.
+
 `priority_target` takes `x` and `y`, and is in the attacks file. A priority target hits the support or civilian unit that a military unit escorts, and the game marks the tiles that have one.
 
 `SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot.

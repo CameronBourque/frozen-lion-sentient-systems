@@ -56,6 +56,63 @@ local function Rival(x, y, changes)
 	return With({ id = 1, type = "UNIT_BUILDER", x = x, y = y }, changes or {})
 end
 
+-- A ship with a ranged strength, a target in range at (22, 20), and a land tile
+-- at (21, 20) that it can raid.
+local SUBMARINE = With(CROSSBOW, { id = 16056482, type = "UNIT_NUCLEAR_SUBMARINE", domain = "DOMAIN_SEA", combat = 80, ranged = 85, raidTiles = { { x = 21, y = 20 } } })
+
+-- A ship that is stronger in melee, with the same land tile to raid.
+local PRIVATEER = With(KNIGHT, { id = 16056483, type = "UNIT_PRIVATEER", domain = "DOMAIN_SEA", raidTiles = { { x = 21, y = 20 } } })
+
+describe("a coastal raid", function()
+	local function Raid(env, unit, x, y)
+		local types = env.UnitOperationTypes
+
+		return { { unit = unit.id, operation = types.COASTAL_RAID, parameters = { [types.PARAM_X] = x, [types.PARAM_Y] = y } } }
+	end
+
+	it("is what a ranged ship's attack on a raid tile becomes", function()
+		local env = Load(SUBMARINE)
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, SUBMARINE.id, "attack", 21, 20))
+		assert.same(Raid(env, SUBMARINE, 21, 20), env.requests)
+	end)
+
+	it("is what a melee ship's attack on a raid tile becomes, with no move", function()
+		local env = Load(PRIVATEER)
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, PRIVATEER.id, "attack", 21, 20))
+		assert.same(Raid(env, PRIVATEER, 21, 20), env.requests)
+	end)
+
+	it("leaves a target in range to the ranged attack", function()
+		local env = Load(SUBMARINE)
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, SUBMARINE.id, "attack", 22, 20))
+		assert.equal(env.UnitOperationTypes.RANGE_ATTACK, env.requests[1].operation)
+	end)
+
+	it("fails when the game won't start it", function()
+		local env = Load(With(SUBMARINE, { blocked = true }))
+
+		assert.equal(Failed("The game won't start that raid."), env.SentientSystems_UnitAction(0, SUBMARINE.id, "attack", 21, 20))
+	end)
+
+	it("lists the raid tiles when a tile is neither a target nor a raid tile", function()
+		local ranged = Load(With(SUBMARINE, { targets = { { x = 22, y = 20, target = true } } }), { { 22, 20 }, { 23, 20 } })
+		local melee = Load(PRIVATEER, { { 21, 20 }, { 23, 20 } }, { Rival(23, 20) })
+
+		assert.equal(Failed("That tile isn't a target. The targets in range are (22, 20). A coastal raid can hit (21, 20)."), ranged.SentientSystems_UnitAction(0, SUBMARINE.id, "attack", 23, 20))
+		assert.equal(Failed("A melee unit attacks an adjacent tile. Move next to it first. A coastal raid can hit (21, 20)."), melee.SentientSystems_UnitAction(0, PRIVATEER.id, "attack", 23, 20))
+	end)
+
+	it("is for ships only", function()
+		local env = Load(With(KNIGHT, { raidTiles = { { x = 21, y = 20 } } }), nil, { Rival(21, 20) })
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, "attack", 21, 20))
+		assert.equal(env.UnitOperationTypes.MOVE_TO, env.requests[1].operation)
+	end)
+end)
+
 describe("attack", function()
 	it("fails for a unit with no strength", function()
 		assert.equal(Failed("This kind of unit can't attack."), Load(With(KNIGHT, { combat = 0 })).SentientSystems_UnitAction(0, KNIGHT.id, "attack", 21, 20))

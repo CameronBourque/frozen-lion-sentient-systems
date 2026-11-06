@@ -7,6 +7,7 @@ return function(env, world, ctx)
 
 	env.UnitOperationTypes.RANGE_ATTACK = 8
 	env.UnitOperationTypes.AIR_ATTACK = 9
+	env.UnitOperationTypes.COASTAL_RAID = 10
 	env.UnitOperationResults.PLOTS = 21
 	env.UnitOperationResults.MODIFIERS = 22
 	env.UnitOperationResults.MODIFIER_IS_TARGET = 23
@@ -82,9 +83,20 @@ return function(env, world, ctx)
 	local canStartCommand, getCommandTargets = env.CityManager.CanStartCommand, env.CityManager.GetCommandTargets
 
 	env.UnitManager.GetOperationTargets = function(unit, operation)
-		assert(operation == env.UnitOperationTypes.RANGE_ATTACK or operation == env.UnitOperationTypes.AIR_ATTACK, "no fake for this operation")
-
 		local R = env.UnitOperationResults
+
+		-- A coastal raid lists plots only, with no target flag.
+		if operation == env.UnitOperationTypes.COASTAL_RAID then
+			local plots = {}
+
+			for i, tile in ipairs(unit.raidTiles or {}) do
+				plots[i] = PlotIndex(tile.x, tile.y)
+			end
+
+			return { [R.PLOTS] = plots }
+		end
+
+		assert(operation == env.UnitOperationTypes.RANGE_ATTACK or operation == env.UnitOperationTypes.AIR_ATTACK, "no fake for this operation")
 
 		return Targets(unit.targets, R.PLOTS, R.MODIFIERS, R.MODIFIER_IS_TARGET)
 	end
@@ -121,6 +133,7 @@ return function(env, world, ctx)
 
 	ctx.OnUnit(function(unit, data)
 		unit.targets = data.targets or {}
+		unit.raidTiles = data.raidTiles
 
 		function unit.GetCombat()
 			return data.combat or 0
