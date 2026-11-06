@@ -25,12 +25,12 @@ end
 
 -- Returns the trade section JSON for player 0. Player 0 has two cities, player
 -- 1 one and player 2 one, each with the routes given.
-local function TradeWith(routes, potential)
+local function TradeWith(routes, potential, extraTourism)
 	local env = Game.new()
 
 	FakeGame.Install(env, {
 		players = {
-			[0] = { cities = { City(1, "Home", 10, 10, { routes = routes[0] }), City(2, "Own", 13, 10) } },
+			[0] = { cities = { City(1, "Home", 10, 10, { routes = routes[0] }), City(2, "Own", 13, 10) }, trade = { extraTourism = extraTourism } },
 			[1] = { cities = { City(1, "Foreign", 30, 10, { routes = routes[1] }) } },
 			[2] = { cities = { City(1, "Third", 40, 10, { routes = routes[2] }) } },
 		},
@@ -65,7 +65,7 @@ describe("SentientSystems_GetTradeState", function()
 				.. "\"origin\":{\"yields\":[{\"amount\":2,\"type\":\"YIELD_GOLD\"}]}}},"
 				.. "{\"destination\":{\"id\":1,\"name\":\"Third\",\"owner\":2},\"origin\":{\"id\":1,\"name\":\"Home\",\"owner\":0},"
 				.. "\"pathBonus\":false,\"trader\":201,\"yields\":{\"destination\":{\"yields\":[{\"amount\":1,\"type\":\"YIELD_GOLD\"}]},"
-				.. "\"origin\":{\"yields\":[{\"amount\":3,\"type\":\"YIELD_GOLD\"}]}}}]}",
+				.. "\"origin\":{\"yields\":[{\"amount\":3,\"type\":\"YIELD_GOLD\"}]}}}],\"tourismBonus\":25}",
 			json
 		)
 	end)
@@ -73,10 +73,14 @@ describe("SentientSystems_GetTradeState", function()
 	it("leaves out the routes of others that end in someone else's city", function()
 		local json = TradeWith({ [2] = { { player = 1, id = 1, trader = 301 } } }, { Route({ 2, 1 }, { 1, 1 }, 1, 1) })
 
-		assert.equal("{\"incoming\":[],\"outgoing\":[]}", json)
+		assert.equal("{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25}", json)
+	end)
+
+	it("adds the player's extra tourism from routes to the base bonus", function()
+		assert.equal("{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":40}", TradeWith({}, {}, 15))
 	end)
 
 	it("is empty before any route is made", function()
-		assert.equal("{\"incoming\":[],\"outgoing\":[]}", TradeWith({}, {}))
+		assert.equal("{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25}", TradeWith({}, {}))
 	end)
 end)

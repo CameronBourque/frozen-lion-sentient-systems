@@ -23,7 +23,9 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The Governors panel.** The appointed governors, their cities, and their promotions.
 - **The Religion screen.** The pantheon, the religion, and its followers.
 - **The diplomacy screens.** War or peace with each met player, proposed deals, relationships, grievances, and agendas.
-- **The Trade Overview.** The player's routes, with the yields of both ends, and the routes of other players that end in the player's cities.
+- **The Trade Overview.** The player's routes, with the yields of both ends, the routes of other players that end in the player's cities, and the tourism bonus of a route.
+
+  Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes` returns it for one city on demand.
 - **Their own screens.** Spies, great works and tourism, and climate and disasters.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 
@@ -47,5 +49,6 @@ The shape of each section is in the schemas in [packages/core/bridge/src/state/]
 | Tile contents come from the live plot, as the tooltip shows them | A player learns a tile's contents by hovering over it. The map's resource icons come from the `RESOURCES` layer, which is empty on tiles revealed without being seen, such as near a rival's city. The tooltip still shows them |
 | The state includes the scoreboard and victory progress | A human sees it, and sweat levels measure against it |
 | Find the state size by measurement | No useful budget exists before the first full game |
+| Available routes are a function of one city, not a state section | The tab lists every origin and destination pair, 305 routes and 119 KB in one game, and one city is at most 8 KB. The choice lists only the cities where an idle trader stands |
 | The scoreboard lists unmet players as places only | World Rankings shows how many players there are, their order, and whether an unmet one leads, but not who they are |
 | Each state section has its own file in `Scripts/State/` | The state grows with every section, and one file would pass 1,000 lines. A file per section keeps each one and its tests small. `include` finds a file by name in any folder, so the folder only groups the files |

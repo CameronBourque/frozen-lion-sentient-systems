@@ -1,6 +1,6 @@
--- The trade routes section, as the Trade Overview shows them in its My Routes
--- and Routes To My Cities tabs. Follows ViewMyRoutes, ViewRoutesToCities, and
--- AddRoute in TradeOverview.lua. Shape: bridge/src/state/trade.ts.
+-- The trade routes section, as the Trade Overview shows them. Follows
+-- TradeOverview.lua. Available Routes is SentientSystems_GetCityRoutes.
+-- Shape: bridge/src/state/trade.ts.
 
 SentientSystems_Include("SentientSystemsCore_ChoicesTradeRoutes")
 
@@ -99,7 +99,12 @@ local function GetIncoming(player)
 end
 
 -- Returns the trade routes section. The player section has the count and the
--- capacity.
+-- capacity. The bonus is the tourism a route gives against the civilization it
+-- goes to, in percent. See CreatePlayerHeader.
 function SentientSystems_GetTradeState(player)
-	return { outgoing = GetOutgoing(player), incoming = GetIncoming(player) }
+	return {
+		outgoing = GetOutgoing(player),
+		incoming = GetIncoming(player),
+		tourismBonus = GlobalParameters.TOURISM_TRADE_ROUTE_BONUS + player:GetCulture():GetExtraTradeRouteTourismModifier(),
+	}
 end

@@ -19,6 +19,10 @@ const ROUTE = z.object({
 });
 
 export const TRADE = z.object({
+	tourismBonus: z.number().describe(
+		"The percent of tourism a route adds against the civilization it goes to. A route to a civilization also raises"
+			+ " the diplomatic visibility on it by one level, which the diplomacy section shows.",
+	),
 	outgoing: z.array(ROUTE).describe(
 		"The My Routes tab: the routes of the player's cities, those to the player's own cities first, then by the destination's owner.",
 	),

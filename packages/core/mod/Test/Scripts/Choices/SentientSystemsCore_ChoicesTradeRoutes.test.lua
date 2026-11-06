@@ -102,3 +102,41 @@ describe("SentientSystems_GetTradeRouteChoices", function()
 		assert.is_nil(ChoicesWith({ cities = { HOME } }, {}))
 	end)
 end)
+
+describe("SentientSystems_GetCityRoutes", function()
+	-- Returns the routes of player 0's city 1, or nil, with no trader needed.
+	local function CityRoutes(cityID, routes)
+		local env = Game.new()
+
+		FakeGame.Install(env, {
+			players = { [0] = { cities = { HOME, OWN, FAR } }, [1] = FOREIGN },
+			routes = routes,
+			religions = { { type = "RELIGION_NONE" }, { type = "RELIGION_SHINTO" } },
+		})
+		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
+
+		local result = env.SentientSystems_GetCityRoutes(env.Players[0], cityID)
+
+		return result and env.SentientSystems_EncodeJson(result)
+	end
+
+	it("lists the cities the game lets a route go to, the player's own first, with no trader", function()
+		local json = CityRoutes(1, {
+			Route({ 1, 1 }, 5, { route = { GOLD = 2 } }),
+			Route({ 0, 2 }, 3, { route = { FOOD = 1 } }),
+		})
+
+		assert.truthy(json:find("\"city\":{\"id\":1,\"name\":\"Home\",\"owner\":0}", 1, true))
+		assert.truthy(json:find("\"distance\":3,\"id\":2,\"name\":\"Own\"", 1, true))
+		assert.truthy(json:find("\"distance\":20,\"id\":1,\"name\":\"Foreign\"", 1, true))
+		assert.truthy(json:find("\"name\":\"Own\".-\"name\":\"Foreign\""))
+	end)
+
+	it("lists no destinations for a city with none", function()
+		assert.truthy(CityRoutes(1, {}):find("\"destinations\":[]", 1, true))
+	end)
+
+	it("is nil for a city the player doesn't have", function()
+		assert.is_nil(CityRoutes(99, {}))
+	end)
+end)
