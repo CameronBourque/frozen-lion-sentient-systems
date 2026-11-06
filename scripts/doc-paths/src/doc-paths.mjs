@@ -10,8 +10,8 @@ const DOC_PATH = /(?<![\w./~-])((?:docs|findings)\/[\w/.-]*\.md)(?:#([\w-]+))?(\
 // A path without a docs/ prefix is also tried under docs/.
 const ROOTS = ["", "docs/"];
 
-// Returns each doc path in the text as { raw, path, anchor, planned }, where
-// raw is the text as written.
+// Returns each doc path in the text, with the text as written, the path, the
+// anchor, and whether the path is planned.
 export function findDocPaths(text) {
 	return [...text.matchAll(DOC_PATH)].map((match) => ({
 		raw: match[0],

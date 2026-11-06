@@ -27,10 +27,10 @@ export const TEXT_RULES = [
 	{
 		name: "json-shape",
 		// The zod schemas hold the JSON shapes, so a comment links to one. An
-		// object that opens with a quoted key, or a quoted key before a colon,
-		// reads as a shape.
+		// object that opens with a quoted key, a quoted key before a colon,
+		// or a brace around two or more bare names reads as a shape.
 		find(text) {
-			if (/\{\s*"|"[\w-]+"\s*:/.test(text)) return "comment holds a JSON shape; link to the zod schema instead";
+			if (/\{\s*"|"[\w-]+"\s*:|\{\s*\w+(?:\s*,\s*\w+)+\s*\}/.test(text)) return "comment holds a data shape; link to the zod schema instead";
 		},
 	},
 ];

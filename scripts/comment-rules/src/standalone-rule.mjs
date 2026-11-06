@@ -25,7 +25,7 @@ function blocksOf(spans) {
 	return blocks;
 }
 
-// Takes the full-line comments of a file as { start, end, text } line spans in
+// Takes the full-line comments of a file as line spans with their text, in
 // order, and the set of line numbers that hold code. Returns a problem for each
 // block of MIN_LINES or more with no code on the line after it. The file
 // header, the first block when it comes before any code, is left to

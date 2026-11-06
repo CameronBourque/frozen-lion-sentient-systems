@@ -67,7 +67,7 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
   - A comment block of two or more lines with no code on the line after it. A block sits directly above the code it describes, so a blank line after it fails, and so does a header that goes on in a second block. A one-line comment can stand alone.
   - A line number, such as "line 12" or "lines 3 to 5".
   - "such as", "for example", or "for instance" followed by a quoted or code example.
-  - A JSON shape: `{` followed by a quote, or a quoted key before a colon.
+  - A data shape: `{` followed by a quote, a quoted key before a colon, or a `{` around two or more bare names, such as the fields of a row.
   - These are heuristics, so a comment can opt out of the line number, example, JSON shape, and stray block rules by holding `comment-lint-ignore:` and a short reason. A marker with no reason skips nothing.
 
     It covers only its own comment line, or its own block for the stray block rule. The header and line width checks have no opt-out.
