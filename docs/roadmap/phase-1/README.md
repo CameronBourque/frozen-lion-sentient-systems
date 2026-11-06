@@ -27,22 +27,23 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 7 | Action API: units | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | Done. See [done.md](done.md#action-api-units) |
 | 8 | Action API: unit jobs | Builder jobs, upgrades, formations, air movement, priority target, and adding production | `feat(core): add the unit job actions` | Done. See [done.md](done.md#action-api-unit-jobs) |
 | 9 | [Action API: special units](action-api-special-units.md) | Trade routes, great people, religious units, and spy missions, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | |
-| 10 | [Action API: cities](action-api-cities.md) | Production, districts and wonders, purchases, tile purchases, and the production queue | `feat(core): add the city actions` | |
-| 11 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
-| 12 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, great person, and artifact blockers | `feat(core): add the religion, governor, and reward actions` | |
-| 13 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
-| 14 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
-| 15 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
-| 16 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
-| 17 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
-| 18 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
-| 19 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
-| 20 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
-| 21 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 22 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 23 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 24 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
-| 25 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
+| 10 | [State: trade routes and espionage](state-trade-and-espionage.md) | The player's trade routes, and every spy, as the Trade Overview and Espionage screens show them | `feat(core): add the trade route and espionage state` | |
+| 11 | [Action API: cities](action-api-cities.md) | Production, districts and wonders, purchases, tile purchases, and the production queue | `feat(core): add the city actions` | |
+| 12 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
+| 13 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, great person, and artifact blockers | `feat(core): add the religion, governor, and reward actions` | |
+| 14 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
+| 15 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
+| 16 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
+| 17 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
+| 18 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
+| 19 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
+| 20 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
+| 21 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
+| 22 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
+| 23 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
+| 24 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
+| 25 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
+| 26 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
 
 The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the action API and lookup steps.
 

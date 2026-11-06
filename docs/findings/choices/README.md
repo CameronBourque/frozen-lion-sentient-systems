@@ -14,6 +14,7 @@ The game calls the choices use to list each choice's legal options, as the game'
 | [great-people.md](great-people.md) | The calls the great person choice and the great people in the state use, as the Great People screen shows them |
 | [captured-cities.md](captured-cities.md) | The calls the captured city choice uses, as the raze and disloyal city screens show them |
 | [spies.md](spies.md) | The calls the spy choice uses, as the escape screen shows it |
+| [spy-missions.md](spy-missions.md) | The calls the spy missions choice uses, as the espionage chooser lists a ready spy's destinations and missions |
 | [trade-routes.md](trade-routes.md) | The calls the trade route choice uses, as the route chooser lists a trader's destinations and their yields |
 | [artifacts.md](artifacts.md) | The calls the artifact choice uses, as the artifact screen shows it |
 | [dedications.md](dedications.md) | The calls the dedication choice uses, as the dedication popup shows it |

@@ -18,6 +18,7 @@ import { PURCHASE_CITY } from "./purchases.js";
 import { PANTHEON, RELIGION_CHOICE } from "./religion.js";
 import { RESEARCH_OPTION } from "./research.js";
 import { SPIES_CHOICE } from "./spies.js";
+import { SPY_MISSIONS_CHOICE } from "./spy-missions.js";
 import { TRADE_ROUTES_CHOICE } from "./trade-routes.js";
 import { WORLD_CONGRESS_CHOICE } from "./world-congress.js";
 
@@ -42,6 +43,7 @@ export const CHOICES = z.object({
 	capturedCities: CAPTURED_CITIES_CHOICE,
 	spies: SPIES_CHOICE,
 	tradeRoutes: TRADE_ROUTES_CHOICE,
+	spyMissions: SPY_MISSIONS_CHOICE,
 	artifacts: ARTIFACTS_CHOICE,
 	governors: GOVERNORS_CHOICE,
 	dedications: DEDICATIONS_CHOICE,

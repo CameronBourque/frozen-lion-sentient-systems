@@ -2,14 +2,6 @@
 -- routes, trading posts, and the international yield modifiers. CityYields.lua
 -- and TopBar.lua hold a city's routes and a player's route capacity.
 
--- A unit with trader set gets the MakeTradeRoute flag. Its tradeTo lists the
--- cities, as player and id, it can start a route to. world.routes lists the
--- potential routes between two cities, from and to, as player and id. Its path
--- is the plot count, with none for no path. Its origin and destination hold
--- the route, path, and modifiers yields by name, and the pressure on that end.
--- A city's tradingPosts lists the players with a trading post in it. A
--- player's trade.multipliers gives the international modifier of each yield.
-
 return function(env, world, ctx)
 	local YIELD_TYPES, YIELD_NAMES = ctx.YIELD_TYPES, ctx.YIELD_NAMES
 

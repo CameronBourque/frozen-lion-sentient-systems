@@ -29,6 +29,7 @@ SentientSystems_Include("SentientSystemsCore_ChoicesGreatPeople")
 SentientSystems_Include("SentientSystemsCore_ChoicesCapturedCities")
 SentientSystems_Include("SentientSystemsCore_ChoicesSpies")
 SentientSystems_Include("SentientSystemsCore_ChoicesTradeRoutes")
+SentientSystems_Include("SentientSystemsCore_ChoicesSpyMissions")
 SentientSystems_Include("SentientSystemsCore_ChoicesArtifacts")
 SentientSystems_Include("SentientSystemsCore_ChoicesGovernors")
 SentientSystems_Include("SentientSystemsCore_ChoicesDedications")
@@ -60,6 +61,7 @@ function SentientSystems_GetChoices(playerID)
 		capturedCities = SentientSystems_GetCapturedCityChoices(player),
 		spies = SentientSystems_GetSpyChoices(player),
 		tradeRoutes = SentientSystems_GetTradeRouteChoices(player),
+		spyMissions = SentientSystems_GetSpyMissionChoices(player),
 		artifacts = SentientSystems_GetArtifactChoices(player),
 		governors = SentientSystems_GetGovernorChoices(player),
 		dedications = SentientSystems_GetDedicationChoices(player),
