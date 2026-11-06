@@ -46,6 +46,14 @@ Found city, build improvement, and pillage all act on the tile the unit stands o
   A builder on plains hills could build a farm, a mine, an alcazar, and a wind farm. The check accepts the index and the hash. The panel requests with the hash, and the request started a farm.
 - A builder in a city center can build nothing, and neither can a sleeping builder, until it wakes. A builder that has started a job has no moves left.
 - Pillage was allowed for a knight on an unpillaged improvement in the territory of a player at war, and refused on the player's own farm. After the request, the improvement was pillaged and the check refused a second pillage.
+- Pillaging a road is `UNITOPERATION_PILLAGE_ROUTE`, which the game's text calls "Pillage Road", a separate order from `UNITOPERATION_PILLAGE`. Confirmed on Windows on 2026-11-06 for a knight in the territory of a player at war:
+
+  - On a road with no improvement, or with a pillaged one, `PILLAGE` was refused and `PILLAGE_ROUTE` allowed.
+  - On a road with an intact improvement, both were allowed.
+  - On a district, `PILLAGE` was allowed and `PILLAGE_ROUTE` was refused.
+
+    A district comes with its road, as the player reports, so the road is part of the district and the district's pillage takes it. A railroad under a district may differ, and that was not tested.
+- A pillage takes `GlobalParameters.PILLAGE_MOVEMENT_COST`, 3 moves. A knight with 3 moves could, and one with 2 couldn't. `PILLAGE_ADVANCED_MOVEMENT_COST` is 1, for a unit with the advanced pillaging modifier. A Cavalry, a light cavalry unit, did not have it with 1 move left.
 - Units placed with `GameCore_Tuner`'s `UnitManager.InitUnit` take these orders like any other.
 
 
@@ -87,9 +95,12 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
 The bridge ran these steps in a single-player game.
 
 - **`SentientSystems_UnitAction` for fortify, skip, wake, promote, and delete on a knight and a caravel.** Each took effect. Delete removed the knight. Run in `SentientSystemsCore_UI` on 2026-11-04.
+- **`SentientSystems_UnitAction` for `pillage` on roads.** A knight on a road with no improvement pillaged the road, spending 3 moves.
+
+  On a road with an intact improvement it pillaged the improvement first. With 1 move left it was refused, and with full moves again it pillaged the road. The next request said "Nothing on the tile is left to pillage.". Run in `SentientSystemsCore_UI` on 2026-11-06.
 - **`SentientSystems_UnitAction` for `improve`, `found_city`, and `pillage`.** A farm was started, a city was founded, and an enemy improvement was pillaged. The reasons came from the checks in the Lua. Run in `SentientSystemsCore_UI` on 2026-11-04.
 - **`SentientSystems_UnitAction` for `upgrade` on a crossbowman, a caravel, a builder, a unit with no moves, and a unit short of gold or a resource.** The crossbowman became a machine gun and cost 180 gold.
 
   Each other case gave a reason: the territory, no upgrade, no moves, gold, and the resource. Run in `SentientSystemsCore_UI` on 2026-11-05.
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04 for the unit orders and the orders on a unit's tile, and on 2026-11-05 for upgrades.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04 for the unit orders and the orders on a unit's tile, on 2026-11-05 for upgrades, and on 2026-11-06 for pillaging roads.

@@ -1,5 +1,6 @@
--- Great people. Fakes the great people on offer and a player's points toward
--- each class. FakeGame/Capabilities.lua turns off great people capabilities.
+-- Great people. Fakes the great people on offer, a player's points toward each
+-- class, and a unit's class. FakeGame/Capabilities.lua turns off great people
+-- capabilities.
 
 return function(env, world, ctx)
 	local AddRow, indexes, YIELD_TYPES = ctx.AddRow, ctx.indexes, ctx.YIELD_TYPES
@@ -19,6 +20,29 @@ return function(env, world, ctx)
 		row.Name = person.name or person.type
 		row.ActionCharges = person.charges or 0
 	end
+
+	-- A unit with greatPerson set, a class name, is a great person of it.
+	for _, data in pairs(world.players or {}) do
+		for _, unit in ipairs(data.units or {}) do
+			if unit.greatPerson then
+				AddRow("GreatPersonClasses", "GreatPersonClassType", unit.greatPerson)
+			end
+		end
+	end
+
+	ctx.OnUnit(function(unit, data)
+		function unit.GetGreatPerson()
+			if data.greatPerson == nil then
+				return nil
+			end
+
+			return {
+				GetClass = function()
+					return indexes[data.greatPerson]
+				end,
+			}
+		end
+	end)
 
 	ctx.OnPlayer(function(player, data)
 		player.GetGreatPeoplePoints = function()

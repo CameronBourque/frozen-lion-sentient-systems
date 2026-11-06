@@ -108,16 +108,37 @@ describe("pillage", function()
 	end)
 
 	it("explains the tile", function()
+		local KNIGHT = With(KNIGHT, { moves = 3 })
 		local improved = Plot({ improvement = "IMPROVEMENT_FARM", owner = 3 })
 		local function Reason(unit, plot)
 			return Load(unit, plot and { plot } or nil).SentientSystems_UnitAction(0, UNIT.id, "pillage")
 		end
 
 		assert.equal(Failed("The unit has no moves left."), Reason(With(KNIGHT, { moves = 0 }), improved))
-		assert.equal(Failed("There is no improvement on the tile."), Reason(KNIGHT))
-		assert.equal(Failed("The improvement is already pillaged."), Reason(KNIGHT, With(improved, { improvementPillaged = true })))
-		assert.equal(Failed("The improvement is yours."), Reason(KNIGHT, With(improved, { owner = 0 })))
+		assert.equal(Failed("Pillaging takes 3 moves, and the unit has 2."), Reason(With(KNIGHT, { moves = 2 }), improved))
+		assert.equal(Failed("There is no improvement or road on the tile."), Reason(KNIGHT))
+		assert.equal(Failed("Nothing on the tile is left to pillage."), Reason(KNIGHT, With(improved, { improvementPillaged = true })))
+		assert.equal(Failed("Nothing on the tile is left to pillage."), Reason(KNIGHT, With(improved, { improvementPillaged = true, route = "ROUTE_ANCIENT_ROAD", routePillaged = true })))
+		assert.equal(Failed("The tile is yours."), Reason(KNIGHT, With(improved, { owner = 0 })))
 		assert.equal(Failed("The unit can't pillage now."), Reason(KNIGHT, improved))
+		assert.equal(Failed("The unit can't pillage now."), Reason(KNIGHT, Plot({ route = "ROUTE_ANCIENT_ROAD", owner = 3 })))
+	end)
+
+	it("pillages the road when the game won't pillage the tile and a road is there, and the improvement first", function()
+		local road = Load(With(KNIGHT, { canNow = { "pillage_route" } }))
+		local both = Load(With(KNIGHT, { canNow = { "pillage", "pillage_route" } }))
+
+		assert.equal("{\"ok\":true}", road.SentientSystems_UnitAction(0, UNIT.id, "pillage"))
+		assert.same({ { unit = UNIT.id, operation = Hash(road, "UNITOPERATION_PILLAGE_ROUTE") } }, road.requests)
+		assert.equal("{\"ok\":true}", both.SentientSystems_UnitAction(0, UNIT.id, "pillage"))
+		assert.same({ { unit = UNIT.id, operation = Hash(both, "UNITOPERATION_PILLAGE") } }, both.requests)
+	end)
+
+	it("doesn't pillage a road for a unit that could never pillage", function()
+		local env = Load(With(UNIT, { canNow = { "pillage_route" } }))
+
+		assert.equal(Failed("This kind of unit can't pillage."), env.SentientSystems_UnitAction(0, UNIT.id, "pillage"))
+		assert.same({}, env.requests)
 	end)
 end)
 

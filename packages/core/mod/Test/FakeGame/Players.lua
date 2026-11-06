@@ -43,8 +43,14 @@ return function(env, world, ctx)
 	end
 
 	-- The major players, in ID order, as Game.GetPlayers({ Major = true })
-	-- lists them.
+	-- lists them, and every living player with no filter.
 	env.Game.GetPlayers = function(filter)
+		if filter == nil then
+			return Of(Living(function()
+				return true
+			end))
+		end
+
 		assert(filter.Major == true, "no fake for this filter")
 
 		return Of(Living(Major))

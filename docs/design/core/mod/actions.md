@@ -36,13 +36,49 @@ Each order file registers its orders with `SentientSystems_AddUnitAction` in `Se
 
 `attack` (with `x` and `y`) picks a melee, ranged, or air attack as the UI does, never starts a war, and lists the targets when the tile isn't one.
 
+A ship's attack on a land tile it can raid is a coastal raid, and a refusal lists the raid tiles with the targets in range.
+
 `priority_target` takes `x` and `y`, and is in the attacks file. A priority target hits the support or civilian unit that a military unit escorts, and the game marks the tiles that have one.
 
 `SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot.
 
+### Trade routes
+
+`SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)` in `Scripts/Actions/SentientSystemsCore_ActionsTrade.lua` starts a route from the city a trader stands in to a destination of the `tradeRoutes` choice. The city is named by its owner and its ID, as the choice lists it.
+
+Its reasons name a unit that isn't a trader, a trader that already has a route, a trader outside a city, and a player with no free route slot. A city the game refuses, or one with no path, gets one reason that points at the choice. See [trade.md](../../../findings/actions/trade.md).
+
+`plunder` is a unit order with no parameters, in the stances file. It plunders the enemy trade route on the unit's tile with the game's own command, for a unit with strength that isn't an air unit. The game gives no reasons for it, so the reason says what the tile needs.
+
+### Great people
+
+`activate` and `harvest_wonder` are unit orders with no parameters, in `SentientSystemsCore_ActionsUnitGreatPeople.lua`. `activate` uses a great person's ability, which for a great engineer is its production for a wonder.
+
+The game gives the reasons, such as the tile the person must stand on. See [great-people.md](../../../findings/actions/great-people.md).
+
+### Spies
+
+`SentientSystems_SpyMission(playerID, unitID, mission, district)` and `SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)` are in `Scripts/Actions/SentientSystemsCore_ActionsSpies.lua`.
+
+A mission is the type from the spy missions choice, and a counterspy mission also takes the district to guard.
+
+Their reasons name a spy that isn't ready, a spy in no city, the missions the spy can start when it names another, and a city that isn't a destination.
+
+The game's own reasons come back for a mission it lists as disabled. See [spies.md](../../../findings/actions/spies.md).
+
+### Religious units
+
+`found_religion`, `spread_religion`, `remove_heresy`, `heal_followers`, and `condemn_heretic` are unit orders with no parameters, in `SentientSystemsCore_ActionsUnitReligion.lua`.
+
+A prophet founds a religion on its Holy Site, and the religion's name and beliefs are chosen in the religion blocker's action.
+
+The game's reasons come back, such as the district a prophet must stand on. See [religious-units.md](../../../findings/actions/religious-units.md).
+
 ### Orders on the unit's tile
 
 `found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile. Their reasons name what is wrong with the unit or the tile, such as the city that is too close.
+
+`pillage` takes the improvement or district first and the road when the game won't pillage the tile otherwise, so a tile with both takes two orders.
 
 ### Builder jobs
 

@@ -3,11 +3,11 @@
 -- route and reasons are what the game returns. Units.lua fakes promote.
 
 return function(env, world, ctx)
-	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106,
+	local ACTIONS = { fortify = 100, sleep = 101, skip = 102, alert = 103, heal = 104, found_city = 105, pillage = 106, pillage_route = 108, found_religion = 130, spread_religion = 131, heal_followers = 132, remove_heresy = 133,
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125 }
-	local OPERATION_TYPES = { skip = "SKIP_TURN", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
+	local OPERATION_TYPES = { skip = "SKIP_TURN", heal_followers = "RELIGIOUS_HEAL", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE" }
 	local COMMANDS = { wake = 110, delete = 111, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117,
-		building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
+		plunder = 144, condemn_heretic = 147, activate = 145, harvest_wonder = 146, building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
 	local rows, upgrades = {}, {}
@@ -35,6 +35,8 @@ return function(env, world, ctx)
 	env.UnitOperationTypes.BUILD_IMPROVEMENT = 6
 	env.UnitOperationTypes.PARAM_IMPROVEMENT_TYPE = 7
 	env.UnitCommandTypes.WAKE = COMMANDS.wake
+	env.UnitCommandTypes.PLUNDER_TRADE_ROUTE = COMMANDS.plunder
+	env.UnitCommandTypes.CONDEMN_HERETIC = COMMANDS.condemn_heretic
 	env.UnitCommandTypes.DELETE = COMMANDS.delete
 	env.UnitCommandTypes.UPGRADE = COMMANDS.upgrade
 	env.UnitCommandTypes.FORM_CORPS = COMMANDS.form_corps
@@ -48,6 +50,8 @@ return function(env, world, ctx)
 		[0] = { CommandType = "UNITCOMMAND_FORM_CORPS", PrereqCivic = "CIVIC_NATIONALISM" },
 		{ CommandType = "UNITCOMMAND_FORM_ARMY", PrereqCivic = "CIVIC_MOBILIZATION" },
 		{ CommandType = "UNITCOMMAND_ENTER_FORMATION" },
+		{ CommandType = "UNITCOMMAND_ACTIVATE_GREAT_PERSON", Hash = COMMANDS.activate },
+		{ CommandType = "UNITCOMMAND_HARVEST_WONDER", Hash = COMMANDS.harvest_wonder },
 		{ CommandType = "UNITCOMMAND_BUILDING_PRODUCTION", Hash = COMMANDS.building_production },
 		{ CommandType = "UNITCOMMAND_DISTRICT_PRODUCTION", Hash = COMMANDS.district_production },
 		{ CommandType = "UNITCOMMAND_WONDER_PRODUCTION", Hash = COMMANDS.wonder_production },
@@ -59,6 +63,7 @@ return function(env, world, ctx)
 	env.UnitCommandTypes.PARAM_PROMOTION_TYPE = 112
 	env.GlobalParameters = env.GlobalParameters or {}
 	env.GlobalParameters.CITY_MIN_RANGE = 3
+	env.GlobalParameters.PILLAGE_MOVEMENT_COST = 3
 
 	for _, data in pairs(world.players or {}) do
 		for _, unit in ipairs(data.units or {}) do
@@ -67,6 +72,10 @@ return function(env, world, ctx)
 			row.FoundCity = unit.type == "UNIT_SETTLER"
 			row.BuildCharges = (unit.type == "UNIT_BUILDER" or unit.type == "UNIT_MILITARY_ENGINEER") and 3 or 0
 			row.Combat = unit.type == "UNIT_KNIGHT" and 50 or 0
+			row.FoundReligion = unit.type == "UNIT_GREAT_PROPHET"
+			row.SpreadCharges = unit.type == "UNIT_MISSIONARY" and 3 or 0
+			row.ReligiousHealCharges = unit.type == "UNIT_GURU" and 3 or 0
+			row.RequiresInquisition = unit.type == "UNIT_INQUISITOR"
 			row.FormationClass = unit.formationClass or "FORMATION_CLASS_LAND_COMBAT"
 
 			-- An upgrade is a chain of steps, and a step may need a tech.

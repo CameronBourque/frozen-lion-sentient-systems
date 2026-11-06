@@ -1,6 +1,6 @@
 # Attacks
 
-Status: open. Ranged, air, melee, and city attacks are confirmed in a running game. The priority target is not.
+Status: open. Ranged, air, melee, city, and coastal raid attacks are confirmed in a running game. The priority target is not.
 
 The game calls the attack actions wrap, with the Lua state each runs in and where we found each call.
 
@@ -28,6 +28,9 @@ The other unit actions are in the [actions index](README.md).
 
   A knight attacking a tile with only an enemy builder captured it: the builder became the player's, and the knight stood on the tile.
 - **Targets.** `UnitManager.GetOperationTargets(unit, op)` returns `UnitOperationResults.PLOTS` and `MODIFIERS`.
+- **Coastal raid.** `UNITOPERATION_COASTAL_RAID` is a ship's attack on a land tile. `WorldInput.lua` lists `GetOperationTargets(unit, COASTAL_RAID)`'s `PLOTS`, with no modifiers, and requests it with `PARAM_X` and `PARAM_Y` after the same war check as an attack.
+
+  The UI's click tries a ranged attack, then a raid, then a move that attacks. A ranged ship's `attack` on a raid tile was refused as not a target, so the action requests the raid. Confirmed in files, and on Windows on 2026-11-06.
 
   A tile with `MODIFIER_IS_TARGET` holds something to hit, and the others are in range only. A tile behind a forest was missing from a crossbowman's list, so the list also reflects line of sight.
 - The checks give no reasons. A unit with no attacks left failed `CanStartOperation` for every tile with an empty `FAILURE_REASONS`, and `GetAttacksRemaining()` explains it.
@@ -60,6 +63,8 @@ The bridge ran these steps in a single-player game.
 
 | Call | Lua state | Result | Date |
 | --- | --- | --- | --- |
+| `SentientSystems_UnitAction` `attack` by a nuclear submarine, on a tile that isn't a target | `SentientSystemsCore_UI` | Refused with the one tile in range, (36, 36). After the change, the reason added the raid tiles | 2026-11-06 |
+| The same `attack` on a raid tile, the Vietnamese Camp at (36, 37) | `SentientSystemsCore_UI` | `{"ok":true}`. The Camp was pillaged, the submarine's moves went from 5 to 0, its attack stayed, and the gold did not change | 2026-11-06 |
 | `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04, and on 2026-11-05 for the priority target.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04, on 2026-11-05 for the priority target, and on 2026-11-06 for the coastal raid.

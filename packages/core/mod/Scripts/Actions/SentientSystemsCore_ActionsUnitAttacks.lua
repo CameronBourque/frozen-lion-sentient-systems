@@ -1,5 +1,5 @@
--- The attack orders. SentientSystemsCore_ActionsUnits.lua loads this file. The
--- calls are in docs/findings/actions/.
+-- The attack orders, with a ship's coastal raid. The units file loads this
+-- file. The calls are in docs/findings/actions/.
 
 -- The most targets a reason lists before it gives a count.
 local MAX_LISTED = 8
@@ -143,6 +143,63 @@ local function RangedAttack(unit, operation, x, y)
 	return SentientSystems_GetNotTargetReason(tiles)
 end
 
+-- Returns the land tiles a ship can hit with a coastal raid. The UI marks all
+-- of the operation's plots, with no target flag. Other units have none. See
+-- OnInterfaceModeChange_CoastalRaid in WorldInput.lua.
+local function GetRaidTiles(unit)
+	local tiles = {}
+
+	if GameInfo.Units[unit:GetUnitType()].Domain ~= "DOMAIN_SEA" then
+		return tiles
+	end
+
+	local results = UnitManager.GetOperationTargets(unit, UnitOperationTypes.COASTAL_RAID)
+
+	for _, index in ipairs(results and results[UnitOperationResults.PLOTS] or {}) do
+		local plot = Map.GetPlotByIndex(index)
+
+		tiles[#tiles + 1] = { x = plot:GetX(), y = plot:GetY() }
+	end
+
+	return tiles
+end
+
+local function IsRaidTile(tiles, x, y)
+	for _, tile in ipairs(tiles) do
+		if tile.x == x and tile.y == y then
+			return true
+		end
+	end
+
+	return false
+end
+
+-- Requests a coastal raid on a tile of the raid list, or returns why it can't.
+local function Raid(unit, x, y)
+	local parameters = { [UnitOperationTypes.PARAM_X] = x, [UnitOperationTypes.PARAM_Y] = y }
+
+	if not UnitManager.CanStartOperation(unit, UnitOperationTypes.COASTAL_RAID, nil, parameters) then
+		return "The game won't start that raid."
+	end
+
+	UnitManager.RequestOperation(unit, UnitOperationTypes.COASTAL_RAID, parameters)
+
+	return nil
+end
+
+-- Returns how a refusal ends: the tiles a ship could raid instead.
+local function ListRaidTiles(tiles)
+	local listed = {}
+
+	for i = 1, math.min(#tiles, MAX_LISTED) do
+		listed[i] = "(" .. tiles[i].x .. ", " .. tiles[i].y .. ")"
+	end
+
+	return " A coastal raid can hit " .. table.concat(listed, ", ") .. (#tiles > MAX_LISTED and ", and " .. (#tiles - MAX_LISTED) .. " more" or "") .. "."
+end
+
+-- The UI tries a ranged attack, then a coastal raid, and then a move that
+-- attacks, so a ship's attack on a land tile is a raid when the tile is one.
 SentientSystems_AddUnitAction("attack", function(playerID, unit, x, y)
 	local kind = GetAttackKind(unit)
 
@@ -156,11 +213,27 @@ SentientSystems_AddUnitAction("attack", function(playerID, unit, x, y)
 		return failure
 	end
 
-	if kind == "melee" then
-		return MeleeAttack(playerID, unit, x, y)
+	local raid = GetRaidTiles(unit)
+
+	if kind == "melee" and IsRaidTile(raid, x, y) then
+		return Raid(unit, x, y)
 	end
 
-	return RangedAttack(unit, kind == "air" and UnitOperationTypes.AIR_ATTACK or UnitOperationTypes.RANGE_ATTACK, x, y)
+	if kind == "melee" then
+		failure = MeleeAttack(playerID, unit, x, y)
+	else
+		failure = RangedAttack(unit, kind == "air" and UnitOperationTypes.AIR_ATTACK or UnitOperationTypes.RANGE_ATTACK, x, y)
+	end
+
+	if failure ~= nil and IsRaidTile(raid, x, y) then
+		return Raid(unit, x, y)
+	end
+
+	if failure ~= nil and #raid > 0 then
+		return failure .. ListRaidTiles(raid)
+	end
+
+	return failure
 end)
 
 -- A priority target hits the support or civilian unit that a military unit

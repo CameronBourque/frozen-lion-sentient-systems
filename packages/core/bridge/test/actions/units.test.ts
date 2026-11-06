@@ -45,6 +45,18 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 6160397, { action: "fortify" })).toEqual({ ok: true });
 	});
 
+	test("unitAction asks for a great person's activation with no argument", async () => {
+		answer("SentientSystems_UnitAction(0, 5898263, \"activate\", nil, nil, nil)", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 5898263, { action: "activate" })).toEqual({ ok: true });
+	});
+
+	test("unitAction asks for a religious order with no argument", async () => {
+		answer("SentientSystems_UnitAction(0, 3801115, \"found_religion\", nil, nil, nil)", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 3801115, { action: "found_religion" })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes the tile of an attack", async () => {
 		answer("SentientSystems_UnitAction(0, 4456460, \"attack\", 38, 38, nil)", "{\"ok\":true}");
 

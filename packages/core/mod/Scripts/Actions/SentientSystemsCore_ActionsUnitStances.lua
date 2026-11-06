@@ -1,6 +1,5 @@
--- The unit orders that need no tile: stances, wake, delete, and promote.
--- SentientSystemsCore_ActionsUnits.lua loads this file. The calls are in
--- docs/findings/actions/.
+-- The unit orders that need no tile: stances, wake, delete, plunder, and
+-- promote. The calls are in docs/findings/actions/.
 
 -- The stance actions, by action name, as unit operations. UnitPanel.lua reads
 -- each hash from GameInfo.UnitOperations, because UnitOperationTypes lacks
@@ -16,6 +15,13 @@ local STANCES = {
 -- How the reasons say an action, when its name is not the verb.
 local VERBS = {
 	found_city = "found a city",
+	activate = "activate a great person",
+	found_religion = "found a religion",
+	spread_religion = "spread a religion",
+	remove_heresy = "remove a heresy",
+	heal_followers = "heal followers",
+	condemn_heretic = "condemn a heretic",
+	harvest_wonder = "harvest a wonder",
 	improve = "build improvements",
 	build_road = "build roads",
 	remove_feature = "remove features",
@@ -95,13 +101,26 @@ function SentientSystems_DoOperation(unit, action, operationType, options)
 	return nil
 end
 
--- Requests a unit command, or returns why it can't start.
-local function DoCommand(unit, action)
-	local command = UnitCommandTypes[action:upper()]
-	local canEver = UnitManager.CanStartCommand(unit, command, true)
+-- The commands whose names differ from their action's, by action name.
+local COMMAND_NAMES = { plunder = "PLUNDER_TRADE_ROUTE" }
+
+-- Requests a unit command, or returns why it can't start. options.kind says
+-- whether the kind of unit could ever do it, for a command whose loose check
+-- fails with the tile too, as DoOperation does. options.hint is the reason
+-- that fits the tile.
+function SentientSystems_DoCommand(unit, action, options)
+	local command = UnitCommandTypes[COMMAND_NAMES[action] or action:upper()]
+	local kind = options and options.kind
+	local canEver
+
+	if kind ~= nil then
+		canEver = kind(GameInfo.Units[unit:GetUnitType()])
+	else
+		canEver = UnitManager.CanStartCommand(unit, command, true)
+	end
 
 	if not canEver or not UnitManager.CanStartCommand(unit, command, false) then
-		return SentientSystems_GetOrderFailure(unit, action, canEver)
+		return SentientSystems_GetOrderFailure(unit, action, canEver, options and options.hint)
 	end
 
 	UnitManager.RequestCommand(unit, command)
@@ -152,9 +171,22 @@ end
 
 for _, action in ipairs({ "wake", "delete" }) do
 	SentientSystems_AddUnitAction(action, function(_, unit)
-		return DoCommand(unit, action)
+		return SentientSystems_DoCommand(unit, action)
 	end)
 end
+
+-- Plunder is the command for an enemy trader on the unit's tile. The game gives
+-- no failure reasons for it, so the tile's hint says what it needs.
+SentientSystems_AddUnitAction("plunder", function(_, unit)
+	return SentientSystems_DoCommand(unit, "plunder", {
+		kind = function(row)
+			return row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"
+		end,
+		hint = function()
+			return "No trade route of a player at war with you is on the tile, or it is immune to plunder."
+		end,
+	})
+end)
 
 SentientSystems_AddUnitAction("promote", function(_, unit, _, _, type)
 	return Promote(unit, type)
