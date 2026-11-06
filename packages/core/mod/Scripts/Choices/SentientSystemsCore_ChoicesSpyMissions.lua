@@ -1,10 +1,6 @@
--- The spy missions choice: for each spy ready to move, the cities it can
--- travel to and the missions it can start where it stands.
+-- The spy missions choice: each ready spy's trips and missions. Follows
+-- EspionageChooser.lua, EspionageSupport.lua, and EspionagePopup.lua.
 -- Shape: bridge/src/choices/spy-missions.ts.
-
--- It follows EspionageChooser.lua, EspionageSupport.lua, and the mission
--- briefing in EspionagePopup.lua. Gathering Storm changes the destination
--- list only, in EspionageChooser_Expansion1.lua.
 
 local function GetCityRef(city)
 	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }

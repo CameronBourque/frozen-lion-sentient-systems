@@ -1,10 +1,6 @@
--- The trade route choice: the destinations each idle trader can reach, with
--- what each end of the route receives.
+-- The trade route choice: each idle trader's destinations, with what each end
+-- gets. Follows TradeRouteChooser.lua and TradeSupport.lua.
 -- Shape: bridge/src/choices/trade-routes.ts.
-
--- It follows RefreshChooserPanel, AddCityToDestinationStack, and
--- CheckTradeRoute in TradeRouteChooser.lua, and GetYieldsForRoute in
--- TradeSupport.lua.
 
 -- Returns the traders that already have a route, by unit ID. A trader is idle
 -- when no outgoing route names it. See GetIdleTradeUnits in TradeSupport.lua.
