@@ -64,12 +64,15 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
   It also runs `scripts/lua-comments/`, which fails on a full-line Lua comment over 80 columns, counting a tab as 4 and a character as 1. ESLint can't read Lua, and the CI `lint` job has no Lua tool.
 - Lint also checks these [comment rules](#comments), in Lua and in TypeScript, from the shared code in `scripts/comment-rules/`. A broken rule fails the build.
   - A file header over three lines. The header is the first comment before any code, up to the first blank line.
+  - A comment block of two or more lines with no code on the line after it. A block sits directly above the code it describes, so a blank line after it fails, and so does a header that goes on in a second block. A one-line comment can stand alone.
   - A line number, such as "line 12" or "lines 3 to 5".
   - "such as", "for example", or "for instance" followed by a quoted or code example.
-  - A JSON shape: `{` followed by a quote, or a quoted key before a colon.
-  - These are heuristics, so a comment can opt out of the last three by holding `comment-lint-ignore:` and a short reason. A marker with no reason skips nothing, and it covers only its own comment line. The header and line width checks have no opt-out.
+  - A data shape: `{` followed by a quote, a quoted key before a colon, or a `{` around two or more bare names, such as the fields of a row.
+  - These are heuristics, so a comment can opt out of the line number, example, JSON shape, and stray block rules by holding `comment-lint-ignore:` and a short reason. A marker with no reason skips nothing.
+
+    It covers only its own comment line, or its own block for the stray block rule. The header and line width checks have no opt-out.
   - A path to a doc that doesn't exist, or a path with a `*` whose file does exist, as [docs.md](docs.md#structure) describes. It has no opt-out, because a doc that isn't written yet takes a `*`. `scripts/yml-comments/` runs it on yml comments, because ESLint can't read yml.
-  - Lint can't see a comment that restates the next line of code, or a data shape written as prose. Those stay with review.
+  - Lint can't see a comment that restates the next line of code, or a data shape written as prose, such as the fields that a test fake reads from its data. Those stay with review.
 - `npm test` runs Vitest. Put code in a `src/` folder and tests in a `test/` folder beside it, in each package and script folder.
 
   `test/` mirrors `src/`, so the tests for `src/tuner/framing.ts` go in `test/tuner/framing.test.ts`. Shared test helpers go in `test/` too. Give each rule a case that it catches and a case that it lets through.

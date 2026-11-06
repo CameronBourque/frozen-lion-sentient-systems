@@ -4,7 +4,19 @@
 import path from "node:path";
 import { findDocPathProblems, repoDocs } from "./doc-path-rule.mjs";
 import { checkHeader } from "./header-rule.mjs";
+import { findStandalone } from "./standalone-rule.mjs";
 import { findText } from "./text-rules.mjs";
+
+// Returns the line numbers that hold part of a token, which is code.
+function codeLinesOf(tokens) {
+	const lines = new Set();
+
+	for (const token of tokens) {
+		for (let line = token.loc.start.line; line <= token.loc.end.line; line++) lines.add(line);
+	}
+
+	return lines;
+}
 
 const textRules = {
 	meta: {
@@ -28,6 +40,20 @@ const textRules = {
 				const header = checkHeader(leading.map((comment) => ({ start: comment.loc.start.line, end: comment.loc.end.line })));
 
 				if (header) context.report({ loc: leading[0].loc, messageId: "broken", data: { message: header.message } });
+
+				const codeLines = codeLinesOf(context.sourceCode.ast.tokens);
+				const fullLine = comments.filter((comment) => {
+					for (let line = comment.loc.start.line; line <= comment.loc.end.line; line++) if (codeLines.has(line)) return false;
+
+					return true;
+				});
+				const spans = fullLine.map((comment) => ({ start: comment.loc.start.line, end: comment.loc.end.line, text: comment.value }));
+
+				for (const problem of findStandalone(spans, codeLines)) {
+					const comment = fullLine.find((c) => c.loc.start.line === problem.line);
+
+					context.report({ loc: comment.loc, messageId: "broken", data: { message: problem.message } });
+				}
 			},
 		};
 	},

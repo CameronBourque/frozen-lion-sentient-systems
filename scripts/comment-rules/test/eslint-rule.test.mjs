@@ -46,7 +46,7 @@ describe("comment-rules/text-rules", () => {
 	});
 
 	test("lets through a header of three lines and a comment after code", () => {
-		expect(lint("// one\n// two\n// three\n\nconst a = 1;\n// four\n// five\n// six\n// seven\n")).toEqual([]);
+		expect(lint("// one\n// two\n// three\n\nconst a = 1;\n// four\n// five\n// six\n// seven\nconst b = 2;\n")).toEqual([]);
 	});
 
 	test("starts the header after a shebang", () => {
@@ -67,6 +67,33 @@ describe("comment-rules/text-rules", () => {
 
 	test("lets through code that names a line number", () => {
 		expect(lint('const s = "line 12";\n')).toEqual([]);
+	});
+
+	test("reports a comment block that stands alone, at its first line", () => {
+		const messages = lint("// one\n\nconst a = 1;\n\n// two\n// three\n\nconst b = 2;\n");
+
+		expect(messages).toHaveLength(1);
+		expect(messages[0]).toMatchObject({ line: 5, message: "comment block stands alone; put it directly above the code it describes" });
+	});
+
+	test("reports a header that continues in a second block", () => {
+		expect(lint("// one\n// two\n\n// three\n// four\nconst a = 1;\n\n// five\n// six\n\nconst b = 2;\n")).toHaveLength(1);
+	});
+
+	test("reports a block comment that stands alone", () => {
+		expect(lint("const a = 1;\n\n/*\n * one\n */\n\nconst b = 2;\n")).toHaveLength(1);
+	});
+
+	test("lets through a block directly above code, and a one-line comment alone", () => {
+		expect(lint("const a = 1;\n\n// one\n// two\nconst b = 2;\n\n// section\n\nconst c = 3;\n")).toEqual([]);
+	});
+
+	test("does not count a comment that follows code on its line as a block", () => {
+		expect(lint("const a = 1; // one\n// two\n\nconst b = 2;\n")).toEqual([]);
+	});
+
+	test("lets through a standalone block that opts out with a reason", () => {
+		expect(lint("const a = 1;\n\n// comment-lint-ignore: section\n// more\n\nconst b = 2;\n")).toEqual([]);
 	});
 });
 
