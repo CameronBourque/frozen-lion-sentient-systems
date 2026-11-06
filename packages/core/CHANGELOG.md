@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.8.0...core-v0.9.0) (2026-11-06)
+
+
+### Features
+
+* **core:** add the trade route, great person, religious unit, and spy actions ([#59](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/59)) ([92e8bca](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/92e8bca030a255976c0e3260f403594f2bb25d96))
+
 ## [0.8.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.7.0...core-v0.8.0) (2026-11-05)
 
 
