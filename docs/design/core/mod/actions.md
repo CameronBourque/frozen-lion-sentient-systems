@@ -54,6 +54,16 @@ Its reasons name a unit that isn't a trader, a trader that already has a route, 
 
 The game gives the reasons, such as the tile the person must stand on. See [great-people.md](../../../findings/actions/great-people.md).
 
+### Spies
+
+`SentientSystems_SpyMission(playerID, unitID, mission, district)` and `SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)` are in `Scripts/Actions/SentientSystemsCore_ActionsSpies.lua`.
+
+A mission is the type from the spy missions choice, and a counterspy mission also takes the district to guard.
+
+Their reasons name a spy that isn't ready, a spy in no city, the missions the spy can start when it names another, and a city that isn't a destination.
+
+The game's own reasons come back for a mission it lists as disabled. See [spies.md](../../../findings/actions/spies.md).
+
 ### Orders on the unit's tile
 
 `found_city`, `improve` (with the improvement in `type`), and `pillage` act on the unit's own tile. Their reasons name what is wrong with the unit or the tile, such as the city that is too close.

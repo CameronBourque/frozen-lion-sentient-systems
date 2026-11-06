@@ -37,7 +37,7 @@ end
 
 -- Returns the cities the spy can travel to, as the chooser lists them, with
 -- the turns to get there and to settle in. See AddDestination.
-local function GetDestinations(player, spy)
+function SentientSystems_GetSpyDestinations(player, spy)
 	local visibility = PlayersVisibility[player:GetID()]
 	local destinations = {}
 
@@ -223,10 +223,21 @@ end
 -- Returns whether the panel offers the spy a trip to another city: the game's
 -- travel operation passes for it. The chooser opens for it in a city of the
 -- player's, and the panel's travel button opens it anywhere else.
-local function CanTravel(spy, plot)
+function SentientSystems_CanSpyTravel(spy)
 	local hash = GameInfo.UnitOperations["UNITOPERATION_SPY_TRAVEL_NEW_CITY"].Hash
+	local plot = Map.GetPlot(spy:GetX(), spy:GetY())
 
 	return UnitManager.CanStartOperation(spy, hash, plot, false, true)
+end
+
+-- Returns the missions the spy can start in the city it stands in: counterspy
+-- missions in a city of the player's, and offensive ones in another's.
+function SentientSystems_GetSpyCityMissions(player, spy, city)
+	if city:GetOwner() == player:GetID() then
+		return GetCounterspyMissions(spy, city)
+	end
+
+	return GetOffensiveMissions(spy, city)
 end
 
 -- Returns the spy missions choice: each awake spy that is ready to move, in the
@@ -245,11 +256,11 @@ function SentientSystems_GetSpyMissionChoices(player)
 
 			if city ~= nil then
 				choice.city = GetCityRef(city)
-				choice.missions = city:GetOwner() == player:GetID() and GetCounterspyMissions(spy, city) or GetOffensiveMissions(spy, city)
+				choice.missions = SentientSystems_GetSpyCityMissions(player, spy, city)
 			end
 
-			if CanTravel(spy, Map.GetPlot(spy:GetX(), spy:GetY())) then
-				choice.destinations = GetDestinations(player, spy)
+			if SentientSystems_CanSpyTravel(spy) then
+				choice.destinations = SentientSystems_GetSpyDestinations(player, spy)
 			end
 
 			choices[#choices + 1] = choice

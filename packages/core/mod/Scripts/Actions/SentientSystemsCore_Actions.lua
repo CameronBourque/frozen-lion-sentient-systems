@@ -24,3 +24,4 @@ end
 SentientSystems_Include("SentientSystemsCore_ActionsUnits")
 SentientSystems_Include("SentientSystemsCore_ActionsCities")
 SentientSystems_Include("SentientSystemsCore_ActionsTrade")
+SentientSystems_Include("SentientSystemsCore_ActionsSpies")

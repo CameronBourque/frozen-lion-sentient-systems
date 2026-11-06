@@ -34,6 +34,13 @@ return function(env, world, ctx)
 		row.Description = "LOC_" .. name .. "_DESCRIPTION"
 		row.CategoryInUI = i <= #OFFENSIVE and "OFFENSIVESPY" or "MOVE"
 		namesByHash[row.Hash] = name
+
+		-- The game names two of them in UnitOperationTypes.
+		local typeName = name:gsub("UNITOPERATION_", "")
+
+		if typeName == "SPY_COUNTERSPY" or typeName == "SPY_TRAVEL_NEW_CITY" then
+			env.UnitOperationTypes[typeName] = row.Hash
+		end
 	end
 
 	for _, data in pairs(world.players or {}) do
@@ -56,17 +63,26 @@ return function(env, world, ctx)
 
 	local canStartOperation = env.UnitManager.CanStartOperation
 
-	env.UnitManager.CanStartOperation = function(unit, hash, target, ...)
+	env.UnitManager.CanStartOperation = function(unit, hash, target, parameters, ...)
 		local name = namesByHash[hash]
 
 		if name == nil then
-			return canStartOperation(unit, hash, target, ...)
+			return canStartOperation(unit, hash, target, parameters, ...)
 		end
 
 		local operation = (Spy(unit).ops or {})[name]
 
 		if operation == nil then
 			return false
+		end
+
+		-- A trip is refused once the request names a tile that is blocked.
+		if type(parameters) == "table" then
+			for _, tile in ipairs(operation.blocked or {}) do
+				if tile.x == parameters[env.UnitOperationTypes.PARAM_X] and tile.y == parameters[env.UnitOperationTypes.PARAM_Y] then
+					return false
+				end
+			end
 		end
 
 		if operation.reasons ~= nil then
