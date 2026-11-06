@@ -3,7 +3,7 @@
 
 // One entry per rule. find gets the text of one comment and returns a message
 // when it breaks the rule, or undefined when it doesn't.
-const OPT_OUT = /comment-lint-ignore:\s*\S/;
+export const OPT_OUT = /comment-lint-ignore:\s*\S/;
 
 export const TEXT_RULES = [
 	{
