@@ -72,7 +72,7 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
 
     It covers only its own comment line, or its own block for the stray block rule. The header and line width checks have no opt-out.
   - A path to a doc that doesn't exist, or a path with a `*` whose file does exist, as [docs.md](docs.md#structure) describes. It has no opt-out, because a doc that isn't written yet takes a `*`. `scripts/yml-comments/` runs it on yml comments, because ESLint can't read yml.
-  - Lint can't see a comment that restates the next line of code, or a data shape written as prose. Those stay with review.
+  - Lint can't see a comment that restates the next line of code, or a data shape written as prose, such as the fields that a test fake reads from its data. Those stay with review.
 - `npm test` runs Vitest. Put code in a `src/` folder and tests in a `test/` folder beside it, in each package and script folder.
 
   `test/` mirrors `src/`, so the tests for `src/tuner/framing.ts` go in `test/tuner/framing.test.ts`. Shared test helpers go in `test/` too. Give each rule a case that it catches and a case that it lets through.
