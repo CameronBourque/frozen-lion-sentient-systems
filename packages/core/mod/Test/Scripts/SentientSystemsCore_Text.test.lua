@@ -33,6 +33,10 @@ describe("SentientSystems_CleanText", function()
 		return env.SentientSystems_CleanText(text)
 	end
 
+	it("returns nil for no text", function()
+		assert.is_nil(Clean(nil))
+	end)
+
 	it("leaves text without icons as it is", function()
 		assert.equal("Gain 2 Gold.[NEWLINE]Then wait.", Clean("Gain 2 Gold.[NEWLINE]Then wait."))
 	end)

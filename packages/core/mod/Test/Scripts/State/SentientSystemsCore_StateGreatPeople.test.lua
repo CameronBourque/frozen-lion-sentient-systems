@@ -48,7 +48,7 @@ describe("SentientSystems_GetGreatPeopleState", function()
 		assert.equal(
 			"[{\"action\":{\"effect\":\"The Art of War.\",\"name\":\"Retire\",\"usage\":\"Activate at a district.\"},"
 				.. "\"class\":\"GREAT_PERSON_CLASS_GENERAL\",\"cost\":30,\"era\":\"ERA_CLASSICAL\",\"name\":\"Sun Tzu\","
-				.. "\"passive\":\"+5 [ICON_Strength] Combat Strength.\",\"patronage\":{\"faith\":{\"can\":false,\"cost\":450},\"gold\":{\"can\":true,\"cost\":650}},"
+				.. "\"passive\":\"+5 Combat Strength.\",\"patronage\":{\"faith\":{\"can\":false,\"cost\":450},\"gold\":{\"can\":true,\"cost\":650}},"
 				.. "\"progress\":[{\"perTurn\":0,\"player\":0,\"points\":0}],\"type\":\"GREAT_PERSON_INDIVIDUAL_SUN_TZU\"}]",
 			GreatPeopleWith({ SUN_TZU })
 		)

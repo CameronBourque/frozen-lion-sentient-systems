@@ -20,7 +20,7 @@ function SentientSystems_GetPantheonChoices(player)
 			and not gameReligion:IsInSomePantheon(row.Index)
 			and not gameReligion:IsInSomeReligion(row.Index)
 		then
-			beliefs[#beliefs + 1] = { type = row.BeliefType, description = Locale.Lookup(row.Description) }
+			beliefs[#beliefs + 1] = { type = row.BeliefType, description = SentientSystems_LookupText(row.Description) }
 		end
 	end
 
@@ -86,7 +86,7 @@ local function GetBeliefOptions(religionType)
 	local beliefs = {}
 
 	for i, row in ipairs(rows) do
-		beliefs[i] = { type = row.BeliefType, class = row.BeliefClassType, description = Locale.Lookup(row.Description) }
+		beliefs[i] = { type = row.BeliefType, class = row.BeliefClassType, description = SentientSystems_LookupText(row.Description) }
 	end
 
 	return beliefs

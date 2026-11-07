@@ -134,8 +134,13 @@ local function EachLine(tooltip, handle)
 end
 
 -- Returns the text with each icon cleaned as CleanLine does, so that the text
--- reads without the icons. The lines stay separated with [NEWLINE].
+-- reads without the icons. The lines stay separated with [NEWLINE]. Returns nil
+-- for no text.
 function SentientSystems_CleanText(text)
+	if text == nil then
+		return nil
+	end
+
 	local lines = {}
 
 	EachLine(text, function(line)
