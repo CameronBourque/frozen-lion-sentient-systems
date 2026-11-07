@@ -56,6 +56,19 @@ describe("SentientSystems_GetCapturedCityChoices", function()
 		)
 	end)
 
+	it("cleans the icons and colors from the tooltips", function()
+		local text = {
+			LOC_CITY_NAME_CAGUANA = "Caguana",
+			LOC_RAZE_CITY_KEEP_LAST_CITY_EXPLANATION = "Gain [ICON_Gold] [COLOR_RED]more[ENDCOLOR]",
+			LOC_RAZE_CITY_RAZE_LAST_CITY_EXPLANATION = "[ICON_Bullet]Lose [ICON_Citizen] Population",
+		}
+
+		assert.equal(
+			"[{\"description\":\"Gain Gold more\",\"type\":\"KEEP\"},{\"description\":\"-Lose Population\",\"type\":\"RAZE\"}]",
+			Options(ChoicesWith({ captured = Captured() }, {}, { text = text }))
+		)
+	end)
+
 	it("gives grievances with Gathering Storm, doubled for keeping a player's last city", function()
 		assert.equal(
 			"[{\"description\":\"LOC_RAZE_CITY_KEEP_EXPLANATION(LOC_XP2_RAZE_CITY_KEEP_WARMONGER_EXPLANATION(50))\",\"type\":\"KEEP\"},"
