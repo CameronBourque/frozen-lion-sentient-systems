@@ -13,7 +13,9 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The map.** Revealed tiles, the player's units, and the rival cities and units the player can see, with the religion and religious strength of a religious rival unit.
 
   Each unit has what it is doing, its attacks left, its builder charges, and its formation. A religious unit has its religion, its religious strength, and its spread and heal charges, and a great person its class, individual, and action charges.
-- **The city panel, and the City Status tab of Reports.** Each city's yields, growth, housing, amenities, loyalty, defense, districts, production, growth rate status, war weariness, and governor.
+- **The city panel, and the City Status tab of Reports.** Each city's yields, growth, housing, amenities, loyalty, defense, districts, production, growth rate status, war weariness, governor, and religion.
+
+  A city's religion is its majority, the pressure it exerts, the religion it will convert to and when, and the followers and pressure of each religion present.
 - **The Next Turn button.** What blocks the end of the turn.
 - **The top bar.** The gold and faith balances, the science, culture, faith, gold, and tourism per turn, the trade route capacity, and, with Gathering Storm, diplomatic favor.
 - **The Yields tab of Reports.** Income by source, building and unit upkeep, deal payments, and net income per turn.
@@ -53,5 +55,6 @@ The shape of each section is in the schemas in [packages/core/bridge/src/state/]
 | The state includes the scoreboard and victory progress | A human sees it, and sweat levels measure against it |
 | Find the state size by measurement | No useful budget exists before the first full game |
 | Available routes are a function of one city, not a state section | The tab lists every origin and destination pair, 305 routes and 119 KB in one game, and one city is at most 8 KB. The choice lists only the cities where an idle trader stands |
+| City religion is part of the cities section | It comes to about 310 bytes a city once several religions have spread, so 11 cities add about 3.4 KB. The available routes were too large to keep, which is why they aren't |
 | The scoreboard lists unmet players as places only | World Rankings shows how many players there are, their order, and whether an unmet one leads, but not who they are |
 | Each state section has its own file in `Scripts/State/` | The state grows with every section, and one file would pass 1,000 lines. A file per section keeps each one and its tests small. `include` finds a file by name in any folder, so the folder only groups the files |

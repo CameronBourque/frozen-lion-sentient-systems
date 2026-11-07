@@ -1,12 +1,12 @@
 # Unit and city details in the state
 
-Status: in progress. The unit activity and charges, religious units, and great people are confirmed in a running game with Gathering Storm. Rival religious units are confirmed too. City religion and the room for a purchased unit are not yet checked.
+Status: in progress. The unit activity and charges, religious units, and great people are confirmed in a running game with Gathering Storm. Rival religious units are confirmed too. City religion is confirmed too. The room for a purchased unit is not yet checked.
 
 The calls the unit and city details in the state use, as the unit panel and the city panel show them. See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
-- What do the city religion and purchase room calls return?
+- What does the purchase room call return?
 
 ## What we know now
 
@@ -57,6 +57,27 @@ The request is the one a melee unit uses: `UnitManager.RequestOperation(unit, Un
 
 The `attack` action refused a religious unit, with "This kind of unit can't attack.", because the unit has no combat strength. It now attacks with the religious strength. See [actions/attacks.md](../actions/attacks.md).
 
+### City religion
+
+The City Panel's religion button opens the Religion screen through `LuaEvents.CityPanel_ShowReligionTab`, and the banner shows the same city values. Confirmed in files and in a running game.
+
+- **Followers.** `city:GetReligion():GetReligionsInCity()` lists one entry per religion present, each with `Religion`, `Followers`, and `Pressure`.
+
+  `Religion` is an index in `GameInfo.Religions`, and below 1 for the citizens with no religion. `CitySupport.lua` names those `RELIGION_PANTHEON`, at line 504, and `ReligionScreen.lua` reads `Followers` at line 1090.
+- **Majority.** `GetMajorityReligion()` returns the index of the religion with the most followers, and -1 while none leads. The banner shows an icon above 0, in `CityBannerManager.lua`, line 1181. A city with 4 citizens of no religion and 1 follower of Shinto had no majority.
+- **Pressure each turn.** The banner shows `GetTotalPressureOnCity(religion)` beside each religion, rounded to a whole number, as "Incoming pressure per turn". It was 26 for Shinto in Noviodunum, as the screen showed.
+
+  The call isn't valid for the entry with no religion. A city's own religion had a pressure of 0 on it.
+- **Pressure received in all.** The `Pressure` in the `GetReligionsInCity()` list is the total the city has received. The banner's tooltip, "Followers / Total Pressure Received", shows it rounded: 8 followers and 1,493 pressure for Shinto in Noviodunum, from 1,493 in the list.
+
+  The banner loop skips the entry with no religion, so the state gives neither pressure for it.
+- **Pressure exerted.** `GetPressureFromCity()` is the "Outgoing pressure per turn" at the top of the banner, rounded, and 2 for Noviodunum as the screen showed. It belongs to the city's majority religion, and was 0 for a city with none, and 8 for the city of the player's own religion.
+- **Conversion.** `GetNextReligion()` is the religion the city converts to, and `GetTurnsToNextReligion()` the turns until then. The banner shows "Converts in N" when the next religion isn't -1 and the turns are above 0, in `CityBannerManager.lua`, line 1391.
+
+  Aduatuca converted to Taoism in 23 turns, and Bagacum in 8, as the screen showed, and Samarobriva to Shinto in 127. A city that isn't converting had -1 and 0, and the state leaves the conversion out.
+
+All 11 cities of the player came to 3,386 bytes once three religions had spread, about 310 for each, so the religion is part of the cities section.
+
 ## Method
 
 1. To read the units section before the `.modinfo` loads it, send `SentientSystemsCore_StateUnits.lua` through the tuner as in [choices/production.md](../choices/production.md#method), step 4, and call `SentientSystems_GetUnitStates(Players[Game.GetLocalPlayer()])`.
@@ -65,7 +86,8 @@ The `attack` action refused a religious unit, with "This kind of unit can't atta
 
    To try `condemn_heretic`, send `UnitManager.InitUnit(0, "UNIT_KNIGHT", x, y)` and `RestoreMovement` in `GameCore_Tuner` on the tile of a visible unit of a player at war with you, then `UnitManager.RequestCommand` with the command's hash.
 4. For a religious attack, send the melee request above from an inquisitor to an adjacent tile with a rival religious unit, and read both units' `GetDamage()`.
-5. For religious units, found a religion with a prophet on a holy site, and buy a missionary, an apostle, an inquisitor, and a guru in a city with a shrine and a temple.
+5. For the city religion, load `SentientSystemsCore_StateCities.lua` the same way, call `SentientSystems_GetCityStates(Players[0])`, and compare each city's `religion` with `city:GetReligion()`.
+6. For religious units, found a religion with a prophet on a holy site, and buy a missionary, an apostle, an inquisitor, and a guru in a city with a shrine and a temple.
 
    In `GameCore_Tuner`, `Players[0]:GetCulture():SetCivic(index, true)` gives Theology, and `WorldBuilder.CityManager():CreateBuilding(city, "BUILDING_TEMPLE", 100, plotIndex)` adds the temple.
 
@@ -85,6 +107,7 @@ A single-player game with Gathering Storm, with 41 units of one player, in `Sent
 | Rival religious units | In a game on turn 53, 9 of the 49 visible rival units had a religion: 4 Islam and 3 Orthodoxy missionaries, and 2 Shinto apostles. They were the same units that a direct probe found on visible tiles, and the 40 other units had none |
 | Religious strength | The player's four inquisitors had 75, and the visible rival missionaries 100 and apostles 110. Units with none had no field |
 | A religious attack | An inquisitor next to an Islam missionary, whose owner wasn't at war with the player, attacked with the melee request. It took 19 damage and the missionary 46. The `attack` action refused it, and accepted it after the fix |
+| City religion | The followers, both pressures, the pressure exerted, and the majority of 11 cities matched the raw calls. Noviodunum matched the screen: 8 followers, 26 a turn, 1,493 in all, and 2 exerted. The three converting cities matched the screen and the raw calls |
 | `condemn_heretic` | A knight on the tile of a Shinto apostle of a player at war passed the check, and the request removed the apostle and left the knight with no moves |
 | A spy on a mission | `awake` before, and `operation` right after a Gain Sources mission started |
 

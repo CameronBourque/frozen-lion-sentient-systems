@@ -189,6 +189,56 @@ function SentientSystems_GetCityDefense(player, city)
 	return defense
 end
 
+-- Rounds a number to the nearest whole number, as the banner rounds a pressure.
+local function RoundWhole(number)
+	return math.floor(number + 0.5)
+end
+
+-- Returns the religion the city will convert to and in how many turns, or nil.
+-- The banner shows it for a next religion that isn't -1, at more than 0 turns.
+local function GetConversion(cityReligion)
+	local nextReligion = cityReligion:GetNextReligion()
+	local turns = cityReligion:GetTurnsToNextReligion()
+
+	if nextReligion ~= nil and nextReligion ~= -1 and turns > 0 then
+		return { type = GameInfo.Religions[nextReligion].ReligionType, turns = turns }
+	end
+
+	return nil
+end
+
+-- Returns the city's religions: the majority, the pressure the city exerts, and
+-- for each religion present its followers, the pressure on the city each turn,
+-- and the pressure it has received in all. The banner shows the majority above
+-- 0, and each pressure rounded: GetPressureFromCity for the pressure exerted,
+-- GetTotalPressureOnCity for the pressure each turn, and the list's own
+-- Pressure for the total. CitySupport.lua names the entry for citizens with no
+-- religion, whose index is below 1, RELIGION_PANTHEON, and the banner shows no
+-- pressure for it, and the conversion. See docs/findings/state/unit-details.md.
+local function GetReligion(city)
+	local cityReligion = city:GetReligion()
+	local majority = cityReligion:GetMajorityReligion()
+	local present = {}
+
+	for _, entry in ipairs(cityReligion:GetReligionsInCity()) do
+		local pantheon = entry.Religion <= 0
+
+		present[#present + 1] = {
+			type = pantheon and "RELIGION_PANTHEON" or GameInfo.Religions[entry.Religion].ReligionType,
+			followers = entry.Followers,
+			pressure = not pantheon and RoundWhole(cityReligion:GetTotalPressureOnCity(entry.Religion)) or nil,
+			totalPressure = not pantheon and RoundWhole(entry.Pressure) or nil,
+		}
+	end
+
+	return {
+		majority = majority > 0 and GameInfo.Religions[majority].ReligionType or nil,
+		outwardPressure = RoundWhole(cityReligion:GetPressureFromCity()),
+		present = present,
+		converting = GetConversion(cityReligion),
+	}
+end
+
 -- Returns a list of the player's cities, with each city's name in the game's
 -- language.
 function SentientSystems_GetCityStates(player)
@@ -208,6 +258,7 @@ function SentientSystems_GetCityStates(player)
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
 			production = GetProduction(city),
+			religion = GetReligion(city),
 			yields = GetYields(city),
 		}
 	end

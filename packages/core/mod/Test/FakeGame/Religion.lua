@@ -36,7 +36,13 @@ return function(env, world, ctx)
 
 		for _, city in ipairs(data.cities or {}) do
 			for _, present in ipairs(city.religions or {}) do
-				religions[#religions + 1] = present
+				-- The pantheon row sits at index 0. An entry with no type is
+				-- the citizens with no religion.
+				AddRow("Religions", "ReligionType", "RELIGION_PANTHEON")
+
+				if present.type then
+					religions[#religions + 1] = present
+				end
 			end
 		end
 
@@ -91,10 +97,28 @@ return function(env, world, ctx)
 					local present = {}
 
 					for i, religion in ipairs(data.religions or {}) do
-						present[i] = { Religion = indexes[religion.type] or -1, Followers = religion.followers }
+						present[i] = { Religion = indexes[religion.type] or -1, Followers = religion.followers, Pressure = religion.totalPressure or 0 }
 					end
 
 					return present
+				end,
+				GetNextReligion = function()
+					return data.converting and indexes[data.converting.type] or -1
+				end,
+				GetTurnsToNextReligion = function()
+					return data.converting and data.converting.turns or 0
+				end,
+				GetPressureFromCity = function()
+					return data.outwardPressure or 0
+				end,
+				GetTotalPressureOnCity = function(_, religionIndex)
+					for _, religion in ipairs(data.religions or {}) do
+						if indexes[religion.type] == religionIndex then
+							return religion.pressure or 0
+						end
+					end
+
+					return 0
 				end,
 			}
 		end
