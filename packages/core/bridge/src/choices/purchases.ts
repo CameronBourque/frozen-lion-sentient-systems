@@ -5,7 +5,7 @@
 import { z } from "zod";
 
 const BLOCKED = z.array(z.string()).optional().describe(
-	"There when the tab greys the item out: the game's reasons, then the tab's own text when the player can't afford it, such as Not enough [ICON_Gold] Gold in treasury to purchase this. Can be empty, when the game gives no reason. Left out when the city can buy it.",
+	"There when the tab greys the item out: the game's reasons, then the tab's own text when the player can't afford it, such as Not enough Gold in treasury to purchase this. Can be empty, when the game gives no reason. Left out when the city can buy it.",
 );
 
 // A building, a district, or a unit trained as a corps or an army. cost is in
@@ -29,7 +29,7 @@ const YIELD_PURCHASES = z.object({
 });
 
 const TILE_PURCHASE = PURCHASE.extend({ x: z.number(), y: z.number() }).describe(
-	"blocked is there when the cost is more than the player's gold, with the purchase lens's tooltip, such as You need 18 more [ICON_Gold] in order to purchase this plot.",
+	"blocked is there when the cost is more than the player's gold, with the purchase lens's tooltip, such as You need 18 more Gold in order to purchase this plot.",
 );
 
 export const PURCHASE_CITY = z.object({

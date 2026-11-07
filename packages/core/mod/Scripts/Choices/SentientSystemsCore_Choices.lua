@@ -4,16 +4,17 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Text")
 
 -- Returns the game's reasons from the results of a CanProduce or
 -- CanStartCommand check, as text. The game gives each reason as text already,
--- and the production panel passes it through Locale.Lookup, as this does. The
--- choice files use it.
+-- and the production panel passes it through Locale.Lookup, as this does. It
+-- cleans the icons and colors from each. The choice files use it.
 function SentientSystems_GetFailureReasons(results)
 	local reasons = {}
 
 	for i, reason in ipairs(results and results[CityCommandResults.FAILURE_REASONS] or {}) do
-		reasons[i] = Locale.Lookup(reason)
+		reasons[i] = SentientSystems_LookupText(reason)
 	end
 
 	return reasons

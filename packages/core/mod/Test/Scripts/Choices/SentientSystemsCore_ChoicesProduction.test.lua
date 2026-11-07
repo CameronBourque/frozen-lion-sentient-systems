@@ -50,7 +50,7 @@ describe("SentientSystems_GetProductionChoices for units", function()
 
 	it("gives the game's reasons for a unit the panel greys out", function()
 		assert.equal(
-			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"projects\":[],\"units\":[{\"blocked\":[\"This city needs at least 2 [ICON_Citizen] Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
+			"[{\"buildings\":[],\"city\":65536,\"districts\":[],\"name\":\"Rome\",\"projects\":[],\"units\":[{\"blocked\":[\"This city needs at least 2 Population.\"],\"cost\":40,\"turns\":6,\"type\":\"UNIT_SETTLER\"}],\"wonders\":[]}]",
 			ProductionWith({ With(SETTLER, { blocked = { "This city needs at least 2 [ICON_Citizen] Population." } }) })
 		)
 	end)

@@ -65,7 +65,7 @@ local function PurchaseOption(city, purchase, params, hash, formation)
 		option.blocked = SentientSystems_GetFailureReasons(results)
 
 		if not canAfford then
-			option.blocked[#option.blocked + 1] = Locale.Lookup(purchase.cantAffordKey)
+			option.blocked[#option.blocked + 1] = SentientSystems_LookupText(purchase.cantAffordKey)
 		end
 	end
 
@@ -157,7 +157,7 @@ local function GetTilePurchases(city)
 		local tile = { x = plot:GetX(), y = plot:GetY(), cost = cost }
 
 		if cost > gold then
-			tile.blocked = { Locale.Lookup(NEED_MORE_GOLD_KEY, cost - math.floor(gold)) }
+			tile.blocked = { SentientSystems_LookupText(NEED_MORE_GOLD_KEY, cost - math.floor(gold)) }
 		end
 
 		tiles[#tiles + 1] = tile
