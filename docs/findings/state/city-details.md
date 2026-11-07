@@ -1,12 +1,12 @@
 # City details in the state
 
-Status: in progress. The city religion, and a rival city's, are confirmed in a running game with Gathering Storm. The room for a purchased unit is not yet checked.
+Status: confirmed. The city religion, and a rival city's, are confirmed in a running game with Gathering Storm. The room for a purchased unit is not a state field, and is confirmed for every kind of unit.
 
 The calls the city details in the state use, as the city banner and the Religion screen show them. The unit details are in [unit-details.md](unit-details.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
-- What does the purchase room call return?
+None open.
 
 ## What we know now
 
@@ -36,6 +36,16 @@ A city can also convert from neutral, such as Rotterdam to Protestantism in 4 tu
 All 11 cities of the player came to 3,386 bytes once three religions had spread, about 310 for each, so the religion is part of the cities section.
 
 The 47 rival cities on revealed tiles came to 10,974 bytes of religion, about 230 each, in 19,347 bytes for the rival cities. 12 of them were converting and 2 had a majority they would lose.
+
+### Room for a purchased unit
+
+The room isn't in the state. The game's purchase check already answers it for each kind of unit, because a purchased unit appears on a tile that depends on its kind.
+
+A military unit appears in the encampment and then the city center, a ship in the harbor and then the city center, and a religious unit in the holy site and then the city center. A civilian or support unit appears in the city center.
+
+An air unit appears in the aerodrome, which holds 4 aircraft, and a full one gives its own reason.
+
+A city with room for one kind can have none for another, so a field for the city would be wrong for most units. Each purchase option carries the game's reason instead, `Too many units of the same class in this location.`. See [choices/purchases.md](../choices/purchases.md#room-for-a-unit).
 
 ## Method
 

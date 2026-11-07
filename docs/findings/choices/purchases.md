@@ -2,6 +2,8 @@
 
 Status: open. The units and buildings each city can buy with gold or faith, and the tiles each city can buy with gold, are confirmed in a running game. District purchases are confirmed in files only. Corps and armies are confirmed in files only.
 
+The room for a purchased unit is confirmed for every kind of unit.
+
 The calls the purchase choices use to list what each city can buy with gold and faith, as the purchase tabs and the purchase lens list them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
@@ -38,6 +40,19 @@ Confirmed in files.
 - **Cost.** `city:GetGold():GetPurchaseCost(yieldIndex, hash)`, and for a unit's corps or army, `GetPurchaseCost(yieldIndex, hash, formation)`. Confirmed in files and on Windows on 2026-10-26.
 - **Corps and armies.** When the results have `CityOperationResults.CAN_TRAIN_CORPS` or `CAN_TRAIN_ARMY`, the panel checks the formation again with `params[CityCommandTypes.PARAM_MILITARY_FORMATION_TYPE]` set, and `CanAfford(cityID, hash, formation)`. Confirmed in files.
 
+### Room for a unit
+
+A purchased unit appears on a tile that depends on its kind, and the purchase check takes that into account. The tile's own units decide, so a city can buy one kind of unit and not another. The option carries the game's reason, `Too many units of the same class in this location.`.
+
+- **Military.** The unit appears in the encampment. When a military unit stands there, it appears in the city center, and when one stands there too, the city can't buy a military unit.
+- **Naval.** The unit appears in the harbor, and then in the city center, which needs a coast or a canal. An inland city doesn't list a ship.
+- **Religious.** The unit appears in the holy site, and then in the city center. A city with no holy site doesn't list a religious unit.
+- **Civilian and support.** The unit appears in the city center, and a unit of the same class there blocks it. A unit of another class doesn't.
+- **Air.** The unit appears in an aerodrome, which holds 4 aircraft. A unit counts only when it is based there, not when it stands on the tile. A full city is blocked with another reason, `This city is at full capacity for aircraft.`.
+- **Production.** A city that can't buy a unit can still produce it, as the player reports. Not checked.
+
+Confirmed on Windows on 2026-11-06, as the results below show.
+
 ### Tile purchases
 
 `ShowPurchases` in `Base/Assets/UI/WorldView/PlotInfo.lua`, lines 247 to 351, draws the purchase lens. The expansions don't replace the file.
@@ -57,6 +72,9 @@ Confirmed in files and on Windows on 2026-10-26.
 
    Faith added during a turn doesn't allow a pantheon until the next turn: `GetReligion():CanCreatePantheon()` returned `false` with 600 faith. End the turn, pick a pantheon, then found a religion with the prophet.
 3. Read the choices as in [choices/production.md](production.md#method), steps 4 and 5.
+4. To see the room for a unit, in `GameCore_Tuner`, send `UnitManager.InitUnit(0, "UNIT_MUSKETMAN", x, y)` on the encampment, the center, the harbor, or the holy site, with a ship, a missionary, or a builder for the other kinds.
+
+   Ask `CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, false, params, true)` for a unit of each kind, and remove the test units afterwards with `Players[0]:GetUnits():Destroy(unit)`.
 
 ## Results
 
@@ -74,4 +92,19 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 - **Tiles to buy with gold for Rome on turn 15, with 107 gold.** 17 tiles, each 30 or 45 gold, such as (19,14) for 30 and (17,11) for 45, none blocked. The choices were 2,444 bytes.
 - **The same with 27 gold, after `ChangeGoldBalance(-80)`.** Each 45-gold tile blocked with `You need 18 more [ICON_Gold] in order to purchase this plot.`, and each 30-gold tile with `You need 3 more`.
 
-Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.
+Room for a unit, on turn 54 in a game with 11 cities, in `SentientSystemsCore_UI`, with units placed in `GameCore_Tuner`:
+
+| City and tiles | Result |
+| --- | --- |
+| Bibrax, inland, with a Musketman in the encampment and in the center, and a Builder in the center | The Horseman and the Settler were blocked with the reason, the Military Engineer was not, and no ship was listed |
+| Aduatuca, with a harbor and an encampment, none occupied | A Horseman, a Settler, a Military Engineer, and a Caravel could all be bought |
+| The same, with a Musketman in the encampment | No change |
+| The same, with a Musketman in the center too | The Horseman was blocked, and the Settler and the Military Engineer were not |
+| The same, with a Caravel in the harbor, then in the center | The Caravel could be bought with one, and was blocked with both |
+| Lutetia, coastal with no harbor, with a Caravel in the center | The Caravel was listed, and blocked once the ship stood in the center |
+| Lisieux, with a harbor and a holy site, with a Missionary in the holy site, then in the center | The Missionary and the Apostle could be bought with one, and were blocked with both. The Settler and the Caravel were not |
+| Aduatuca and Bibrax, with no holy site | The Missionary wasn't listed |
+| Avaricum, with an aerodrome and one Jet Bomber, filled with Jet Fighters sent in by rebase | The aerodrome took 3 more. With 4 aircraft both jets were blocked with `This city is at full capacity for aircraft.`, which the purchase choice showed. Fighters spawned on the tile didn't count |
+| `SentientSystems_GetPurchaseChoices` for Lisieux, with a Builder in the center | The Settler and the Builder carried `Too many units of the same class in this location.`, and the Trader did not |
+
+Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26 and 2026-11-06.
