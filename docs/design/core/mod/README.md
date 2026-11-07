@@ -33,3 +33,4 @@ The zod schemas in `packages/core/bridge/src/` are the only home of the JSON sha
 | The core mod has no gameplay script until checkpoint IDs need one | Nothing else needs a gameplay state yet |
 | Each mod file name starts with the mod's prefix, such as `SentientSystemsCore_` | `include` finds a file by name among every enabled mod's imported files, so a generic name can load another mod's file |
 | The zod schemas are the only home of the JSON shapes, and no reference is generated from them | The shapes were once in up to five places, and a copy that drifted misled the next reader. Each schema file is 13 to 85 lines, so an agent reads the one it needs. A generated file would be large |
+| Game text goes through the helpers in `SentientSystemsCore_Text.lua` | The game's text carries font icons and color tags that tell an agent nothing. The helpers name or drop each icon, drop the color tags, and turn `[NEWLINE]` into a new line, so every section reads the same |

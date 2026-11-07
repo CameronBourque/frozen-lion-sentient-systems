@@ -4,6 +4,4 @@ Known debt in the code and docs, with the proposed fix for each. Each file follo
 
 Add each new debt as a file, and list it in a table of File and Debt, in the order to work on them. A later debt can depend on an earlier one, as its file says.
 
-| File | Debt |
-| --- | --- |
-| [share-tooltip-lines.md](share-tooltip-lines.md) | The income section splits a tooltip with its own code, and should use the shared `SentientSystems_GetTooltipLines` |
+None.
