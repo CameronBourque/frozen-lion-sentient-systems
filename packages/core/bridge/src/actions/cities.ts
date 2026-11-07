@@ -5,10 +5,13 @@ import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
 
 // Replaces what a city is producing. The item is the type of an option of the
-// production choice, such as UNIT_WARRIOR. An ok result means the game took
+// production choice, such as UNIT_WARRIOR. A district or a wonder also takes
+// the tile, x and y, from the placement call. An ok result means the game took
 // the order.
-export function setProduction(client: TunerClient, playerID: number, cityID: number, item: string): Promise<ActionResult> {
-	return sendAction(client, `SentientSystems_SetProduction(${playerID}, ${cityID}, ${JSON.stringify(item)})`);
+export function setProduction(client: TunerClient, playerID: number, cityID: number, item: string, tile?: { x: number; y: number }): Promise<ActionResult> {
+	const place = tile === undefined ? "" : `, ${tile.x}, ${tile.y}`;
+
+	return sendAction(client, `SentientSystems_SetProduction(${playerID}, ${cityID}, ${JSON.stringify(item)}${place})`);
 }
 
 // Orders a city to shoot at a tile in its range. An ok result means the game

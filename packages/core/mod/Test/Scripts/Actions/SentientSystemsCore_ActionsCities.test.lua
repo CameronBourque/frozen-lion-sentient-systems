@@ -88,8 +88,15 @@ local PRODUCER = {
 			{ type = "UNIT_BLOCKED", cost = 40, turns = 4, blocked = {} },
 			{ type = "UNIT_SECRET", cost = 40, turns = 4, hidden = true },
 		},
-		buildings = { { type = "BUILDING_GRANARY", cost = 60, turns = 6 }, { type = "BUILDING_PYRAMIDS", cost = 200, turns = 20, wonder = true } },
-		districts = { { type = "DISTRICT_CAMPUS", cost = 54, turns = 6 } },
+		buildings = {
+			{ type = "BUILDING_GRANARY", cost = 60, turns = 6 },
+			{ type = "BUILDING_PYRAMIDS", cost = 200, turns = 20, wonder = true, tiles = { { x = 19, y = 20 } } },
+		},
+		districts = {
+			{ type = "DISTRICT_CAMPUS", cost = 54, turns = 6, tiles = { { x = 21, y = 20 } }, purchaseTiles = { { x = 22, y = 21 } } },
+			{ type = "DISTRICT_HOLY_SITE", cost = 54, turns = 6, tiles = { { x = 21, y = 21 } }, blocked = { "Requires Population of 13 or greater." } },
+			{ type = "DISTRICT_PLACED", cost = 54, turns = 6, placed = true },
+		},
 		projects = { { type = "PROJECT_SEND_AID", cost = 60, turns = 6 } },
 	},
 }
@@ -145,11 +152,49 @@ describe("SentientSystems_SetProduction", function()
 		assert.same({}, env.requests)
 	end)
 
-	it("fails for a district or a wonder, which need a tile", function()
+	it("places a district or a wonder on a tile of the city", function()
+		local env = Load(PRODUCER)
+		local O = env.CityOperationTypes
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS", 21, 20))
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "BUILDING_PYRAMIDS", 19, 20))
+		assert.equal(2, #env.requests)
+		assert.equal(21, env.requests[1].parameters[O.PARAM_X])
+		assert.equal(20, env.requests[1].parameters[O.PARAM_Y])
+		assert.is_number(env.requests[1].parameters[O.PARAM_DISTRICT_TYPE])
+		assert.equal(O.VALUE_REPLACE_AT, env.requests[1].parameters[O.PARAM_INSERT_MODE])
+		assert.equal(19, env.requests[2].parameters[O.PARAM_X])
+		assert.is_number(env.requests[2].parameters[O.PARAM_BUILDING_TYPE])
+	end)
+
+	it("asks for the tile of a district or a wonder", function()
 		local env = Load(PRODUCER)
 
-		assert.equal(Failed("DISTRICT_CAMPUS goes on a tile, which this action doesn't take yet."), env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS"))
-		assert.equal(Failed("BUILDING_PYRAMIDS goes on a tile, which this action doesn't take yet."), env.SentientSystems_SetProduction(0, PRODUCER.id, "BUILDING_PYRAMIDS"))
+		assert.equal(Failed("DISTRICT_CAMPUS goes on a tile. Give x and y, from the placement call."), env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS"))
+		assert.equal(Failed("BUILDING_PYRAMIDS goes on a tile. Give x and y, from the placement call."), env.SentientSystems_SetProduction(0, PRODUCER.id, "BUILDING_PYRAMIDS", 19))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for a tile that isn't a placement tile, or that the city has to buy first", function()
+		local env = Load(PRODUCER)
+
+		assert.equal(Failed("(30, 30) isn't a tile where DISTRICT_CAMPUS can go. Use a tile from the placement call."), env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS", 30, 30))
+		assert.equal(Failed("(22, 21) isn't in the city's territory yet. Buy the tile first."), env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS", 22, 21))
+		assert.same({}, env.requests)
+	end)
+
+	it("takes a district the city has placed with no tile", function()
+		local env = Load(PRODUCER)
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_PLACED"))
+		assert.is_nil(env.requests[1].parameters[env.CityOperationTypes.PARAM_X])
+	end)
+
+	it("gives the game's reasons when it won't start a district on a good tile", function()
+		local env = Load(With(PRODUCER, { operationBlocked = true }))
+
+		assert.equal(Failed("This city can't produce DISTRICT_HOLY_SITE now: Requires Population of 13 or greater."), env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_HOLY_SITE", 21, 21))
+		assert.equal(Failed("The game won't start DISTRICT_CAMPUS in this city."), env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS", 21, 20))
 		assert.same({}, env.requests)
 	end)
 

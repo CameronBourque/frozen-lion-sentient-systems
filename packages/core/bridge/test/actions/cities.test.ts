@@ -57,5 +57,13 @@ describe("setProduction", () => {
 
 		expect(await setProduction(client, 0, 65536, "UNIT_BUILDER")).toEqual({ ok: true });
 	});
+
+	test("passes the tile of a district", async () => {
+		const stash = "SentientSystems_Stash(SentientSystems_SetProduction(0, 65536, \"DISTRICT_CAMPUS\", 21, 20))";
+
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
+
+		expect(await setProduction(client, 0, 65536, "DISTRICT_CAMPUS", { x: 21, y: 20 })).toEqual({ ok: true });
+	});
 });
 

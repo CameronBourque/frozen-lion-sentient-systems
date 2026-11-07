@@ -168,6 +168,10 @@ return function(env, world, ctx)
 						[CITY_OPERATION_RESULTS.CAN_TRAIN_ARMY] = unit.army ~= nil or nil,
 					}
 				end,
+				-- Whether the city has placed the district or wonder already.
+				HasBeenPlaced = function(_, hash)
+					return (districtsByHash[hash] or buildingsByHash[hash] or {}).placed == true
+				end,
 				GetUnitCost = function(_, index)
 					return unitsByIndex[index].cost
 				end,
