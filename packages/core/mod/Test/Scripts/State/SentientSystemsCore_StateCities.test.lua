@@ -109,6 +109,39 @@ describe("SentientSystems_GetCityStates", function()
 		assert.is_nil(Load({ players = { [0] = { cities = { ROME } } } }).SentientSystems_GetState(0):find("converting", 1, true))
 	end)
 
+	it("gives a city's power as the Power tab shows it", function()
+		local env = Load({
+			players = { [0] = { cities = { With(ROME, { power = {
+				free = 2,
+				required = 7,
+				powered = false,
+				freeSources = { { name = "Solar", power = 2 } },
+				requiredSources = { { name = "Factory", power = 2 }, { name = "Stock Exchange", power = 3 }, { name = "Food Market", power = 1 }, { name = "Airport", power = 1 } },
+			} }) } } },
+		})
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"power\":{\"generated\":[],"
+			.. "\"required\":7,"
+			.. "\"requiredBy\":[{\"name\":\"Factory\",\"power\":2},{\"name\":\"Stock Exchange\",\"power\":3},{\"name\":\"Food Market\",\"power\":1},{\"name\":\"Airport\",\"power\":1}],"
+			.. "\"sources\":[{\"name\":\"Solar\",\"power\":2}],\"status\":\"unpowered\",\"usable\":2}", 1, true))
+	end)
+
+	it("says a city is powered when it is fully powered, and counts temporary power and a project", function()
+		local function Power(power)
+			return Load({ players = { [0] = { cities = { With(ROME, { power = power }) } } } }).SentientSystems_GetState(0)
+		end
+
+		local powered = Power({ free = 6, temporary = 1.25, required = 6, freeSources = { { name = "Hydroelectric", power = 6 } }, temporarySources = { { name = "Policy", power = 1.25 } } })
+
+		assert.truthy(powered:find("\"sources\":[{\"name\":\"Hydroelectric\",\"power\":6},{\"name\":\"Policy\",\"power\":1.3}],\"status\":\"powered\",\"usable\":7.3", 1, true))
+		assert.truthy(Power({ free = 0, required = 3, project = true }):find("\"status\":\"powered\",\"usable\":3", 1, true))
+	end)
+
+	it("says no power is needed when nothing needs it, and leaves out the power without Gathering Storm", function()
+		assert.truthy(Load({ players = { [0] = { cities = { With(ROME, { power = {} }) } } } }).SentientSystems_GetState(0):find("\"status\":\"none\",\"usable\":0", 1, true))
+		assert.is_nil(Load({ players = { [0] = { cities = { ROME } } } }).SentientSystems_GetState(0):find("\"power\":", 1, true))
+	end)
+
 	it("lists only the given player's cities", function()
 		local env = Load({
 			players = { [0] = { cities = { ROME } }, [1] = { cities = { { id = 65537, name = "Uruk", x = 10, y = 10, population = 5 } } } },

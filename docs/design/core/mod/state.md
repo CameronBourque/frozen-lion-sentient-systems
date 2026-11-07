@@ -13,9 +13,9 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The map.** Revealed tiles, the player's units, and the rival cities and units the player can see, with the religion of each city and the religion and religious strength of a religious rival unit.
 
   Each unit has what it is doing, its attacks left, its builder charges, and its formation. A religious unit has its religion, its religious strength, and its spread and heal charges, and a great person its class, individual, and action charges.
-- **The city panel, and the City Status tab of Reports.** Each city's yields, growth, housing, amenities, loyalty, defense, districts, production, growth rate status, war weariness, governor, and religion.
+- **The city panel, and the City Status tab of Reports.** Each city's yields, growth, housing, amenities, loyalty, defense, districts, production, growth rate status, war weariness, governor, power, and religion.
 
-  A city's religion is its majority, the pressure it exerts, the religion it will convert to and when, and the followers and pressure of each religion present.
+  A city's power is its status, the usable and required power, and what gives it power and needs it, with Gathering Storm. A city's religion is its majority, the pressure it exerts, the religion it will convert to and when, and the followers and pressure of each religion present.
 - **The Next Turn button.** What blocks the end of the turn.
 - **The top bar.** The gold and faith balances, the science, culture, faith, gold, and tourism per turn, the trade route capacity, and, with Gathering Storm, diplomatic favor.
 - **The Yields tab of Reports.** Income by source, building and unit upkeep, deal payments, and net income per turn.

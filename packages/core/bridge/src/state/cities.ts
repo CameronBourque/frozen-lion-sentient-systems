@@ -29,6 +29,9 @@ export const CITY_RELIGION = z.object({
 	})).describe("Every religion the city holds, with the followers of each, in the game's order."),
 });
 
+// A line of the Power tab: the text the game gives the source, and its power.
+const POWER_LINE = z.object({ name: z.string().describe("The game's text, such as Factory."), power: z.number() });
+
 export const CITY = z.object({
 	id: z.number(),
 	name: z.string().describe("In the game's language."),
@@ -74,6 +77,16 @@ export const CITY = z.object({
 		max: z.number(),
 		perTurn: z.number().describe("Rounded to the nearest tenth, as the city panel shows it."),
 	}).optional().describe("Left out in a game without the Rise and Fall expansion."),
+	power: z.object({
+		status: z.enum(["none", "powered", "unpowered"]).describe(
+			"None when no building needs power, unpowered when the city is not fully powered, as the Power tab shows it. An unpowered city's buildings with a power load are less effective.",
+		),
+		usable: z.number().describe("The power the city can use, the free and temporary power together, or the required power while a project powers it."),
+		required: z.number().describe("The power its buildings and projects need."),
+		sources: z.array(POWER_LINE).describe("What gives the city power: the free and the temporary sources, such as Solar."),
+		requiredBy: z.array(POWER_LINE).describe("What needs power, such as Factory."),
+		generated: z.array(POWER_LINE).describe("The power the city generates for others."),
+	}).optional().describe("The Power tab of the city panel. Left out without Gathering Storm."),
 	production: z.object({
 		type: z.string().optional().describe("Such as UNIT_SLINGER."),
 		turnsLeft: z.number(),

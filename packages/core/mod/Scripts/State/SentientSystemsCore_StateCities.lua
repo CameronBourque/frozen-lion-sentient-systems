@@ -189,6 +189,62 @@ function SentientSystems_GetCityDefense(player, city)
 	return defense
 end
 
+-- Returns a list of a power source breakdown, each as its text and its power
+-- rounded to the nearest tenth. The game gives each entry as a table with one
+-- key, the text of the source, such as Factory.
+local function GetPowerLines(sources)
+	local lines = {}
+
+	for _, entry in ipairs(sources) do
+		local name, power = next(entry)
+
+		lines[#lines + 1] = { name = name, power = RoundNearest(power) }
+	end
+
+	return lines
+end
+
+-- Returns the city's power as the Power tab of the city panel shows it, or nil
+-- without Gathering Storm, where the city has none. The panel says no power
+-- is needed at 0 required, unpowered when the city isn't fully powered, and
+-- powered otherwise. It shows the usable power as the free and temporary power
+-- together, or the required power when an active project powers the city. See
+-- CityPanelPower.lua.
+local function GetPower(city)
+	local power = city:GetPower()
+
+	if power == nil then
+		return nil
+	end
+
+	local required = power:GetRequiredPower()
+	local usable = power:GetFreePower() + power:GetTemporaryPower()
+	local status = "powered"
+
+	if required == 0 then
+		status = "none"
+	elseif not power:IsFullyPowered() then
+		status = "unpowered"
+	elseif power:IsFullyPoweredByActiveProject() then
+		usable = required
+	end
+
+	local sources = GetPowerLines(power:GetFreePowerSources())
+
+	for _, line in ipairs(GetPowerLines(power:GetTemporaryPowerSources())) do
+		sources[#sources + 1] = line
+	end
+
+	return {
+		status = status,
+		usable = RoundNearest(usable),
+		required = RoundNearest(required),
+		sources = sources,
+		requiredBy = GetPowerLines(power:GetRequiredPowerSources()),
+		generated = GetPowerLines(power:GetGeneratedPowerSources()),
+	}
+end
+
 -- Rounds a number to the nearest whole number, as the banner rounds a pressure.
 local function RoundWhole(number)
 	return math.floor(number + 0.5)
@@ -258,6 +314,7 @@ function SentientSystems_GetCityStates(player)
 			governor = GetGovernor(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
+			power = GetPower(city),
 			production = GetProduction(city),
 			religion = SentientSystems_GetCityReligion(city),
 			yields = GetYields(city),
