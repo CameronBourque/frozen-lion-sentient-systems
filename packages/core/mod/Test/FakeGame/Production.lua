@@ -30,6 +30,7 @@ return function(env, world, ctx)
 				row.Hash = hashes[building.type]
 				row.MustPurchase = building.mustPurchase == true
 				row.IsWonder = building.wonder == true
+				row.RequiresPlacement = building.wonder == true
 				row.PrereqDistrict = building.district
 			end
 
@@ -42,6 +43,7 @@ return function(env, world, ctx)
 				row.Hash = hashes[district.type]
 				row.OnePerCity = district.onePerCity ~= false
 				row.InternalOnly = district.internalOnly == true
+				row.RequiresPlacement = district.requiresPlacement ~= false
 			end
 
 			for _, project in ipairs((city.options or {}).projects or {}) do

@@ -14,4 +14,5 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [spies.md](spies.md) | The game calls that start a spy mission or a trip, and the reasons their checks give |
 | [religious-units.md](religious-units.md) | The game calls that found a religion, spread it, heal followers, and condemn a heretic, and the reasons their checks give |
 | [trade.md](trade.md) | The game calls that start a trade route and plunder one, and the reasons their checks give |
+| [production.md](production.md) | The game call that sets a city's production, how the panel replaces or queues an item, and the reasons its checks give |
 | [end-turn.md](end-turn.md) | The game call that ends the turn, and how the end-turn blockers interact with it |

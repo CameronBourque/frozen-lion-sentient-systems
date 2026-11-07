@@ -42,6 +42,12 @@ A ship's attack on a land tile it can raid is a coastal raid, and a refusal list
 
 `SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot.
 
+### Production
+
+`SentientSystems_SetProduction(playerID, cityID, item)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` replaces what a city is producing. The item is the `type` of an option of the `production` choice, such as `UNIT_BUILDER`, and a unit is a standard unit, not a corps or an army.
+
+Its reasons name a type that is no unit, building, district, wonder, or project, and an item the panel doesn't list for the city. An item the panel greys out gets the game's own reasons. A district or a wonder gets a reason that it needs a tile. See [production.md](../../../findings/actions/production.md).
+
 ### Trade routes
 
 `SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)` in `Scripts/Actions/SentientSystemsCore_ActionsTrade.lua` starts a route from the city a trader stands in to a destination of the `tradeRoutes` choice. The city is named by its owner and its ID, as the choice lists it.

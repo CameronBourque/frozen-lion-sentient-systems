@@ -2,7 +2,7 @@
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { cityAttack } from "../../src/actions/cities.js";
+import { cityAttack, setProduction } from "../../src/actions/cities.js";
 import { CORE_STATE } from "../../src/connect.js";
 import { TunerClient } from "../../src/tuner/client.js";
 import { FakeGame } from "../tuner/fake-game.js";
@@ -32,3 +32,30 @@ describe("cityAttack", () => {
 		expect(await cityAttack(client, 0, 262147, 38, 38)).toEqual({ ok: false, reason: "You can't see that tile." });
 	});
 });
+
+describe("setProduction", () => {
+	let game: FakeGame;
+	let client: TunerClient;
+
+	beforeEach(async () => {
+		game = await FakeGame.start();
+		game.states = [{ index: 0, name: "Main State" }, { index: 130, name: CORE_STATE }];
+		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
+		client.connect();
+		await once(client, "connected");
+	});
+
+	afterEach(async () => {
+		client.close();
+		await game.close();
+	});
+
+	test("asks the core mod to produce the item in the city", async () => {
+		const stash = "SentientSystems_Stash(SentientSystems_SetProduction(0, 65536, \"UNIT_BUILDER\"))";
+
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
+
+		expect(await setProduction(client, 0, 65536, "UNIT_BUILDER")).toEqual({ ok: true });
+	});
+});
+

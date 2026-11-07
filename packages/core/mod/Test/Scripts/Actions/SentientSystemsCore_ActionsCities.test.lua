@@ -73,3 +73,91 @@ describe("SentientSystems_CityAttack", function()
 		assert.equal(Failed("The game won't start that attack."), Load(With(CITY, { attackBlocked = true })).SentientSystems_CityAttack(0, CITY.id, 22, 20))
 	end)
 end)
+
+-- A city with production options: a unit, a building, a wonder, a district, a
+-- project, a unit the city can't produce yet, and one the panel hides.
+local PRODUCER = {
+	id = 65536,
+	name = "LOC_CITY_NAME_BIBRAX",
+	x = 20,
+	y = 20,
+	options = {
+		units = {
+			{ type = "UNIT_BUILDER", cost = 50, turns = 5 },
+			{ type = "UNIT_TRADER", cost = 40, turns = 4, blocked = { "Your Civilization needs more Trade Route capacity." } },
+			{ type = "UNIT_BLOCKED", cost = 40, turns = 4, blocked = {} },
+			{ type = "UNIT_SECRET", cost = 40, turns = 4, hidden = true },
+		},
+		buildings = { { type = "BUILDING_GRANARY", cost = 60, turns = 6 }, { type = "BUILDING_PYRAMIDS", cost = 200, turns = 20, wonder = true } },
+		districts = { { type = "DISTRICT_CAMPUS", cost = 54, turns = 6 } },
+		projects = { { type = "PROJECT_SEND_AID", cost = 60, turns = 6 } },
+	},
+}
+
+describe("SentientSystems_SetProduction", function()
+	it("replaces the production with a unit, a building, or a project", function()
+		local env = Load(PRODUCER)
+		local O = env.CityOperationTypes
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_BUILDER"))
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "BUILDING_GRANARY"))
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "PROJECT_SEND_AID"))
+		assert.equal(3, #env.requests)
+
+		for index, key in ipairs({ O.PARAM_UNIT_TYPE, O.PARAM_BUILDING_TYPE, O.PARAM_PROJECT_TYPE }) do
+			local request = env.requests[index]
+
+			assert.equal(O.BUILD, request.operation)
+			assert.equal(O.VALUE_REPLACE_AT, request.parameters[O.PARAM_INSERT_MODE])
+			assert.equal(0, request.parameters[O.PARAM_QUEUE_DESTINATION_LOCATION])
+			assert.is_number(request.parameters[key])
+		end
+	end)
+
+	it("fails for a city the player doesn't have", function()
+		local env = Load(PRODUCER)
+
+		assert.equal(Failed("Player 0 has no city 9."), env.SentientSystems_SetProduction(0, 9, "UNIT_BUILDER"))
+		assert.equal(Failed("Player 3 has no city 9."), env.SentientSystems_SetProduction(3, 9, "UNIT_BUILDER"))
+	end)
+
+	it("fails for a name that is no unit, building, district, or project", function()
+		local env = Load(PRODUCER)
+		local reason = "isn't a unit, building, district, wonder, or project. Use the type of an option of the production choice."
+
+		assert.equal(Failed("UNIT_NOPE " .. reason), env.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_NOPE"))
+		assert.equal(Failed("nil " .. reason), env.SentientSystems_SetProduction(0, PRODUCER.id))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for an item that isn't among the city's choices", function()
+		local env = Load(PRODUCER)
+
+		assert.equal(Failed("UNIT_SECRET isn't one of this city's production choices."), env.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_SECRET"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for an item the panel greys out, with the game's reasons", function()
+		local env = Load(PRODUCER)
+
+		assert.equal(Failed("This city can't produce UNIT_TRADER now: Your Civilization needs more Trade Route capacity."), env.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_TRADER"))
+		assert.equal(Failed("This city can't produce UNIT_BLOCKED now."), env.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_BLOCKED"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for a district or a wonder, which need a tile", function()
+		local env = Load(PRODUCER)
+
+		assert.equal(Failed("DISTRICT_CAMPUS goes on a tile, which this action doesn't take yet."), env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS"))
+		assert.equal(Failed("BUILDING_PYRAMIDS goes on a tile, which this action doesn't take yet."), env.SentientSystems_SetProduction(0, PRODUCER.id, "BUILDING_PYRAMIDS"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails when the game won't start the build", function()
+		local env = Load(With(PRODUCER, { operationBlocked = true }))
+
+		assert.equal(Failed("The game won't start UNIT_BUILDER in this city."), env.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_BUILDER"))
+		assert.same({}, env.requests)
+	end)
+end)
+
