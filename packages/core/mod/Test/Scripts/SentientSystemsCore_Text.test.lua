@@ -14,6 +14,10 @@ describe("SentientSystems_GetTooltipLines", function()
 		assert.same({ "MINE", "Generating +1 Tourism", "Lifetime: 30 Tourism" }, lines)
 	end)
 
+	it("drops the color tags", function()
+		assert.same({ "Damaged district" }, env.SentientSystems_GetTooltipLines("[COLOR_RED]Damaged district[ENDCOLOR]"))
+	end)
+
 	it("drops a list marker, without the dash", function()
 		assert.same({ "+5 from Menelik II" }, env.SentientSystems_GetTooltipLines("[NEWLINE] [ICON_Bullet]+5 from Menelik II"))
 	end)
@@ -61,6 +65,10 @@ describe("SentientSystems_CleanText", function()
 		assert.equal("Citizen", Clean("[ICON_Citizen]"))
 		assert.equal("Rising", Clean("[ICON_PressureUp] Rising"))
 		assert.equal("+5 Combat Strength.", Clean("+5 [ICON_Strength] Combat Strength."))
+	end)
+
+	it("drops the color tags, whichever way they are written", function()
+		assert.equal("-3 Unfavorable Terrain and 5 Rising", Clean("[COLOR_RED]-3 Unfavorable Terrain[ENDCOLOR] and [COLOR:ResCultureLabelCS]5[ENDCOLOR] [COLOR_GREEN][ICON_PressureUp] Rising[ENDCOLOR]"))
 	end)
 
 	it("drops a checkmark", function()
