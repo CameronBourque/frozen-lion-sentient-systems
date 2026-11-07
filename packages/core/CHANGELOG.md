@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.12.0...core-v0.13.0) (2026-11-07)
+
+
+### Features
+
+* **core:** clean the game's icons, colors, and new lines from its text ([#70](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/70)) ([ffbf535](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/ffbf5354b4ee8530741ca0e4c9728d4e15600844))
+
 ## [0.12.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.11.0...core-v0.12.0) (2026-11-07)
 
 
