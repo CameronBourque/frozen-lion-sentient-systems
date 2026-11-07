@@ -56,7 +56,7 @@ Where each kind of fact lives:
 
 ## Roadmap
 
-- Each phase is a folder, `roadmap/phase-N/`, with a `README.md` that holds the summary, the gate as one sentence, and a step table. Its `done.md` records the finished steps.
+- Each phase is a folder, `roadmap/phase-N/`, with a `README.md` that holds the summary, the gate as one sentence, and a step table. Its `done.md` records the finished steps. When that file nears the length limit, it becomes a `done/` folder with an index and one file for each kind of step.
 - **The step table's Status column is the only progress tracker.** Don't add checklists that repeat it. What each step must achieve lives in its "Done when".
 - **The step table's `#` column is the only place that sets the order.** Step files have no number in their names, and docs refer to a step by its name and a link, never by its number, so inserting a step renumbers one table and no link.
 - **One step is one pull request.** Split a phase into steps by what can be reviewed and released together. The step table has a PR title column, and a step's tasks are its commits. Two small steps can share a pull request, and the table says so.
@@ -69,16 +69,16 @@ Where each kind of fact lives:
 - A step's tasks are small: one commit each, described in a sentence or two. Don't give a task its own file or a step its own folder. The details live in findings and design. Turn a step into a folder only if its file passes 150 lines.
 - Steps link to a finding's `## Method` instead of restating a test procedure.
 - A step file exists only to get its results into findings and design. When a step is done and its `## Record` items are written, delete its file. Git keeps its history.
-- **Record a finished step in the phase's `done.md`.** Add a `##` section named after the step, with its pull request, a sentence on what it delivered, and the files and sections that hold its results.
+- **Record a finished step in the phase's `done.md`, or in the file of `done/` for its kind of step.** Add a `##` section named after the step, with its pull request, a sentence on what it delivered, and the files and sections that hold its results.
 
-  In the step table, set its status to "Done" and link that section, such as `Done. See [done.md](done.md#load-signal)`. The details stay out of the table, so its rows stay short.
+  In the step table, set its status to "Done" and link that section, such as `Done. See [setup.md](done/setup.md#load-signal)`. The details stay out of the table, so its rows stay short.
 - If a step that isn't done yet links to a done step's file, copy what it needs from that file into the linking step, with whether and when each check passed. Then delete the done step's file.
 - To close a phase:
   1. Check that every step's status is Done.
   2. Update its status in [roadmap/README.md](../roadmap/README.md).
   3. Update [risks.md](../risks.md).
   4. Move what it proved into findings or design.
-  5. Delete any step files that remain. In the phase README, replace the step table with a short list of what the phase proved and a link to its `done.md`.
+  5. Delete any step files that remain. In the phase README, replace the step table with a short list of what the phase proved and a link to its `done.md` or `done/` folder.
 
 ## Tech debt
 
