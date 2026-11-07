@@ -11,6 +11,24 @@ export const DEFENSE = z.object({
 	walls: HEALTH.optional().describe("Left out for a city with none."),
 });
 
+// A city's religion, as its banner shows it. The rivals section uses it too.
+export const CITY_RELIGION = z.object({
+	majority: z.string().optional().describe("Such as RELIGION_BUDDHISM. Left out while no religion has the most followers."),
+	outwardPressure: z.number().describe(
+		"The pressure the city exerts on other cities each turn, for its majority religion, rounded as the banner rounds it. 0 while it has no majority.",
+	),
+	converting: z.object({
+		type: z.string().describe("The religion the city will convert to."),
+		turns: z.number().describe("The turns until it converts, as the banner shows them."),
+	}).optional().describe("Left out while the city isn't about to change its religion."),
+	present: z.array(z.object({
+		type: z.string().describe("RELIGION_PANTHEON for the citizens with no religion."),
+		followers: z.number(),
+		pressure: z.number().optional().describe("The pressure on the city each turn, rounded as the banner rounds it. Left out for the pantheon."),
+		totalPressure: z.number().optional().describe("The pressure the city has received in all, rounded, as the banner's tooltip shows it. Left out for the pantheon."),
+	})).describe("Every religion the city holds, with the followers of each, in the game's order."),
+});
+
 export const CITY = z.object({
 	id: z.number(),
 	name: z.string().describe("In the game's language."),
@@ -60,22 +78,7 @@ export const CITY = z.object({
 		type: z.string().optional().describe("Such as UNIT_SLINGER."),
 		turnsLeft: z.number(),
 	}).optional().describe("Left out when the city produces nothing."),
-	religion: z.object({
-		majority: z.string().optional().describe("Such as RELIGION_BUDDHISM. Left out while no religion has the most followers."),
-		outwardPressure: z.number().describe(
-			"The pressure the city exerts on other cities each turn, for its majority religion, rounded as the banner rounds it. 0 while it has no majority.",
-		),
-		converting: z.object({
-			type: z.string().describe("The religion the city will convert to."),
-			turns: z.number().describe("The turns until it converts, as the banner shows them."),
-		}).optional().describe("Left out while the city isn't about to change its religion."),
-		present: z.array(z.object({
-			type: z.string().describe("RELIGION_PANTHEON for the citizens with no religion."),
-			followers: z.number(),
-			pressure: z.number().optional().describe("The pressure on the city each turn, rounded as the banner rounds it. Left out for the pantheon."),
-			totalPressure: z.number().optional().describe("The pressure the city has received in all, rounded, as the banner's tooltip shows it. Left out for the pantheon."),
-		})).describe("Every religion the city holds, with the followers of each, in the game's order."),
-	}),
+	religion: CITY_RELIGION,
 	yields: z.object({
 		food: z.number(),
 		production: z.number(),

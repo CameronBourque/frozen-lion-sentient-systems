@@ -5,7 +5,7 @@
 -- Returns a list of the other living players' cities on tiles that the player
 -- with ID playerID has revealed. A city's banner shows on a revealed tile,
 -- fogged or not. City IDs repeat across players, so owner and id together name
--- a city.
+-- a city. A city has its religion, as its banner shows it.
 function SentientSystems_GetRivalCityStates(playerID)
 	local visibility = PlayersVisibility[playerID]
 	local cities = {}
@@ -25,6 +25,7 @@ function SentientSystems_GetRivalCityStates(playerID)
 						population = city:GetPopulation(),
 						capital = city:IsCapital(),
 						defense = SentientSystems_GetCityDefense(player, city),
+						religion = SentientSystems_GetCityReligion(city),
 					}
 				end
 			end

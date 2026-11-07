@@ -2,7 +2,7 @@
 // Scripts/State/SentientSystemsCore_StateRivals.lua.
 
 import { z } from "zod";
-import { DEFENSE } from "./cities.js";
+import { CITY_RELIGION, DEFENSE } from "./cities.js";
 import { HEALTH } from "./units.js";
 
 // City IDs repeat across players, so owner and id together name a city.
@@ -15,6 +15,7 @@ export const RIVAL_CITY = z.object({
 	population: z.number(),
 	capital: z.boolean(),
 	defense: DEFENSE,
+	religion: CITY_RELIGION,
 }).describe("A city on a tile the player has revealed, fogged or not, as its banner shows it.");
 
 // Unit IDs repeat across players, so owner and id together name a unit.

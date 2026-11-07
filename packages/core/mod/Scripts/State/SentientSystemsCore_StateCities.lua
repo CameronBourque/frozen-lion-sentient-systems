@@ -214,8 +214,9 @@ end
 -- GetTotalPressureOnCity for the pressure each turn, and the list's own
 -- Pressure for the total. CitySupport.lua names the entry for citizens with no
 -- religion, whose index is below 1, RELIGION_PANTHEON, and the banner shows no
--- pressure for it, and the conversion. See docs/findings/state/unit-details.md.
-local function GetReligion(city)
+-- pressure for it, and the conversion. See docs/findings/state/city-details.md.
+-- The rivals section uses it too.
+function SentientSystems_GetCityReligion(city)
 	local cityReligion = city:GetReligion()
 	local majority = cityReligion:GetMajorityReligion()
 	local present = {}
@@ -258,7 +259,7 @@ function SentientSystems_GetCityStates(player)
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
 			production = GetProduction(city),
-			religion = GetReligion(city),
+			religion = SentientSystems_GetCityReligion(city),
 			yields = GetYields(city),
 		}
 	end
