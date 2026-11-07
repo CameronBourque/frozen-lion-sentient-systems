@@ -28,10 +28,14 @@ return function(env, world, ctx)
 		return results
 	end
 
-	-- The units on a plot, each with the ID of its player.
+	-- The units on a plot in any layer, each with the ID of its player. The
+	-- game's GetUnitsInPlot leaves out the religious, trade, and spy layers, so
+	-- the fake has only the call that asks every layer.
+	env.MapLayers = { ANY = -1 }
 	env.Units = {
-		GetUnitsInPlot = function(plot)
-			local x, y = plot.GetIndex() % MAP_WIDTH, math.floor(plot.GetIndex() / MAP_WIDTH)
+		GetUnitsInPlotLayerID = function(x, y, layer)
+			assert(layer == env.MapLayers.ANY, "no fake for this layer")
+
 			local found = {}
 
 			for id, player in pairs(env.Players) do

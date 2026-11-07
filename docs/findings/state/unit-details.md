@@ -55,7 +55,7 @@ Religious units can attack each other freely. An inquisitor attacked a missionar
 
 The request is the one a melee unit uses: `UnitManager.RequestOperation(unit, UnitOperationTypes.MOVE_TO, { PARAM_X, PARAM_Y, PARAM_MODIFIERS = ATTACK + MOVE_IGNORE_UNEXPLORED_DESTINATION })` on an adjacent tile, which `CanStartOperation` allowed. A request without the `ATTACK` modifier did nothing.
 
-The `attack` action refuses a religious unit, with "This kind of unit can't attack.", because the unit has no combat strength.
+The `attack` action refused a religious unit, with "This kind of unit can't attack.", because the unit has no combat strength. It now attacks with the religious strength. See [actions/attacks.md](../actions/attacks.md).
 
 ## Method
 
@@ -84,7 +84,7 @@ A single-player game with Gathering Storm, with 41 units of one player, in `Sent
 | Great people | The class, the individual, and 1 charge for scientists, admirals, and merchants, 4 for an engineer, and 0 for a prophet before it founded a religion |
 | Rival religious units | In a game on turn 53, 9 of the 49 visible rival units had a religion: 4 Islam and 3 Orthodoxy missionaries, and 2 Shinto apostles. They were the same units that a direct probe found on visible tiles, and the 40 other units had none |
 | Religious strength | The player's four inquisitors had 75, and the visible rival missionaries 100 and apostles 110. Units with none had no field |
-| A religious attack | An inquisitor next to an Islam missionary, whose owner wasn't at war with the player, attacked with the melee request. It took 19 damage and the missionary 46. The `attack` action refused it |
+| A religious attack | An inquisitor next to an Islam missionary, whose owner wasn't at war with the player, attacked with the melee request. It took 19 damage and the missionary 46. The `attack` action refused it, and accepted it after the fix |
 | `condemn_heretic` | A knight on the tile of a Shinto apostle of a player at war passed the check, and the request removed the apostle and left the knight with no moves |
 | A spy on a mission | `awake` before, and `operation` right after a Gain Sources mission started |
 
