@@ -24,6 +24,7 @@ export const UNIT = z.object({
 	buildCharges: z.number().optional().describe("The builder charges left. Left out at 0."),
 	formation: z.enum(["corps", "army"]).optional().describe("A corps or army, or a fleet or armada at sea. Left out for a single unit."),
 	religion: z.string().optional().describe("The religion of a religious unit, such as RELIGION_CHRISTIANITY. Left out for any other unit."),
+	religiousStrength: z.number().optional().describe("The strength that decides a religious attack. Left out at 0, for a unit that isn't religious."),
 	spreadCharges: z.number().optional().describe("The spreads left. Left out at 0."),
 	healCharges: z.number().optional().describe("The heals left. Left out at 0."),
 	greatPerson: z.object({

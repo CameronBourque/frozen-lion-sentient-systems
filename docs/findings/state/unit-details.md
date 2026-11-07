@@ -45,6 +45,18 @@ The rivals section lists a unit only on a tile that is visible now, so a rival r
 
 `condemn_heretic` needs it. `UNITCOMMAND_CONDEMN_HERETIC` is open to a unit that shares a tile with a religious unit of another religion whose owner is at war with the player, and the state now says whose religion that is.
 
+### Religious strength and religious attacks
+
+`unit:GetReligiousStrength()` is the strength the panel shows for a religious unit, at lines 1436 and 2257. It was 100 for a missionary, 110 for an apostle, and 75 for an inquisitor.
+
+It decides a religious attack, so the state gives it for the player's units and for visible rival units, and leaves it out at 0.
+
+Religious units can attack each other freely. An inquisitor attacked a missionary of a player it wasn't at war with, and only condemning needs a war. Confirmed in a running game.
+
+The request is the one a melee unit uses: `UnitManager.RequestOperation(unit, UnitOperationTypes.MOVE_TO, { PARAM_X, PARAM_Y, PARAM_MODIFIERS = ATTACK + MOVE_IGNORE_UNEXPLORED_DESTINATION })` on an adjacent tile, which `CanStartOperation` allowed. A request without the `ATTACK` modifier did nothing.
+
+The `attack` action refuses a religious unit, with "This kind of unit can't attack.", because the unit has no combat strength.
+
 ## Method
 
 1. To read the units section before the `.modinfo` loads it, send `SentientSystemsCore_StateUnits.lua` through the tuner as in [choices/production.md](../choices/production.md#method), step 4, and call `SentientSystems_GetUnitStates(Players[Game.GetLocalPlayer()])`.
@@ -52,7 +64,8 @@ The rivals section lists a unit only on a tile that is visible now, so a rival r
 3. For the rival units, load `SentientSystemsCore_StateUnits.lua` and `SentientSystemsCore_StateRivals.lua` the same way, and call `SentientSystems_GetRivalUnitStates(0)`. Compare the religious units with `UnitManager.GetUnit(owner, id)` on the tiles the player sees.
 
    To try `condemn_heretic`, send `UnitManager.InitUnit(0, "UNIT_KNIGHT", x, y)` and `RestoreMovement` in `GameCore_Tuner` on the tile of a visible unit of a player at war with you, then `UnitManager.RequestCommand` with the command's hash.
-4. For religious units, found a religion with a prophet on a holy site, and buy a missionary, an apostle, an inquisitor, and a guru in a city with a shrine and a temple.
+4. For a religious attack, send the melee request above from an inquisitor to an adjacent tile with a rival religious unit, and read both units' `GetDamage()`.
+5. For religious units, found a religion with a prophet on a holy site, and buy a missionary, an apostle, an inquisitor, and a guru in a city with a shrine and a temple.
 
    In `GameCore_Tuner`, `Players[0]:GetCulture():SetCivic(index, true)` gives Theology, and `WorldBuilder.CityManager():CreateBuilding(city, "BUILDING_TEMPLE", 100, plotIndex)` adds the temple.
 
@@ -70,6 +83,8 @@ A single-player game with Gathering Storm, with 41 units of one player, in `Sent
 | Religious units | A missionary, an apostle, and an inquisitor had the founded religion, a strength of 100, 110, and 75, and 3 spreads. A guru had strength 90 and 3 heals |
 | Great people | The class, the individual, and 1 charge for scientists, admirals, and merchants, 4 for an engineer, and 0 for a prophet before it founded a religion |
 | Rival religious units | In a game on turn 53, 9 of the 49 visible rival units had a religion: 4 Islam and 3 Orthodoxy missionaries, and 2 Shinto apostles. They were the same units that a direct probe found on visible tiles, and the 40 other units had none |
+| Religious strength | The player's four inquisitors had 75, and the visible rival missionaries 100 and apostles 110. Units with none had no field |
+| A religious attack | An inquisitor next to an Islam missionary, whose owner wasn't at war with the player, attacked with the melee request. It took 19 damage and the missionary 46. The `attack` action refused it |
 | `condemn_heretic` | A knight on the tile of a Shinto apostle of a player at war passed the check, and the request removed the apostle and left the knight with no moves |
 | A spy on a mission | `awake` before, and `operation` right after a Gain Sources mission started |
 

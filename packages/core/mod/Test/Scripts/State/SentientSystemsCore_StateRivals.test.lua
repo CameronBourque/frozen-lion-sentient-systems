@@ -94,10 +94,11 @@ describe("SentientSystems_GetRivalUnitStates", function()
 		local units = RivalUnitsFor({ visible = { { 25, 14 } } }, { With(WARRIOR, { religion = "RELIGION_SHINTO", religiousStrength = 100 }) })
 
 		assert.truthy(units:find("\"religion\":\"RELIGION_SHINTO\"", 1, true))
+		assert.truthy(units:find("\"religiousStrength\":100", 1, true))
 	end)
 
 	it("leaves out the religion of a rival unit with no religious strength", function()
-		assert.is_nil(RivalUnitsFor({ visible = { { 25, 14 } } }, { With(WARRIOR, { religion = "RELIGION_SHINTO" }) }):find("religion", 1, true))
+		assert.is_nil(RivalUnitsFor({ visible = { { 25, 14 } } }, { With(WARRIOR, { religion = "RELIGION_SHINTO" }) }):find("eligio", 1, true))
 	end)
 
 	it("leaves out a rival unit on a fogged tile", function()

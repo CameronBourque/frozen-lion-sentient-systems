@@ -130,10 +130,20 @@ function SentientSystems_GetUnitReligion(unit)
 	return nil
 end
 
--- Adds the unit's religion and its spread and heal charges to state. The panel
--- shows a charge only above 0. See UnitPanel.lua.
+-- Returns the unit's religious strength, which decides a religious attack, or
+-- nil at 0. The panel shows it only above 0. See UnitPanel.lua. The rivals
+-- section uses it too.
+function SentientSystems_GetReligiousStrength(unit)
+	local strength = unit:GetReligiousStrength()
+
+	return strength > 0 and strength or nil
+end
+
+-- Adds the unit's religion, its religious strength, and its spread and heal
+-- charges to state. The panel shows a charge only above 0. See UnitPanel.lua.
 local function AddReligion(unit, state)
 	state.religion = SentientSystems_GetUnitReligion(unit)
+	state.religiousStrength = SentientSystems_GetReligiousStrength(unit)
 
 	if unit:GetSpreadCharges() > 0 then
 		state.spreadCharges = unit:GetSpreadCharges()

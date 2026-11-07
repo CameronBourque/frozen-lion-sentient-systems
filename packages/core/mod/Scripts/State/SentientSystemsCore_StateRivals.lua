@@ -39,7 +39,8 @@ end
 -- IsUnitVisible, which leaves out a stealthy unit on a visible tile. A unit on
 -- a fogged tile is never listed. Unit IDs repeat across players, so owner and
 -- id together name a unit. A religious unit has its religion, as its flag shows
--- it. See UnitFlagManager.lua and MapSearchPanel.lua.
+-- it, and its religious strength. See UnitFlagManager.lua and
+-- MapSearchPanel.lua.
 function SentientSystems_GetRivalUnitStates(playerID)
 	local visibility = PlayersVisibility[playerID]
 	local units = {}
@@ -58,6 +59,7 @@ function SentientSystems_GetRivalUnitStates(playerID)
 						y = unit:GetY(),
 						health = SentientSystems_GetHealth(unit:GetMaxDamage(), unit:GetDamage()),
 						religion = SentientSystems_GetUnitReligion(unit),
+						religiousStrength = SentientSystems_GetReligiousStrength(unit),
 					}
 				end
 			end

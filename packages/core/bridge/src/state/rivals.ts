@@ -25,6 +25,7 @@ export const RIVAL_UNIT = z.object({
 	x: z.number(),
 	y: z.number(),
 	health: HEALTH,
+	religiousStrength: z.number().optional().describe("The strength that decides a religious attack. Left out for a unit that isn't religious."),
 	religion: z.string().optional().describe(
 		"The religion of a religious unit, such as RELIGION_SHINTO, as its flag shows it. Left out for any other unit. condemn_heretic needs it.",
 	),
