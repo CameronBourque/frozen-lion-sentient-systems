@@ -189,6 +189,113 @@ function SentientSystems_GetCityDefense(player, city)
 	return defense
 end
 
+-- Returns a list of a power source breakdown, each as its text and its power
+-- rounded to the nearest tenth. The game gives each entry as a table with one
+-- key, the text of the source, such as Factory.
+local function GetPowerLines(sources)
+	local lines = {}
+
+	for _, entry in ipairs(sources) do
+		local name, power = next(entry)
+
+		lines[#lines + 1] = { name = name, power = RoundNearest(power) }
+	end
+
+	return lines
+end
+
+-- Returns the city's power as the Power tab of the city panel shows it, or nil
+-- without Gathering Storm, where the city has none. The panel says no power
+-- is needed at 0 required, unpowered when the city isn't fully powered, and
+-- powered otherwise. It shows the usable power as the free and temporary power
+-- together, or the required power when an active project powers the city. See
+-- CityPanelPower.lua.
+local function GetPower(city)
+	local power = city:GetPower()
+
+	if power == nil then
+		return nil
+	end
+
+	local required = power:GetRequiredPower()
+	local usable = power:GetFreePower() + power:GetTemporaryPower()
+	local status = "powered"
+
+	if required == 0 then
+		status = "none"
+	elseif not power:IsFullyPowered() then
+		status = "unpowered"
+	elseif power:IsFullyPoweredByActiveProject() then
+		usable = required
+	end
+
+	local sources = GetPowerLines(power:GetFreePowerSources())
+
+	for _, line in ipairs(GetPowerLines(power:GetTemporaryPowerSources())) do
+		sources[#sources + 1] = line
+	end
+
+	return {
+		status = status,
+		usable = RoundNearest(usable),
+		required = RoundNearest(required),
+		sources = sources,
+		requiredBy = GetPowerLines(power:GetRequiredPowerSources()),
+		generated = GetPowerLines(power:GetGeneratedPowerSources()),
+	}
+end
+
+-- Rounds a number to the nearest whole number, as the banner rounds a pressure.
+local function RoundWhole(number)
+	return math.floor(number + 0.5)
+end
+
+-- Returns the religion the city will convert to and in how many turns, or nil.
+-- The banner shows it for a next religion that isn't -1, at more than 0 turns.
+local function GetConversion(cityReligion)
+	local nextReligion = cityReligion:GetNextReligion()
+	local turns = cityReligion:GetTurnsToNextReligion()
+
+	if nextReligion ~= nil and nextReligion ~= -1 and turns > 0 then
+		return { type = GameInfo.Religions[nextReligion].ReligionType, turns = turns }
+	end
+
+	return nil
+end
+
+-- Returns the city's religions: the majority, the pressure the city exerts, and
+-- for each religion present its followers, the pressure on the city each turn,
+-- and the pressure it has received in all. The banner shows the majority above
+-- 0, and each pressure rounded: GetPressureFromCity for the pressure exerted,
+-- GetTotalPressureOnCity for the pressure each turn, and the list's own
+-- Pressure for the total. CitySupport.lua names the entry for citizens with no
+-- religion, whose index is below 1, RELIGION_PANTHEON, and the banner shows no
+-- pressure for it, and the conversion. See docs/findings/state/city-details.md.
+-- The rivals section uses it too.
+function SentientSystems_GetCityReligion(city)
+	local cityReligion = city:GetReligion()
+	local majority = cityReligion:GetMajorityReligion()
+	local present = {}
+
+	for _, entry in ipairs(cityReligion:GetReligionsInCity()) do
+		local pantheon = entry.Religion <= 0
+
+		present[#present + 1] = {
+			type = pantheon and "RELIGION_PANTHEON" or GameInfo.Religions[entry.Religion].ReligionType,
+			followers = entry.Followers,
+			pressure = not pantheon and RoundWhole(cityReligion:GetTotalPressureOnCity(entry.Religion)) or nil,
+			totalPressure = not pantheon and RoundWhole(entry.Pressure) or nil,
+		}
+	end
+
+	return {
+		majority = majority > 0 and GameInfo.Religions[majority].ReligionType or nil,
+		outwardPressure = RoundWhole(cityReligion:GetPressureFromCity()),
+		present = present,
+		converting = GetConversion(cityReligion),
+	}
+end
+
 -- Returns a list of the player's cities, with each city's name in the game's
 -- language.
 function SentientSystems_GetCityStates(player)
@@ -207,7 +314,9 @@ function SentientSystems_GetCityStates(player)
 			governor = GetGovernor(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
+			power = GetPower(city),
 			production = GetProduction(city),
+			religion = SentientSystems_GetCityReligion(city),
 			yields = GetYields(city),
 		}
 	end

@@ -38,9 +38,11 @@ function SentientSystems_GetNotTargetReason(tiles)
 end
 
 -- Returns whether the tile holds a unit that the player sees or a city that
--- another player owns. Only a tile the player sees is asked.
+-- another player owns. Only a tile the player sees is asked. GetUnitsInPlot
+-- leaves out the units of the religious, trade, and spy layers, so this asks
+-- every layer, as UnitFlagManager.lua and WorldInput.lua do.
 local function HasEnemy(playerID, x, y)
-	for _, other in ipairs(Units.GetUnitsInPlot(Map.GetPlot(x, y))) do
+	for _, other in ipairs(Units.GetUnitsInPlotLayerID(x, y, MapLayers.ANY)) do
 		if other:GetOwner() ~= playerID and PlayersVisibility[playerID]:IsUnitVisible(other) then
 			return true
 		end
@@ -53,12 +55,14 @@ end
 
 -- Returns how the unit attacks, as the UI picks: air units fly at a tile, a
 -- unit that is stronger at range or bombard shoots, and the rest fight in melee
--- by moving into the tile. A unit with no strength can't attack.
+-- by moving into the tile. A religious unit has no combat strength and fights
+-- in melee with its religious strength, at peace or at war. A unit with
+-- neither can't attack.
 local function GetAttackKind(unit)
 	local melee, ranged, bombard = unit:GetCombat(), unit:GetRangedCombat(), unit:GetBombardCombat()
 
 	if melee <= 0 and ranged <= 0 and bombard <= 0 then
-		return nil
+		return unit:GetReligiousStrength() > 0 and "melee" or nil
 	end
 
 	if GameInfo.Units[unit:GetUnitType()].Domain == "DOMAIN_AIR" then

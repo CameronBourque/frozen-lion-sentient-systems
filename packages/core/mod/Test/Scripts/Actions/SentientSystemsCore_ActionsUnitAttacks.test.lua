@@ -154,6 +154,14 @@ describe("attack", function()
 			} }, env.requests)
 		end)
 
+		it("lets a religious unit attack a religious unit of a player it is at peace with", function()
+			local inquisitor = With(KNIGHT, { type = "UNIT_INQUISITOR", combat = 0, religiousStrength = 75 })
+			local env = Load(inquisitor, nil, { Rival(21, 20, { type = "UNIT_MISSIONARY", religiousStrength = 100 }) })
+
+			assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, "attack", 21, 20))
+			assert.equal(env.UnitOperationTypes.MOVE_TO, env.requests[1].operation)
+		end)
+
 		it("attacks a city of another player", function()
 			local env = Load(KNIGHT, nil, nil, { { id = 1, name = "LOC_CITY_NAME_ROME", x = 21, y = 20 } })
 

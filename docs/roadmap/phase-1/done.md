@@ -99,3 +99,21 @@ It added the `trade` and `espionage` state sections, and `SentientSystems_GetCit
 - The calls are in [state/trade.md](../../findings/state/trade.md) and [state/espionage.md](../../findings/state/espionage.md).
 - The parts of a state section are in the [core README](../../../packages/core/README.md#parts-of-a-state-section).
 - A spy of another player that the player holds wasn't seen in a running game, because no civ sent one. The espionage finding keeps it as an open question.
+
+## State: unit and city details
+
+Pull request: feat(core): add the unit and city details to the state.
+
+It added what a unit is doing, its attacks left, builder charges, and formation, a unit's religion, religious strength, and charges, a great person's class, individual, and charges, and the religion of a visible rival religious unit.
+
+It added each city's religion, with its majority, the followers and pressure of each religion, the pressure it exerts, and the religion it will convert to, for the player's cities and the rival cities on revealed tiles. It added each city's power with Gathering Storm.
+
+It also fixed the `attack` action, which refused a religious unit and didn't see a unit in the religious layer of a tile.
+
+- The room for a purchased unit is not a state field. It depends on the kind of unit, and the game's purchase check already gives its reason on each option. See [choices/purchases.md](../../findings/choices/purchases.md#room-for-a-unit), and [choices/production.md](../../findings/choices/production.md) for the aerodrome's room when producing.
+- The fields are under **State serializer** in [design/core/mod/state.md](../../design/core/mod/state.md), and the room's decision is in [design/core/mod/choices.md](../../design/core/mod/choices.md).
+- The calls are in [state/unit-details.md](../../findings/state/unit-details.md) and [state/city-details.md](../../findings/state/city-details.md), and the religious attack is in [actions/attacks.md](../../findings/actions/attacks.md).
+- The step added no state section, so the [core README](../../../packages/core/README.md#parts-of-a-state-section) has no new row.
+- A city of a rival on a revealed tile has its religion too, and it adds about 11 KB for 47 cities. If the whole state gets too large, trim its pressure fields first.
+- Producing a unit that the city can't buy is as the player reports, except for an air unit. It wasn't checked for the other kinds.
+

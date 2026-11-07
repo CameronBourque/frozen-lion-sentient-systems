@@ -51,9 +51,30 @@ describe("SentientSystems_GetRivalCityStates", function()
 	it("lists a rival city on a revealed tile, with its owner and its banner's values", function()
 		assert.equal(
 			"[{\"capital\":true,\"defense\":{\"garrison\":{\"max\":200,\"value\":150},\"strength\":13},\"id\":65536,"
-				.. "\"name\":\"Râ-Kedet\",\"owner\":1,\"population\":2,\"x\":30,\"y\":18}]",
+				.. "\"name\":\"Râ-Kedet\",\"owner\":1,\"population\":2,\"religion\":{\"outwardPressure\":0,\"present\":[]},\"x\":30,\"y\":18}]",
 			RivalCitiesFor({ revealed = { { 30, 18 } } }, { RA_KEDET })
 		)
+	end)
+
+	it("gives a rival city's religion, majority, and conversion, as its banner shows them", function()
+		local city = {}
+
+		for key, value in pairs(RA_KEDET) do
+			city[key] = value
+		end
+
+		city.majority = "RELIGION_TAOISM"
+		city.outwardPressure = 2
+		city.religions = { { type = "RELIGION_TAOISM", followers = 4, pressure = 10, totalPressure = 300 }, { type = "RELIGION_SHINTO", followers = 1, pressure = 5, totalPressure = 90 } }
+		city.converting = { type = "RELIGION_SHINTO", turns = 155 }
+
+		assert.truthy(RivalCitiesFor({ revealed = { { 30, 18 } } }, { city }):find(
+			"\"religion\":{\"converting\":{\"turns\":155,\"type\":\"RELIGION_SHINTO\"},\"majority\":\"RELIGION_TAOISM\",\"outwardPressure\":2,\"present\":["
+				.. "{\"followers\":4,\"pressure\":10,\"totalPressure\":300,\"type\":\"RELIGION_TAOISM\"},"
+				.. "{\"followers\":1,\"pressure\":5,\"totalPressure\":90,\"type\":\"RELIGION_SHINTO\"}]}",
+			1,
+			true
+		))
 	end)
 
 	it("adds the walls' health when the city has walls", function()
@@ -88,6 +109,17 @@ describe("SentientSystems_GetRivalUnitStates", function()
 			"[{\"health\":{\"max\":100,\"value\":70},\"id\":131073,\"owner\":1,\"type\":\"UNIT_WARRIOR\",\"x\":25,\"y\":14}]",
 			RivalUnitsFor({ visible = { { 25, 14 } } }, { With(WARRIOR, { damage = 30 }) })
 		)
+	end)
+
+	it("gives the religion of a rival religious unit", function()
+		local units = RivalUnitsFor({ visible = { { 25, 14 } } }, { With(WARRIOR, { religion = "RELIGION_SHINTO", religiousStrength = 100 }) })
+
+		assert.truthy(units:find("\"religion\":\"RELIGION_SHINTO\"", 1, true))
+		assert.truthy(units:find("\"religiousStrength\":100", 1, true))
+	end)
+
+	it("leaves out the religion of a rival unit with no religious strength", function()
+		assert.is_nil(RivalUnitsFor({ visible = { { 25, 14 } } }, { With(WARRIOR, { religion = "RELIGION_SHINTO" }) }):find("eligio", 1, true))
 	end)
 
 	it("leaves out a rival unit on a fogged tile", function()

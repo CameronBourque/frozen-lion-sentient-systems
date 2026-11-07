@@ -34,7 +34,13 @@ The other unit actions are in the [actions index](README.md).
 
   A tile with `MODIFIER_IS_TARGET` holds something to hit, and the others are in range only. A tile behind a forest was missing from a crossbowman's list, so the list also reflects line of sight.
 - The checks give no reasons. A unit with no attacks left failed `CanStartOperation` for every tile with an empty `FAILURE_REASONS`, and `GetAttacksRemaining()` explains it.
-- `Units.GetUnitsInPlot(plot)` lists the units on a tile, and `CityManager.GetCityAt(x, y)` gives its city.
+- `Units.GetUnitsInPlotLayerID(x, y, MapLayers.ANY)` lists the units on a tile in every layer, as `UnitFlagManager.lua` and `WorldInput.lua` ask.
+
+  `Units.GetUnitsInPlot(plot)` leaves out the religious, trade, and spy layers, so a missionary on a tile isn't in its list.
+- `CityManager.GetCityAt(x, y)` gives the tile's city.
+- **Religious attack.** A religious unit has no combat strength, only `GetReligiousStrength()`, and attacks in melee: `MOVE_TO` with the `ATTACK` modifier on an adjacent tile, with no war needed.
+
+  `IsAttackChangeWarState` returned an empty list for it, and it works against a unit of any other religion. Confirmed on Windows on 2026-11-06.
 - **War.** `CombatManager.IsAttackChangeWarState` gives the same answer for an attack as for a move, and `UnitAirAttack` and the coastal raid call it the same way.
 
   A tile inside the borders of a player at peace returned the player, with or without a unit on it. Attacking a visible tile there is refused by the core mod. The dialog is the same as for a move, in [the war dialog](move-unit.md#the-war-dialog).
@@ -72,5 +78,6 @@ The bridge ran these steps in a single-player game.
 | `SentientSystems_UnitAction` `attack` by a nuclear submarine, on a tile that isn't a target | `SentientSystemsCore_UI` | Refused with the one tile in range, (36, 36). After the change, the reason added the raid tiles | 2026-11-06 |
 | The same `attack` on a raid tile, the Vietnamese Camp at (36, 37) | `SentientSystemsCore_UI` | `{"ok":true}`. The Camp was pillaged, the submarine's moves went from 5 to 0, its attack stayed, and the gold did not change | 2026-11-06 |
 | `SentientSystems_UnitAction` `attack` by a crossbowman, a knight, and a jet bomber, and `SentientSystems_CityAttack` | `SentientSystemsCore_UI` | Each hit its target. The knight captured a lone builder. A tile in the borders of a player at peace returned the war reason | 2026-11-04 |
+| `SentientSystems_UnitAction` `attack` by an inquisitor, on a missionary of a player at peace | `SentientSystemsCore_UI` | Refused with "This kind of unit can't attack." before the change. After it, `{"ok":true}`, and the missionary's damage went from 46 to 84 | 2026-11-06 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04, on 2026-11-05 for the priority target, and on 2026-11-06 for the coastal raid.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04, on 2026-11-05 for the priority target, and on 2026-11-06 for the coastal raid and the religious attack.

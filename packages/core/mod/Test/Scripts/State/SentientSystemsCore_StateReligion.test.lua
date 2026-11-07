@@ -4,14 +4,15 @@ local Game = require("Game")
 local BUDDHISM = { type = "RELIGION_BUDDHISM", name = "Buddhism", beliefs = { "BELIEF_TITHE", "BELIEF_FEED_THE_WORLD" }, holyCity = 65536 }
 
 -- Returns the religion section JSON for player 0, in a world with the players
--- given.
+-- given. The cities have a religion key too, so the match starts at the
+-- proposals before it.
 local function ReligionWith(players)
 	local env = Game.new()
 
 	FakeGame.Install(env, { players = players, beliefs = { { type = "BELIEF_GOD_OF_THE_SEA" } }, pantheonFaith = 12 })
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
-	return env.SentientSystems_GetState(0):match("\"religion\":(%b{})")
+	return env.SentientSystems_GetState(0):match("\"proposals\":%b[],\"religion\":(%b{})")
 end
 
 local function City(id, religions, majority)

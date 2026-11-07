@@ -28,7 +28,7 @@ return function(env, world, ctx)
 	end
 
 	ctx.TypedRows(env.GameInfo.UnitOperations, "OperationType")
-	env.ActivityTypes = { ACTIVITY_AWAKE = 1, ACTIVITY_SLEEP = 2, ACTIVITY_HOLD = 3, ACTIVITY_SENTRY = 4, ACTIVITY_OPERATION = 5 }
+	env.ActivityTypes = { ACTIVITY_AWAKE = 1, ACTIVITY_SLEEP = 2, ACTIVITY_HOLD = 3, ACTIVITY_SENTRY = 4, ACTIVITY_OPERATION = 5, ACTIVITY_HEAL = 6, ACTIVITY_INTERCEPT = 7 }
 	env.OperationResultsTypes = { NO_TARGETS = 1, ALL = 2 }
 	env.UnitOperationResults = { IMPROVEMENTS = 20, ROUTE_TYPE = 21, FAILURE_REASONS = 22 }
 	env.GameInfo.Route_ValidBuildUnits = ctx.Callable({ { RouteType = "ROUTE_ANCIENT_ROAD", UnitType = "UNIT_MILITARY_ENGINEER" } })

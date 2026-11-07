@@ -60,10 +60,86 @@ describe("SentientSystems_GetCityStates", function()
 		})
 
 		assert.equal(
-			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65536,\"name\":\"Rome\",\"population\":3,\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
-				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"espionage\":{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"trade\":{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25},\"units\":[],\"victories\":" .. VICTORIES .. "}",
+			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65536,\"name\":\"Rome\",\"population\":3,\"religion\":{\"outwardPressure\":0,\"present\":[]},\"x\":17,\"y\":14," .. NO_YIELDS .. "},"
+				.. "{" .. NO_GROWTH .. "\"id\":131072,\"name\":\"Antium\",\"population\":1,\"religion\":{\"outwardPressure\":0,\"present\":[]},\"x\":20,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"espionage\":{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"trade\":{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25},\"units\":[],\"victories\":" .. VICTORIES .. "}",
 			WithoutIncome(env.SentientSystems_GetState(0))
 		)
+	end)
+
+	it("gives a city's religions with their followers, the pressure each turn and in all, and its majority", function()
+		local env = Load({
+			players = { [0] = { cities = { With(ROME, {
+				majority = "RELIGION_SHINTO",
+				outwardPressure = 2,
+				religions = {
+					{ followers = 4 },
+					{ type = "RELIGION_SHINTO", followers = 7, pressure = 20, totalPressure = 981.5 },
+					{ type = "RELIGION_ISLAM", followers = 0, pressure = 3.6, totalPressure = 28 },
+				},
+			}) } } },
+		})
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"religion\":{\"majority\":\"RELIGION_SHINTO\",\"outwardPressure\":2,\"present\":["
+			.. "{\"followers\":4,\"type\":\"RELIGION_PANTHEON\"},"
+			.. "{\"followers\":7,\"pressure\":20,\"totalPressure\":982,\"type\":\"RELIGION_SHINTO\"},"
+			.. "{\"followers\":0,\"pressure\":4,\"totalPressure\":28,\"type\":\"RELIGION_ISLAM\"}]}", 1, true))
+	end)
+
+	it("leaves out the majority while no religion has the most followers", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { religions = { { followers = 4 }, { type = "RELIGION_SHINTO", followers = 1, pressure = 8.4, totalPressure = 114.5 } } }) } } } })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"religion\":{\"outwardPressure\":0,\"present\":[{\"followers\":4,\"type\":\"RELIGION_PANTHEON\"},{\"followers\":1,\"pressure\":8,\"totalPressure\":115,\"type\":\"RELIGION_SHINTO\"}]}", 1, true))
+	end)
+
+	it("gives the religion a city will convert to and in how many turns", function()
+		local env = Load({
+			players = { [0] = { cities = { With(ROME, {
+				religions = { { type = "RELIGION_TAOISM", followers = 5, pressure = 28, totalPressure = 100 } },
+				converting = { type = "RELIGION_TAOISM", turns = 8 },
+			}) } } },
+		})
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"converting\":{\"turns\":8,\"type\":\"RELIGION_TAOISM\"}", 1, true))
+	end)
+
+	it("leaves out the conversion of a city that is not about to convert", function()
+		local env = Load({ players = { [0] = { cities = { With(ROME, { religions = { { type = "RELIGION_TAOISM", followers = 5 } }, converting = { type = "RELIGION_TAOISM", turns = 0 } }) } } } })
+
+		assert.is_nil(env.SentientSystems_GetState(0):find("converting", 1, true))
+		assert.is_nil(Load({ players = { [0] = { cities = { ROME } } } }).SentientSystems_GetState(0):find("converting", 1, true))
+	end)
+
+	it("gives a city's power as the Power tab shows it", function()
+		local env = Load({
+			players = { [0] = { cities = { With(ROME, { power = {
+				free = 2,
+				required = 7,
+				powered = false,
+				freeSources = { { name = "Solar", power = 2 } },
+				requiredSources = { { name = "Factory", power = 2 }, { name = "Stock Exchange", power = 3 }, { name = "Food Market", power = 1 }, { name = "Airport", power = 1 } },
+			} }) } } },
+		})
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"power\":{\"generated\":[],"
+			.. "\"required\":7,"
+			.. "\"requiredBy\":[{\"name\":\"Factory\",\"power\":2},{\"name\":\"Stock Exchange\",\"power\":3},{\"name\":\"Food Market\",\"power\":1},{\"name\":\"Airport\",\"power\":1}],"
+			.. "\"sources\":[{\"name\":\"Solar\",\"power\":2}],\"status\":\"unpowered\",\"usable\":2}", 1, true))
+	end)
+
+	it("says a city is powered when it is fully powered, and counts temporary power and a project", function()
+		local function Power(power)
+			return Load({ players = { [0] = { cities = { With(ROME, { power = power }) } } } }).SentientSystems_GetState(0)
+		end
+
+		local powered = Power({ free = 6, temporary = 1.25, required = 6, freeSources = { { name = "Hydroelectric", power = 6 } }, temporarySources = { { name = "Policy", power = 1.25 } } })
+
+		assert.truthy(powered:find("\"sources\":[{\"name\":\"Hydroelectric\",\"power\":6},{\"name\":\"Policy\",\"power\":1.3}],\"status\":\"powered\",\"usable\":7.3", 1, true))
+		assert.truthy(Power({ free = 0, required = 3, project = true }):find("\"status\":\"powered\",\"usable\":3", 1, true))
+	end)
+
+	it("says no power is needed when nothing needs it, and leaves out the power without Gathering Storm", function()
+		assert.truthy(Load({ players = { [0] = { cities = { With(ROME, { power = {} }) } } } }).SentientSystems_GetState(0):find("\"status\":\"none\",\"usable\":0", 1, true))
+		assert.is_nil(Load({ players = { [0] = { cities = { ROME } } } }).SentientSystems_GetState(0):find("\"power\":", 1, true))
 	end)
 
 	it("lists only the given player's cities", function()
@@ -71,7 +147,7 @@ describe("SentientSystems_GetCityStates", function()
 			players = { [0] = { cities = { ROME } }, [1] = { cities = { { id = 65537, name = "Uruk", x = 10, y = 10, population = 5 } } } },
 		})
 
-		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"espionage\":{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD_OF_1 .. ",\"tiles\":[],\"trade\":{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25},\"units\":[],\"victories\":" .. VICTORIES_OF_1 .. "}", WithoutIncome(env.SentientSystems_GetState(1)))
+		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[{" .. NO_GROWTH .. "\"id\":65537,\"name\":\"Uruk\",\"population\":5,\"religion\":{\"outwardPressure\":0,\"present\":[]},\"x\":10,\"y\":10," .. NO_YIELDS .. "}],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"espionage\":{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD_OF_1 .. ",\"tiles\":[],\"trade\":{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25},\"units\":[],\"victories\":" .. VICTORIES_OF_1 .. "}", WithoutIncome(env.SentientSystems_GetState(1)))
 	end)
 
 	it("escapes a city name with quotes", function()

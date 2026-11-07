@@ -27,6 +27,10 @@ return function(env, world, ctx)
 			if unit.greatPerson then
 				AddRow("GreatPersonClasses", "GreatPersonClassType", unit.greatPerson)
 			end
+
+			if unit.individual then
+				AddRow("GreatPersonIndividuals", "GreatPersonIndividualType", unit.individual)
+			end
 		end
 	end
 
@@ -39,6 +43,12 @@ return function(env, world, ctx)
 			return {
 				GetClass = function()
 					return indexes[data.greatPerson]
+				end,
+				GetIndividual = function()
+					return data.individual and indexes[data.individual] or -1
+				end,
+				GetActionCharges = function()
+					return data.greatPersonCharges or 0
 				end,
 			}
 		end
