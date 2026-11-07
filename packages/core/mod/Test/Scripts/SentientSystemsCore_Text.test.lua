@@ -33,9 +33,10 @@ describe("SentientSystems_CleanText", function()
 		return env.SentientSystems_CleanText(text)
 	end
 
-	it("returns nil for no text, and for empty text", function()
+	it("returns nil for no text, and for text that is empty once cleaned", function()
 		assert.is_nil(Clean(nil))
 		assert.is_nil(Clean(""))
+		assert.is_nil(Clean("[ICON_Checkmark]"))
 	end)
 
 	it("leaves text without icons as it is", function()

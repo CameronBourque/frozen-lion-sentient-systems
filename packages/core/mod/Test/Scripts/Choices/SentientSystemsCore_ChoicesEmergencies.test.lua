@@ -77,6 +77,21 @@ describe("SentientSystems_GetEmergencyChoices", function()
 		assert.is_nil(choice:find("targetCity", 1, true))
 	end)
 
+	it("cleans the icons and colors from the emergency's text", function()
+		local choice = ChoicesWith({ Emergency({
+			ShortDescriptionText = "Capture [ICON_Gold] [COLOR_RED]now[ENDCOLOR]",
+			GoalDescription = "[ICON_Bullet]Liberate",
+			GoalsTable = { { Name = "Hold [ICON_Citizen] Population" }, { Name = "[ICON_Checkmark]" } },
+			MemberRewardsTextFirst = { "+1 [ICON_Envoy] Envoy" },
+			ExtraRewards = "[ICON_Gold]",
+		}) })
+
+		assert.truthy(choice:find("\"description\":\"Capture Gold now\"", 1, true))
+		assert.truthy(choice:find("\"goal\":\"-Liberate\"", 1, true))
+		assert.truthy(choice:find("\"goals\":[\"Hold Population\"]", 1, true))
+		assert.truthy(choice:find("\"rewards\":{\"members\":[\"+1 Envoy\",\"Gold\",\"Gold\"]", 1, true))
+	end)
+
 	it("leaves out the buffs and scoring of a finished emergency", function()
 		local choice = ChoicesWith({ Emergency({ TurnsLeft = -1 }) })
 

@@ -135,9 +135,9 @@ end
 
 -- Returns the text with each icon cleaned as CleanLine does, so that the text
 -- reads without the icons. The lines stay separated with [NEWLINE]. Returns nil
--- for no text, or for empty text.
+-- for no text, or for text that is empty once cleaned.
 function SentientSystems_CleanText(text)
-	if text == nil or text == "" then
+	if text == nil then
 		return nil
 	end
 
@@ -147,7 +147,9 @@ function SentientSystems_CleanText(text)
 		lines[#lines + 1] = CleanLine(line, true)
 	end)
 
-	return table.concat(lines, "[NEWLINE]")
+	local cleaned = table.concat(lines, "[NEWLINE]")
+
+	return cleaned ~= "" and cleaned or nil
 end
 
 -- Returns the lines of a tooltip, cleaned of the icons, trimmed, and without

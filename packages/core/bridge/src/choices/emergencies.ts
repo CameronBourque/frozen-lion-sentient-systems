@@ -6,8 +6,8 @@ import { z } from "zod";
 export const EMERGENCIES_CHOICE = z.array(z.object({
 	type: z.string().describe("Such as EMERGENCY_CAPTURE_CITY_STATE."),
 	name: z.string().describe("In the game's language, as the popup shows it."),
-	description: z.string().describe("In the game's language, as the popup shows it."),
-	goal: z.string().describe("In the game's language, as the popup shows it."),
+	description: z.string().optional().describe("In the game's language, as the popup shows it, without its icons and colors. Left out when the game has no text."),
+	goal: z.string().optional().describe("In the game's language, as the popup shows it, without its icons and colors. Left out when the game has no text."),
 	target: z.number().describe("The target's player ID."),
 	targetCity: z.string().optional().describe("The target city's name. Left out with none."),
 	hostile: z.boolean(),
