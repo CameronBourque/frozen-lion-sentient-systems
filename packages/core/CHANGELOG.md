@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.11.0...core-v0.12.0) (2026-11-07)
+
+
+### Features
+
+* **core:** add the great work and map layer state ([#67](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/67)) ([b8d42ff](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/b8d42ff562a0cb83381764343ad471e780e54273))
+
 ## [0.11.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.10.0...core-v0.11.0) (2026-11-07)
 
 
