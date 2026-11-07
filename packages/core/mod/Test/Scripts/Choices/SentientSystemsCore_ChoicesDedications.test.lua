@@ -65,6 +65,18 @@ describe("SentientSystems_GetDedicationChoices", function()
 		assert.truthy(choice:find("\"description\":\"Dark text\"", 1, true))
 	end)
 
+	it("cleans the icons and colors from the text", function()
+		local key = "LOC_MOMENT_CATEGORY_SCIENTIFIC_BONUS_DARK_AGE"
+		local saved = TEXT[key]
+
+		TEXT[key] = "[ICON_Bolt]+2 [ICON_Culture] in [COLOR_RED]cities[ENDCOLOR]"
+
+		local choice = ChoicesWith(Change("dark"))
+
+		TEXT[key] = saved
+		assert.truthy(choice:find("\"description\":\"-+2 Culture in cities\"", 1, true))
+	end)
+
 	it("offers the normal text in a normal age", function()
 		local choice = ChoicesWith(Change("normal"))
 

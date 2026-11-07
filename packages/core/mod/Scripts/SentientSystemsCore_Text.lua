@@ -160,3 +160,9 @@ function SentientSystems_GetTooltipLines(tooltip)
 
 	return lines
 end
+
+-- Returns the text of a text key, looked up with its arguments, cleaned as
+-- SentientSystems_CleanText does.
+function SentientSystems_LookupText(key, ...)
+	return SentientSystems_CleanText(Locale.Lookup(key, ...))
+end

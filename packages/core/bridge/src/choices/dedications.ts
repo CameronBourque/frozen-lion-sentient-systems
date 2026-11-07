@@ -11,7 +11,7 @@ export const DEDICATIONS_CHOICE = z.object({
 	options: z.array(z.object({
 		type: z.string().describe("The dedication the choice sends, such as COMMEMORATION_SCIENTIFIC."),
 		name: z.string().describe("The popup's category text."),
-		description: z.string().describe("Its bonus for the age, in the game's language, with its markup."),
+		description: z.string().describe("Its bonus for the age, in the game's language, without its icons and colors."),
 	})),
 }).optional().describe(
 	"Left out of the choices with no dedication to make: there only while the dedication blocker is up.",

@@ -1,3 +1,4 @@
+local FakeGame = require("FakeGame")
 local Game = require("Game")
 
 local env
@@ -81,5 +82,14 @@ describe("SentientSystems_CleanText", function()
 
 	it("drops a list marker in the middle of a line", function()
 		assert.equal("Gain 2 more", Clean("Gain 2 [ICON_Bullet] more"))
+	end)
+end)
+
+describe("SentientSystems_LookupText", function()
+	it("looks up a text key with its arguments and cleans the text", function()
+		FakeGame.Install(env, { text = { LOC_TEST = "You need [ICON_Gold] [COLOR_RED]more[ENDCOLOR]" } })
+		Game.run(env, "Scripts/SentientSystemsCore_Text.lua")
+
+		assert.equal("You need Gold more(18)", env.SentientSystems_LookupText("LOC_TEST", 18))
 	end)
 end)
