@@ -199,6 +199,12 @@ local function GetBuildingYields(buildings, index)
 	return yields, tourism
 end
 
+-- Returns whether the screen lets a work be dragged: not locked, and an
+-- artifact only when its museum is full. See CanMoveWorkAtAll.
+local function CanMove(work, museumFull)
+	return work.lockedTurns == 0 and (work.objectType ~= "GREATWORKOBJECT_ARTIFACT" or museumFull)
+end
+
 -- Returns one building with great work slots as an entry for how far its theme
 -- has come and what its works give, and the list of its slots.
 local function GetBuilding(city, building, culture)
@@ -236,10 +242,9 @@ local function GetBuilding(city, building, culture)
 		end
 	end
 
-	-- An artifact moves only when its museum is full.
 	for _, entry in ipairs(slots) do
 		if entry.work ~= nil then
-			entry.work.movable = entry.work.lockedTurns == 0 and (entry.work.objectType ~= "GREATWORKOBJECT_ARTIFACT" or count == #slots)
+			entry.work.movable = CanMove(entry.work, count == #slots)
 		end
 	end
 
@@ -317,4 +322,90 @@ function SentientSystems_GetGreatWorkState(player)
 	end
 
 	return { slots = slots, buildings = buildings, works = works, spaces = spaces, provides = provides }
+end
+
+-- Returns the slots of every building of the player's cities, each with its
+-- city, building row, and index, as UpdateGreatWorks walks them, and whether
+-- its museum is full. Each slot is filled as GetBuilding fills it.
+local function GetAllSlots(player)
+	local all = {}
+
+	for _, city in player:GetCities():Members() do
+		for building in GameInfo.Buildings() do
+			if city:GetBuildings():HasBuilding(building.Index) and city:GetBuildings():GetNumGreatWorkSlots(building.Index) > 0 then
+				local _, slots = GetBuilding(city, building, player:GetCulture())
+				local full = true
+
+				for _, slot in ipairs(slots) do
+					full = full and slot.work ~= nil
+				end
+
+				for _, slot in ipairs(slots) do
+					slot.full = full
+					all[#all + 1] = slot
+				end
+			end
+		end
+	end
+
+	return all
+end
+
+-- Returns whether the list holds the value.
+local function Contains(list, value)
+	for _, item in ipairs(list) do
+		if item == value then
+			return true
+		end
+	end
+
+	return false
+end
+
+-- Returns whether the work in the source slot can go into the destination slot,
+-- as CanMoveGreatWork works it out. An artifact never goes to an empty slot,
+-- and a swap needs the other work to fit the source slot and be free to move.
+local function CanGoTo(source, destination)
+	if not Contains(destination.accepts, source.work.objectType) then
+		return false
+	end
+
+	if destination.work == nil then
+		return source.work.objectType ~= "GREATWORKOBJECT_ARTIFACT"
+	end
+
+	return Contains(source.accepts, destination.work.objectType) and CanMove(destination.work, destination.full)
+end
+
+-- Returns where the great work with the game's index can move, as the screen
+-- lights up the slots when the work is picked up, or nil when the player has no
+-- such work. Moves is empty when the work can't be moved at all. A move into a
+-- filled slot swaps the two works. See OnClickGreatWork.
+function SentientSystems_GetGreatWorkMoves(player, workIndex)
+	local slots = GetAllSlots(player)
+
+	for _, source in ipairs(slots) do
+		if source.work ~= nil and source.work.index == workIndex then
+			local moves = {}
+
+			for _, destination in ipairs(slots) do
+				if CanMove(source.work, source.full) and destination ~= source and CanGoTo(source, destination) then
+					moves[#moves + 1] = {
+						city = destination.city,
+						building = destination.building,
+						slot = destination.slot,
+						swap = destination.work and { index = destination.work.index, name = destination.work.name } or nil,
+					}
+				end
+			end
+
+			return {
+				work = { index = workIndex, name = source.work.name },
+				from = { city = source.city, building = source.building, slot = source.slot },
+				moves = moves,
+			}
+		end
+	end
+
+	return nil
 end

@@ -2,7 +2,7 @@
 
 Status: in progress. The slots, theme progress, yields, locks, and header totals are confirmed in a running game with Gathering Storm. Auto theming is not yet compared.
 
-The calls the great works in the state use, as the Great Works screen shows them. The moves of a work and the map layers are in later sections. See [design/core/mod/state.md](../../design/core/mod/state.md).
+The calls the great works in the state use, as the Great Works screen shows them. The map layers are in later sections. See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
@@ -41,8 +41,22 @@ The calls the great works in the state use, as the Great Works screen shows them
 
   The turn is when the work was created or moved in, and the screen's pop-up says how many turns are left. 
 
-  An artifact moves only when its museum is full. `CanMoveGreatWork` swaps an artifact only with another artifact in a full museum and never moves it into an empty slot. The state gives `lockedTurns` and `movable` on each work. Where a work can go is the next section.
+  An artifact moves only when its museum is full. `CanMoveGreatWork` swaps an artifact only with another artifact in a full museum and never moves it into an empty slot. The state gives `lockedTurns` and `movable` on each work. Where a work can go is below.
 - **Totals.** `GetBuildingYieldFromGreatWorks(yield, building)` gives a building's yield for each `GameInfo.Yields()` row, and `GetBuildingTourismFromGreatWorks(religious, building)` gives the tourism, once for each value of `religious`. `AddYield` sums them by yield name for the "providing" row.
+
+### Where a work can move
+
+`OnClickGreatWork` returns at once when `CanMoveWorkAtAll` fails. Otherwise it lights every slot that `CanMoveGreatWork` accepts, in any of the player's cities, including the same city and building. A slot that holds a work is a swap.
+
+A destination takes the work when its slot kind accepts the work's object type in `GreatWork_ValidSubTypes`.
+
+An empty destination takes any such work except an artifact. A filled one takes it when the source slot kind accepts the destination's work too, and the destination's work passes `CanMoveWorkAtAll`.
+
+The list was 191 destinations for the 22 movable works at first. With the 16 locked art works free it would be about 26 KB, which is more than the section, so the state doesn't hold it. `SentientSystems_GetGreatWorkMoves(player, workIndex)` returns it for one work, with `from`, and `moves`.
+
+Each move is the city, building, and slot of a destination, and `swap` names the work it would trade with.
+
+It returns nil for a work the player doesn't have.
 
 ### The state
 
@@ -76,6 +90,7 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`, with 22 
 | The wonders and the palace | No `theme`, as the screen shows no label once they are filled. The palace slot accepts every object type except artifacts |
 | The locks | 16 art works with 7 or 9 turns left and `movable` false, as the pop-up said 9 turns for one |
 | The size | 23.4 KB for the section |
+| The moves of every work against the screen's `CanMoveGreatWork` rules, copied into a probe | 38 works and 191 destinations, with no difference. The 38 calls came to 28 KB, about 740 bytes each |
 
 The header: 38 works, 50 display spaces, and providing 120 culture, 6 faith, and 153 tourism, the same as the section's `works`, `spaces`, and `provides`.
 

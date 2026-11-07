@@ -224,3 +224,99 @@ describe("SentientSystems_GetGreatWorkState", function()
 		assert.equal("{\"buildings\":[],\"provides\":[],\"slots\":[],\"spaces\":0,\"works\":0}", json)
 	end)
 end)
+
+describe("SentientSystems_GetGreatWorkMoves", function()
+	local SUB_TYPES = {
+		GREATWORKSLOT_WRITING = { "GREATWORKOBJECT_WRITING" },
+		GREATWORKSLOT_MUSIC = { "GREATWORKOBJECT_MUSIC" },
+		GREATWORKSLOT_ART = { "GREATWORKOBJECT_SCULPTURE" },
+		GREATWORKSLOT_ARTIFACT = { "GREATWORKOBJECT_ARTIFACT" },
+	}
+	local WRITING = { objectType = "GREATWORKOBJECT_WRITING" }
+	local ARTIFACT = { objectType = "GREATWORKOBJECT_ARTIFACT", slotKind = "GREATWORKSLOT_ARTIFACT" }
+
+	-- Returns the moves JSON of the work by its type, or nil, for player 0 with
+	-- the cities given, each a list of buildings.
+	local function MovesOf(cities, workType)
+		local env = Game.new()
+		local data = {}
+
+		for id, buildings in ipairs(cities) do
+			local city = City(buildings)
+
+			city.id, city.name, city.x = id, "City" .. id, 10 * id
+			city.districts[1].x = 10 * id
+			data[#data + 1] = city
+		end
+
+		FakeGame.Install(env, { players = { [0] = { cities = data } }, validSubTypes = SUB_TYPES })
+		Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
+
+		for _, city in ipairs(data) do
+			for _, building in ipairs(city.districts[1].buildings) do
+				for slot, work in ipairs(building.greatWorks or {}) do
+					if work.type == workType then
+						local index = env.GameInfo.Buildings[building.type].Index * 100 + slot - 1
+
+						return env.SentientSystems_EncodeJson(env.SentientSystems_GetGreatWorkMoves(env.Players[0], index))
+					end
+				end
+			end
+		end
+
+		return env.SentientSystems_GetGreatWorkMoves(env.Players[0], -5)
+	end
+
+	it("lists the slots of its kind, with the empty ones plain and the filled ones as swaps", function()
+		local json = MovesOf({
+			{ { type = "BUILDING_AMPHITHEATER", slotKinds = { "GREATWORKSLOT_WRITING", "GREATWORKSLOT_WRITING" }, greatWorks = { Work("GREATWORK_A", WRITING) } } },
+			{
+				{ type = "BUILDING_GREAT_LIBRARY", slotKinds = { "GREATWORKSLOT_WRITING", "GREATWORKSLOT_WRITING" }, greatWorks = { Work("GREATWORK_B", WRITING) } },
+				{ type = "BUILDING_BROADCAST_CENTER", slotKinds = { "GREATWORKSLOT_MUSIC" } },
+			},
+		}, "GREATWORK_A")
+
+		assert.truthy(json:find("\"from\":{\"building\":\"BUILDING_AMPHITHEATER\",\"city\":{\"id\":1,\"name\":\"City1\"},\"slot\":0}", 1, true))
+		assert.truthy(json:find("\"building\":\"BUILDING_AMPHITHEATER\",\"city\":{\"id\":1,\"name\":\"City1\"},\"slot\":1}", 1, true))
+		assert.truthy(json:find("\"building\":\"BUILDING_GREAT_LIBRARY\",\"city\":{\"id\":2,\"name\":\"City2\"},\"slot\":0,\"swap\":", 1, true))
+		assert.truthy(json:find("\"building\":\"BUILDING_GREAT_LIBRARY\",\"city\":{\"id\":2,\"name\":\"City2\"},\"slot\":1}", 1, true))
+		assert.is_nil(json:find("BUILDING_BROADCAST_CENTER", 1, true))
+	end)
+
+	it("lists no moves for art that is locked", function()
+		local json = MovesOf({
+			{ { type = "BUILDING_MUSEUM_ART", slotKinds = { "GREATWORKSLOT_ART", "GREATWORKSLOT_ART" }, greatWorks = { Work("GREATWORK_A", { turn = 1 }) } } },
+		}, "GREATWORK_A")
+
+		assert.truthy(json:find("\"moves\":[]", 1, true))
+	end)
+
+	it("swaps an artifact only with an artifact in a full museum, and never moves it to an empty slot", function()
+		local partial = MovesOf({
+			{ { type = "BUILDING_MUSEUM_ARTIFACT", greatWorks = { Work("GREATWORK_A", ARTIFACT), Work("GREATWORK_B", ARTIFACT) } } },
+			{ { type = "BUILDING_MUSEUM_ARTIFACT", slotKinds = { "GREATWORKSLOT_ARTIFACT", "GREATWORKSLOT_ARTIFACT" }, greatWorks = { Work("GREATWORK_C", ARTIFACT) } } },
+		}, "GREATWORK_A")
+		local full = MovesOf({
+			{ { type = "BUILDING_MUSEUM_ARTIFACT", greatWorks = { Work("GREATWORK_A", ARTIFACT), Work("GREATWORK_B", ARTIFACT) } } },
+			{ { type = "BUILDING_MUSEUM_ARTIFACT", greatWorks = { Work("GREATWORK_C", ARTIFACT), Work("GREATWORK_D", ARTIFACT) } } },
+		}, "GREATWORK_A")
+
+		assert.is_nil(partial:find("\"city\":{\"id\":2", 1, true))
+		assert.truthy(full:find("\"city\":{\"id\":2,\"name\":\"City2\"},\"slot\":0,\"swap\":", 1, true))
+		assert.truthy(full:find("\"city\":{\"id\":2,\"name\":\"City2\"},\"slot\":1,\"swap\":", 1, true))
+	end)
+
+	it("leaves out a swap with a locked work, or one the source slot doesn't take", function()
+		local json = MovesOf({
+			{ { type = "BUILDING_PALACE", slotKinds = { "GREATWORKSLOT_ART" }, greatWorks = { Work("GREATWORK_A") } } },
+			{ { type = "BUILDING_MUSEUM_ART", greatWorks = { Work("GREATWORK_B", { turn = 1 }) } } },
+			{ { type = "BUILDING_AMPHITHEATER", greatWorks = { Work("GREATWORK_C", WRITING) } } },
+		}, "GREATWORK_A")
+
+		assert.truthy(json:find("\"moves\":[]", 1, true))
+	end)
+
+	it("is nil for a work the player doesn't have", function()
+		assert.is_nil(MovesOf({ { { type = "BUILDING_AMPHITHEATER" } } }, "GREATWORK_NONE"))
+	end)
+end)
