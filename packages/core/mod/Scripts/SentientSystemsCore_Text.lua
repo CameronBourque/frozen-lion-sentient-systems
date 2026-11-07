@@ -8,14 +8,23 @@ local LIST_MARKERS = { bullet = true, bolt = true }
 -- Icons that only decorate the screen's own text.
 local DROPPED = { checkmark = true, checkmarkblue = true }
 
--- The words that make an icon redundant when they follow it, for an icon that
--- the words of its own name don't repeat.
-local FOLLOWERS = {
+-- The words that make an icon redundant when they are next to it, besides the
+-- words of its own name, for the icons that the game words differently.
+local ALIASES = {
 	citizen = { "Population" },
 	pressureup = { "Rising" },
 	pressuredown = { "Falling" },
-	strength = { "Combat" },
+	strength = { "Combat", "Defense" },
+	greatperson = { "Great People" },
+	techboosted = { "Eureka" },
+	civicboosted = { "Inspiration" },
+	religion = { "Religious" },
+	favor = { "Diplomatic Favor" },
 }
+
+-- The prefixes that group icon names. The words of one are also said next to
+-- an icon of its group.
+local PREFIXES = { "resource", "district", "greatwork" }
 
 -- The icons whose names have more than one word, as the game's font icons
 -- spell them, to give the words of a name that the text writes in capitals.
@@ -34,22 +43,25 @@ for _, name in ipairs(MULTIWORD) do
 	MULTIWORD_BY_LOWER[name:lower()] = name
 end
 
--- Returns the words of an icon's name, split at its capitals and underscores,
--- without a Large size. A name in capitals is spelled as the game's font icons
--- have it, or else as capitalized words after a resource or district prefix.
-local function GetIconName(name)
+-- Returns the words of a name in capitals, spelled as the game's font icons
+-- have them, or else as capitalized words.
+local function GetCapitalsName(name)
+	local spelled = MULTIWORD_BY_LOWER[name:lower()]
+
+	if spelled ~= nil then
+		return spelled
+	end
+
+	return (name:lower():gsub("_", " "):gsub("(%a)(%a*)", function(first, rest)
+		return first:upper() .. rest
+	end))
+end
+
+-- Returns the words of a name, split at its capitals and underscores, without a
+-- Large size.
+local function SplitName(name)
 	if not name:find("%l") then
-		local spelled = MULTIWORD_BY_LOWER[name:lower()]
-
-		if spelled == nil then
-			local words = name:lower():gsub("^resource_", ""):gsub("^district_", ""):gsub("_", " ")
-
-			return (words:gsub("(%a)(%a*)", function(first, rest)
-				return first:upper() .. rest
-			end))
-		end
-
-		name = spelled
+		name = GetCapitalsName(name)
 	end
 
 	name = name:gsub("_?Large$", ""):gsub("_", " ")
@@ -57,28 +69,102 @@ local function GetIconName(name)
 	return (name:gsub("(%l)(%u)", "%1 %2"))
 end
 
--- Returns whether the text starts with the phrase as a word, or as its plural.
-local function StartsWithWord(text, phrase)
-	if text:sub(1, #phrase):lower() ~= phrase:lower() then
-		return false
+-- Returns the words of an icon's name without its group prefix, and the words
+-- of the prefix, if it has one.
+local function GetIconName(icon)
+	local lower = icon:lower()
+
+	for _, prefix in ipairs(PREFIXES) do
+		if lower:sub(1, #prefix + 1) == prefix .. "_" then
+			return SplitName(icon:sub(#prefix + 2)), SplitName(icon:sub(1, #prefix))
+		end
 	end
 
-	local tail = text:sub(#phrase + 1)
+	return SplitName(icon), nil
+end
 
-	if tail:match("^s$") or tail:match("^s%A") then
-		tail = tail:sub(2)
+-- Returns a word without its plural ending, in lower case, so that a word and
+-- its plural are the same.
+local function Stem(word)
+	word = word:lower()
+
+	if word:match("ies$") then
+		return word:sub(1, -4) .. "y"
+	elseif word:match("[^s]s$") then
+		return word:sub(1, -2)
 	end
 
-	return not tail:match("^%a")
+	return word
+end
+
+-- Returns whether the text starts with the words of the phrase.
+local function StartsWithWords(text, phrase)
+	local position = 1
+
+	for word in phrase:gmatch("%a+") do
+		local _, last, found = text:find("^%s*(%a+)", position)
+
+		if found == nil or Stem(found) ~= Stem(word) then
+			return false
+		end
+
+		position = last + 1
+	end
+
+	return true
+end
+
+-- Returns whether the text ends with the words of the phrase.
+local function EndsWithWords(text, phrase)
+	local words = {}
+
+	for word in phrase:gmatch("%a+") do
+		words[#words + 1] = word
+	end
+
+	for i = #words, 1, -1 do
+		local before, found = text:match("^(.-)(%a+)%s*$")
+
+		if found == nil or Stem(found) ~= Stem(words[i]) then
+			return false
+		end
+
+		text = before
+	end
+
+	return true
+end
+
+-- Returns the phrases that say what an icon shows when they are next to it: the
+-- words of its name and its prefix, and any others the game words it with.
+local function GetPhrases(key, name, prefix)
+	local phrases = { name, prefix }
+
+	for _, alias in ipairs(ALIASES[key] or {}) do
+		phrases[#phrases + 1] = alias
+	end
+
+	return phrases
 end
 
 -- Returns whether the text that follows an icon already says what the icon
 -- shows, after an amount if it starts with one.
-local function IsFollowedByName(rest, key, name)
+local function IsFollowedByName(rest, phrases)
 	local named = rest:match("^[%+%-]?[%d%.,]+%s*(.*)$") or rest
 
-	for _, phrase in ipairs(FOLLOWERS[key] or { name }) do
-		if StartsWithWord(rest, phrase) or StartsWithWord(named, phrase) then
+	for _, phrase in ipairs(phrases) do
+		if StartsWithWords(rest, phrase) or StartsWithWords(named, phrase) then
+			return true
+		end
+	end
+
+	return false
+end
+
+-- Returns whether the text before an icon ends with what the icon shows.
+local function IsPrecededByName(before, phrases)
+	for _, phrase in ipairs(phrases) do
+		if EndsWithWords(before, phrase) then
 			return true
 		end
 	end
@@ -104,14 +190,22 @@ local function CleanLine(line, keepMarkers)
 
 		result = result .. line:sub(position, first - 1)
 
-		local key, name = icon:lower(), GetIconName(icon)
+		local key = icon:lower()
+		local name, prefix = GetIconName(icon)
 		local rest = line:sub(last + 1)
 		local text = rest:match("^%s*(.*)$")
+		local phrases = GetPhrases(key, name, prefix)
 		local replacement = name
 		local skipSpace = false
 
-		if DROPPED[key] or IsFollowedByName(text, key, name) then
+		if DROPPED[key] or IsFollowedByName(text, phrases) then
 			replacement, skipSpace = "", true
+		elseif IsPrecededByName(result, phrases) then
+			replacement, skipSpace = "", true
+
+			if text:match("^[%.,;:%)]") then
+				result = result:gsub("%s+$", "")
+			end
 		elseif LIST_MARKERS[key] then
 			if keepMarkers and result:match("^%s*$") then
 				replacement = "-"
