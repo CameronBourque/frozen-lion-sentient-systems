@@ -14,22 +14,22 @@ Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design
 
 ## Steps
 
-The `#` column sets the order, and a step's file has no number. Each finished step has a section in [done.md](done.md). A step is one pull request, and its tasks are its commits. Steps that share a pull request have the same title.
+The `#` column sets the order, and a step's file has no number. Each finished step has a section in [done/](done/README.md). A step is one pull request, and its tasks are its commits. Steps that share a pull request have the same title.
 
 | # | Step | Covers | Pull request title | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Link the core mod | A script in place of the manual junction steps | `chore(core): add the mod link script` | Done. See [done.md](done.md#link-the-core-mod) |
-| 2 | Config file | Log level and provider keys | `feat(core): add the config file and structured logs` | Done. See [done.md](done.md#config-file) |
-| 3 | Logs and errors | Structured logs at five levels, a log file per game, and `ERROR` lines from the core mod | `feat(core): add the config file and structured logs` | Done. See [done.md](done.md#logs-and-errors) |
-| 4 | Load signal | How the bridge tells a load has finished | `feat(core): add the load signal` | Done. See [done.md](done.md#load-signal) |
-| 5 | State: map, cities, and units | The serializer for one player, filtered by visibility | `feat(core): add the state serializer` | Done. See [done.md](done.md#state-map-cities-and-units) |
-| 6 | State: choices, blockers, and scoreboard | End-turn blockers, legal options and purchases, placement tiles, the tech and civic trees, the player's overview, diplomacy status, and victory progress | `feat(core): add blockers, choices, trees, and the scoreboard` | Done. See [done.md](done.md#state-choices-blockers-and-scoreboard) |
-| 7 | Action API: units | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | Done. See [done.md](done.md#action-api-units) |
-| 8 | Action API: unit jobs | Builder jobs, upgrades, formations, air movement, priority target, and adding production | `feat(core): add the unit job actions` | Done. See [done.md](done.md#action-api-unit-jobs) |
-| 9 | Action API: special units | Trade routes, great people, religious units, spy missions, pillaging roads, and coastal raids, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | Done. See [done.md](done.md#action-api-special-units) |
-| 10 | State: trade routes and espionage | The player's trade routes, and every spy, as the Trade Overview and Espionage screens show them | `feat(core): add the trade route and espionage state` | Done. See [done.md](done.md#state-trade-routes-and-espionage) |
-| 11 | State: unit and city details | What a unit is doing, its charges, religion, and great person fields, and a city's religion and power | `feat(core): add the unit and city details to the state` | Done. See [done.md](done.md#state-unit-and-city-details) |
-| 12 | State: great works and map layers | Every great work slot with its city and work, where a work can move, and the tourism, appeal, and continent of each tile | `feat(core): add the great work and map layer state` | Done. See [done.md](done.md#state-great-works-and-map-layers) |
+| 1 | Link the core mod | A script in place of the manual junction steps | `chore(core): add the mod link script` | Done. See [setup.md](done/setup.md#link-the-core-mod) |
+| 2 | Config file | Log level and provider keys | `feat(core): add the config file and structured logs` | Done. See [setup.md](done/setup.md#config-file) |
+| 3 | Logs and errors | Structured logs at five levels, a log file per game, and `ERROR` lines from the core mod | `feat(core): add the config file and structured logs` | Done. See [setup.md](done/setup.md#logs-and-errors) |
+| 4 | Load signal | How the bridge tells a load has finished | `feat(core): add the load signal` | Done. See [setup.md](done/setup.md#load-signal) |
+| 5 | State: map, cities, and units | The serializer for one player, filtered by visibility | `feat(core): add the state serializer` | Done. See [state.md](done/state.md#state-map-cities-and-units) |
+| 6 | State: choices, blockers, and scoreboard | End-turn blockers, legal options and purchases, placement tiles, the tech and civic trees, the player's overview, diplomacy status, and victory progress | `feat(core): add blockers, choices, trees, and the scoreboard` | Done. See [state.md](done/state.md#state-choices-blockers-and-scoreboard) |
+| 7 | Action API: units | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | Done. See [actions.md](done/actions.md#action-api-units) |
+| 8 | Action API: unit jobs | Builder jobs, upgrades, formations, air movement, priority target, and adding production | `feat(core): add the unit job actions` | Done. See [actions.md](done/actions.md#action-api-unit-jobs) |
+| 9 | Action API: special units | Trade routes, great people, religious units, spy missions, pillaging roads, and coastal raids, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | Done. See [actions.md](done/actions.md#action-api-special-units) |
+| 10 | State: trade routes and espionage | The player's trade routes, and every spy, as the Trade Overview and Espionage screens show them | `feat(core): add the trade route and espionage state` | Done. See [state.md](done/state.md#state-trade-routes-and-espionage) |
+| 11 | State: unit and city details | What a unit is doing, its charges, religion, and great person fields, and a city's religion and power | `feat(core): add the unit and city details to the state` | Done. See [state.md](done/state.md#state-unit-and-city-details) |
+| 12 | State: great works and map layers | Every great work slot with its city and work, where a work can move, and the tourism, appeal, and continent of each tile | `feat(core): add the great work and map layer state` | Done. See [state.md](done/state.md#state-great-works-and-map-layers) |
 | 13 | [Action API: cities](action-api-cities.md) | Production, districts and wonders, purchases, tile purchases, and the production queue | `feat(core): add the city actions` | |
 | 14 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
 | 15 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, and great person blockers | `feat(core): add the religion, governor, and reward actions` | |
