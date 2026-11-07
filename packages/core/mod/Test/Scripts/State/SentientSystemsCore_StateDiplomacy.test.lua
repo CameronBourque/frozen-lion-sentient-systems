@@ -133,7 +133,7 @@ describe("SentientSystems_GetDiplomacyState", function()
 				diplomacy = {
 					[0] = {
 						modifiers = {
-							{ Score = 2, Text = "Friendly meeting" },
+							{ Score = 2, Text = "Friendly [COLOR_RED]meeting[ENDCOLOR]" },
 							{ Score = -6, Text = "LOC_TOOLTIP_DIPLOMACY_UNKNOWN_REASON" },
 							{ Score = 0, Text = "Nothing" },
 							{ Score = 9, Text = "Pleased with the highlands" },
@@ -178,7 +178,7 @@ describe("SentientSystems_GetDiplomacyState", function()
 							perTurn = 2.5,
 							log = {
 								{ Turn = 52, Initiator = 1, Target = 0, Amount = 100, Description = "War declared" },
-								{ Turn = 20, Initiator = 0, Target = 1, Amount = 50, Description = "City occupied" },
+								{ Turn = 20, Initiator = 0, Target = 1, Amount = 50, Description = "[ICON_Bullet]City [COLOR_RED]occupied[ENDCOLOR]" },
 							},
 						},
 					},
@@ -187,7 +187,7 @@ describe("SentientSystems_GetDiplomacyState", function()
 			[1] = {},
 		}, false, true)
 
-		assert.truthy(json:find("\"grievances\":{\"balance\":-12,\"log\":[{\"against\":1,\"amount\":50,\"from\":0,\"text\":\"City occupied\",\"turn\":20},"
+		assert.truthy(json:find("\"grievances\":{\"balance\":-12,\"log\":[{\"against\":1,\"amount\":50,\"from\":0,\"text\":\"-City occupied\",\"turn\":20},"
 			.. "{\"against\":0,\"amount\":100,\"from\":1,\"text\":\"War declared\",\"turn\":52}],\"perTurn\":2.5}", 1, true))
 	end)
 

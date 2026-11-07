@@ -114,7 +114,7 @@ local function GetReasons(other, playerID)
 
 			reasons[#reasons + 1] = {
 				score = modifier.Score,
-				text = not unknown and Locale.Lookup(modifier.Text) or nil,
+				text = not unknown and SentientSystems_LookupText(modifier.Text) or nil,
 				unknown = unknown or nil,
 			}
 		end
@@ -157,7 +157,7 @@ local function GetAgendas(other, level)
 			list[#list + 1] = {
 				type = row.AgendaType,
 				name = Locale.Lookup(row.Name),
-				description = Locale.Lookup(row.Description),
+				description = SentientSystems_LookupText(row.Description),
 			}
 		end
 	end
@@ -184,7 +184,7 @@ local function GetGrievances(player, otherID)
 			from = entry.Initiator,
 			against = entry.Target,
 			amount = entry.Amount,
-			text = entry.Description,
+			text = SentientSystems_CleanText(entry.Description),
 		}
 	end
 

@@ -45,7 +45,7 @@ export const DIPLOMACY = z.array(z.object({
 			from: z.number(),
 			against: z.number(),
 			amount: z.number(),
-			text: z.string(),
+			text: z.string().optional(),
 		})).describe("By turn."),
 	}).optional().describe("Left out without Gathering Storm."),
 	others: z.array(z.object({ player: z.number(), state: z.string() })).optional().describe(
