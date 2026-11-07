@@ -33,8 +33,9 @@ describe("SentientSystems_CleanText", function()
 		return env.SentientSystems_CleanText(text)
 	end
 
-	it("returns nil for no text", function()
+	it("returns nil for no text, and for empty text", function()
 		assert.is_nil(Clean(nil))
+		assert.is_nil(Clean(""))
 	end)
 
 	it("leaves text without icons as it is", function()
@@ -100,5 +101,12 @@ describe("SentientSystems_LookupText", function()
 		Game.run(env, "Scripts/SentientSystemsCore_Text.lua")
 
 		assert.equal("You need Gold more(18)", env.SentientSystems_LookupText("LOC_TEST", 18))
+	end)
+
+	it("returns empty text for a blank text", function()
+		FakeGame.Install(env, { text = { LOC_BLANK = "" } })
+		Game.run(env, "Scripts/SentientSystemsCore_Text.lua")
+
+		assert.equal("", env.SentientSystems_LookupText("LOC_BLANK"))
 	end)
 end)

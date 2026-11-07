@@ -92,7 +92,7 @@ local function GetGreatPerson(player, greatPeople, entry)
 		era = GameInfo.Eras[entry.Era].EraType,
 		cost = entry.Cost,
 		patronage = GetPatronage(greatPeople, playerID, entry.Individual),
-		cantEarn = cantEarn ~= "" and SentientSystems_CleanText(cantEarn) or nil,
+		cantEarn = SentientSystems_CleanText(cantEarn),
 		progress = GetProgress(player, entry.Class),
 	}
 

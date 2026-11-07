@@ -135,9 +135,9 @@ end
 
 -- Returns the text with each icon cleaned as CleanLine does, so that the text
 -- reads without the icons. The lines stay separated with [NEWLINE]. Returns nil
--- for no text.
+-- for no text, or for empty text.
 function SentientSystems_CleanText(text)
-	if text == nil then
+	if text == nil or text == "" then
 		return nil
 	end
 
@@ -169,7 +169,8 @@ function SentientSystems_GetTooltipLines(tooltip)
 end
 
 -- Returns the text of a text key, looked up with its arguments, cleaned as
--- SentientSystems_CleanText does.
+-- SentientSystems_CleanText does. Always returns text, which is empty for a
+-- blank text.
 function SentientSystems_LookupText(key, ...)
-	return SentientSystems_CleanText(Locale.Lookup(key, ...))
+	return SentientSystems_CleanText(Locale.Lookup(key, ...)) or ""
 end
