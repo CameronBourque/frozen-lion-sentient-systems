@@ -6,6 +6,7 @@ include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_Text")
 SentientSystems_Include("SentientSystemsCore_StateCities")
+SentientSystems_Include("SentientSystemsCore_StateContinents")
 SentientSystems_Include("SentientSystemsCore_StateDiplomacy")
 SentientSystems_Include("SentientSystemsCore_StateUnits")
 SentientSystems_Include("SentientSystemsCore_StateTiles")
@@ -39,6 +40,7 @@ function SentientSystems_GetState(playerID)
 		diplomacy = SentientSystems_GetDiplomacyState(player),
 		units = SentientSystems_GetUnitStates(player),
 		tiles = SentientSystems_GetTileStates(playerID),
+		continents = SentientSystems_GetContinentStates(),
 		rivals = {
 			cities = SentientSystems_GetRivalCityStates(playerID),
 			units = SentientSystems_GetRivalUnitStates(playerID),

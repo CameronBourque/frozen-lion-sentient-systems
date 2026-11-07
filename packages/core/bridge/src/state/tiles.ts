@@ -32,6 +32,9 @@ export const TILE = z.object({
 	appeal: z.number().optional().describe(
 		"The tile's appeal, as the tooltip and the appeal lens show it. 4 and above is breathtaking, 2 and above charming, -1 and above average, -3 and above uninviting, and below that disgusting. Left out when 0, and for water, except a natural wonder.",
 	),
+	continent: z.number().optional().describe(
+		"The index of the tile's continent, which the continents section names. Left out for a tile with none, such as water.",
+	),
 	visible: z.boolean().describe(
 		"False for a tile under fog, which reads as it is now, as the game's tooltip shows it.",
 	),

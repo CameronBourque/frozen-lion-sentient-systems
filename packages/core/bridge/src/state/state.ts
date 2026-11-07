@@ -7,6 +7,7 @@ import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
+import { CONTINENT } from "./continents.js";
 import { DIPLOMACY } from "./diplomacy.js";
 import { ENVOYS } from "./envoys.js";
 import { ESPIONAGE } from "./espionage.js";
@@ -33,6 +34,7 @@ export const STATE = z.object({
 		"The player's units on the map. A unit at X -9999, or one that is dead or about to die, is left out.",
 	),
 	tiles: z.array(TILE).describe("The tiles the player has revealed, in plot index order."),
+	continents: z.array(CONTINENT).describe("The continents with a tile the player has revealed, as the continents lens key lists them."),
 	rivals: z.object({
 		cities: z.array(RIVAL_CITY).describe("Other players' cities on tiles the player has revealed."),
 		units: z.array(RIVAL_UNIT).describe("Other players' units that the player can see now."),

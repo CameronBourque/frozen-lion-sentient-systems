@@ -36,6 +36,7 @@ The view holds what a player sees on these screens, grouped by screen. The list 
   Where a work can move is too large for the state, so `SentientSystems_GetGreatWorkMoves` returns it for one work on demand.
 - **The Tourism lens.** On each of the player's own tiles with tourism: the tourism each turn, the visiting tourists, what gives it, and the lifetime tourism, as the lens's banner and its tooltip show them.
 - **The Appeal lens.** On each revealed land tile and natural wonder: its appeal, as the tooltip and the lens show it, left out when 0.
+- **The Continent lens.** The index of each tile's continent, and a list of the continents the player has revealed with their types and names, as the lens and the tooltip show them.
 - **Their own screens.** Climate and disasters.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 

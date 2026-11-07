@@ -61,6 +61,36 @@ return function(env, world, ctx)
 		end,
 	}
 
+	-- The continents in use take an index and a type, and hidden when the
+	-- player has revealed none of their plots.
+	env.GameInfo.Continents = {}
+
+	local inUse = {}
+
+	for _, continent in ipairs(world.continents or {}) do
+		env.GameInfo.Continents[continent.index] = {
+			ContinentType = continent.type,
+			Description = "LOC_" .. continent.type .. "_DESCRIPTION",
+		}
+		inUse[#inUse + 1] = continent.index
+	end
+
+	function env.Map.GetContinentsInUse()
+		return inUse
+	end
+
+	function env.Map.GetVisibleContinentPlots(index)
+		local visible = {}
+
+		for _, continent in ipairs(world.continents or {}) do
+			if continent.index == index and not continent.hidden then
+				visible[1] = 0
+			end
+		end
+
+		return visible
+	end
+
 	for _, data in ipairs(world.plots or {}) do
 		AddRow("Terrains", "TerrainType", data.terrain)
 
@@ -119,6 +149,9 @@ return function(env, world, ctx)
 			end,
 			IsWater = function()
 				return data.water == true
+			end,
+			GetContinentType = function()
+				return data.continent or -1
 			end,
 			GetAppeal = function()
 				return data.appeal or 0

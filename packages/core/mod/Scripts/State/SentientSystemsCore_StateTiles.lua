@@ -45,6 +45,14 @@ local function GetAppeal(plot)
 	return appeal ~= 0 and appeal or nil
 end
 
+-- Returns the index of the plot's continent, or nil for a tile with none, such
+-- as water. The tooltip leaves the line out for it too, in PlotToolTip.lua.
+local function GetContinent(plot)
+	local continent = plot:GetContinentType()
+
+	return continent ~= -1 and continent or nil
+end
+
 -- Returns the tourism of a tile of the player's own, as its banner shows it on
 -- the tourism lens, or an empty table when it has none. The banner's tooltip is
 -- a name, the visiting tourists, a line of text, the sources, and the lifetime
@@ -104,6 +112,7 @@ function SentientSystems_GetTileStates(playerID)
 				route = route,
 				routePillaged = route and TrueOrNil(plot:IsRoutePillaged()),
 				appeal = GetAppeal(plot),
+				continent = GetContinent(plot),
 				visible = visibility:IsVisible(index),
 				tourism = tourism.tourism,
 				tourists = tourism.tourists ~= 0 and tourism.tourists or nil,

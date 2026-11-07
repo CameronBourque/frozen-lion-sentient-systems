@@ -152,6 +152,18 @@ describe("SentientSystems_GetTileStates", function()
 		end)
 	end)
 
+	describe("continent", function()
+		it("adds the continent index of a land tile and leaves it out for water", function()
+			local tiles = TilesFor(
+				{ revealed = { { 0, 0 }, { 1, 0 } } },
+				{ { x = 0, y = 0, terrain = "TERRAIN_GRASS", continent = 10 }, { x = 1, y = 0, terrain = "TERRAIN_OCEAN", water = true } }
+			)
+
+			assert.truthy(tiles:find("\"continent\":10", 1, true))
+			assert.equal(1, select(2, tiles:gsub("continent", "")))
+		end)
+	end)
+
 	describe("appeal", function()
 		-- Returns the tiles JSON for one revealed tile with the given fields.
 		local function AppealTile(extra)
