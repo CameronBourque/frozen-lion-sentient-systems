@@ -90,7 +90,7 @@ describe("SentientSystems_GetEnvoyState", function()
 		}
 
 		assert.equal(
-			"{\"TRADE\":[\"+2 [ICON_Gold] Gold\",\"LOC_MINOR_CIV_TRADE_TRAIT_MEDIUM_INFLUENCE_BONUS\",\"LOC_MINOR_CIV_TRADE_TRAIT_LARGE_INFLUENCE_BONUS\"]}",
+			"{\"TRADE\":[\"+2 Gold\",\"LOC_MINOR_CIV_TRADE_TRAIT_MEDIUM_INFLUENCE_BONUS\",\"LOC_MINOR_CIV_TRADE_TRAIT_LARGE_INFLUENCE_BONUS\"]}",
 			EnvoysWith(players):match("\"bonuses\":(%b{})")
 		)
 	end)
@@ -103,8 +103,8 @@ describe("SentientSystems_GetEnvoyState", function()
 
 		local players = { [0] = { met = { 12 } }, [12] = samarkand }
 
-		assert.truthy(EnvoysWith(players):find("\"suzerainBonus\":\"Trading Domes.[NEWLINE][NEWLINE]More gold.\",\"suzerainNeeds\":3,", 1, true))
-		assert.truthy(EnvoysWith(players, true):find("\"suzerainBonus\":\"Trading Domes.[NEWLINE][NEWLINE]More gold.\",\"suzerainBonusDisabled\":true,", 1, true))
+		assert.truthy(EnvoysWith(players):find("\"suzerainBonus\":\"Trading Domes.\\n\\nMore gold.\",\"suzerainNeeds\":3,", 1, true))
+		assert.truthy(EnvoysWith(players, true):find("\"suzerainBonus\":\"Trading Domes.\\n\\nMore gold.\",\"suzerainBonusDisabled\":true,", 1, true))
 	end)
 
 	it("lists the city-state's resources, and with Gathering Storm a strategic resource's amount per turn", function()
@@ -137,7 +137,20 @@ describe("SentientSystems_GetEnvoyState", function()
 		}
 
 		assert.equal(
-			"[{\"description\":\"Train a Spearman military unit.\",\"name\":\"Train a Spearman.\",\"reward\":\"[ICON_Envoy] 1 Envoy\",\"type\":\"QUEST_TRAIN_UNIT_TYPE\"}]",
+			"[{\"description\":\"Train a Spearman military unit.\",\"name\":\"Train a Spearman.\",\"reward\":\"1 Envoy\",\"type\":\"QUEST_TRAIN_UNIT_TYPE\"}]",
+			EnvoysWith({ [0] = { met = { 12 } }, [1] = {}, [12] = samarkand }):match("\"quests\":(%b[])")
+		)
+	end)
+
+	it("leaves out a quest's empty description and reward", function()
+		local samarkand = CityState("SAMARKAND", "LEADER_MINOR_CIV_TRADE", {})
+
+		samarkand.minor.quests = {
+			[0] = { { type = "QUEST_ZONE_DISTRICT_TYPE", name = "Construct an Encampment.", description = "", reward = "" } },
+		}
+
+		assert.equal(
+			"[{\"name\":\"Construct an Encampment.\",\"type\":\"QUEST_ZONE_DISTRICT_TYPE\"}]",
 			EnvoysWith({ [0] = { met = { 12 } }, [1] = {}, [12] = samarkand }):match("\"quests\":(%b[])")
 		)
 	end)

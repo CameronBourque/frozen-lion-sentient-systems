@@ -7,13 +7,18 @@ local SPY = { id = 2555922, name = "LOC_CITIZEN_ROME_FEMALE_3", loot = "LOC_ESPI
 -- Returns the spy choice JSON for player 0, or nil when it is left out, with
 -- the spy given, Istanbul's districts, and the player's blockers, the escape
 -- route blocker when missing.
-local function ChoicesWith(spy, districts, blockers)
+local function ChoicesWith(spy, districts, blockers, text)
 	local env = Game.new()
+	local words = { LOC_CITIZEN_ROME_FEMALE_3 = "Laurenza", LOC_CITY_NAME_ISTANBUL = "Istanbul", LOC_ESPIONAGE_ESCAPE_CHOICE_4 = "Foot" }
 	local istanbul = { id = 65536, name = "LOC_CITY_NAME_ISTANBUL", x = 84, y = 34, population = 5, districts = districts }
+
+	for key, value in pairs(text or {}) do
+		words[key] = value
+	end
 
 	FakeGame.Install(env, {
 		players = { [0] = { escapingSpy = spy, blockers = blockers or { "ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE" } }, [4] = { cities = { istanbul } } },
-		text = { LOC_CITIZEN_ROME_FEMALE_3 = "Laurenza", LOC_CITY_NAME_ISTANBUL = "Istanbul", LOC_ESPIONAGE_ESCAPE_CHOICE_4 = "Foot" },
+		text = words,
 	})
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
@@ -31,6 +36,12 @@ describe("SentientSystems_GetSpyChoices", function()
 				.. "{\"name\":\"Foot\",\"turns\":4,\"type\":\"DISTRICT_CITY_CENTER\"}],\"spy\":2555922}]",
 			ChoicesWith(SPY, { { type = "DISTRICT_HARBOR", x = 85, y = 34 } })
 		)
+	end)
+
+	it("cleans the icons and colors from the tooltip", function()
+		local text = { LOC_ESPIONAGE_ESCAPE_TOOLTIP = "Escape with [ICON_Gold] [COLOR_RED]loot[ENDCOLOR]" }
+
+		assert.truthy(ChoicesWith(SPY, nil, nil, text):find("\"description\":\"Escape with Gold loot\"", 1, true))
 	end)
 
 	it("names the counterspy who pursues the spy", function()

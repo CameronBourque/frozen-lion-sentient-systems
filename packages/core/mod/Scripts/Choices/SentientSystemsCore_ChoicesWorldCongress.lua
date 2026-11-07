@@ -66,7 +66,7 @@ local function GetOutcomes(data, localPlayerID, turnsLeft)
 			local outcome = {
 				name = Locale.Lookup(GameInfo.Resolutions[resolution.Type].Name),
 				elected = resolution.ChosenLabel,
-				text = Locale.Lookup(resolution.ChosenOption),
+				text = SentientSystems_LookupText(resolution.ChosenOption),
 				target = GetChosenTarget(resolution, localPlayerID),
 				turnsLeft = turnsLeft,
 			}
@@ -129,7 +129,7 @@ local function GetResolutions(data, localPlayerID)
 			resolutions[#resolutions + 1] = {
 				type = row.ResolutionType,
 				name = Locale.Lookup(row.Name),
-				options = { A = Locale.Lookup(row.Effect1Description), B = Locale.Lookup(row.Effect2Description) },
+				options = { A = SentientSystems_LookupText(row.Effect1Description), B = SentientSystems_LookupText(row.Effect2Description) },
 				targetType = resolution.TargetType,
 				targets = targets,
 				favored = Numbers(resolution.FavoredPlayerIDs),
@@ -156,7 +156,7 @@ local function GetProposals(data)
 		proposals[#proposals + 1] = {
 			type = proposal.TypeName,
 			name = proposal.Name,
-			description = proposal.Description,
+			description = SentientSystems_CleanText(proposal.Description),
 			sender = proposal.Sender,
 			target = proposal.Target,
 		}
@@ -176,7 +176,7 @@ local function GetAvailable(data)
 		available[#available + 1] = {
 			type = proposal.TypeName,
 			name = proposal.Name,
-			description = proposal.Description,
+			description = SentientSystems_CleanText(proposal.Description),
 			target = proposal.Target,
 			cost = entry.cost,
 			disabled = proposal.Disabled == true,

@@ -58,28 +58,28 @@ local function GetKeepAndRaze(player, city, conqueredFrom, wipedOut)
 		if wipedOut and expansion2 then
 			points = raze and points or points * GlobalParameters.WARMONGER_FINAL_MAJOR_CITY_MULTIPLIER / 100
 
-			return Locale.Lookup("LOC_XP2_RAZE_CITY_" .. verb .. "_LAST_CITY_EXPLANATION", points)
+			return SentientSystems_LookupText("LOC_XP2_RAZE_CITY_" .. verb .. "_LAST_CITY_EXPLANATION", points)
 		elseif wipedOut then
-			return Locale.Lookup("LOC_RAZE_CITY_" .. verb .. "_LAST_CITY_EXPLANATION")
+			return SentientSystems_LookupText("LOC_RAZE_CITY_" .. verb .. "_LAST_CITY_EXPLANATION")
 		elseif expansion2 then
-			return Locale.Lookup("LOC_RAZE_CITY_" .. verb .. "_EXPLANATION", Locale.Lookup("LOC_XP2_RAZE_CITY_" .. verb .. "_WARMONGER_EXPLANATION", points))
+			return SentientSystems_LookupText("LOC_RAZE_CITY_" .. verb .. "_EXPLANATION", Locale.Lookup("LOC_XP2_RAZE_CITY_" .. verb .. "_WARMONGER_EXPLANATION", points))
 		end
 
-		return Locale.Lookup("LOC_RAZE_CITY_" .. verb .. "_EXPLANATION", Locale.Lookup("LOC_RAZE_CITY_" .. verb .. "_WARMONGER_EXPLANATION", diplomacy:GetWarmongerLevel(-points)))
+		return SentientSystems_LookupText("LOC_RAZE_CITY_" .. verb .. "_EXPLANATION", Locale.Lookup("LOC_RAZE_CITY_" .. verb .. "_WARMONGER_EXPLANATION", diplomacy:GetWarmongerLevel(-points)))
 	end
 
 	local keep, raze
 
 	if city:GetLastTransferType() == CityTransferTypes.BY_GIFT then
-		keep = Locale.Lookup("LOC_RAZE_CITY_KEEP_EXPLANATION_TRADED")
+		keep = SentientSystems_LookupText("LOC_RAZE_CITY_KEEP_EXPLANATION_TRADED")
 	elseif freeCity then
-		keep = Locale.Lookup("LOC_XP2_RAZE_CITY_KEEP_FREE_CITY_EXPLANATION")
+		keep = SentientSystems_LookupText("LOC_XP2_RAZE_CITY_KEEP_FREE_CITY_EXPLANATION")
 	else
 		keep = Cost(false)
 	end
 
 	if city:CanRaze() then
-		raze = freeCity and Locale.Lookup("LOC_XP2_RAZE_CITY_RAZE_FREE_CITY_EXPLANATION") or Cost(true)
+		raze = freeCity and SentientSystems_LookupText("LOC_XP2_RAZE_CITY_RAZE_FREE_CITY_EXPLANATION") or Cost(true)
 	end
 
 	return keep, raze
@@ -111,7 +111,7 @@ local function GetCapturedCity(player)
 		options[#options + 1] = {
 			type = DirectiveName(directive),
 			player = owner,
-			description = Locale.Lookup("LOC_RAZE_CITY_LIBERATE_EXPLANATION", liberation),
+			description = SentientSystems_LookupText("LOC_RAZE_CITY_LIBERATE_EXPLANATION", liberation),
 		}
 	end
 
@@ -129,7 +129,7 @@ local function GetCapturedCity(player)
 	options[#options + 1] = {
 		type = DirectiveName(CityDestroyDirectives.RAZE),
 		description = raze,
-		blocked = raze == nil and { Locale.Lookup("LOC_RAZE_CITY_RAZE_DISABLED_EXPLANATION") } or nil,
+		blocked = raze == nil and { SentientSystems_LookupText("LOC_RAZE_CITY_RAZE_DISABLED_EXPLANATION") } or nil,
 	}
 
 	local entry = GetCity(city, "captured")
@@ -154,8 +154,8 @@ local function GetDisloyalCity(player)
 	local entry = GetCity(city, "disloyal")
 
 	entry.options = {
-		{ type = DirectiveName(CityDestroyDirectives.KEEP), description = Locale.Lookup("LOC_DISLOYAL_CITY_CHOOSER_KEEP_EXPLANATION") },
-		{ type = DirectiveName(CityDestroyDirectives.REJECT), description = Locale.Lookup("LOC_DISLOYAL_CITY_CHOOSER_REFUSE_EXPLANATION") },
+		{ type = DirectiveName(CityDestroyDirectives.KEEP), description = SentientSystems_LookupText("LOC_DISLOYAL_CITY_CHOOSER_KEEP_EXPLANATION") },
+		{ type = DirectiveName(CityDestroyDirectives.REJECT), description = SentientSystems_LookupText("LOC_DISLOYAL_CITY_CHOOSER_REFUSE_EXPLANATION") },
 	}
 
 	return entry

@@ -169,12 +169,12 @@ end
 -- has none. See GetThemeDescription.
 local function GetThemeBonus(culture, building)
 	if culture:GetAutoThemedBuilding() == building.Index or culture:IsAutoThemedEligible(building.Hash) then
-		return Locale.Lookup("LOC_BUILDING_THEMINGBONUS_FULL_MUSEUM")
+		return SentientSystems_LookupText("LOC_BUILDING_THEMINGBONUS_FULL_MUSEUM")
 	end
 
 	for row in GameInfo.Building_GreatWorks() do
 		if row.BuildingType == building.BuildingType and row.ThemingBonusDescription ~= nil then
-			return Locale.Lookup(row.ThemingBonusDescription)
+			return SentientSystems_LookupText(row.ThemingBonusDescription)
 		end
 	end
 

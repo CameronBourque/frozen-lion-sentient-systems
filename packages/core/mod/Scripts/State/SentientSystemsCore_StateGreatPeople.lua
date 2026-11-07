@@ -92,19 +92,19 @@ local function GetGreatPerson(player, greatPeople, entry)
 		era = GameInfo.Eras[entry.Era].EraType,
 		cost = entry.Cost,
 		patronage = GetPatronage(greatPeople, playerID, entry.Individual),
-		cantEarn = cantEarn ~= "" and cantEarn or nil,
+		cantEarn = SentientSystems_CleanText(cantEarn),
 		progress = GetProgress(player, entry.Class),
 	}
 
 	if entry.PassiveNameText ~= nil and entry.PassiveNameText ~= "" then
-		person.passive = entry.PassiveEffectText
+		person.passive = SentientSystems_CleanText(entry.PassiveEffectText)
 	end
 
 	if entry.ActionNameText ~= nil and entry.ActionNameText ~= "" then
 		person.action = {
-			name = entry.ActionNameText,
-			usage = entry.ActionUsageText,
-			effect = entry.ActionEffectText,
+			name = SentientSystems_CleanText(entry.ActionNameText),
+			usage = SentientSystems_CleanText(entry.ActionUsageText),
+			effect = SentientSystems_CleanText(entry.ActionEffectText),
 			charges = individual.ActionCharges > 0 and individual.ActionCharges or nil,
 		}
 	end

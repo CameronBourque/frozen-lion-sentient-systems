@@ -51,7 +51,7 @@ function SentientSystems_GetOperationReasons(unit, hash)
 	local texts = {}
 
 	for i, reason in ipairs(reasons) do
-		texts[i] = Locale.Lookup(reason)
+		texts[i] = SentientSystems_LookupText(reason)
 	end
 
 	return table.concat(texts, " ")

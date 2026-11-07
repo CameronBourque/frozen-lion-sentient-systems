@@ -3,6 +3,7 @@
 -- and DedicationPopup.lua.
 
 include("SentientSystemsCore_Common")
+SentientSystems_Include("SentientSystemsCore_Text")
 
 -- Returns the player's age, heroic, golden, dark, or normal, as the panels
 -- decide it: heroic before golden, and golden before dark.
@@ -24,16 +25,16 @@ end
 -- heroic age counts as golden.
 function SentientSystems_GetDedicationText(eras, playerID, row, age)
 	if age == "heroic" or age == "golden" then
-		local text = Locale.Lookup(row.GoldenAgeBonusDescription)
+		local text = SentientSystems_LookupText(row.GoldenAgeBonusDescription)
 
 		if eras:IsPlayerAlwaysAllowedCommemorationQuest(playerID) then
-			text = text .. "[NEWLINE]" .. Locale.Lookup(row.NormalAgeBonusDescription)
+			text = text .. "\n" .. SentientSystems_LookupText(row.NormalAgeBonusDescription)
 		end
 
 		return text
 	elseif age == "dark" then
-		return Locale.Lookup(row.DarkAgeBonusDescription)
+		return SentientSystems_LookupText(row.DarkAgeBonusDescription)
 	end
 
-	return Locale.Lookup(row.NormalAgeBonusDescription)
+	return SentientSystems_LookupText(row.NormalAgeBonusDescription)
 end

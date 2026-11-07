@@ -9,10 +9,11 @@ local SAILING = {
 	unlocks = { "UNIT_GALLEY", "IMPROVEMENT_FISHING_BOATS" },
 }
 
-local function TechsWith(techs)
+-- Returns the tech choice JSON for player 0, with the text of any key in text.
+local function TechsWith(techs, text)
 	local env = Game.new()
 
-	FakeGame.Install(env, { players = { [0] = { techs = techs } }, text = { LOC_BOOST_TRIGGER_SAILING = "Found a city on the Coast." } })
+	FakeGame.Install(env, { players = { [0] = { techs = techs } }, text = text or { LOC_BOOST_TRIGGER_SAILING = "Found a city on the Coast." } })
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
 	return env.SentientSystems_GetChoices(0):match("\"techs\":(%b[])")
@@ -39,6 +40,12 @@ describe("SentientSystems_GetTechChoices", function()
 				.. "\"type\":\"TECH_SAILING\",\"unlocks\":[\"UNIT_GALLEY\",\"IMPROVEMENT_FISHING_BOATS\"]}]",
 			TechsWith({ options = { SAILING } })
 		)
+	end)
+
+	it("cleans the icons from a boost trigger", function()
+		local techs = TechsWith({ options = { SAILING } }, { LOC_BOOST_TRIGGER_SAILING = "Make a [ICON_TradeRoute]." })
+
+		assert.truthy(techs:find("\"trigger\":\"Make a Trade Route.\"", 1, true))
 	end)
 
 	it("leaves out the boost of a tech with none, and gives an empty list of unlocks", function()

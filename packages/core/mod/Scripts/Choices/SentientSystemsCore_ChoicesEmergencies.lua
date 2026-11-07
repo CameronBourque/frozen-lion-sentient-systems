@@ -2,12 +2,13 @@
 -- OnEmergencyAvailable and ShowEmergency in WorldCrisisPopup.lua.
 -- Shape: bridge/src/choices/emergencies.ts.
 
--- Returns the lines of a list of texts, as the popup shows them.
+-- Returns the lines of a list of texts, as the popup shows them, cleaned of
+-- the icons and colors, and without the empty ones.
 local function Lines(list)
 	local lines = {}
 
 	for _, line in ipairs(list or {}) do
-		lines[#lines + 1] = line
+		lines[#lines + 1] = SentientSystems_CleanText(line)
 	end
 
 	return lines
@@ -19,8 +20,10 @@ local function GetGoals(entry, playerID)
 	local goals = {}
 
 	for _, goal in ipairs(entry.TargetID == playerID and entry.TargetGoalsTable or entry.GoalsTable or {}) do
-		if goal.Name ~= "" then
-			goals[#goals + 1] = goal.Name
+		local name = SentientSystems_CleanText(goal.Name)
+
+		if name ~= nil then
+			goals[#goals + 1] = name
 		end
 	end
 
@@ -39,9 +42,7 @@ local function GetRewards(entry, hostile)
 		end
 	end
 
-	if entry.ExtraRewards ~= "" then
-		members[#members + 1] = entry.ExtraRewards
-	end
+	members[#members + 1] = SentientSystems_CleanText(entry.ExtraRewards)
 
 	return { members = members, target = hostile and Lines(entry.TargetRewardsText) or {} }
 end
@@ -84,8 +85,8 @@ function SentientSystems_GetEmergencyChoices(player)
 		end
 	end
 
-	if ongoing and entry.ExtraBuffs ~= "" then
-		buffs[#buffs + 1] = entry.ExtraBuffs
+	if ongoing then
+		buffs[#buffs + 1] = SentientSystems_CleanText(entry.ExtraBuffs)
 	end
 
 	local succeeded
@@ -98,8 +99,8 @@ function SentientSystems_GetEmergencyChoices(player)
 		{
 			type = GameInfo.EmergencyAlliances[entry.EmergencyType].EmergencyType,
 			name = Locale.Lookup(entry.NameText),
-			description = entry.ShortDescriptionText,
-			goal = entry.GoalDescription,
+			description = SentientSystems_CleanText(entry.ShortDescriptionText),
+			goal = SentientSystems_CleanText(entry.GoalDescription),
 			target = entry.TargetID,
 			targetCity = entry.TargetCityName ~= "" and Locale.Lookup(entry.TargetCityName) or nil,
 			hostile = hostile,

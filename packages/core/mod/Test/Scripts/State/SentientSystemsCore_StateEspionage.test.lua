@@ -16,12 +16,17 @@ end
 
 -- Returns the espionage section JSON for player 0, who has the data given, in a
 -- world with a city of player 1 at 20, 10 that owns the tile 21, 10.
-local function EspionageWith(player, others)
+local function EspionageWith(player, others, text)
 	local env = Game.new()
+	local words = { LOC_ESPIONAGE_LEVEL_1_NAME = "Recruit", LOC_ESPIONAGE_LEVEL_2_NAME = "Agent", LOC_UNITOPERATION_SPY_GAIN_SOURCES_DESCRIPTION = "Gain Sources" }
 	local players = { [0] = player, [1] = { cities = { { id = 1, name = "Rome", x = 20, y = 10, population = 5, ownedTiles = { { x = 21, y = 10 } } } } } }
 
 	for id, data in pairs(others or {}) do
 		players[id] = data
+	end
+
+	for key, value in pairs(text or {}) do
+		words[key] = value
 	end
 
 	FakeGame.Install(env, {
@@ -32,7 +37,7 @@ local function EspionageWith(player, others)
 			{ x = 30, y = 10, terrain = "TERRAIN_GRASS" },
 			{ x = 31, y = 10, terrain = "TERRAIN_GRASS" },
 		},
-		text = { LOC_ESPIONAGE_LEVEL_1_NAME = "Recruit", LOC_ESPIONAGE_LEVEL_2_NAME = "Agent", LOC_UNITOPERATION_SPY_GAIN_SOURCES_DESCRIPTION = "Gain Sources" },
+		text = words,
 	})
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
@@ -209,6 +214,13 @@ describe("SentientSystems_GetEspionageState", function()
 		it("gives a siphon that found no gold, and a mission with no loot", function()
 			assert.truthy(HistoryWith(Mission("SUCCESS_UNDETECTED", nil, { loot = 0 })):find("MISSIONOUTCOME_NO_GOLD", 1, true))
 			assert.falsy(HistoryWith(Mission("SUCCESS_UNDETECTED")):find("loot", 1, true))
+		end)
+
+		it("cleans the icons and colors from the outcome's text", function()
+			local text = { LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_SUCCESS_COUNTERSPY = "[ICON_Bolt]Guarded [COLOR_GREEN]well[ENDCOLOR]" }
+			local json = EspionageWith({ missions = { Mission("FAIL_UNDETECTED", nil, { operation = "UNITOPERATION_SPY_COUNTERSPY" }) } }, nil, text):match("\"history\":(%b[])")
+
+			assert.truthy(json:find("\"description\":\"-Guarded well(LOC_CITY_A)\"", 1, true))
 		end)
 
 		it("always calls a counterspy a success", function()

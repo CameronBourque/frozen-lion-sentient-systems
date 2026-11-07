@@ -26,7 +26,7 @@ local function GetAppointments(governors)
 				type = definition.GovernorType,
 				name = Locale.Lookup(definition.Name),
 				title = Locale.Lookup(definition.Title),
-				description = Locale.Lookup(definition.Description),
+				description = SentientSystems_LookupText(definition.Description),
 				secret = secret and true or nil,
 				loyalty = not secret and definition.IdentityPressure or nil,
 				turnsToEstablish = not secret and governors:GetTurnsToEstablish(hash) or nil,
@@ -76,7 +76,7 @@ local function GetBlockedReasons(governors, definition, city)
 	local reasons = {}
 
 	for i, reason in ipairs(results and results[PlayerOperationResults.FAILURE_REASONS] or {}) do
-		reasons[i] = Locale.Lookup(reason)
+		reasons[i] = SentientSystems_LookupText(reason)
 	end
 
 	return reasons

@@ -4,16 +4,17 @@
 
 -- The sources each yield's tooltip names, by the key they have in the state and
 -- the label that follows the amount in the game's English text, as in "+33 from
--- [ICON_Envoy] Envoys". The game gives no numbers for them, only the tooltip
+-- Envoys". The game gives no numbers for them, only the tooltip
 -- text, and its text keys for the lines (LOC_PLAYER_YIELD_<YIELD>_FROM_
 -- <SOURCE> in InGameText.xml) return an empty text when they are looked up, so
--- the labels are matched as the English file has them. In another language no
+-- the labels are matched as the English file has them, less the icons that
+-- SentientSystems_GetTooltipLines removes. In another language no
 -- label matches, and every amount lands in other. Other is the game's own Other
 -- line.
 local COMMON_SOURCES = {
 	{ key = "cities", label = "Cities" },
 	{ key = "beliefs", label = "Beliefs" },
-	{ key = "envoys", label = "[ICON_Envoy] Envoys" },
+	{ key = "envoys", label = "Envoys" },
 	{ key = "suzerain", label = "city-states you are Suzerain of" },
 	{ key = "other", label = "Other" },
 }
@@ -35,7 +36,7 @@ local YIELDS = {
 		extra = {
 			{ key = "founders", label = "peaceful religion founders" },
 			{ key = "alliances", label = "Religious Alliances" },
-			{ key = "greatPeople", label = "excess [ICON_GREATPERSON] Great Person points" },
+			{ key = "greatPeople", label = "excess Great Person points" },
 		},
 	},
 	{ key = "science", extra = {} },
@@ -53,24 +54,6 @@ end
 
 local function Escape(text)
 	return (text:gsub("%p", "%%%0"))
-end
-
--- Returns the lines of a tooltip, which the game separates with [NEWLINE].
-local function GetLines(tooltip)
-	local lines, start = {}, 1
-
-	while true do
-		local first, last = tooltip:find("[NEWLINE]", start, true)
-
-		if first == nil then
-			lines[#lines + 1] = tooltip:sub(start)
-
-			return lines
-		end
-
-		lines[#lines + 1] = tooltip:sub(start, first - 1)
-		start = last + 1
-	end
 end
 
 -- Returns the amount that one of the tooltip's lines gives for a label, or nil
@@ -93,7 +76,7 @@ end
 -- the lines don't give is added to other, when it is at least half a point. See
 -- GetGoldTooltip in ToolTipHelper_PlayerYields.lua.
 local function GetYield(yield, total, tooltip)
-	local lines = GetLines(tooltip)
+	local lines = SentientSystems_GetTooltipLines(tooltip)
 	local result = { total = RoundNearest(total) }
 	local found = 0
 

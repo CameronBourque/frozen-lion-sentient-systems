@@ -5,11 +5,11 @@ local BUILDER = { type = "UNIT_BUILDER", cost = 100 }
 local CANT_AFFORD = "LOC_BUILDING_INSUFFICIENT_FUNDS"
 
 -- Returns the purchase choice JSON for player 0, whose one city, Rome, can buy
--- what purchases holds.
-local function PurchasesWith(purchases)
+-- what purchases holds, with the text of any key in text.
+local function PurchasesWith(purchases, text)
 	local env = Game.new()
 
-	FakeGame.Install(env, { players = { [0] = { cities = { { id = 65536, name = "Rome", x = 17, y = 14, population = 3, purchases = purchases } } } } })
+	FakeGame.Install(env, { text = text, players = { [0] = { cities = { { id = 65536, name = "Rome", x = 17, y = 14, population = 3, purchases = purchases } } } } })
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
 	return env.SentientSystems_GetChoices(0):match("\"purchases\":(%b[])")
@@ -50,6 +50,15 @@ describe("SentientSystems_GetPurchaseChoices", function()
 		local purchases = PurchasesWith({ YIELD_GOLD = { units = { With(BUILDER, { cantAfford = true }) } } })
 
 		assert.truthy(purchases:find("{\"blocked\":[\"" .. CANT_AFFORD .. "\"],\"cost\":100,\"type\":\"UNIT_BUILDER\"}", 1, true))
+	end)
+
+	it("cleans the icons from the panel's text", function()
+		local purchases = PurchasesWith(
+			{ YIELD_GOLD = { units = { With(BUILDER, { cantAfford = true }) } } },
+			{ [CANT_AFFORD] = "Not enough [ICON_Gold] Gold in treasury to purchase this." }
+		)
+
+		assert.truthy(purchases:find("\"blocked\":[\"Not enough Gold in treasury to purchase this.\"]", 1, true))
 	end)
 
 	it("gives the game's reasons, then the panel's text, for an item the panel greys out", function()

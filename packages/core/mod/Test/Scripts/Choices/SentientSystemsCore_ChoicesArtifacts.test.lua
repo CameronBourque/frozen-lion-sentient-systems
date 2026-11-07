@@ -4,16 +4,21 @@ local Game = require("Game")
 -- Returns the artifact choice JSON for player 0, or nil when it is left out,
 -- with an archaeologist digging the artifact given, of the site type given, and
 -- the player's blockers, the artifact blocker when missing.
-local function ChoicesWith(artifact, blockers)
+local function ChoicesWith(artifact, blockers, text)
 	local env = Game.new()
+	local words = { LOC_UNIT_NAME_REMO = "Remo", LOC_LEADER_TRAJAN_NAME = "Trajan", LOC_LEADER_FREE_CITIES_NAME = "Free Cities" }
 	local archaeologist = artifact and { id = 2686995, name = "LOC_UNIT_NAME_REMO", x = 48, y = 25, artifact = artifact }
+
+	for key, value in pairs(text or {}) do
+		words[key] = value
+	end
 
 	FakeGame.Install(env, {
 		players = {
 			[0] = { archaeologist = archaeologist, playerName = "LOC_LEADER_TRAJAN_NAME", blockers = blockers or { "ENDTURN_BLOCKING_ARTIFACT" } },
 			[62] = { playerName = "LOC_LEADER_FREE_CITIES_NAME" },
 		},
-		text = { LOC_UNIT_NAME_REMO = "Remo", LOC_LEADER_TRAJAN_NAME = "Trajan", LOC_LEADER_FREE_CITIES_NAME = "Free Cities" },
+		text = words,
 	})
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
@@ -27,6 +32,13 @@ describe("SentientSystems_GetArtifactChoices", function()
 				.. "\"options\":[{\"name\":\"Trajan\",\"player\":0},{\"name\":\"Free Cities\",\"player\":62}],\"x\":48,\"y\":25}]",
 			ChoicesWith({ index = 9, type = 3, acting = 0, target = 62, era = "ERA_INDUSTRIAL" })
 		)
+	end)
+
+	it("cleans the icons and colors from the description", function()
+		local text = { LOC_CHOOSE_ARTIFACT_EXPLANATION_GOODY_HUT = "[ICON_Bullet]Choose [ICON_Culture] [COLOR_RED]well[ENDCOLOR]" }
+		local json = ChoicesWith({ index = 32, type = 1, acting = 0, era = "ERA_ANCIENT" }, nil, text)
+
+		assert.truthy(json:find("\"description\":\"-Choose Culture well(Remo,Trajan)\"", 1, true))
 	end)
 
 	it("offers the one player's artifact from a tribal village", function()

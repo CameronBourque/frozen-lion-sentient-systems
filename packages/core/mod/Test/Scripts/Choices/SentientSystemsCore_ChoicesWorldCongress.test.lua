@@ -69,6 +69,13 @@ describe("SentientSystems_GetWorldCongressChoices", function()
 		assert.truthy(choice:find("\"disfavored\":[1]", 1, true))
 	end)
 
+	it("cleans the icons and colors from a proposal's description", function()
+		local proposal = { TypeName = PROPOSAL.TypeName, Name = PROPOSAL.Name, Description = "Punish [ICON_Gold] [COLOR_RED]them[ENDCOLOR]", Sender = 0, Target = 10 }
+		local choice = ChoicesWith({ inSession = true, maxVotes = 2, costs = COSTS, proposals = { proposal } }, { "ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION" })
+
+		assert.truthy(choice:find("\"description\":\"Punish Gold them\"", 1, true))
+	end)
+
 	it("offers the proposals it could call a Special Session for, out of a session", function()
 		local choice = ChoicesWith({ available = { { TypeName = "WC_EMERGENCY_REQUEST_AID", Name = "Aid Request", Description = "Help.", Target = 0, cost = 30 },
 			{ TypeName = "WC_EMERGENCY_BACKSTAB", Name = "Betrayal Emergency", Description = "Punish.", Target = 10, cost = 30, Disabled = true } } }, {})

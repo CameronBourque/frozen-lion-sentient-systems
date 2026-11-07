@@ -69,4 +69,3 @@ It added three layers to the tiles: the tourism, visiting tourists, sources, and
 - The step added a `greatWorks` and a `continents` section. The [core README](../../../../packages/core/README.md#parts-of-a-state-section) lists the parts of a section.
 - The bridge doesn't call `SentientSystems_GetGreatWorkMoves` yet. The [MCP server](../mcp-server.md) step has a task for it.
 - Auto theming wasn't checked, because it needs a game played as a civilization with that trait. See [state/great-works.md](../../../findings/state/great-works.md).
-- The income section has its own copy of the tooltip split. See [tech-debt](../../../tech-debt/share-tooltip-lines.md).

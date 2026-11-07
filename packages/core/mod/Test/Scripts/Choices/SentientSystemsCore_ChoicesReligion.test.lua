@@ -27,7 +27,7 @@ describe("SentientSystems_GetPantheonChoices", function()
 	it("lists the pantheon beliefs no player has taken, in the game's order", function()
 		assert.equal(
 			"{\"beliefs\":[{\"description\":\"LOC_BELIEF_DANCE_OF_THE_AURORA_DESCRIPTION\",\"type\":\"BELIEF_DANCE_OF_THE_AURORA\"},"
-				.. "{\"description\":\"Holy Site districts get +1 [ICON_Faith] Faith from adjacent Rainforest tiles.\",\"type\":\"BELIEF_SACRED_PATH\"}]}",
+				.. "{\"description\":\"Holy Site districts get +1 Faith from adjacent Rainforest tiles.\",\"type\":\"BELIEF_SACRED_PATH\"}]}",
 			PantheonWith({ canCreatePantheon = true })
 		)
 	end)

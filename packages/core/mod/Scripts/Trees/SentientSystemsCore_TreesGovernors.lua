@@ -67,7 +67,7 @@ local function GetGovernor(governors, governor, definition, prerequisites)
 		type = definition.GovernorType,
 		name = Locale.Lookup(definition.Name),
 		title = Locale.Lookup(definition.Title),
-		description = Locale.Lookup(definition.Description),
+		description = SentientSystems_LookupText(definition.Description),
 		status = governor and "appointed" or "candidate",
 		secret = secret and true or nil,
 		turnsToEstablish = not secret and (governor and governor:GetTurnsToEstablish() or governors:GetTurnsToEstablish(definition.Hash)) or nil,

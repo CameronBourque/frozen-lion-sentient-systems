@@ -104,6 +104,12 @@ describe("upgrade", function()
 		assert.equal(Failed("No gold. No iron. Upgrading to LOC_UNIT_MACHINE_GUN costs 180 gold."), (Run(short, { TECH_BALLISTICS = true, TECH_MILITARY_TRAINING = true })))
 	end)
 
+	it("cleans the icons and colors from the reasons", function()
+		local short = With(UNIT, { reasons = { "No [ICON_Gold] [COLOR_RED]Gold[ENDCOLOR]." } })
+
+		assert.equal(Failed("No Gold. Upgrading to LOC_UNIT_MACHINE_GUN costs 180 gold."), (Run(short, { TECH_BALLISTICS = true, TECH_MILITARY_TRAINING = true })))
+	end)
+
 	it("fails without a reason of its own when the game gives none", function()
 		assert.equal(Failed("The unit can't upgrade now."), (Run(UNIT)))
 	end)

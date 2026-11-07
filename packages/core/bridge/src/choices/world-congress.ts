@@ -20,7 +20,7 @@ const RESOLUTION = z.object({
 const PROPOSAL = z.object({
 	type: z.string().describe("Such as WC_EMERGENCY_BACKSTAB."),
 	name: z.string(),
-	description: z.string(),
+	description: z.string().optional(),
 	sender: z.number().describe("The proposing player's ID."),
 	target: z.number().describe("The target player's ID."),
 });
@@ -28,7 +28,7 @@ const PROPOSAL = z.object({
 const AVAILABLE_PROPOSAL = z.object({
 	type: z.string(),
 	name: z.string(),
-	description: z.string(),
+	description: z.string().optional(),
 	target: z.number(),
 	cost: z.number().describe("In Favor."),
 	disabled: z.boolean().describe("True for one the game won't take."),
