@@ -57,6 +57,66 @@ local function AddPromotions(unit, state)
 	state.availablePromotions = GetAvailablePromotions(unit)
 end
 
+-- The activities a unit reports, by the name the state gives. The unit list
+-- shows sleep and skip turn as icons. See UnitPanel.lua, AddUnitToUnitList.
+local ACTIVITIES = {
+	{ type = "ACTIVITY_AWAKE", name = "awake" },
+	{ type = "ACTIVITY_SLEEP", name = "sleep" },
+	{ type = "ACTIVITY_HOLD", name = "skip" },
+	{ type = "ACTIVITY_SENTRY", name = "sentry" },
+	{ type = "ACTIVITY_HEAL", name = "heal" },
+	{ type = "ACTIVITY_INTERCEPT", name = "intercept" },
+	{ type = "ACTIVITY_OPERATION", name = "operation" },
+}
+
+-- Returns what the unit is doing, or nil for NO_ACTIVITY.
+local function GetActivity(unit)
+	local activity = UnitManager.GetActivityType(unit)
+
+	for _, row in ipairs(ACTIVITIES) do
+		if activity == ActivityTypes[row.type] then
+			return row.name, activity
+		end
+	end
+
+	return nil, activity
+end
+
+-- Returns whether the unit can attack, as UnitInfo's combat values say. A
+-- civilian reports one attack left too.
+local function CanAttack(unit)
+	return unit:GetCombat() > 0 or unit:GetRangedCombat() > 0 or unit:GetBombardCombat() > 0
+end
+
+-- Adds what the unit is doing and its charges to state. The unit list marks a
+-- unit as fortified when it isn't awake and has fortify turns, and the panel
+-- shows a charge only above 0. See UnitPanel.lua.
+local function AddActivity(unit, state)
+	local name, activity = GetActivity(unit)
+
+	state.activity = name
+
+	if activity ~= ActivityTypes.ACTIVITY_AWAKE and unit:GetFortifyTurns() > 0 then
+		state.fortified = true
+	end
+
+	if CanAttack(unit) then
+		state.attacksLeft = unit:GetAttacksRemaining()
+	end
+
+	if unit:GetBuildCharges() > 0 then
+		state.buildCharges = unit:GetBuildCharges()
+	end
+
+	local formation = unit:GetMilitaryFormation()
+
+	if formation == MilitaryFormationTypes.CORPS_MILITARY_FORMATION then
+		state.formation = "corps"
+	elseif formation == MilitaryFormationTypes.ARMY_MILITARY_FORMATION then
+		state.formation = "army"
+	end
+end
+
 function SentientSystems_GetUnitStates(player)
 	local units = {}
 
@@ -71,6 +131,7 @@ function SentientSystems_GetUnitStates(player)
 				health = SentientSystems_GetHealth(unit:GetMaxDamage(), unit:GetDamage()),
 			}
 
+			AddActivity(unit, state)
 			AddPromotions(unit, state)
 			units[#units + 1] = state
 		end

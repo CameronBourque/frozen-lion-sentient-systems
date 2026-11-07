@@ -91,6 +91,10 @@ return function(env, world, ctx)
 			return MILITARY_FORMATION_TYPES[data.formation or "STANDARD_MILITARY_FORMATION"]
 		end
 
+		function unit.GetFortifyTurns()
+			return data.fortifyTurns or 0
+		end
+
 		function unit.GetMovesRemaining()
 			return data.moves or 0
 		end

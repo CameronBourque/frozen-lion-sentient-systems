@@ -16,6 +16,13 @@ export const UNIT = z.object({
 	y: z.number(),
 	moves: z.object({ left: z.number(), max: z.number() }),
 	health: HEALTH,
+	activity: z.enum(["awake", "sleep", "skip", "sentry", "heal", "intercept", "operation"]).optional().describe(
+		"What the unit is doing. Skip is skip turn. Sentry is fortified or on alert, and fortified says which. Operation is a fortify that hasn't taken yet, a trader on its route, or a spy on a mission. Left out for a unit with no activity.",
+	),
+	fortified: z.literal(true).optional().describe("Left out unless the unit is not awake and has fortify turns, as the unit list marks it."),
+	attacksLeft: z.number().optional().describe("Left out for a unit that can't attack."),
+	buildCharges: z.number().optional().describe("The builder charges left. Left out at 0."),
+	formation: z.enum(["corps", "army"]).optional().describe("A corps or army, or a fleet or armada at sea. Left out for a single unit."),
 	experience: z.object({
 		points: z.number(),
 		nextLevel: z.number().describe("A unit whose points reach this can promote once it has moves."),

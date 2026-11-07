@@ -41,7 +41,7 @@ local VICTORIES_OF_1 = "{\"culture\":[{\"domesticTourists\":0,\"requiredTourists
 describe("SentientSystems_GetUnitStates", function()
 	it("lists each unit's ID, type, position, moves, and health", function()
 		assert.equal(
-			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"espionage\":{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"trade\":{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25},\"units\":[{\"health\":{\"max\":100,\"value\":100},\"id\":196608,\"moves\":{\"left\":3,\"max\":3},"
+			"{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"espionage\":{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"trade\":{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25},\"units\":[{\"activity\":\"awake\",\"health\":{\"max\":100,\"value\":100},\"id\":196608,\"moves\":{\"left\":3,\"max\":3},"
 				.. "\"type\":\"UNIT_SCOUT\",\"x\":24,\"y\":15}],\"victories\":" .. VICTORIES .. "}",
 			StateWith({ SCOUT })
 		)
@@ -60,6 +60,43 @@ describe("SentientSystems_GetUnitStates", function()
 
 	it("skips a unit that is dead or about to die", function()
 		assert.equal("{\"blockers\":{\"list\":[],\"units\":[]},\"cities\":[],\"diplomacy\":[],\"envoys\":{\"cityStates\":[],\"influence\":{\"envoys\":1,\"perTurn\":0,\"points\":0,\"threshold\":50},\"tokens\":0},\"espionage\":{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]},\"greatPeople\":[],\"player\":{\"culture\":0,\"faith\":{\"balance\":0,\"perTurn\":0},\"gold\":{\"balance\":0,\"perTurn\":0},\"income\":{\"cities\":[],\"culture\":{\"total\":0},\"deals\":[],\"expenses\":{\"cities\":0,\"deals\":0,\"total\":0,\"units\":0},\"faith\":{\"total\":0},\"gold\":{\"total\":0},\"science\":{\"total\":0},\"unitUpkeep\":[]},\"resources\":[],\"science\":0,\"tourism\":0},\"proposals\":[],\"religion\":{\"pantheonFaith\":25},\"rivals\":{\"cities\":[],\"units\":[]},\"scoreboard\":" .. SCOREBOARD .. ",\"tiles\":[],\"trade\":{\"incoming\":[],\"outgoing\":[],\"tourismBonus\":25},\"units\":[],\"victories\":" .. VICTORIES .. "}", StateWith({ With(SCOUT, { dead = true }), With(SCOUT, { id = 2, delayedDeath = true }) }))
+	end)
+
+	it("says what the unit is doing", function()
+		local function Activity(activity)
+			return StateWith({ With(SCOUT, { activity = activity }) })
+		end
+
+		assert.truthy(Activity("AWAKE"):find("\"activity\":\"awake\"", 1, true))
+		assert.truthy(Activity("SLEEP"):find("\"activity\":\"sleep\"", 1, true))
+		assert.truthy(Activity("HOLD"):find("\"activity\":\"skip\"", 1, true))
+		assert.truthy(Activity("SENTRY"):find("\"activity\":\"sentry\"", 1, true))
+		assert.truthy(Activity("HEAL"):find("\"activity\":\"heal\"", 1, true))
+		assert.truthy(Activity("INTERCEPT"):find("\"activity\":\"intercept\"", 1, true))
+		assert.truthy(Activity("OPERATION"):find("\"activity\":\"operation\"", 1, true))
+	end)
+
+	it("marks a unit as fortified when it isn't awake and has fortify turns", function()
+		assert.truthy(StateWith({ With(SCOUT, { activity = "SENTRY", fortifyTurns = 2 }) }):find("\"fortified\":true", 1, true))
+		assert.is_nil(StateWith({ With(SCOUT, { activity = "SENTRY" }) }):find("fortified", 1, true))
+		assert.is_nil(StateWith({ With(SCOUT, { activity = "AWAKE", fortifyTurns = 2 }) }):find("fortified", 1, true))
+	end)
+
+	it("gives the attacks left of a unit that can attack, and none for a civilian", function()
+		assert.truthy(StateWith({ With(SCOUT, { combat = 20, attacks = 1 }) }):find("\"attacksLeft\":1", 1, true))
+		assert.truthy(StateWith({ With(SCOUT, { ranged = 25, attacks = 0 }) }):find("\"attacksLeft\":0", 1, true))
+		assert.is_nil(StateWith({ With(SCOUT, { attacks = 1 }) }):find("attacksLeft", 1, true))
+	end)
+
+	it("gives the builder charges left, and none at 0", function()
+		assert.truthy(StateWith({ With(SCOUT, { charges = 3 }) }):find("\"buildCharges\":3", 1, true))
+		assert.is_nil(StateWith({ SCOUT }):find("buildCharges", 1, true))
+	end)
+
+	it("gives a corps or an army, and nothing for a single unit", function()
+		assert.truthy(StateWith({ With(SCOUT, { formation = "CORPS_MILITARY_FORMATION" }) }):find("\"formation\":\"corps\"", 1, true))
+		assert.truthy(StateWith({ With(SCOUT, { formation = "ARMY_MILITARY_FORMATION" }) }):find("\"formation\":\"army\"", 1, true))
+		assert.is_nil(StateWith({ SCOUT }):find("formation", 1, true))
 	end)
 
 	it("adds the unit's experience and its promotions", function()
