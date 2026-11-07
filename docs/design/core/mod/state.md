@@ -31,7 +31,8 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 
   Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes` returns it for one city on demand.
 - **The Espionage screen.** The spy capacity, each spy of the player: idle, on a mission, traveling, or captured, the districts and Gain Sources boosts of the other majors' cities, the last 10 missions with their outcomes and loot, and the other players' spies the player holds.
-- **Their own screens.** Great works and tourism, and climate and disasters.
+- **The Great Works screen.** Every great work slot of the player's cities with its kind and work, each building's theming progress, and the totals: the works, the display spaces, and what they provide.
+- **Their own screens.** Tourism, and climate and disasters.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 
 The scoreboard lists every player in the screen's order. A met player has their ID and the values the screen shows, and an unmet player has only their place, as the screen shows a `?` icon.

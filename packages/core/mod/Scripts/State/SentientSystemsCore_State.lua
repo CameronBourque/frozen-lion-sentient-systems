@@ -14,6 +14,7 @@ SentientSystems_Include("SentientSystemsCore_StateReligion")
 SentientSystems_Include("SentientSystemsCore_StateEnvoys")
 SentientSystems_Include("SentientSystemsCore_StateEspionage")
 SentientSystems_Include("SentientSystemsCore_StateGreatPeople")
+SentientSystems_Include("SentientSystemsCore_StateGreatWorks")
 SentientSystems_Include("SentientSystemsCore_StateGovernors")
 SentientSystems_Include("SentientSystemsCore_StatePlayer")
 SentientSystems_Include("SentientSystemsCore_StateTrade")
@@ -45,6 +46,7 @@ function SentientSystems_GetState(playerID)
 		envoys = SentientSystems_GetEnvoyState(player),
 		espionage = SentientSystems_GetEspionageState(player),
 		greatPeople = SentientSystems_GetGreatPeopleState(player),
+		greatWorks = SentientSystems_GetGreatWorkState(player),
 		governors = SentientSystems_GetGovernorState(player),
 		player = SentientSystems_GetPlayerState(player),
 		trade = SentientSystems_GetTradeState(player),

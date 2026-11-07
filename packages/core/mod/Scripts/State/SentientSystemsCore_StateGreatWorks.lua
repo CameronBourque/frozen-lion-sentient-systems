@@ -1,0 +1,320 @@
+-- The great works section, as the Great Works screen shows it. Follows
+-- GreatWorksOverview.lua and its Expansion 2 replacement. Shape:
+-- bridge/src/state/great-works.ts.
+
+-- Returns the yields a great work row gives, then its tourism, as a list.
+local function GetWorkYields(row)
+	local yields = {}
+
+	for change in GameInfo.GreatWork_YieldChanges() do
+		if change.GreatWorkType == row.GreatWorkType then
+			yields[#yields + 1] = { type = change.YieldType, amount = change.YieldChange }
+		end
+	end
+
+	return yields
+end
+
+local ART_TYPES = {
+	GREATWORKOBJECT_SCULPTURE = true,
+	GREATWORKOBJECT_LANDSCAPE = true,
+	GREATWORKOBJECT_PORTRAIT = true,
+	GREATWORKOBJECT_RELIGIOUS = true,
+}
+
+-- The turns an art work stays where it was put when the game sets no time.
+local DEFAULT_LOCK_TURNS = 10
+
+-- Returns the turns before the work can be moved again. Only art is locked,
+-- from the turn it was created or moved in. See CanMoveWorkAtAll.
+local function GetLockedTurns(buildings, work, objectType)
+	if not ART_TYPES[objectType] then
+		return 0
+	end
+
+	local lock = GlobalParameters.GREATWORK_ART_LOCK_TIME or DEFAULT_LOCK_TURNS
+
+	return math.max(0, buildings:GetTurnFromIndex(work) + lock - Game.GetCurrentGameTurn())
+end
+
+-- Returns the great work in a slot, or nil for an empty one.
+local function GetWork(buildings, index, slot)
+	local work = buildings:GetGreatWorkInSlot(index, slot)
+
+	if work == -1 then
+		return nil
+	end
+
+	local row = GameInfo.GreatWorks[buildings:GetGreatWorkTypeFromIndex(work)]
+
+	return {
+		index = work,
+		type = row.GreatWorkType,
+		name = Locale.Lookup(row.Name),
+		objectType = row.GreatWorkObjectType,
+		era = row.EraType,
+		tourism = row.Tourism,
+		yields = GetWorkYields(row),
+		lockedTurns = GetLockedTurns(buildings, work, row.GreatWorkObjectType),
+	}
+end
+
+-- Returns the great works in a building, in slot order, as the screen's
+-- GetGreatWorksInBuilding does.
+local function GetWorks(buildings, index)
+	local works = {}
+
+	for slot = 0, buildings:GetNumGreatWorkSlots(index) - 1 do
+		local work = buildings:GetGreatWorkInSlot(index, slot)
+
+		if work ~= -1 then
+			works[#works + 1] = work
+		end
+	end
+
+	return works
+end
+
+-- Returns whether the work is the first by its creator in the building. See
+-- IsFirstGreatWorkByArtist.
+local function IsFirstByArtist(buildings, index, work)
+	local artist = buildings:GetCreatorNameFromIndex(work)
+
+	for _, other in ipairs(GetWorks(buildings, index)) do
+		if other == work then
+			return true
+		end
+
+		if buildings:GetCreatorNameFromIndex(other) == artist then
+			return false
+		end
+	end
+
+	return true
+end
+
+-- Returns whether the works in an artifact museum are all from different
+-- civilizations. See GreatWorkFitsTheme.
+local function HasNoDuplicatePlayer(buildings, index)
+	local seen = {}
+
+	for _, work in ipairs(GetWorks(buildings, index)) do
+		local owner = Game.GetGreatWorkPlayer(work)
+
+		if seen[owner] then
+			return false
+		end
+
+		seen[owner] = true
+	end
+
+	return true
+end
+
+-- Returns the theming rules of a building from Building_GreatWorks, or nil
+-- when it has none. The table is the game's own list of what a full theme
+-- needs, which the screen shows only as text.
+local function GetThemeRules(building)
+	for row in GameInfo.Building_GreatWorks() do
+		if row.BuildingType == building.BuildingType
+			and (row.ThemingUniquePerson or row.ThemingSameObjectType or row.ThemingSameEras or row.ThemingUniqueCivs)
+		then
+			return {
+				uniqueCreators = row.ThemingUniquePerson == true,
+				sameObjectType = row.ThemingSameObjectType == true,
+				sameEra = row.ThemingSameEras == true,
+				uniqueCivilizations = row.ThemingUniqueCivs == true,
+				yieldMultiplier = row.ThemingYieldMultiplier,
+				tourismMultiplier = row.ThemingTourismMultiplier,
+			}
+		end
+	end
+
+	return nil
+end
+
+-- Returns whether a work counts toward the theme of its building, as
+-- GreatWorkFitsTheme works it out, but from the building's rules. The first
+-- work always counts, because the others are measured against it.
+local function FitsTheme(buildings, index, rules, work, first)
+	if first == nil or rules == nil then
+		return false
+	end
+
+	if buildings:IsBuildingThemedCorrectly(index) or work.index == first.index then
+		return true
+	end
+
+	return (not rules.uniqueCreators or IsFirstByArtist(buildings, index, work.index))
+		and (not rules.sameObjectType or first.objectType == work.objectType)
+		and (not rules.sameEra or first.era == work.era)
+		and (not rules.uniqueCivilizations or HasNoDuplicatePlayer(buildings, index))
+end
+
+-- Returns the object types a kind of slot takes, as the empty slot's tooltip
+-- lists them.
+local function GetAccepts(kind)
+	local types = {}
+
+	for row in GameInfo.GreatWork_ValidSubTypes() do
+		if row.GreatWorkSlotType == kind then
+			types[#types + 1] = row.GreatWorkObjectType
+		end
+	end
+
+	return types
+end
+
+-- Returns the localized text of the theming bonus, or nil when the building
+-- has none. See GetThemeDescription.
+local function GetThemeBonus(culture, building)
+	if culture:GetAutoThemedBuilding() == building.Index or culture:IsAutoThemedEligible(building.Hash) then
+		return Locale.Lookup("LOC_BUILDING_THEMINGBONUS_FULL_MUSEUM")
+	end
+
+	for row in GameInfo.Building_GreatWorks() do
+		if row.BuildingType == building.BuildingType and row.ThemingBonusDescription ~= nil then
+			return Locale.Lookup(row.ThemingBonusDescription)
+		end
+	end
+
+	return nil
+end
+
+-- Returns what the building's great works give: the yields of each type above
+-- 0, and the tourism with the religious tourism.
+local function GetBuildingYields(buildings, index)
+	local yields = {}
+
+	for row in GameInfo.Yields() do
+		local amount = buildings:GetBuildingYieldFromGreatWorks(row.Index, index)
+
+		if amount > 0 then
+			yields[#yields + 1] = { type = row.YieldType, amount = amount }
+		end
+	end
+
+	local tourism = buildings:GetBuildingTourismFromGreatWorks(false, index) + buildings:GetBuildingTourismFromGreatWorks(true, index)
+
+	return yields, tourism
+end
+
+-- Returns one building with great work slots as an entry for how far its theme
+-- has come and what its works give, and the list of its slots.
+local function GetBuilding(city, building, culture)
+	local buildings = city:GetBuildings()
+	local index = building.Index
+	local cityRef = { id = city:GetID(), name = Locale.Lookup(city:GetName()) }
+	local bonus = GetThemeBonus(culture, building)
+	local rules = GetThemeRules(building)
+	local slots, count, themed = {}, 0, 0
+	local first
+
+	for slot = 0, buildings:GetNumGreatWorkSlots(index) - 1 do
+		local kind = GameInfo.GreatWorkSlotTypes[buildings:GetGreatWorkSlotType(index, slot)].GreatWorkSlotType
+		local work = GetWork(buildings, index, slot)
+
+		slots[#slots + 1] = {
+			city = cityRef,
+			building = building.BuildingType,
+			slot = slot,
+			kind = kind,
+			accepts = GetAccepts(kind),
+			work = work,
+		}
+		first = first or work
+	end
+
+	for _, entry in ipairs(slots) do
+		if entry.work ~= nil then
+			count = count + 1
+
+			if bonus ~= nil then
+				entry.themed = FitsTheme(buildings, index, rules, entry.work, first)
+				themed = themed + (entry.themed and 1 or 0)
+			end
+		end
+	end
+
+	-- An artifact moves only when its museum is full.
+	for _, entry in ipairs(slots) do
+		if entry.work ~= nil then
+			entry.work.movable = entry.work.lockedTurns == 0 and (entry.work.objectType ~= "GREATWORKOBJECT_ARTIFACT" or count == #slots)
+		end
+	end
+
+	local yields, tourism = GetBuildingYields(buildings, index)
+	local theme
+
+	if bonus ~= nil then
+		theme = {
+			bonus = bonus,
+			complete = buildings:IsBuildingThemedCorrectly(index),
+			themedWorks = culture:IsAutoThemedEligible() and count or themed,
+			rules = rules,
+		}
+	end
+
+	return {
+		city = cityRef,
+		type = building.BuildingType,
+		name = Locale.Lookup(building.Name),
+		spaces = #slots,
+		works = count,
+		theme = theme,
+		yields = yields,
+		tourism = tourism,
+	}, slots
+end
+
+-- Adds a list of yields to the totals, which are keyed by yield type.
+local function AddTotals(totals, order, yields)
+	for _, yield in ipairs(yields) do
+		if totals[yield.type] == nil then
+			order[#order + 1] = yield.type
+			totals[yield.type] = 0
+		end
+
+		totals[yield.type] = totals[yield.type] + yield.amount
+	end
+end
+
+-- Returns the great works section: every slot, every building with slots, and
+-- the totals the screen shows: the works, the display spaces, and what they
+-- provide. The tourism is a yield of the totals, under TOURISM.
+function SentientSystems_GetGreatWorkState(player)
+	local culture = player:GetCulture()
+	local buildings, slots, works, spaces = {}, {}, 0, 0
+	local totals, order = {}, {}
+
+	for _, city in player:GetCities():Members() do
+		for building in GameInfo.Buildings() do
+			if city:GetBuildings():HasBuilding(building.Index) and city:GetBuildings():GetNumGreatWorkSlots(building.Index) > 0 then
+				local entry, entrySlots = GetBuilding(city, building, culture)
+
+				buildings[#buildings + 1] = entry
+				works = works + entry.works
+				spaces = spaces + entry.spaces
+
+				for _, slot in ipairs(entrySlots) do
+					slots[#slots + 1] = slot
+				end
+
+				AddTotals(totals, order, entry.yields)
+				AddTotals(totals, order, { { type = "TOURISM", amount = entry.tourism } })
+			end
+		end
+	end
+
+	table.sort(order)
+
+	local provides = {}
+
+	for _, yield in ipairs(order) do
+		if totals[yield] > 0 then
+			provides[#provides + 1] = { type = yield, amount = totals[yield] }
+		end
+	end
+
+	return { slots = slots, buildings = buildings, works = works, spaces = spaces, provides = provides }
+end

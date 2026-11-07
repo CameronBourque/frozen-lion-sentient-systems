@@ -64,6 +64,7 @@
 			<File>Scripts/State/SentientSystemsCore_StateEspionage.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateGreatWorks.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateProposals.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
@@ -132,6 +133,7 @@
 		<File>Scripts/State/SentientSystemsCore_StateEspionage.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateGreatWorks.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateProposals.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>

@@ -64,7 +64,7 @@ return function(env, world, ctx)
 					return buildingsAt[plotIndex] or {}
 				end,
 				HasBuilding = function(_, index)
-					return buildings[index].built ~= false
+					return buildings[index] ~= nil and buildings[index].built ~= false
 				end,
 				GetNumGreatWorkSlots = function(_, index)
 					return #(buildings[index].greatWorks or {})
