@@ -36,11 +36,38 @@ const ACTIVITY = z.object({
 	sourcesTurnsLeft: z.number().optional().describe("The turns a Gain Sources boost has left. Left out with none."),
 });
 
+const HISTORY = z.object({
+	name: z.string().describe("The spy's name, in the game's language."),
+	level: z.number().describe("The spy's level after the mission."),
+	rank: z.string().describe("The rank's name for that level, in the game's language."),
+	operation: z.object({ type: z.string().describe("Such as UNITOPERATION_SPY_SIPHON_FUNDS."), name: z.string() }),
+	turnsAgo: z.number(),
+	city: z.string().describe("The name of the city, in the game's language."),
+	success: z.boolean().describe(
+		"As the tab calls it: false when the spy was killed or captured, even if the mission was done.",
+	),
+	fate: z.enum(["escaped", "killed", "captured"]).optional().describe(
+		"What became of a spy that was detected. Left out when it was never detected.",
+	),
+	loot: z.string().optional().describe("What the mission took, as the tab words it. Left out with none."),
+	description: z.string().describe("The tab's sentence about the outcome, in the game's language."),
+});
+
+const CAPTIVE = z.object({
+	name: z.string().describe("In the game's language."),
+	owner: z.number().describe("The player whose spy it is."),
+	level: z.number(),
+	rank: z.string(),
+	captive: z.number().describe("The spy's index, which a deal to trade it back uses."),
+});
+
 export const ESPIONAGE = z.object({
 	capacity: z.number().describe("How many spies the player can have."),
 	operatives: z.array(OPERATIVE).describe(
 		"The idle spies, those on a mission, the captured ones, and then the traveling ones, as the tab lists them.",
 	),
+	history: z.array(HISTORY).describe("The Mission History tab: up to the last 10 missions, the newest first."),
+	captives: z.array(CAPTIVE).describe("The Mission History tab's other players' spies that the player holds."),
 	cities: z.array(ACTIVITY).describe(
 		"The City Activity tab: the cities of other major players on tiles the player has revealed, as the cities section lists the player's own.",
 	),

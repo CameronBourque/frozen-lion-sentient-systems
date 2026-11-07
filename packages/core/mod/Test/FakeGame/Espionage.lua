@@ -5,6 +5,22 @@
 return function(env, _, ctx)
 	local indexes = ctx.indexes
 
+	env.EspionageResultTypes = {
+		KILLED = 0,
+		CAPTURED = 1,
+		FAIL_MUST_ESCAPE = 2,
+		FAIL_UNDETECTED = 3,
+		SUCCESS_MUST_ESCAPE = 4,
+		SUCCESS_UNDETECTED = 5,
+		NO_RESULT = -1,
+	}
+
+	for _, name in ipairs({ "SPY_SIPHON_FUNDS", "SPY_GREAT_WORK_HEIST" }) do
+		local row = env.GameInfo.UnitOperations[indexes["UNITOPERATION_" .. name]]
+
+		env.UnitOperationTypes[name] = row and row.Hash
+	end
+
 	ctx.OnPlayer(function(player, data)
 		local getDiplomacy = player.GetDiplomacy
 
@@ -29,6 +45,26 @@ return function(env, _, ctx)
 
 			function diplomacy.GetNumSpiesCaptured()
 				return #captured
+			end
+
+			function diplomacy.GetRecentMissions()
+				local missions = {}
+
+				for i, mission in ipairs(data.missions or {}) do
+					missions[i] = {
+						Name = mission.name,
+						LevelAfter = mission.level or 1,
+						Operation = indexes[mission.operation],
+						CompletionTurn = mission.turn,
+						InitialResult = env.EspionageResultTypes[mission.initial],
+						EscapeResult = env.EspionageResultTypes[mission.escape or "NO_RESULT"],
+						LootInfo = mission.loot or -1,
+						CityName = mission.city,
+						PlotIndex = 0,
+					}
+				end
+
+				return #missions > 0 and missions or nil
 			end
 
 			function diplomacy.GetNthCapturedSpy(_, _, i)

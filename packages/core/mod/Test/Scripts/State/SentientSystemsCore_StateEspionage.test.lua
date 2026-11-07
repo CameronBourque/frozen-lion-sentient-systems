@@ -42,7 +42,7 @@ end
 describe("SentientSystems_GetEspionageState", function()
 	it("gives an idle spy with its rank and the city whose land it stands in", function()
 		assert.equal(
-			"{\"capacity\":3,\"cities\":[],\"operatives\":[{\"city\":{\"id\":1,\"name\":\"Rome\",\"owner\":1},\"id\":7,\"level\":2,\"name\":\"Jakob\","
+			"{\"capacity\":3,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[{\"city\":{\"id\":1,\"name\":\"Rome\",\"owner\":1},\"id\":7,\"level\":2,\"name\":\"Jakob\","
 				.. "\"rank\":\"Agent\",\"status\":\"idle\"}]}",
 			EspionageWith({ spyCapacity = 3, units = { Spy(7, 21, 10) } })
 		)
@@ -84,7 +84,7 @@ describe("SentientSystems_GetEspionageState", function()
 		})
 
 		assert.equal(
-			"{\"capacity\":0,\"cities\":[],\"operatives\":[{\"city\":{\"id\":1,\"name\":\"Rome\",\"owner\":1},\"level\":1,\"name\":\"Axro\","
+			"{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[{\"city\":{\"id\":1,\"name\":\"Rome\",\"owner\":1},\"level\":1,\"name\":\"Axro\","
 				.. "\"rank\":\"Recruit\",\"status\":\"traveling\",\"turnsLeft\":2}]}",
 			json
 		)
@@ -100,7 +100,7 @@ describe("SentientSystems_GetEspionageState", function()
 	end)
 
 	it("is empty with no spies", function()
-		assert.equal("{\"capacity\":0,\"cities\":[],\"operatives\":[]}", EspionageWith({}))
+		assert.equal("{\"capacity\":0,\"captives\":[],\"cities\":[],\"history\":[],\"operatives\":[]}", EspionageWith({}))
 	end)
 
 	describe("cities", function()
@@ -145,6 +145,93 @@ describe("SentientSystems_GetEspionageState", function()
 
 		it("leaves out the cities of a city-state", function()
 			assert.equal("[]", CitiesWith({ [3] = { minor = { name = "MINOR" }, cities = { City(1, 31, {}) } } }))
+		end)
+	end)
+
+	describe("history", function()
+		local SIPHON = "UNITOPERATION_SPY_SIPHON_FUNDS"
+
+		-- A mission of player 0 on turn 48 in a city, with the results given.
+		local function Mission(initial, escape, extra)
+			local mission = { name = "LOC_SPY_A", level = 2, operation = SIPHON, initial = initial, escape = escape, city = "LOC_CITY_A", turn = 48 }
+
+			for key, value in pairs(extra or {}) do
+				mission[key] = value
+			end
+
+			return mission
+		end
+
+		local function HistoryWith(...)
+			return EspionageWith({ missions = { ... } }):match("\"history\":(%b[])")
+		end
+
+		it("gives a mission that took gold, with the spy, the operation, how long ago it was, and the outcome's text", function()
+			assert.equal(
+				"[{\"city\":\"LOC_CITY_A\",\"description\":\"LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_SUCCESS_UNDETECTED_STOLELOOT"
+					.. "(LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_GOLD(76),LOC_CITY_A)\",\"level\":2,"
+					.. "\"loot\":\"LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_GOLD(76)\","
+					.. "\"name\":\"LOC_SPY_A\",\"operation\":{\"name\":\"LOC_UNITOPERATION_SPY_SIPHON_FUNDS_DESCRIPTION\","
+					.. "\"type\":\"UNITOPERATION_SPY_SIPHON_FUNDS\"},\"rank\":\"Agent\",\"success\":true,\"turnsAgo\":2}]",
+				HistoryWith(Mission("SUCCESS_UNDETECTED", nil, { loot = 76 }))
+			)
+		end)
+
+		it("says what became of a detected spy, and calls it a failure when the spy was killed or captured", function()
+			local escaped = HistoryWith(Mission("SUCCESS_MUST_ESCAPE", "FAIL_MUST_ESCAPE"))
+			local killed = HistoryWith(Mission("SUCCESS_MUST_ESCAPE", "KILLED"))
+			local captured = HistoryWith(Mission("FAIL_MUST_ESCAPE", "CAPTURED"))
+			local failed = HistoryWith(Mission("FAIL_MUST_ESCAPE", "FAIL_MUST_ESCAPE"))
+
+			assert.truthy(escaped:find("\"fate\":\"escaped\"", 1, true) and escaped:find("\"success\":true", 1, true))
+			assert.truthy(killed:find("\"fate\":\"killed\"", 1, true) and killed:find("\"success\":false", 1, true))
+			assert.truthy(captured:find("MISSIONOUTCOME_FAILURE_DETECTED_CAPTURED(LOC_CITY_A)", 1, true))
+			assert.truthy(captured:find("\"fate\":\"captured\"", 1, true))
+			assert.truthy(failed:find("\"fate\":\"escaped\"", 1, true) and failed:find("\"success\":false", 1, true))
+		end)
+
+		it("words the loot of a detected success that escaped with the game's own key", function()
+			local json = HistoryWith(Mission("SUCCESS_MUST_ESCAPE", "FAIL_MUST_ESCAPE", { loot = 76 }))
+
+			assert.truthy(json:find("\"description\":\"LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_SUCCESS_DETECTED_STOLELOOT(", 1, true))
+		end)
+
+		it("gives a spy that was killed or caught at once, and a failure nobody noticed", function()
+			assert.truthy(HistoryWith(Mission("KILLED")):find("\"fate\":\"killed\"", 1, true))
+			assert.truthy(HistoryWith(Mission("CAPTURED")):find("\"fate\":\"captured\"", 1, true))
+
+			local undetected = HistoryWith(Mission("FAIL_UNDETECTED"))
+
+			assert.truthy(undetected:find("\"success\":false", 1, true))
+			assert.falsy(undetected:find("fate", 1, true))
+		end)
+
+		it("gives a siphon that found no gold, and a mission with no loot", function()
+			assert.truthy(HistoryWith(Mission("SUCCESS_UNDETECTED", nil, { loot = 0 })):find("MISSIONOUTCOME_NO_GOLD", 1, true))
+			assert.falsy(HistoryWith(Mission("SUCCESS_UNDETECTED")):find("loot", 1, true))
+		end)
+
+		it("always calls a counterspy a success", function()
+			local json = HistoryWith(Mission("FAIL_UNDETECTED", nil, { operation = "UNITOPERATION_SPY_COUNTERSPY" }))
+
+			assert.truthy(json:find("\"success\":true", 1, true))
+			assert.truthy(json:find("MISSIONOUTCOME_SUCCESS_COUNTERSPY(LOC_CITY_A)", 1, true))
+		end)
+
+		it("leaves out a mission whose spy has yet to choose an escape route", function()
+			assert.equal("[]", HistoryWith(Mission("SUCCESS_MUST_ESCAPE", "NO_RESULT"), Mission("FAIL_MUST_ESCAPE")))
+		end)
+
+		it("is empty with no missions", function()
+			assert.equal("[]", EspionageWith({}):match("\"history\":(%b[])"))
+		end)
+	end)
+
+	describe("captives", function()
+		it("gives the spies of other players that the player holds, with the index a deal uses", function()
+			local json = EspionageWith({ captured = { { owner = 1, name = "Mata", level = 3, index = 5 } } })
+
+			assert.truthy(json:find("\"captives\":[{\"captive\":5,\"level\":3,\"name\":\"Mata\",\"owner\":1,\"rank\":\"LOC_ESPIONAGE_LEVEL_3_NAME\"}]", 1, true))
 		end)
 	end)
 end)

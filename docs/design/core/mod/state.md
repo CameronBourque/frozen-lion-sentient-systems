@@ -26,7 +26,7 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The Trade Overview.** The player's routes, with the yields of both ends, the routes of other players that end in the player's cities, and the tourism bonus of a route.
 
   Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes` returns it for one city on demand.
-- **The Espionage screen.** The spy capacity, each spy of the player: idle, on a mission, traveling, or captured, and the districts and Gain Sources boosts of the other majors' cities.
+- **The Espionage screen.** The spy capacity, each spy of the player: idle, on a mission, traveling, or captured, the districts and Gain Sources boosts of the other majors' cities, the last 10 missions with their outcomes and loot, and the other players' spies the player holds.
 - **Their own screens.** Great works and tourism, and climate and disasters.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 

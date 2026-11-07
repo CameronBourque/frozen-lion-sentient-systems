@@ -172,10 +172,140 @@ local function GetActivity(player)
 	return cities
 end
 
+-- Returns what a mission stole, as the screen words it, or nil when the game
+-- recorded no loot. See GetMissionLootString in EspionageSupport.lua.
+local function GetLoot(mission, operation)
+	if mission.LootInfo < 0 then
+		return nil
+	end
+
+	if operation.Hash == UnitOperationTypes.SPY_STEAL_TECH_BOOST then
+		return Locale.Lookup(GameInfo.Technologies[mission.LootInfo].Name)
+	elseif operation.Hash == UnitOperationTypes.SPY_GREAT_WORK_HEIST then
+		return Locale.Lookup(GameInfo.GreatWorks[Game.GetGreatWorkTypeFromIndex(mission.LootInfo)].Name)
+	elseif operation.Hash == UnitOperationTypes.SPY_SIPHON_FUNDS then
+		if mission.LootInfo == 0 then
+			return Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_NO_GOLD")
+		end
+
+		return Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_GOLD", mission.LootInfo)
+	end
+
+	return nil
+end
+
+-- What each way a mission can end gives: whether the screen calls it a success,
+-- what became of the spy, and the part of the text's key that names it. A
+-- detected spy has a second result, for its escape. See
+-- GetMissionOutcomeDetails in EspionageSupport.lua.
+local function GetOutcome(mission)
+	local results = EspionageResultTypes
+	local initial, escape = mission.InitialResult, mission.EscapeResult
+
+	if initial == results.SUCCESS_UNDETECTED then
+		return true, nil, "SUCCESS_UNDETECTED"
+	elseif initial == results.FAIL_UNDETECTED then
+		return false, nil, "FAILURE_UNDETECTED"
+	elseif initial == results.KILLED then
+		return false, "killed", "KILLED"
+	elseif initial == results.CAPTURED then
+		return false, "captured", "CAPTURED"
+	end
+
+	local success = initial == results.SUCCESS_MUST_ESCAPE
+	local prefix = success and "SUCCESS_DETECTED_" or "FAILURE_DETECTED_"
+
+	if escape == results.KILLED then
+		return false, "killed", prefix .. "KILLED"
+	elseif escape == results.CAPTURED then
+		return false, "captured", prefix .. "CAPTURED"
+	end
+
+	return success, "escaped", prefix .. "ESCAPED"
+end
+
+-- Returns one past mission, or nil for one whose spy has yet to pick an escape
+-- route. See AddMissionHistoryInstance.
+local function GetMission(mission)
+	local results = EspionageResultTypes
+
+	if (mission.InitialResult == results.SUCCESS_MUST_ESCAPE or mission.InitialResult == results.FAIL_MUST_ESCAPE)
+		and mission.EscapeResult == results.NO_RESULT then
+		return nil
+	end
+
+	local operation = GameInfo.UnitOperations[mission.Operation]
+	local loot = GetLoot(mission, operation)
+	local city = Locale.Lookup(mission.CityName)
+	local success, fate, key = GetOutcome(mission)
+	local description
+
+	if operation.Hash == UnitOperationTypes.SPY_COUNTERSPY then
+		success, fate = true, nil
+		description = Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_SUCCESS_COUNTERSPY", city)
+	elseif loot ~= nil then
+		-- The game words the loot of a detected success that escaped with its
+		-- own key, with no ESCAPED in it.
+		local lootKey = key == "SUCCESS_DETECTED_ESCAPED" and "SUCCESS_DETECTED" or key
+
+		description = Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_" .. lootKey .. "_STOLELOOT", loot, city)
+	else
+		description = Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_" .. key, city)
+	end
+
+	return {
+		name = Locale.Lookup(mission.Name),
+		level = mission.LevelAfter,
+		rank = GetRank(mission.LevelAfter),
+		operation = { type = operation.OperationType, name = Locale.Lookup(operation.Description) },
+		turnsAgo = Game.GetCurrentGameTurn() - mission.CompletionTurn,
+		city = city,
+		success = success,
+		fate = fate,
+		loot = loot,
+		description = description,
+	}
+end
+
+-- Returns the player's last 10 missions, the newest first, as the Mission
+-- History tab lists them. See RefreshMissionHistory.
+local function GetHistory(player)
+	local history = {}
+
+	for _, mission in pairs(player:GetDiplomacy():GetRecentMissions(player:GetID(), 10, 0) or {}) do
+		history[#history + 1] = GetMission(mission)
+	end
+
+	return history
+end
+
+-- Returns the other players' spies that the player holds, with the index a
+-- deal to trade one back uses. See RefreshMissionHistory.
+local function GetCaptives(player)
+	local captives = {}
+	local diplomacy = player:GetDiplomacy()
+
+	for i = 0, diplomacy:GetNumSpiesCaptured() - 1 do
+		local spy = diplomacy:GetNthCapturedSpy(player:GetID(), i)
+
+		if spy ~= nil then
+			captives[#captives + 1] = {
+				name = Locale.Lookup(spy.Name),
+				owner = spy.OwningPlayer,
+				level = spy.Level,
+				rank = GetRank(spy.Level),
+				captive = spy.NameIndex,
+			}
+		end
+	end
+
+	return captives
+end
+
 -- Returns the espionage section: the spy capacity, every spy the player has,
 -- in the screen's order, the idle and active ones, the captured ones, and the
--- ones on the way, and the other majors' cities as the City Activity tab lists
--- them.
+-- ones on the way, the other majors' cities as the City Activity tab lists
+-- them, and the Mission History tab's missions and held spies.
 function SentientSystems_GetEspionageState(player)
 	local operatives = GetSpies(player)
 
@@ -185,5 +315,11 @@ function SentientSystems_GetEspionageState(player)
 		end
 	end
 
-	return { capacity = player:GetDiplomacy():GetSpyCapacity(), operatives = operatives, cities = GetActivity(player) }
+	return {
+		capacity = player:GetDiplomacy():GetSpyCapacity(),
+		operatives = operatives,
+		cities = GetActivity(player),
+		history = GetHistory(player),
+		captives = GetCaptives(player),
+	}
 end

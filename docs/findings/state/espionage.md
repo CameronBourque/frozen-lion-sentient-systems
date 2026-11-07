@@ -1,12 +1,12 @@
 # Game espionage in the state
 
-Status: open. The `espionage` section of `SentientSystems_GetState`, the spy capacity and the player's spies, is confirmed in a running game for an idle spy, a spy on a mission, and a traveling spy. A captured spy hasn't been seen live.
+Status: open. The `espionage` section of `SentientSystems_GetState` is confirmed in a running game for idle, mission, and traveling spies, the other majors' cities, and the mission history. A captured spy, in either direction, and a tech or great work as loot haven't been seen live.
 
-The calls the espionage in the state uses, as the Operatives tab of the Espionage screen shows them. The spy missions and escape routes are in [choices/spy-missions.md](../choices/spy-missions.md) and [choices/spies.md](../choices/spies.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
+The calls the espionage in the state uses, as the three tabs of the Espionage screen show them. The spy missions and escape routes are in [choices/spy-missions.md](../choices/spy-missions.md) and [choices/spies.md](../choices/spies.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
-1. Does the section match the Operatives tab for a captured spy, whose calls haven't returned one live?
+1. Does the section match the tabs for a spy that is captured, in either direction, and for a mission that stole a tech or a great work? The calls haven't returned one live, and the game's Lua can't make one.
 
 ## What we know now
 
@@ -32,6 +32,21 @@ The calls the espionage in the state uses, as the Operatives tab of the Espionag
 - **Counterspy.** The counterspy icon reads `shouldShowCounterspyIcon`, which nothing sets, so it never shows.
 - **Own cities.** The state's cities section already has them with their districts, and the rivals section has no districts, so the state adds the other majors' cities here.
 
+### Mission History tab
+
+`RefreshMissionHistory`, lines 186 to 240, shows two things. Confirmed in files.
+
+- **Held spies.** `GetNthCapturedSpy(localPlayerID, i)` for the player's own `GetNumSpiesCaptured()` are the other players' spies that the player holds, with `OwningPlayer`, `Name`, `Level`, and the `NameIndex` that a deal to trade one back uses.
+- **Missions.** `GetRecentMissions(localPlayerID, 10, 0)` returns up to 10 missions, or nothing, each with `Name`, `LevelAfter`, `Operation`, `CompletionTurn`, `InitialResult`, `EscapeResult`, `LootInfo`, `CityName`, and `PlotIndex`.
+
+  The screen lists them in the order the game gives, and skips a mission whose spy must escape and has no `EscapeResult` yet.
+
+`GetMissionOutcomeDetails` in `EspionageSupport.lua` turns the two results into a success, the spy's fate, and a sentence. A counterspy is always a success. A spy that was detected and killed or captured is a failure even when the mission was done.
+
+`EspionageResultTypes` are `KILLED` 0, `CAPTURED` 1, `FAIL_MUST_ESCAPE` 2, `FAIL_UNDETECTED` 3, `SUCCESS_MUST_ESCAPE` 4, `SUCCESS_UNDETECTED` 5, and `NO_RESULT` -1. `InitialResult` has the mission's result and `EscapeResult` what became of a detected spy.
+
+The sentence is `LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_` plus the outcome, with `_STOLELOOT` added when `LootInfo` is 0 or more. A detected success that escaped is the one exception: its loot sentence has no `ESCAPED`. `LootInfo` is a tech, a great work, or the gold of **Siphon Funds**.
+
 ## Method
 
 1. To read a state section that the `.modinfo` doesn't load yet, send the code as in [choices/production.md](../choices/production.md#method), step 4, and call `SentientSystems_GetEspionageState(Players[Game.GetLocalPlayer()])` in `SentientSystemsCore_UI`, printing the result with `SentientSystems_EncodeJson`.
@@ -45,6 +60,7 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | --- | --- |
 | The section with one spy on a mission and one traveling | Capacity 3. Jakob, a recruit on **Gain Sources** in Patna, with 3 of 4 turns left, and Axrotalus, a recruit traveling to Aduatuca with 2 turns left. The player had 1 spy unit and 1 spy off the map |
 | The other majors' cities | 34 cities in 3,940 bytes with the operatives. Mbanza Kongo had its city center, campus, commercial hub, industrial zone, and entertainment complex, and a Gain Sources boost with 6 turns left, as the tab showed. A spy on a mission worked in the city center |
+| The mission history | The 3 missions of the tab: Axrotalus took 76 gold from Mbanza Kongo and escaped 2 turns ago, Luguselwa was killed in Caguana 17 turns ago, and Luguselwa was caught in Ahtahkakoop 30 turns ago, each sentence as the tab worded it. The whole section was 4,860 bytes |
 | A spy spawned in Aduatuca with `UnitManager.InitUnit` | Boudica, a recruit, idle in Aduatuca, listed before the spy on a mission |
 
 Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06.
