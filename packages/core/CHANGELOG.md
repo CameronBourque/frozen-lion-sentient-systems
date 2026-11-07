@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.9.0...core-v0.10.0) (2026-11-07)
+
+
+### Features
+
+* **core:** add the trade route and espionage state ([#63](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/63)) ([6813b1c](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/6813b1c416ba595b3d5e07b78865a08e62a46fb9))
+
 ## [0.9.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.8.0...core-v0.9.0) (2026-11-06)
 
 
