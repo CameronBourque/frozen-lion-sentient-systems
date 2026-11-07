@@ -73,10 +73,12 @@ local function StartsWithWord(text, phrase)
 end
 
 -- Returns whether the text that follows an icon already says what the icon
--- shows.
+-- shows, after an amount if it starts with one.
 local function IsFollowedByName(rest, key, name)
+	local named = rest:match("^[%+%-]?[%d%.,]+%s*(.*)$") or rest
+
 	for _, phrase in ipairs(FOLLOWERS[key] or { name }) do
-		if StartsWithWord(rest, phrase) then
+		if StartsWithWord(rest, phrase) or StartsWithWord(named, phrase) then
 			return true
 		end
 	end

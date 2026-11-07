@@ -43,6 +43,11 @@ describe("SentientSystems_CleanText", function()
 		assert.equal("excess Great Person points", Clean("excess [ICON_GREATPERSON] Great Person points"))
 	end)
 
+	it("drops an icon that its name follows after an amount", function()
+		assert.equal("1 Envoy", Clean("[ICON_Envoy] 1 Envoy"))
+		assert.equal("+3 Gold per turn", Clean("[ICON_Gold] +3 Gold per turn"))
+	end)
+
 	it("names an icon that no name follows", function()
 		assert.equal("You need 18 more Gold in order to purchase this plot", Clean("You need 18 more [ICON_Gold] in order to purchase this plot"))
 		assert.equal("Make a Trade Route.", Clean("Make a [ICON_TradeRoute]."))

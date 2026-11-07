@@ -36,7 +36,7 @@ local function GetKindBonuses(kind)
 	local bonuses = {}
 
 	for i, size in ipairs(BONUS_SIZES) do
-		bonuses[i] = Locale.Lookup("LOC_MINOR_CIV_" .. kind .. "_TRAIT_" .. size .. "_INFLUENCE_BONUS")
+		bonuses[i] = SentientSystems_LookupText("LOC_MINOR_CIV_" .. kind .. "_TRAIT_" .. size .. "_INFLUENCE_BONUS")
 	end
 
 	return bonuses
@@ -53,7 +53,7 @@ local function GetSuzerainBonus(playerID)
 		local trait = row.LeaderType == leader and GameInfo.Traits[row.TraitType]
 
 		if trait and trait.Description ~= nil then
-			texts[#texts + 1] = Locale.Lookup(trait.Description)
+			texts[#texts + 1] = SentientSystems_LookupText(trait.Description)
 		end
 	end
 
@@ -92,9 +92,9 @@ local function GetQuests(playerID, cityStateID)
 		if manager:HasActiveQuestFromPlayer(playerID, cityStateID, row.Index) then
 			quests[#quests + 1] = {
 				type = row.QuestType,
-				name = manager:GetActiveQuestName(playerID, cityStateID, row.Index),
-				description = manager:GetActiveQuestDescription(playerID, cityStateID, row.Index),
-				reward = manager:GetActiveQuestReward(playerID, cityStateID, row.Index),
+				name = SentientSystems_CleanText(manager:GetActiveQuestName(playerID, cityStateID, row.Index)),
+				description = SentientSystems_CleanText(manager:GetActiveQuestDescription(playerID, cityStateID, row.Index)),
+				reward = SentientSystems_CleanText(manager:GetActiveQuestReward(playerID, cityStateID, row.Index)),
 			}
 		end
 	end

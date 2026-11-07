@@ -90,7 +90,7 @@ describe("SentientSystems_GetEnvoyState", function()
 		}
 
 		assert.equal(
-			"{\"TRADE\":[\"+2 [ICON_Gold] Gold\",\"LOC_MINOR_CIV_TRADE_TRAIT_MEDIUM_INFLUENCE_BONUS\",\"LOC_MINOR_CIV_TRADE_TRAIT_LARGE_INFLUENCE_BONUS\"]}",
+			"{\"TRADE\":[\"+2 Gold\",\"LOC_MINOR_CIV_TRADE_TRAIT_MEDIUM_INFLUENCE_BONUS\",\"LOC_MINOR_CIV_TRADE_TRAIT_LARGE_INFLUENCE_BONUS\"]}",
 			EnvoysWith(players):match("\"bonuses\":(%b{})")
 		)
 	end)
@@ -137,7 +137,7 @@ describe("SentientSystems_GetEnvoyState", function()
 		}
 
 		assert.equal(
-			"[{\"description\":\"Train a Spearman military unit.\",\"name\":\"Train a Spearman.\",\"reward\":\"[ICON_Envoy] 1 Envoy\",\"type\":\"QUEST_TRAIN_UNIT_TYPE\"}]",
+			"[{\"description\":\"Train a Spearman military unit.\",\"name\":\"Train a Spearman.\",\"reward\":\"1 Envoy\",\"type\":\"QUEST_TRAIN_UNIT_TYPE\"}]",
 			EnvoysWith({ [0] = { met = { 12 } }, [1] = {}, [12] = samarkand }):match("\"quests\":(%b[])")
 		)
 	end)
