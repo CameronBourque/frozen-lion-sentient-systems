@@ -33,7 +33,7 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 13 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
 | 14 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, great person, and artifact blockers | `feat(core): add the religion, governor, and reward actions` | |
 | 15 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
-| 16 | [Action API: nuclear strikes](action-api-nukes.md) | The nuclear and thermonuclear stockpile, and the strike action | `feat(core): add the nuclear actions` | |
+| 16 | [Action API: nuclear strikes](action-api-nukes.md) | The nuclear and thermonuclear stockpile, fallout and its clearing, and the strike action | `feat(core): add the nuclear actions` | |
 | 17 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
 | 18 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
 | 19 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
