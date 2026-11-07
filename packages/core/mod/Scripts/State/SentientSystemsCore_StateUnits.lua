@@ -119,8 +119,8 @@ end
 
 -- Returns the type of the religion the unit belongs to, or nil. The unit flag
 -- shows the religion of a unit with religious strength, for a religion above
--- 0. See UnitFlagManager.lua, UpdateReligion.
-local function GetUnitReligion(unit)
+-- 0. See UnitFlagManager.lua, UpdateReligion. The rivals section uses it too.
+function SentientSystems_GetUnitReligion(unit)
 	local religion = unit:GetReligionType()
 
 	if religion > 0 and unit:GetReligiousStrength() > 0 then
@@ -133,7 +133,7 @@ end
 -- Adds the unit's religion and its spread and heal charges to state. The panel
 -- shows a charge only above 0. See UnitPanel.lua.
 local function AddReligion(unit, state)
-	state.religion = GetUnitReligion(unit)
+	state.religion = SentientSystems_GetUnitReligion(unit)
 
 	if unit:GetSpreadCharges() > 0 then
 		state.spreadCharges = unit:GetSpreadCharges()

@@ -1,12 +1,12 @@
 # Unit and city details in the state
 
-Status: in progress. The unit activity and charges, religious units, and great people are confirmed in a running game with Gathering Storm. Rival religious units, city religion, and the room for a purchased unit are not yet checked.
+Status: in progress. The unit activity and charges, religious units, and great people are confirmed in a running game with Gathering Storm. Rival religious units are confirmed too. City religion and the room for a purchased unit are not yet checked.
 
 The calls the unit and city details in the state use, as the unit panel and the city panel show them. See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
-- What do the rival religious unit, city religion, and purchase room calls return?
+- What do the city religion and purchase room calls return?
 
 ## What we know now
 
@@ -37,11 +37,22 @@ The calls the unit and city details in the state use, as the unit panel and the 
   The panel reads the charges at line 2282, and shows them only above 0. The state keeps them at 0 as well, because a prophet has none before a religion exists.
 - **Purchased units skip their turn.** An apostle and an inquisitor bought in the city were on `HOLD` (skip) when the check ran, and a missionary and a guru were `AWAKE`.
 
+### Rival religious units
+
+`UnitFlagManager.lua` shows a visible unit's religion on its flag with the same rule as for the player's own units: `GetReligionType()` above 0 and `GetReligiousStrength()` above 0, at line 799. Its tooltip adds the religion's name, at line 890. Confirmed in files and in a running game.
+
+The rivals section lists a unit only on a tile that is visible now, so a rival religious unit appears only when the player sees it. The religion is public to anyone who sees the unit, at war or not.
+
+`condemn_heretic` needs it. `UNITCOMMAND_CONDEMN_HERETIC` is open to a unit that shares a tile with a religious unit of another religion whose owner is at war with the player, and the state now says whose religion that is.
+
 ## Method
 
 1. To read the units section before the `.modinfo` loads it, send `SentientSystemsCore_StateUnits.lua` through the tuner as in [choices/production.md](../choices/production.md#method), step 4, and call `SentientSystems_GetUnitStates(Players[Game.GetLocalPlayer()])`.
 2. Compare each unit with the unit panel and the unit list.
-3. For religious units, found a religion with a prophet on a holy site, and buy a missionary, an apostle, an inquisitor, and a guru in a city with a shrine and a temple.
+3. For the rival units, load `SentientSystemsCore_StateUnits.lua` and `SentientSystemsCore_StateRivals.lua` the same way, and call `SentientSystems_GetRivalUnitStates(0)`. Compare the religious units with `UnitManager.GetUnit(owner, id)` on the tiles the player sees.
+
+   To try `condemn_heretic`, send `UnitManager.InitUnit(0, "UNIT_KNIGHT", x, y)` and `RestoreMovement` in `GameCore_Tuner` on the tile of a visible unit of a player at war with you, then `UnitManager.RequestCommand` with the command's hash.
+4. For religious units, found a religion with a prophet on a holy site, and buy a missionary, an apostle, an inquisitor, and a guru in a city with a shrine and a temple.
 
    In `GameCore_Tuner`, `Players[0]:GetCulture():SetCivic(index, true)` gives Theology, and `WorldBuilder.CityManager():CreateBuilding(city, "BUILDING_TEMPLE", 100, plotIndex)` adds the temple.
 
@@ -58,6 +69,8 @@ A single-player game with Gathering Storm, with 41 units of one player, in `Sent
 | Formation | `army` for the knight army, left out for the rest |
 | Religious units | A missionary, an apostle, and an inquisitor had the founded religion, a strength of 100, 110, and 75, and 3 spreads. A guru had strength 90 and 3 heals |
 | Great people | The class, the individual, and 1 charge for scientists, admirals, and merchants, 4 for an engineer, and 0 for a prophet before it founded a religion |
+| Rival religious units | In a game on turn 53, 9 of the 49 visible rival units had a religion: 4 Islam and 3 Orthodoxy missionaries, and 2 Shinto apostles. They were the same units that a direct probe found on visible tiles, and the 40 other units had none |
+| `condemn_heretic` | A knight on the tile of a Shinto apostle of a player at war passed the check, and the request removed the apostle and left the knight with no moves |
 | A spy on a mission | `awake` before, and `operation` right after a Gain Sources mission started |
 
 Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06.

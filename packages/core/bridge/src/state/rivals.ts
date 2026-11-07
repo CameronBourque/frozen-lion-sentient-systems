@@ -25,6 +25,9 @@ export const RIVAL_UNIT = z.object({
 	x: z.number(),
 	y: z.number(),
 	health: HEALTH,
+	religion: z.string().optional().describe(
+		"The religion of a religious unit, such as RELIGION_SHINTO, as its flag shows it. Left out for any other unit. condemn_heretic needs it.",
+	),
 }).describe(
 	"A unit on a tile that is visible now, as its flag shows it, and for which IsUnitVisible is true, which leaves out a stealthy unit on a visible tile. A unit on a fogged tile is never listed.",
 );
