@@ -50,6 +50,12 @@ Its reasons name a type that is no unit, building, district, wonder, or project,
 
 A district or a wonder also takes the tile, `x` and `y`, from the `tiles` of the [placement call](choices.md#placement), unless the city has placed it already. Its reasons name a missing tile, a tile that isn't a placement tile, and a tile to buy first. See [production.md](../../../findings/actions/production.md).
 
+### Purchases
+
+`SentientSystems_Purchase(playerID, cityID, item, yield)` in the same file buys a unit or a building. The item is the `type` of an option of the `purchases` choice, and the yield is the key it is listed under, `gold` or `faith`. A unit is a standard unit, and a district isn't bought here.
+
+Its reasons name a yield that is neither, a type the game doesn't know, and an item the choice doesn't list for the yield. The game's reasons come back for a greyed-out item, with the panel's text when the player can't afford it. See [purchases.md](../../../findings/actions/purchases.md).
+
 ### Trade routes
 
 `SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)` in `Scripts/Actions/SentientSystemsCore_ActionsTrade.lua` starts a route from the city a trader stands in to a destination of the `tradeRoutes` choice. The city is named by its owner and its ID, as the choice lists it.

@@ -40,20 +40,30 @@ local function FindProductionItem(item)
 	return nil
 end
 
--- Returns why the city can't produce the item, from the game's reasons when it
--- gives some.
-local function CannotProduce(item, results)
+-- Returns the game's failure reasons in results, as text.
+local function FailureReasons(results)
 	local reasons = {}
 
 	for i, reason in ipairs(results and results[CityCommandResults.FAILURE_REASONS] or {}) do
 		reasons[i] = SentientSystems_LookupText(reason)
 	end
 
+	return reasons
+end
+
+-- Returns "<start> now" with the reasons after a colon, or without them.
+local function WithReasons(start, reasons)
 	if #reasons == 0 then
-		return "This city can't produce " .. item .. " now."
+		return start .. " now."
 	end
 
-	return "This city can't produce " .. item .. " now: " .. table.concat(reasons, "; ")
+	return start .. " now: " .. table.concat(reasons, "; ")
+end
+
+-- Returns why the city can't produce the item, from the game's reasons when it
+-- gives some.
+local function CannotProduce(item, results)
+	return WithReasons("This city can't produce " .. item, FailureReasons(results))
 end
 
 -- Returns whether the list holds the tile.
@@ -177,6 +187,90 @@ function SentientSystems_SetProduction(playerID, cityID, item, x, y)
 		end
 
 		CityManager.RequestOperation(city, CityOperationTypes.BUILD, parameters)
+
+		return nil
+	end)
+end
+
+-- Each yield a city buys with, by the key the purchases choice uses: its name
+-- in GameInfo.Yields, the player's store of it, and the text key the panel adds
+-- when the player can't afford an item. See PURCHASE_YIELDS in
+-- SentientSystemsCore_ChoicesPurchases.lua.
+local PURCHASE_YIELDS = {
+	gold = {
+		yield = "YIELD_GOLD",
+		store = function(player)
+			return player:GetTreasury()
+		end,
+		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FUNDS",
+	},
+	faith = {
+		yield = "YIELD_FAITH",
+		store = function(player)
+			return player:GetReligion()
+		end,
+		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FAITH",
+	},
+}
+
+-- Buys a unit or a building in the city with gold or faith, and returns the
+-- result as JSON.
+-- The item is the type of an option of the purchases choice, such as
+-- UNIT_BUILDER, and the yield is its key, gold or faith. A unit is a standard
+-- unit, not a corps or an army. The game gives no reason when the player can't
+-- afford an item, so the panel's text is added, as the choice does. See
+-- PurchaseUnit and PurchaseBuilding in ProductionPanel.lua.
+function SentientSystems_Purchase(playerID, cityID, item, yield)
+	return SentientSystems_RunAction("Purchase", function()
+		local player = Players[playerID]
+		local city = player and player:GetCities():FindID(cityID)
+
+		if city == nil then
+			return "Player " .. playerID .. " has no city " .. cityID .. "."
+		end
+
+		local purchase = PURCHASE_YIELDS[yield]
+
+		if purchase == nil then
+			return tostring(yield) .. " isn't a yield to buy with. Use gold or faith."
+		end
+
+		local row, key = FindProductionItem(item)
+
+		if row == nil then
+			return tostring(item) .. " isn't a unit, building, district, wonder, or project. Use the type of an option of the purchases choice."
+		end
+
+		local params = { [CityCommandTypes.PARAM_YIELD_TYPE] = GameInfo.Yields[purchase.yield].Index }
+
+		if key == CityOperationTypes.PARAM_UNIT_TYPE then
+			params[CityCommandTypes.PARAM_UNIT_TYPE] = row.Hash
+			params[CityCommandTypes.PARAM_MILITARY_FORMATION_TYPE] = MilitaryFormationTypes.STANDARD_MILITARY_FORMATION
+		elseif key == CityOperationTypes.PARAM_BUILDING_TYPE then
+			params[CityCommandTypes.PARAM_BUILDING_TYPE] = row.Hash
+		else
+			return item .. " can't be bought with this action, which buys units and buildings."
+		end
+
+		-- The panel lists only what CanStartCommand allows when it only tests.
+		if not CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, true, params, false) then
+			return item .. " isn't one of this city's " .. yield .. " purchase choices."
+		end
+
+		local canStart, results = CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, false, params, true)
+		local canAfford = purchase.store(player):CanAfford(cityID, row.Hash)
+
+		if not canStart or not canAfford then
+			local reasons = FailureReasons(results)
+
+			if not canAfford then
+				reasons[#reasons + 1] = SentientSystems_LookupText(purchase.cantAffordKey)
+			end
+
+			return WithReasons("This city can't buy " .. item .. " with " .. yield, reasons)
+		end
+
+		CityManager.RequestCommand(city, CityCommandTypes.PURCHASE, params)
 
 		return nil
 	end)

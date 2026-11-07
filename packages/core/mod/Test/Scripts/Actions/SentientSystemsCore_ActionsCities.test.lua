@@ -206,3 +206,100 @@ describe("SentientSystems_SetProduction", function()
 	end)
 end)
 
+-- A city that can buy a unit, a building, and a district with gold, and a
+-- missionary with faith, with one item for each way a purchase fails.
+local BUYER = {
+	id = 65536,
+	name = "LOC_CITY_NAME_BIBRAX",
+	x = 20,
+	y = 20,
+	purchases = {
+		YIELD_GOLD = {
+			units = {
+				{ type = "UNIT_BUILDER", cost = 100 },
+				{ type = "UNIT_SETTLER", cost = 160, cantAfford = true },
+				{ type = "UNIT_BLOCKED", cost = 100, blocked = { "Too many units of the same class in this location." } },
+				{ type = "UNIT_BROKE_AND_BLOCKED", cost = 100, cantAfford = true, blocked = { "Too many units of the same class in this location." } },
+				{ type = "UNIT_SECRET", cost = 100, hidden = true },
+			},
+			buildings = { { type = "BUILDING_GRANARY", cost = 130 } },
+			districts = { { type = "DISTRICT_CAMPUS", cost = 195 } },
+		},
+		YIELD_FAITH = { units = { { type = "UNIT_MISSIONARY", cost = 70 } } },
+	},
+}
+
+describe("SentientSystems_Purchase", function()
+	it("buys a unit or a building with gold, and a unit with faith", function()
+		local env = Load(BUYER)
+		local C = env.CityCommandTypes
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_Purchase(0, BUYER.id, "UNIT_BUILDER", "gold"))
+		assert.equal("{\"ok\":true}", env.SentientSystems_Purchase(0, BUYER.id, "BUILDING_GRANARY", "gold"))
+		assert.equal("{\"ok\":true}", env.SentientSystems_Purchase(0, BUYER.id, "UNIT_MISSIONARY", "faith"))
+		assert.equal(3, #env.requests)
+
+		for _, request in ipairs(env.requests) do
+			assert.equal(BUYER.id, request.city)
+			assert.equal(C.PURCHASE, request.command)
+		end
+
+		local unit, building, faith = env.requests[1].parameters, env.requests[2].parameters, env.requests[3].parameters
+
+		assert.is_number(unit[C.PARAM_UNIT_TYPE])
+		assert.is_number(unit[C.PARAM_MILITARY_FORMATION_TYPE])
+		assert.is_number(building[C.PARAM_BUILDING_TYPE])
+		assert.is_nil(building[C.PARAM_UNIT_TYPE])
+		assert.is_number(unit[C.PARAM_YIELD_TYPE])
+		assert.is_true(unit[C.PARAM_YIELD_TYPE] ~= faith[C.PARAM_YIELD_TYPE])
+	end)
+
+	it("fails for a city the player doesn't have", function()
+		local env = Load(BUYER)
+
+		assert.equal(Failed("Player 0 has no city 9."), env.SentientSystems_Purchase(0, 9, "UNIT_BUILDER", "gold"))
+		assert.equal(Failed("Player 3 has no city 9."), env.SentientSystems_Purchase(3, 9, "UNIT_BUILDER", "gold"))
+	end)
+
+	it("fails for a yield that isn't gold or faith", function()
+		local env = Load(BUYER)
+
+		assert.equal(Failed("culture isn't a yield to buy with. Use gold or faith."), env.SentientSystems_Purchase(0, BUYER.id, "UNIT_BUILDER", "culture"))
+		assert.equal(Failed("nil isn't a yield to buy with. Use gold or faith."), env.SentientSystems_Purchase(0, BUYER.id, "UNIT_BUILDER"))
+	end)
+
+	it("fails for a name that is no unit, building, district, or project, and for a district", function()
+		local env = Load(BUYER)
+
+		assert.equal(Failed("UNIT_NOPE isn't a unit, building, district, wonder, or project. Use the type of an option of the purchases choice."), env.SentientSystems_Purchase(0, BUYER.id, "UNIT_NOPE", "gold"))
+		assert.equal(Failed("DISTRICT_CAMPUS can't be bought with this action, which buys units and buildings."), env.SentientSystems_Purchase(0, BUYER.id, "DISTRICT_CAMPUS", "gold"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for an item that isn't among the city's purchase choices for the yield", function()
+		local env = Load(BUYER)
+
+		assert.equal(Failed("UNIT_SECRET isn't one of this city's gold purchase choices."), env.SentientSystems_Purchase(0, BUYER.id, "UNIT_SECRET", "gold"))
+		assert.equal(Failed("UNIT_MISSIONARY isn't one of this city's gold purchase choices."), env.SentientSystems_Purchase(0, BUYER.id, "UNIT_MISSIONARY", "gold"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails when the player can't afford the item, with the panel's text", function()
+		local env = Load(BUYER)
+
+		assert.equal(Failed("This city can't buy UNIT_SETTLER with gold now: LOC_BUILDING_INSUFFICIENT_FUNDS"), env.SentientSystems_Purchase(0, BUYER.id, "UNIT_SETTLER", "gold"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails with the game's reasons, and the panel's text when the player can't afford it either", function()
+		local env = Load(BUYER)
+
+		assert.equal(Failed("This city can't buy UNIT_BLOCKED with gold now: Too many units of the same class in this location."), env.SentientSystems_Purchase(0, BUYER.id, "UNIT_BLOCKED", "gold"))
+		assert.equal(
+			Failed("This city can't buy UNIT_BROKE_AND_BLOCKED with gold now: Too many units of the same class in this location.; LOC_BUILDING_INSUFFICIENT_FUNDS"),
+			env.SentientSystems_Purchase(0, BUYER.id, "UNIT_BROKE_AND_BLOCKED", "gold")
+		)
+		assert.same({}, env.requests)
+	end)
+end)
+
