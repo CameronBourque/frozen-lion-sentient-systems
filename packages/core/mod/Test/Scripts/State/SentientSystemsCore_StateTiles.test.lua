@@ -151,4 +151,34 @@ describe("SentientSystems_GetTileStates", function()
 			assert.is_nil(TourismTile({ tourism = 11, tooltip = TOOLTIP }, 1):find("tourism", 1, true))
 		end)
 	end)
+
+	describe("appeal", function()
+		-- Returns the tiles JSON for one revealed tile with the given fields.
+		local function AppealTile(extra)
+			local plot = { x = 0, y = 0, terrain = "TERRAIN_GRASS" }
+
+			for key, value in pairs(extra) do
+				plot[key] = value
+			end
+
+			return TilesFor({ revealed = { { 0, 0 } } }, { plot })
+		end
+
+		it("adds the appeal of a land tile, also when it is below 0", function()
+			assert.truthy(AppealTile({ appeal = 5 }):find("\"appeal\":5", 1, true))
+			assert.truthy(AppealTile({ appeal = -3 }):find("\"appeal\":-3", 1, true))
+		end)
+
+		it("leaves out an appeal of 0", function()
+			assert.is_nil(AppealTile({ appeal = 0 }):find("appeal", 1, true))
+		end)
+
+		it("leaves out the appeal of water, except around a natural wonder", function()
+			assert.is_nil(AppealTile({ appeal = 2, water = true }):find("appeal", 1, true))
+			assert.truthy(
+				AppealTile({ appeal = 2, water = true, feature = "FEATURE_REEF", naturalWonder = true }):find("\"appeal\":2", 1, true)
+			)
+			assert.is_nil(AppealTile({ appeal = 2, water = true, feature = "FEATURE_ICE" }):find("appeal", 1, true))
+		end)
+	end)
 end)

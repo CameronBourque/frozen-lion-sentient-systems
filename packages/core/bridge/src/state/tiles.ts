@@ -29,6 +29,9 @@ export const TILE = z.object({
 	sources: z.array(z.string()).optional().describe(
 		"What gives the tourism, one line each, in the game's language, from the banner's tooltip. Left out for a tile with no tourism.",
 	),
+	appeal: z.number().optional().describe(
+		"The tile's appeal, as the tooltip and the appeal lens show it. 4 and above is breathtaking, 2 and above charming, -1 and above average, -3 and above uninviting, and below that disgusting. Left out when 0, and for water, except a natural wonder.",
+	),
 	visible: z.boolean().describe(
 		"False for a tile under fog, which reads as it is now, as the game's tooltip shows it.",
 	),

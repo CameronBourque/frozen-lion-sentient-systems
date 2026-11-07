@@ -66,6 +66,7 @@ return function(env, world, ctx)
 
 		if data.feature ~= nil then
 			AddRow("Features", "FeatureType", data.feature)
+			env.GameInfo.Features[indexes[data.feature]].NaturalWonder = data.naturalWonder
 		end
 
 		for _, field in ipairs({ { "Districts", "DistrictType", data.district }, { "Improvements", "ImprovementType", data.improvement }, { "Routes", "RouteType", data.route } }) do
@@ -118,6 +119,9 @@ return function(env, world, ctx)
 			end,
 			IsWater = function()
 				return data.water == true
+			end,
+			GetAppeal = function()
+				return data.appeal or 0
 			end,
 			IsImpassable = function()
 				return data.impassable == true

@@ -14,6 +14,7 @@ The game calls the state serializer uses, and what a player can know about each 
 | [trade.md](trade.md) | The calls the trade routes in the state use, as the Trade Overview shows them |
 | [great-works.md](great-works.md) | The calls the great works in the state use, as the Great Works screen shows them |
 | [tourism.md](tourism.md) | The calls the tourism layer of the tiles uses, as the Tourism lens shows it |
+| [appeal.md](appeal.md) | The calls the appeal layer of the tiles uses, as the Appeal lens and the tooltip show it |
 | [diplomacy.md](diplomacy.md) | The calls the diplomacy status in the state uses, as the Intel Report shows them |
 | [player.md](player.md) | The calls the player section of the state uses, as the top bar shows them |
 | [reports.md](reports.md) | The calls the state uses for the Yields, Resources, and City Status tabs of Reports |

@@ -30,6 +30,21 @@ local function TrueOrNil(value)
 	return value or nil
 end
 
+-- Returns the appeal of the plot, or nil when it is 0 or the tooltip shows
+-- none: the tooltip leaves it out for water, except a natural wonder, in
+-- PlotToolTip.lua. The appeal lens colors tiles by the same number.
+local function GetAppeal(plot)
+	local feature = GameInfo.Features[plot:GetFeatureType()]
+
+	if plot:IsWater() and not (feature and feature.NaturalWonder) then
+		return nil
+	end
+
+	local appeal = plot:GetAppeal()
+
+	return appeal ~= 0 and appeal or nil
+end
+
 -- Returns the tourism of a tile of the player's own, as its banner shows it on
 -- the tourism lens, or an empty table when it has none. The banner's tooltip is
 -- a name, the visiting tourists, a line of text, the sources, and the lifetime
@@ -88,6 +103,7 @@ function SentientSystems_GetTileStates(playerID)
 				improvementPillaged = improvement and TrueOrNil(plot:IsImprovementPillaged()),
 				route = route,
 				routePillaged = route and TrueOrNil(plot:IsRoutePillaged()),
+				appeal = GetAppeal(plot),
 				visible = visibility:IsVisible(index),
 				tourism = tourism.tourism,
 				tourists = tourism.tourists ~= 0 and tourism.tourists or nil,
