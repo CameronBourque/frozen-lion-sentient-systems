@@ -49,7 +49,7 @@ A purchased unit appears on a tile that depends on its kind, and the purchase ch
 - **Religious.** The unit appears in the holy site, and then in the city center. A city with no holy site doesn't list a religious unit.
 - **Civilian and support.** The unit appears in the city center, and a unit of the same class there blocks it. A unit of another class doesn't.
 - **Air.** The unit appears in an aerodrome, which holds 4 aircraft. A unit counts only when it is based there, not when it stands on the tile. A full city is blocked with another reason, `This city is at full capacity for aircraft.`.
-- **Production.** A city that can't buy a unit can still produce it, as the player reports, except for an air unit. A full aerodrome blocks producing one too, with the same reason, and `CanProduce` returned `false` with it. The production choice showed it, and a builder was not blocked.
+- **Production.** Producing has its own room rules. See [production.md](production.md#units).
 
 Confirmed on Windows on 2026-11-06, as the results below show.
 
@@ -104,7 +104,7 @@ Room for a unit, on turn 54 in a game with 11 cities, in `SentientSystemsCore_UI
 | Lutetia, coastal with no harbor, with a Caravel in the center | The Caravel was listed, and blocked once the ship stood in the center |
 | Lisieux, with a harbor and a holy site, with a Missionary in the holy site, then in the center | The Missionary and the Apostle could be bought with one, and were blocked with both. The Settler and the Caravel were not |
 | Aduatuca and Bibrax, with no holy site | The Missionary wasn't listed |
-| Avaricum, with an aerodrome and one Jet Bomber, filled with Jet Fighters sent in by rebase | The aerodrome took 3 more. With 4 aircraft both jets were blocked with `This city is at full capacity for aircraft.`, which the purchase choice showed. Fighters spawned on the tile didn't count. The production choice blocked both jets with the same reason |
+| Avaricum, with an aerodrome and one Jet Bomber, filled with Jet Fighters sent in by rebase | The aerodrome took 3 more. With 4 aircraft both jets were blocked with `This city is at full capacity for aircraft.`. Fighters spawned on the tile didn't count |
 | `SentientSystems_GetPurchaseChoices` for Lisieux, with a Builder in the center | The Settler and the Builder carried `Too many units of the same class in this location.`, and the Trader did not |
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26 and 2026-11-06.

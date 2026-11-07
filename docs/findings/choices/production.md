@@ -25,6 +25,9 @@ The end-turn blockers that the choices resolve are in [state/end-turn-blockers.m
 - **Cost, progress, and turns.** `buildQueue:GetUnitCost(row.Index)`, `GetUnitProgress(row.Index)`, and `GetTurnsLeft(row.Hash)`. The panel shows progress only when it is above 0, in `ComposeProductionCostString`, lines 1589 to 1600.
 
   Turns change with the city's production, and Rome's settler went from 6 turns to 9 when the city dropped from 3 population to 1. Confirmed in files and on Windows on 2026-10-26.
+- **Room for a unit.** A city can produce a unit that it can't buy, as the player reports. Not checked, except for an air unit.
+
+  A full aerodrome blocks producing one: `CanProduce(params, false, true)` returned `false` with the reason `This city is at full capacity for aircraft.`. The aerodrome holds 4 aircraft. [purchases.md](purchases.md#room-for-a-unit) has the room when buying.
 - **Corps and armies.** When `results[CityOperationResults.CAN_TRAIN_CORPS]` is set, the panel also offers a corps.
 
   It checks `CanProduce` again with `MilitaryFormationTypes.CORPS_MILITARY_FORMATION`, and reads `GetUnitCorpsCost(row.Index)` and `GetTurnsLeft(row.Hash, MilitaryFormationTypes.CORPS_MILITARY_FORMATION)`.
@@ -105,5 +108,7 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 - **Rome's production panel against the choices.** The same buildings and units with the same turns: walls 6 and granary 5 under **City Center**, and settler 6, builder 4, scout 2, warrior 3, slinger 2, and battering ram 5.
 
   The panel sorts the walls before the granary, and the choices keep the game's order. The panel doesn't show cost.
+
+- **Production for Avaricum with 4 aircraft based in its aerodrome.** The Jet Fighter and the Jet Bomber were blocked with `This city is at full capacity for aircraft.`, and a Builder was not. Run in `SentientSystemsCore_UI` on 2026-11-06.
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.
