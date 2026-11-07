@@ -131,7 +131,7 @@ describe("SentientSystems_GetIncomeState", function()
 						{ x = 1, y = 1, worked = true, yields = { PRODUCTION = 30, FAITH = 1, FOOD = 4 }, tourism = 7 },
 						{ x = 2, y = 1, worked = false, yields = { GOLD = 99 }, tourism = 11 },
 					},
-					routes = { { player = 0, id = 2, yields = { GOLD = 4, PRODUCTION = 5 } } },
+					routes = { { player = 0, id = 2, trader = 100, yields = { GOLD = 4, PRODUCTION = 5 } } },
 					districts = {
 						{ type = "DISTRICT_WONDER", x = 5, y = 5, buildings = { { type = "BUILDING_COLOSSUS", wonder = true, yields = { GOLD = 3 } } } },
 						{

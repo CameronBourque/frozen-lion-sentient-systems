@@ -1,5 +1,5 @@
--- The trade route choice: each idle trader's destinations, with what each end
--- gets. Follows TradeRouteChooser.lua and TradeSupport.lua.
+-- The trade route choice, and the routes from any city. Follows
+-- TradeRouteChooser.lua, TradeSupport.lua, and TradeOverview.lua.
 -- Shape: bridge/src/choices/trade-routes.ts.
 
 -- Returns the traders that already have a route, by unit ID. A trader is idle
@@ -25,8 +25,9 @@ end
 -- Returns what one end of a potential route receives, as the yields the screen
 -- lists and the religious pressure on that end, and whether a trading post on
 -- the path adds to the origin. See GetYieldsForRoute and
--- GetReligiousPressureForCity in TradeSupport.lua.
-local function GetEnd(originCity, destinationCity, side)
+-- GetReligiousPressureForCity in TradeSupport.lua. The trade routes in the
+-- state use it too.
+function SentientSystems_GetRouteEnd(originCity, destinationCity, side)
 	local tradeManager = Game.GetTradeManager()
 	local originOwner, originID = originCity:GetOwner(), originCity:GetID()
 	local destinationOwner, destinationID = destinationCity:GetOwner(), destinationCity:GetID()
@@ -84,16 +85,17 @@ local function GetQuest(playerID, city)
 	return nil
 end
 
--- Returns one destination entry for a city the trader can reach, or nil when
--- the city has no path from the origin. See RefreshChooserPanel.
-local function GetDestination(player, originCity, city)
+-- Returns one destination entry for a city that a route can go to, or nil when
+-- the city has no path from the origin. See RefreshChooserPanel. The
+-- destinations of a city use it too.
+function SentientSystems_GetRouteDestination(player, originCity, city)
 	local path = Game.GetTradeManager():GetTradeRoutePath(originCity:GetOwner(), originCity:GetID(), city:GetOwner(), city:GetID())
 
 	if path == nil or #path == 0 then
 		return nil
 	end
 
-	local origin, pathBonus = GetEnd(originCity, city, "Origin")
+	local origin, pathBonus = SentientSystems_GetRouteEnd(originCity, city, "Origin")
 
 	return {
 		owner = city:GetOwner(),
@@ -104,7 +106,7 @@ local function GetDestination(player, originCity, city)
 		pathBonus = pathBonus,
 		quest = GetQuest(player:GetID(), city),
 		origin = origin,
-		destination = GetEnd(originCity, city, "Destination"),
+		destination = SentientSystems_GetRouteEnd(originCity, city, "Destination"),
 	}
 end
 
@@ -131,7 +133,7 @@ local function GetDestinations(player, unit, originCity)
 			params[UnitOperationTypes.PARAM_Y1] = unit:GetY()
 
 			if UnitManager.CanStartOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, nil, params) then
-				destinations[#destinations + 1] = GetDestination(player, originCity, city)
+				destinations[#destinations + 1] = SentientSystems_GetRouteDestination(player, originCity, city)
 			end
 		end
 	end
@@ -162,4 +164,40 @@ function SentientSystems_GetTradeRouteChoices(player)
 	end
 
 	return #choices > 0 and choices or nil
+end
+
+-- Returns the destinations a route from the player's city could go to, as the
+-- Available Routes tab lists them for that origin, the player's own cities
+-- first, or nil when the player has no such city. Unlike the choice, it needs
+-- no trader. See ViewAvailableRoutes in TradeOverview.lua.
+function SentientSystems_GetCityRoutes(player, cityID)
+	local originCity = player:GetCities():FindID(cityID)
+
+	if originCity == nil then
+		return nil
+	end
+
+	local manager = Game.GetTradeManager()
+	local owners = { player }
+
+	for _, other in ipairs(Game.GetPlayers()) do
+		if other:GetID() ~= player:GetID() then
+			owners[#owners + 1] = other
+		end
+	end
+
+	local destinations = {}
+
+	for _, owner in ipairs(owners) do
+		for _, city in owner:GetCities():Members() do
+			if manager:CanStartRoute(originCity:GetOwner(), originCity:GetID(), city:GetOwner(), city:GetID(), true) then
+				destinations[#destinations + 1] = SentientSystems_GetRouteDestination(player, originCity, city)
+			end
+		end
+	end
+
+	return {
+		city = { owner = originCity:GetOwner(), id = originCity:GetID(), name = Locale.Lookup(originCity:GetName()) },
+		destinations = destinations,
+	}
 end

@@ -8,6 +8,8 @@ The game calls the state serializer uses, and what a player can know about each 
 | [rivals.md](rivals.md) | The calls the state serializer uses for the rival cities and units a player can see |
 | [end-turn-blockers.md](end-turn-blockers.md) | The calls the state serializer uses for end-turn blockers, and the screen that resolves each one |
 | [governors.md](governors.md) | The calls the governors in the state use, as the Governors panel shows them |
+| [espionage.md](espionage.md) | The calls the espionage in the state uses, as the Espionage screen shows them |
+| [trade.md](trade.md) | The calls the trade routes in the state use, as the Trade Overview shows them |
 | [diplomacy.md](diplomacy.md) | The calls the diplomacy status in the state uses, as the Intel Report shows them |
 | [player.md](player.md) | The calls the player section of the state uses, as the top bar shows them |
 | [reports.md](reports.md) | The calls the state uses for the Yields, Resources, and City Status tabs of Reports |

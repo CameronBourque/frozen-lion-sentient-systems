@@ -9,6 +9,7 @@ import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
 import { DIPLOMACY } from "./diplomacy.js";
 import { ENVOYS } from "./envoys.js";
+import { ESPIONAGE } from "./espionage.js";
 import { GOVERNORS } from "./governors.js";
 import { GREAT_PEOPLE } from "./great-people.js";
 import { PLAYER } from "./player.js";
@@ -17,6 +18,7 @@ import { RELIGION } from "./religion.js";
 import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
 import { SCOREBOARD } from "./scoreboard.js";
 import { TILE } from "./tiles.js";
+import { TRADE } from "./trade.js";
 import { UNIT } from "./units.js";
 import { VICTORIES } from "./victories.js";
 
@@ -37,9 +39,11 @@ export const STATE = z.object({
 	proposals: PROPOSALS,
 	religion: RELIGION,
 	envoys: ENVOYS,
+	espionage: ESPIONAGE,
 	greatPeople: GREAT_PEOPLE,
 	governors: GOVERNORS,
 	player: PLAYER,
+	trade: TRADE,
 	scoreboard: SCOREBOARD,
 	victories: VICTORIES,
 });

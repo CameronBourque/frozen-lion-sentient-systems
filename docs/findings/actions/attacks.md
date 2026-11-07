@@ -12,7 +12,7 @@ The other unit actions are in the [actions index](README.md).
 
 ## Questions
 
-1. Does `UNITCOMMAND_PRIORITY_TARGET` mark the tile of an enemy escort, and does a request hit the escort? Setup needs an enemy military unit that escorts a civilian or support unit within reach of a spec ops or air unit, in sight. See [Attacks](#attacks).
+1. Does `UNITCOMMAND_PRIORITY_TARGET` mark the tile of an enemy escort, and does a request hit the escort? Support units placed under an enemy military unit, even moved onto it, didn't mark anything, so the game may need an escort formation that a spawn doesn't make. See [Attacks](#attacks).
 
 ## What we know now
 
@@ -46,7 +46,13 @@ The other unit actions are in the [actions index](README.md).
 
   It listed every tile in range, 464 for the jet bomber, and marked none. A knight and a builder on one tile weren't marked, and the command failed for the tile.
 
-  An enemy heavy chariot escorting a settler, in range of the jet bomber and in sight, wasn't marked either, though the air attack didn't mark it. `RequestCommand` did nothing for an enemy unit, so a tile that is marked, and a request that works, haven't been seen.
+  An enemy heavy chariot escorting a settler, in range of the jet bomber and in sight, wasn't marked either, though the air attack didn't mark it.
+
+  The UI checks it as `CanStartCommand(unit, command, { PARAM_X, PARAM_Y })`, with no plot. With the plot as the third argument it returned `true` for an empty tile too, so only the three-argument form tells anything.
+
+  With it, a jet fighter in range of four Cree stacks had no marked tile and failed the check. The stacks were a skirmisher with a medic, a skirmisher with a battering ram, a warrior with an observation balloon, and a warrior with a builder.
+
+  The air attack marked 8 tiles with units. Confirmed on Windows on 2026-11-06. `RequestCommand` did nothing for an enemy unit, so a tile that is marked, and a request that works, haven't been seen.
 - **City attack.** `CityManager.GetCommandTargets(city, CityCommandTypes.RANGE_ATTACK, {})` returns the tiles in `CityCommandResults.PLOTS` with `MODIFIERS`, and `CityManager.CanStartCommand` and `RequestCommand` take `{ X, Y }`.
 
   `CityRangeAttack` shows no war dialog. A city hit an enemy unit on the next tile, and left it with 22 damage.

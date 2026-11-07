@@ -61,6 +61,7 @@
 			<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateDiplomacy.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateEspionage.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
@@ -71,6 +72,7 @@
 			<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateScoreboard.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateTrade.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateVictories.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateVictoriesScience.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateVictoriesCulture.lua</File>
@@ -127,6 +129,7 @@
 		<File>Scripts/State/SentientSystemsCore_StateCities.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateDiplomacy.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateEnvoys.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateEspionage.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateGovernors.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateGreatPeople.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
@@ -137,6 +140,7 @@
 		<File>Scripts/State/SentientSystemsCore_StateReligion.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateRivals.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateScoreboard.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateTrade.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateVictories.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateVictoriesScience.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateVictoriesCulture.lua</File>

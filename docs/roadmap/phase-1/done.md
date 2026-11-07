@@ -88,3 +88,14 @@ It added the trade route and spy choices, and the trade route, plunder, great pe
 - The choices' calls are in [choices/trade-routes.md](../../findings/choices/trade-routes.md) and [choices/spy-missions.md](../../findings/choices/spy-missions.md).
 - The actions' calls are in [actions/trade.md](../../findings/actions/trade.md), [actions/great-people.md](../../findings/actions/great-people.md), [actions/spies.md](../../findings/actions/spies.md), [actions/religious-units.md](../../findings/actions/religious-units.md), [actions/unit-orders.md](../../findings/actions/unit-orders.md), and [actions/attacks.md](../../findings/actions/attacks.md).
 - The parts of an action are in the [core README](../../../packages/core/README.md#parts-of-an-action).
+
+## State: trade routes and espionage
+
+Pull request: feat(core): add the trade route and espionage state.
+
+It added the `trade` and `espionage` state sections, and `SentientSystems_GetCityRoutes`, which lists the routes a city could start. The Available Routes tab is too large for the state, so it is a function of one city that the MCP server step exposes.
+
+- The sections are under **State serializer** in [design/core/mod/state.md](../../design/core/mod/state.md).
+- The calls are in [state/trade.md](../../findings/state/trade.md) and [state/espionage.md](../../findings/state/espionage.md).
+- The parts of a state section are in the [core README](../../../packages/core/README.md#parts-of-a-state-section).
+- A spy of another player that the player holds wasn't seen in a running game, because no civ sent one. The espionage finding keeps it as an open question.

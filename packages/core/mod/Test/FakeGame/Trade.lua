@@ -1,6 +1,6 @@
--- Trade routes. Fakes a trader's destinations, the trade manager's potential
--- routes, trading posts, and the international yield modifiers. CityYields.lua
--- and TopBar.lua hold a city's routes and a player's route capacity.
+-- Trade routes. Fakes a trader's destinations, potential routes, trading posts,
+-- the tourism bonus, and international yield modifiers. CityYields.lua and
+-- TopBar.lua hold a city's routes and a player's route capacity.
 
 return function(env, world, ctx)
 	local YIELD_TYPES, YIELD_NAMES = ctx.YIELD_TYPES, ctx.YIELD_NAMES
@@ -78,8 +78,14 @@ return function(env, world, ctx)
 		return yields
 	end
 
+	env.GlobalParameters = env.GlobalParameters or {}
+	env.GlobalParameters.TOURISM_TRADE_ROUTE_BONUS = 25
+
 	env.Game.GetTradeManager = function()
 		local manager = {
+			CanStartRoute = function(_, ...)
+				return next(Route(...)) ~= nil
+			end,
 			GetTradeRoutePath = function(_, ...)
 				local plots = {}
 
@@ -138,6 +144,17 @@ return function(env, world, ctx)
 
 	ctx.OnPlayer(function(player, data)
 		local getTrade = player.GetTrade
+		local getCulture = player.GetCulture
+
+		function player.GetCulture()
+			local culture = getCulture()
+
+			function culture.GetExtraTradeRouteTourismModifier()
+				return (data.trade or {}).extraTourism or 0
+			end
+
+			return culture
+		end
 
 		function player.GetTrade()
 			local trade = getTrade()
