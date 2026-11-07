@@ -34,7 +34,8 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The Great Works screen.** Every great work slot of the player's cities with its kind and work, each building's theming progress, and the totals: the works, the display spaces, and what they provide.
 
   Where a work can move is too large for the state, so `SentientSystems_GetGreatWorkMoves` returns it for one work on demand.
-- **Their own screens.** Tourism, and climate and disasters.
+- **The Tourism lens.** On each of the player's own tiles with tourism: the tourism each turn, the visiting tourists, what gives it, and the lifetime tourism, as the lens's banner and its tooltip show them.
+- **Their own screens.** Climate and disasters.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 
 The scoreboard lists every player in the screen's order. A met player has their ID and the values the screen shows, and an unmet player has only their place, as the screen shows a `?` icon.
