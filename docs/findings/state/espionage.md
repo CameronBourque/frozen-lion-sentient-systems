@@ -1,12 +1,12 @@
 # Game espionage in the state
 
-Status: open. The `espionage` section of `SentientSystems_GetState` is confirmed in a running game for every kind of spy, the other majors' cities, and the mission history, with a great work as loot. A tech as loot and an enemy spy that the player holds haven't been seen live.
+Status: open. The `espionage` section of `SentientSystems_GetState` is confirmed in a running game for every kind of spy, the other majors' cities, and the mission history, with a great work and a tech as loot. An enemy spy that the player holds hasn't been seen live.
 
 The calls the espionage in the state uses, as the three tabs of the Espionage screen show them. The spy missions and escape routes are in [choices/spy-missions.md](../choices/spy-missions.md) and [choices/spies.md](../choices/spies.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
-1. Does the section match the tabs for a mission that stole a tech, and for an enemy spy that the player holds? No civ has a spy, and a spawned one never started a mission, so the second needs the AI to send one.
+1. Does the section match the tab for an enemy spy that the player holds? No civ has a spy, and a spawned one never started a mission, so it needs the AI to send one.
 
 ## What we know now
 
@@ -57,7 +57,7 @@ The sentence is `LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_` plus the outcome, with `
 4. To start a mission, only the player's own spy can, from `SentientSystemsCore_UI` or the screen.
 
    `UnitManager.RequestOperation` ignores a spy of another player, and a spy spawned for an AI player never started a mission in 5 turns. `GetSpyCapacity()` was 0 to 2 for every civ, none had a spy or an Intelligence Agency, and the AI didn't build any.
-5. Steal Tech Boost needs a tech that the target has, the player lacks, and whose boost isn't triggered.
+5. Steal Tech Boost needs a tech that the target has, the player lacks, and whose boost isn't triggered, so it must be one with a row in `GameInfo.Boosts`, which `TECH_MINING` lacks.
 
    A triggered boost can't be cleared, so `GetTechs():SetTech(index, false)` on an untriggered one, such as `TECH_MINING`, made it possible.
 
@@ -72,8 +72,13 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | The mission history | The 3 missions of the tab: Axrotalus took 76 gold from Mbanza Kongo and escaped 2 turns ago, Luguselwa was killed in Caguana 17 turns ago, and Luguselwa was caught in Ahtahkakoop 30 turns ago, each sentence as the tab worded it. The whole section was 4,860 bytes |
 | A heist that took a great work | Margot, undetected in Mikisiw-Wacîhk: success, no fate, the loot `Heroides`, and "Stole Heroides from the city of Mikisiw-Wacîhk undetected." |
 | A mission whose detected spy was killed | Kunopennos in Mikisiw-Wacîhk: failure, fate `killed`. Jakob in Patna: a done mission, failure, fate `killed`, as the tab words it |
+| A siphon that found no gold | Diligenta failed in Beijing undetected, with the loot "Gold" from `LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_NO_GOLD`, and the sentence "Mission to steal Gold failed" |
+| A heist, a steal, and a tech as loot | Axrotalus, a level 3 Secret Agent, stole Archery from Pihtokahanapiwiyin: success, fate `escaped`, the loot `Archery`, and "Stole Archery after evading detection from the city of Pihtokahanapiwiyin." That is the game's own `SUCCESS_DETECTED_STOLELOOT` key |
+| A second great work | Clara took The Diary of Lady Murasaki from Patna undetected, as a level 3 Secret Agent |
 | A mission that failed undetected, and a counterspy | Aia failed a tech steal undetected. Boudica's counterspy found no spy, and the section calls it a success |
-| A spy of the player that was captured | Aia was caught on her next tech steal. The history shows failure with fate `captured`, and `operatives` lists her as `captured`, held by player 1, with deal index 19. `captives` stayed empty |
+| A spy of the player that was captured | Aia was caught on her next tech steal. The history shows failure with fate `captured`, and `operatives` lists her as `captured`, held by player 1, with deal index 19. `captives` stayed empty.
+
+The Operatives tab showed Aia as an Agent, **Captured by Poundmaker**, the Cree leader, with **Ask For Trade**. A second spy was caught in Bakhtri, and the section listed it as held by player 5 |
 | A spy spawned in Aduatuca with `UnitManager.InitUnit` | Boudica, a recruit, idle in Aduatuca, listed before the spy on a mission |
 
 Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06.
