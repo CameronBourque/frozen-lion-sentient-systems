@@ -1,6 +1,6 @@
 # Action API: religion and rewards
 
-Add the actions for the pantheon, religion, governor, envoy, great person, and artifact blockers. Each blocker needs its own setup in a game, so each one is its own task. Part of [phase 1](README.md).
+Add the actions for the pantheon, religion, governor, envoy, and great person blockers. Each blocker needs its own setup in a game, so each one is its own task. Part of [phase 1](README.md).
 
 ## Tasks
 
@@ -8,7 +8,6 @@ Add the actions for the pantheon, religion, governor, envoy, great person, and a
 2. **Governors.** Add actions for appointing a governor, taking an opportunity, promoting, and assigning an idle governor. Read the calls from `GovernorPanel.lua`. Commit: `feat(core): add the governor actions`.
 3. **Envoys.** Add an action that gives an influence token to a city-state. Read the call from the envoys view of `CityStates.lua`. Commit: `feat(core): add the envoy action`.
 4. **Great people.** Add an action that claims a great person. Read the call from `GreatPeoplePopup.lua`. Commit: `feat(core): add the great person action`.
-5. **Artifacts.** Add an action that chooses an artifact. Read the call from `ChooseArtifact.lua`. Commit: `feat(core): add the artifact action`.
 
 ## Done when
 

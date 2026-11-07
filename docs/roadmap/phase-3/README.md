@@ -16,7 +16,7 @@ This phase makes agents distinct and better. It adds personalities, all sweat le
 - Citizen focus and worked tiles in the state, with an action that changes them
 - Each city's next border expansion in the state
 - Trade routes in the state, and an action that sends a trader
-- Gossip, spies, great works and tourism, and climate and disasters in the state
+- Gossip, spies, and climate and disasters in the state
 - Diplomacy actions beyond answering a proposed deal
 - Messaging panel and `send_message`
 - Narrator panel in the game UI
