@@ -7,3 +7,4 @@ Add each new debt as a file, and list it in a table of File and Debt, in the ord
 | File | Debt |
 | --- | --- |
 | [split-phase-1-done.md](split-phase-1-done.md) | The phase 1 `done.md` will pass the 12,000-character limit, so it splits into a folder by topic |
+| [share-tooltip-lines.md](share-tooltip-lines.md) | The income section splits a tooltip with its own code, and should use the shared `SentientSystems_GetTooltipLines` |

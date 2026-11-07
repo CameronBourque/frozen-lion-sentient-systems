@@ -8,22 +8,6 @@ function SentientSystems_IsKnownPlayer(player, id)
 	return id == player:GetID() or player:GetDiplomacy():HasMet(id)
 end
 
--- Returns the lines of a tooltip, without the icons, as the game separates
--- them with [NEWLINE].
-function SentientSystems_GetTooltipLines(tooltip)
-	local lines = {}
-
-	for line in (tooltip .. "[NEWLINE]"):gmatch("(.-)%[NEWLINE%]") do
-		line = line:gsub("%[ICON_%w+%]%s*", ""):match("^%s*(.-)%s*$")
-
-		if line ~= "" then
-			lines[#lines + 1] = line
-		end
-	end
-
-	return lines
-end
-
 SentientSystems_Include("SentientSystemsCore_StateVictoriesScience")
 SentientSystems_Include("SentientSystemsCore_StateVictoriesCulture")
 SentientSystems_Include("SentientSystemsCore_StateVictoriesDomination")

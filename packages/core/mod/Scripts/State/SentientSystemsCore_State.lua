@@ -4,6 +4,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Text")
 SentientSystems_Include("SentientSystemsCore_StateCities")
 SentientSystems_Include("SentientSystemsCore_StateDiplomacy")
 SentientSystems_Include("SentientSystemsCore_StateUnits")
