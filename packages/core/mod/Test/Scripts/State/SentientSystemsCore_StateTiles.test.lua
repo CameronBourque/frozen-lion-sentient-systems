@@ -22,10 +22,10 @@ local PLOTS = {
 
 -- Returns the tiles JSON in the state for player 0, who has revealed and sees
 -- the given plots.
-local function TilesFor(player)
+local function TilesFor(player, plots)
 	local env = Game.new()
 
-	FakeGame.Install(env, { players = { [0] = player }, plots = PLOTS })
+	FakeGame.Install(env, { players = { [0] = player }, plots = plots or PLOTS })
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
 	return env.SentientSystems_GetState(0):match("\"tiles\":(%b[])")
@@ -95,5 +95,102 @@ describe("SentientSystems_GetTileStates", function()
 
 		assert.equal("[]", env.SentientSystems_GetState(0):match("\"tiles\":(%b[])"))
 		assert.truthy(env.SentientSystems_GetState(1):find("TERRAIN_OCEAN", 1, true))
+	end)
+
+	describe("tourism", function()
+		local TOOLTIP = "GREAT LIGHTHOUSE[NEWLINE][NEWLINE]Visiting Tourists: 2[NEWLINE][NEWLINE]Travelers are coming.[NEWLINE]"
+			.. "Tourism added by this Wonder: +11 [ICON_Tourism] Tourism[NEWLINE][NEWLINE]Lifetime Accumulation: 1,528 [ICON_Tourism] Tourism"
+
+		-- Returns the tiles JSON for one tile that player 0 or another owns.
+		local function TourismTile(extra, owner)
+			local plot = { x = 0, y = 0, terrain = "TERRAIN_GRASS", owner = owner or 0 }
+
+			for key, value in pairs(extra) do
+				plot[key] = value
+			end
+
+			return TilesFor({ visible = { { 0, 0 } } }, { plot })
+		end
+
+		it("adds the tourism, the tourists, the sources, and the lifetime tourism of a tile with tourism", function()
+			local tile = TourismTile({ tourism = 11, tourists = 2, tooltip = TOOLTIP })
+
+			assert.truthy(tile:find("\"lifetime\":1528", 1, true))
+			assert.truthy(tile:find("\"sources\":[\"Tourism added by this Wonder: +11 Tourism\"]", 1, true))
+			assert.truthy(tile:find("\"tourism\":11", 1, true))
+			assert.truthy(tile:find("\"tourists\":2", 1, true))
+		end)
+
+		it("lists each source line, and leaves out the tourists when there are none", function()
+			local tile = TourismTile({
+				tourism = 6,
+				tooltip = "CITY CENTER[NEWLINE][NEWLINE]Visiting Tourists: 0[NEWLINE][NEWLINE]Tourists are arriving.[NEWLINE]"
+					.. "Tourism added by buildings: +1 [ICON_Tourism] Tourism[NEWLINE]Tourism from Great Works in Palace, +5 [ICON_Tourism] Tourism"
+					.. "[NEWLINE][NEWLINE]Lifetime Accumulation: 392 [ICON_Tourism] Tourism",
+			})
+
+			assert.truthy(tile:find("\"sources\":[\"Tourism added by buildings: +1 Tourism\",\"Tourism from Great Works in Palace, +5 Tourism\"]", 1, true))
+			assert.is_nil(tile:find("tourists", 1, true))
+		end)
+
+		it("keeps a short tooltip whole as the sources, with no lifetime", function()
+			local tile = TourismTile({ tourism = 3, tourists = 1, tooltip = "TEMPLE[NEWLINE]Something else" })
+
+			assert.truthy(tile:find("\"sources\":[\"TEMPLE\",\"Something else\"]", 1, true))
+			assert.is_nil(tile:find("lifetime", 1, true))
+		end)
+
+		it("leaves the lifetime out when the last line has no number", function()
+			local tile = TourismTile({ tourism = 3, tooltip = "A[NEWLINE]B[NEWLINE]C[NEWLINE]D[NEWLINE]No number here" })
+
+			assert.is_nil(tile:find("lifetime", 1, true))
+		end)
+
+		it("leaves out a tile with no tourism, and a tile that another player owns", function()
+			assert.is_nil(TourismTile({ tourism = 0, tooltip = TOOLTIP }):find("tourism", 1, true))
+			assert.is_nil(TourismTile({ tourism = 11, tooltip = TOOLTIP }, 1):find("tourism", 1, true))
+		end)
+	end)
+
+	describe("continent", function()
+		it("adds the continent index of a land tile and leaves it out for water", function()
+			local tiles = TilesFor(
+				{ revealed = { { 0, 0 }, { 1, 0 } } },
+				{ { x = 0, y = 0, terrain = "TERRAIN_GRASS", continent = 10 }, { x = 1, y = 0, terrain = "TERRAIN_OCEAN", water = true } }
+			)
+
+			assert.truthy(tiles:find("\"continent\":10", 1, true))
+			assert.equal(1, select(2, tiles:gsub("continent", "")))
+		end)
+	end)
+
+	describe("appeal", function()
+		-- Returns the tiles JSON for one revealed tile with the given fields.
+		local function AppealTile(extra)
+			local plot = { x = 0, y = 0, terrain = "TERRAIN_GRASS" }
+
+			for key, value in pairs(extra) do
+				plot[key] = value
+			end
+
+			return TilesFor({ revealed = { { 0, 0 } } }, { plot })
+		end
+
+		it("adds the appeal of a land tile, also when it is below 0", function()
+			assert.truthy(AppealTile({ appeal = 5 }):find("\"appeal\":5", 1, true))
+			assert.truthy(AppealTile({ appeal = -3 }):find("\"appeal\":-3", 1, true))
+		end)
+
+		it("leaves out an appeal of 0", function()
+			assert.is_nil(AppealTile({ appeal = 0 }):find("appeal", 1, true))
+		end)
+
+		it("leaves out the appeal of water, except around a natural wonder", function()
+			assert.is_nil(AppealTile({ appeal = 2, water = true }):find("appeal", 1, true))
+			assert.truthy(
+				AppealTile({ appeal = 2, water = true, feature = "FEATURE_REEF", naturalWonder = true }):find("\"appeal\":2", 1, true)
+			)
+			assert.is_nil(AppealTile({ appeal = 2, water = true, feature = "FEATURE_ICE" }):find("appeal", 1, true))
+		end)
 	end)
 end)

@@ -117,3 +117,19 @@ It also fixed the `attack` action, which refused a religious unit and didn't see
 - A city of a rival on a revealed tile has its religion too, and it adds about 11 KB for 47 cities. If the whole state gets too large, trim its pressure fields first.
 - Producing a unit that the city can't buy is as the player reports, except for an air unit. It wasn't checked for the other kinds.
 
+## State: great works and map layers
+
+Pull request: feat(core): add the great work and map layer state.
+
+It added every great work slot of the player's cities with its kind, what it accepts, and its work, each building's theme and what a full theme needs, and the totals of the Great Works screen.
+
+A function, `SentientSystems_GetGreatWorkMoves`, gives the slots a work can move to, as the screen allows. It is too large for the state.
+
+It added three layers to the tiles: the tourism, visiting tourists, sources, and lifetime tourism of each of the player's own tiles, each revealed tile's appeal, and each tile's continent, with a `continents` section that names them. The tooltip split moved to a shared file.
+
+- The fields are under **State serializer** in [design/core/mod/state.md](../../design/core/mod/state.md), and the shared split is in `packages/core/mod/Scripts/SentientSystemsCore_Text.lua`.
+- The calls are in [state/great-works.md](../../findings/state/great-works.md), [state/tourism.md](../../findings/state/tourism.md), [state/appeal.md](../../findings/state/appeal.md), and [state/continents.md](../../findings/state/continents.md).
+- The step added a `greatWorks` and a `continents` section. The [core README](../../../packages/core/README.md#parts-of-a-state-section) lists the parts of a section.
+- The bridge doesn't call `SentientSystems_GetGreatWorkMoves` yet. The [MCP server](mcp-server.md) step has a task for it.
+- Auto theming wasn't checked, because it needs a game played as a civilization with that trait. See [state/great-works.md](../../findings/state/great-works.md).
+- The income section has its own copy of the tooltip split. See [tech-debt](../../tech-debt/share-tooltip-lines.md).

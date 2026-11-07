@@ -29,7 +29,7 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 9 | Action API: special units | Trade routes, great people, religious units, spy missions, pillaging roads, and coastal raids, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | Done. See [done.md](done.md#action-api-special-units) |
 | 10 | State: trade routes and espionage | The player's trade routes, and every spy, as the Trade Overview and Espionage screens show them | `feat(core): add the trade route and espionage state` | Done. See [done.md](done.md#state-trade-routes-and-espionage) |
 | 11 | State: unit and city details | What a unit is doing, its charges, religion, and great person fields, and a city's religion and power | `feat(core): add the unit and city details to the state` | Done. See [done.md](done.md#state-unit-and-city-details) |
-| 12 | [State: great works and map layers](state-great-works-and-map-layers.md) | Every great work slot with its city and work, where a work can move, and the tourism, appeal, and continent of each tile | `feat(core): add the great work and map layer state` | |
+| 12 | State: great works and map layers | Every great work slot with its city and work, where a work can move, and the tourism, appeal, and continent of each tile | `feat(core): add the great work and map layer state` | Done. See [done.md](done.md#state-great-works-and-map-layers) |
 | 13 | [Action API: cities](action-api-cities.md) | Production, districts and wonders, purchases, tile purchases, and the production queue | `feat(core): add the city actions` | |
 | 14 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
 | 15 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, and great person blockers | `feat(core): add the religion, governor, and reward actions` | |
@@ -38,7 +38,7 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 18 | [Action API: nuclear strikes](action-api-nukes.md) | The nuclear and thermonuclear stockpile, fallout and its clearing, and the strike action | `feat(core): add the nuclear actions` | |
 | 19 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
 | 20 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
-| 21 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
+| 21 | [MCP server](mcp-server.md) | State, on-demand state, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
 | 22 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
 | 23 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
 | 24 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |

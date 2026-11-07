@@ -31,7 +31,13 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 
   Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes` returns it for one city on demand.
 - **The Espionage screen.** The spy capacity, each spy of the player: idle, on a mission, traveling, or captured, the districts and Gain Sources boosts of the other majors' cities, the last 10 missions with their outcomes and loot, and the other players' spies the player holds.
-- **Their own screens.** Great works and tourism, and climate and disasters.
+- **The Great Works screen.** Every great work slot of the player's cities with its kind and work, each building's theming progress, and the totals: the works, the display spaces, and what they provide.
+
+  Where a work can move is too large for the state, so `SentientSystems_GetGreatWorkMoves` returns it for one work on demand.
+- **The Tourism lens.** On each of the player's own tiles with tourism: the tourism each turn, the visiting tourists, what gives it, and the lifetime tourism, as the lens's banner and its tooltip show them.
+- **The Appeal lens.** On each revealed land tile and natural wonder: its appeal, as the tooltip and the lens show it, left out when 0.
+- **The Continent lens.** The index of each tile's continent, and a list of the continents the player has revealed with their types and names, as the lens and the tooltip show them.
+- **Their own screens.** Climate and disasters.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 
 The scoreboard lists every player in the screen's order. A met player has their ID and the values the screen shows, and an unmet player has only their place, as the screen shows a `?` icon.
@@ -55,6 +61,7 @@ The shape of each section is in the schemas in [packages/core/bridge/src/state/]
 | The state includes the scoreboard and victory progress | A human sees it, and sweat levels measure against it |
 | Find the state size by measurement | No useful budget exists before the first full game |
 | Available routes are a function of one city, not a state section | The tab lists every origin and destination pair, 305 routes and 119 KB in one game, and one city is at most 8 KB. The choice lists only the cities where an idle trader stands |
+| Where a great work can move is a function of one work, not a state section | Every movable work lists the slots it fits or swaps with, 191 in one game and about 26 KB once the art unlocks, more than the section itself. One work is under 2 KB, and the move action can check a request with it |
 | City religion is part of the cities and rivals sections | It comes to about 310 bytes a city, so 11 cities add about 3.4 KB. A rival city on a revealed tile has it too, as its banner shows it, at about 230 bytes, which is 11 KB for 47 cities |
 | The scoreboard lists unmet players as places only | World Rankings shows how many players there are, their order, and whether an unmet one leads, but not who they are |
 | Each state section has its own file in `Scripts/State/` | The state grows with every section, and one file would pass 1,000 lines. A file per section keeps each one and its tests small. `include` finds a file by name in any folder, so the folder only groups the files |

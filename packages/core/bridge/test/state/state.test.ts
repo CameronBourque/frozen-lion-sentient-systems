@@ -25,6 +25,8 @@ const STATE: State = {
 	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 0, envoys: 0 }, cityStates: [] },
 	espionage: { capacity: 0, operatives: [], cities: [], history: [], captives: [] },
 	greatPeople: [],
+	continents: [],
+	greatWorks: { slots: [], buildings: [], works: 0, spaces: 0, provides: [] },
 	trade: { outgoing: [], incoming: [], tourismBonus: 0 },
 	player: {
 		gold: { balance: 0, perTurn: 0 },
