@@ -56,6 +56,8 @@ A district or a wonder also takes the tile, `x` and `y`, from the `tiles` of the
 
 Its reasons name a yield that is neither, a type the game doesn't know, and an item the choice doesn't list for the yield. The game's reasons come back for a greyed-out item, with the panel's text when the player can't afford it. See [purchases.md](../../../findings/actions/purchases.md).
 
+`SentientSystems_PurchaseTile(playerID, cityID, x, y)` buys one of the `tiles` of the `purchases` choice with gold. Its reasons name a tile off the map, a tile the city can't buy, and the lens's tooltip when the player's gold falls short.
+
 ### Trade routes
 
 `SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)` in `Scripts/Actions/SentientSystemsCore_ActionsTrade.lua` starts a route from the city a trader stands in to a destination of the `tradeRoutes` choice. The city is named by its owner and its ID, as the choice lists it.

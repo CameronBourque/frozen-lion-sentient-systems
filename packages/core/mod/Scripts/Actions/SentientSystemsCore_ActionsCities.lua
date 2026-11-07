@@ -276,6 +276,69 @@ function SentientSystems_Purchase(playerID, cityID, item, yield)
 	end)
 end
 
+-- The text key of the lens's tooltip on a tile the player can't afford, which
+-- takes the gold still needed. See ShowPurchases in PlotInfo.lua.
+local NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
+
+-- Returns the plot index of the tile the city can buy at x and y, or nil.
+local function FindPurchasableTile(city, x, y)
+	for _, plotIndex in ipairs(SentientSystems_GetPurchasablePlots(city)) do
+		local plot = Map.GetPlotByIndex(plotIndex)
+
+		if plot:GetX() == x and plot:GetY() == y then
+			return plotIndex
+		end
+	end
+
+	return nil
+end
+
+-- Buys the tile at x and y for the city with gold, and returns the result as
+-- JSON. The tile is one of the tiles of the purchases choice. The game gives no
+-- reason when the player can't afford it, so the lens's tooltip is the reason,
+-- as the choice has it. See OnClickPurchasePlot in PlotInfo.lua.
+function SentientSystems_PurchaseTile(playerID, cityID, x, y)
+	return SentientSystems_RunAction("PurchaseTile", function()
+		local player = Players[playerID]
+		local city = player and player:GetCities():FindID(cityID)
+
+		if city == nil then
+			return "Player " .. playerID .. " has no city " .. cityID .. "."
+		end
+
+		if x == nil or y == nil or not Map.IsPlot(x, y) then
+			return "That tile is off the map."
+		end
+
+		local plotIndex = FindPurchasableTile(city, x, y)
+
+		if plotIndex == nil then
+			return "(" .. x .. ", " .. y .. ") isn't a tile this city can buy. Use a tile from the purchases choice."
+		end
+
+		local cost = city:GetGold():GetPlotPurchaseCost(plotIndex)
+		local gold = player:GetTreasury():GetGoldBalance()
+
+		if cost > gold then
+			return SentientSystems_LookupText(NEED_MORE_GOLD_KEY, cost - math.floor(gold))
+		end
+
+		local params = {
+			[CityCommandTypes.PARAM_PLOT_PURCHASE] = UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE),
+			[CityCommandTypes.PARAM_X] = x,
+			[CityCommandTypes.PARAM_Y] = y,
+		}
+
+		if not CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, params) then
+			return "The game won't buy (" .. x .. ", " .. y .. ") for this city."
+		end
+
+		CityManager.RequestCommand(city, CityCommandTypes.PURCHASE, params)
+
+		return nil
+	end)
+end
+
 -- Orders a city to shoot at a tile in its range, and returns the result as
 -- JSON. A city's shot is a city command, and the UI shows no war dialog for it.
 function SentientSystems_CityAttack(playerID, cityID, x, y)

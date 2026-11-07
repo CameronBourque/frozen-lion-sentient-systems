@@ -26,6 +26,8 @@ return function(env, world, ctx)
 		PARAM_DISTRICT_TYPE = 4005,
 		PARAM_YIELD_TYPE = 4006,
 		PARAM_MILITARY_FORMATION_TYPE = 4007,
+		PARAM_X = 4008,
+		PARAM_Y = 4009,
 	}
 	env.CityManager = {
 		GetCity = function(componentID)

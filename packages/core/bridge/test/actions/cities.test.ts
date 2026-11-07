@@ -2,7 +2,7 @@
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { cityAttack, purchase, setProduction } from "../../src/actions/cities.js";
+import { cityAttack, purchase, purchaseTile, setProduction } from "../../src/actions/cities.js";
 import { CORE_STATE } from "../../src/connect.js";
 import { TunerClient } from "../../src/tuner/client.js";
 import { FakeGame } from "../tuner/fake-game.js";
@@ -93,3 +93,28 @@ describe("purchase", () => {
 	});
 });
 
+describe("purchaseTile", () => {
+	let game: FakeGame;
+	let client: TunerClient;
+
+	beforeEach(async () => {
+		game = await FakeGame.start();
+		game.states = [{ index: 0, name: "Main State" }, { index: 130, name: CORE_STATE }];
+		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
+		client.connect();
+		await once(client, "connected");
+	});
+
+	afterEach(async () => {
+		client.close();
+		await game.close();
+	});
+
+	test("asks the core mod to buy the tile for the city", async () => {
+		const stash = "SentientSystems_Stash(SentientSystems_PurchaseTile(0, 65536, 19, 14))";
+
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
+
+		expect(await purchaseTile(client, 0, 65536, 19, 14)).toEqual({ ok: true });
+	});
+});

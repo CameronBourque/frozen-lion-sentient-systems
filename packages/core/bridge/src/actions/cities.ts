@@ -21,6 +21,12 @@ export function purchase(client: TunerClient, playerID: number, cityID: number, 
 	return sendAction(client, `SentientSystems_Purchase(${playerID}, ${cityID}, ${JSON.stringify(item)}, ${JSON.stringify(yieldKey)})`);
 }
 
+// Buys a tile for a city with gold. The tile is one of the tiles of the
+// purchases choice. An ok result means the game took the order.
+export function purchaseTile(client: TunerClient, playerID: number, cityID: number, x: number, y: number): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_PurchaseTile(${playerID}, ${cityID}, ${x}, ${y})`);
+}
+
 // Orders a city to shoot at a tile in its range. An ok result means the game
 // took the order, not that the shot has landed.
 export function cityAttack(client: TunerClient, playerID: number, cityID: number, x: number, y: number): Promise<ActionResult> {

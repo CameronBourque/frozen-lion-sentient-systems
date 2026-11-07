@@ -303,3 +303,56 @@ describe("SentientSystems_Purchase", function()
 	end)
 end)
 
+-- Loads the actions for player 0 with the given gold and a city that can buy a
+-- tile for 30 gold and one for 45.
+local function LoadWithTiles(gold, city)
+	local env = Game.new()
+
+	FakeGame.Install(env, { players = { [0] = { gold = gold, cities = { With(city or CITY, { options = { purchasable = { { x = 19, y = 14, cost = 30 }, { x = 16, y = 12, cost = 45 } } } }) } } } })
+	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
+
+	return env
+end
+
+describe("SentientSystems_PurchaseTile", function()
+	it("buys a tile the city can buy, with the tile's coordinates", function()
+		local env = LoadWithTiles(107)
+		local C = env.CityCommandTypes
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_PurchaseTile(0, CITY.id, 19, 14))
+		assert.equal(1, #env.requests)
+		assert.equal(C.PURCHASE, env.requests[1].command)
+		assert.equal(19, env.requests[1].parameters[C.PARAM_X])
+		assert.equal(14, env.requests[1].parameters[C.PARAM_Y])
+	end)
+
+	it("fails for a city the player doesn't have", function()
+		local env = LoadWithTiles(107)
+
+		assert.equal(Failed("Player 0 has no city 9."), env.SentientSystems_PurchaseTile(0, 9, 19, 14))
+		assert.equal(Failed("Player 3 has no city 9."), env.SentientSystems_PurchaseTile(3, 9, 19, 14))
+	end)
+
+	it("fails for a tile off the map, and for one the city can't buy", function()
+		local env = LoadWithTiles(107)
+
+		assert.equal(Failed("That tile is off the map."), env.SentientSystems_PurchaseTile(0, CITY.id, -1, 4))
+		assert.equal(Failed("That tile is off the map."), env.SentientSystems_PurchaseTile(0, CITY.id))
+		assert.equal(Failed("(21, 20) isn't a tile this city can buy. Use a tile from the purchases choice."), env.SentientSystems_PurchaseTile(0, CITY.id, 21, 20))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails with the lens's tooltip when the tile costs more than the player's gold", function()
+		local env = LoadWithTiles(27)
+
+		assert.equal(Failed("LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE(18)"), env.SentientSystems_PurchaseTile(0, CITY.id, 16, 12))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails when the game won't buy the tile", function()
+		local env = LoadWithTiles(107, With(CITY, { tileBlocked = true }))
+
+		assert.equal(Failed("The game won't buy (19, 14) for this city."), env.SentientSystems_PurchaseTile(0, CITY.id, 19, 14))
+		assert.same({}, env.requests)
+	end)
+end)
