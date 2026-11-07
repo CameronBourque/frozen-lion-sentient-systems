@@ -3,6 +3,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Text")
 
 -- Runs an action and returns its result as JSON for the bridge. The action
 -- returns nil when it worked, and the reason it failed as text otherwise. A
