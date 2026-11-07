@@ -33,18 +33,19 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 13 | [Action API: research and policies](action-api-research-and-policies.md) | Techs, civics, policies, and a change of government | `feat(core): add the research, civic, and policy actions` | |
 | 14 | [Action API: religion and rewards](action-api-religion-and-rewards.md) | The pantheon, religion, governor, envoy, great person, and artifact blockers | `feat(core): add the religion, governor, and reward actions` | |
 | 15 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
-| 16 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
-| 17 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
-| 18 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
-| 19 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
-| 20 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
-| 21 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
-| 22 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
-| 23 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 24 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 25 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 26 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
-| 27 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
+| 16 | [Action API: nuclear strikes](action-api-nukes.md) | The nuclear and thermonuclear stockpile, and the strike action | `feat(core): add the nuclear actions` | |
+| 17 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
+| 18 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
+| 19 | [MCP server](mcp-server.md) | State, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
+| 20 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
+| 21 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
+| 22 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
+| 23 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
+| 24 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
+| 25 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
+| 26 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
+| 27 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
+| 28 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
 
 The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the action API and lookup steps.
 
