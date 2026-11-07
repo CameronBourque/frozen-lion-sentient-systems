@@ -103,8 +103,8 @@ describe("SentientSystems_GetEnvoyState", function()
 
 		local players = { [0] = { met = { 12 } }, [12] = samarkand }
 
-		assert.truthy(EnvoysWith(players):find("\"suzerainBonus\":\"Trading Domes.[NEWLINE][NEWLINE]More gold.\",\"suzerainNeeds\":3,", 1, true))
-		assert.truthy(EnvoysWith(players, true):find("\"suzerainBonus\":\"Trading Domes.[NEWLINE][NEWLINE]More gold.\",\"suzerainBonusDisabled\":true,", 1, true))
+		assert.truthy(EnvoysWith(players):find("\"suzerainBonus\":\"Trading Domes.\\n\\nMore gold.\",\"suzerainNeeds\":3,", 1, true))
+		assert.truthy(EnvoysWith(players, true):find("\"suzerainBonus\":\"Trading Domes.\\n\\nMore gold.\",\"suzerainBonusDisabled\":true,", 1, true))
 	end)
 
 	it("lists the city-state's resources, and with Gathering Storm a strategic resource's amount per turn", function()

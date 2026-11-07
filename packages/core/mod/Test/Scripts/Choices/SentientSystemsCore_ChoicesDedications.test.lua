@@ -47,7 +47,7 @@ describe("SentientSystems_GetDedicationChoices", function()
 	end)
 
 	it("adds the normal text to the golden text for a player always allowed it", function()
-		assert.truthy(ChoicesWith(Change("golden", { alwaysNormal = true })):find("\"description\":\"Golden text[NEWLINE]Normal text\"", 1, true))
+		assert.truthy(ChoicesWith(Change("golden", { alwaysNormal = true })):find("\"description\":\"Golden text\\nNormal text\"", 1, true))
 	end)
 
 	it("offers the golden text and several picks in a heroic age", function()

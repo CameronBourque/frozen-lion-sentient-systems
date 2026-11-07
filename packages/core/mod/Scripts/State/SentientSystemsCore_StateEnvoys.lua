@@ -57,7 +57,7 @@ local function GetSuzerainBonus(playerID)
 		end
 	end
 
-	return #texts > 0 and table.concat(texts, "[NEWLINE][NEWLINE]") or nil
+	return #texts > 0 and table.concat(texts, "\n\n") or nil
 end
 
 -- Returns the resources a city-state has, which its suzerain gets, each with

@@ -40,7 +40,7 @@ describe("SentientSystems_CleanText", function()
 	end)
 
 	it("leaves text without icons as it is", function()
-		assert.equal("Gain 2 Gold.[NEWLINE]Then wait.", Clean("Gain 2 Gold.[NEWLINE]Then wait."))
+		assert.equal("Gain 2 Gold.\nThen wait.", Clean("Gain 2 Gold.[NEWLINE]Then wait."))
 	end)
 
 	it("drops an icon that its own name follows, and its plural", function()
@@ -105,7 +105,7 @@ describe("SentientSystems_CleanText", function()
 	end)
 
 	it("writes a dash for a list marker at the start of a line, with the game's spacing", function()
-		assert.equal("-The city-state follows you.[NEWLINE]- 1 from Wonders[NEWLINE] -+5 from Menelik II", Clean("[ICON_Bolt]The city-state follows you.[NEWLINE][ICON_Bolt] 1 from Wonders[NEWLINE] [ICON_Bullet]+5 from Menelik II"))
+		assert.equal("-The city-state follows you.\n- 1 from Wonders\n -+5 from Menelik II", Clean("[ICON_Bolt]The city-state follows you.[NEWLINE][ICON_Bolt] 1 from Wonders[NEWLINE] [ICON_Bullet]+5 from Menelik II"))
 	end)
 
 	it("drops a list marker in the middle of a line", function()

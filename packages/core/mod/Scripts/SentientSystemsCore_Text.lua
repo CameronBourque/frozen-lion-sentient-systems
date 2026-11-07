@@ -228,7 +228,7 @@ local function EachLine(tooltip, handle)
 end
 
 -- Returns the text with each icon cleaned as CleanLine does, so that the text
--- reads without the icons. The lines stay separated with [NEWLINE]. Returns nil
+-- reads without the icons. The game's [NEWLINE] becomes a new line. Returns nil
 -- for no text, or for text that is empty once cleaned.
 function SentientSystems_CleanText(text)
 	if text == nil then
@@ -241,7 +241,7 @@ function SentientSystems_CleanText(text)
 		lines[#lines + 1] = CleanLine(line, true)
 	end)
 
-	local cleaned = table.concat(lines, "[NEWLINE]")
+	local cleaned = table.concat(lines, "\n")
 
 	return cleaned ~= "" and cleaned or nil
 end

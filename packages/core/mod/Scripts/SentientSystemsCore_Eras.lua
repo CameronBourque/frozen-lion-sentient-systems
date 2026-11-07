@@ -28,7 +28,7 @@ function SentientSystems_GetDedicationText(eras, playerID, row, age)
 		local text = SentientSystems_LookupText(row.GoldenAgeBonusDescription)
 
 		if eras:IsPlayerAlwaysAllowedCommemorationQuest(playerID) then
-			text = text .. "[NEWLINE]" .. SentientSystems_LookupText(row.NormalAgeBonusDescription)
+			text = text .. "\n" .. SentientSystems_LookupText(row.NormalAgeBonusDescription)
 		end
 
 		return text
