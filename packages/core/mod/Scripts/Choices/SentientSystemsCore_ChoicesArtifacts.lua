@@ -46,10 +46,10 @@ function SentientSystems_GetArtifactChoices(player)
 	}
 
 	if site.choice then
-		entry.description = Locale.Lookup(site.key, name, actingName, Locale.Lookup(PlayerConfigurations[target]:GetPlayerName()))
+		entry.description = SentientSystems_LookupText(site.key, name, actingName, Locale.Lookup(PlayerConfigurations[target]:GetPlayerName()))
 		entry.options = { Option(acting), Option(target) }
 	else
-		entry.description = Locale.Lookup(site.key, name, actingName)
+		entry.description = SentientSystems_LookupText(site.key, name, actingName)
 		entry.options = { Option(acting) }
 	end
 

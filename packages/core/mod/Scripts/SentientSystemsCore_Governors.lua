@@ -3,6 +3,7 @@
 -- Follows GovernorSupport.lua.
 
 include("SentientSystemsCore_Common")
+SentientSystems_Include("SentientSystemsCore_Text")
 
 -- The name and description the game shows for a promotion that is still hidden.
 local HIDDEN_NAME_KEY = "LOC_GOVERNOR_PROMOTION_UNKNOWN_NAME"
@@ -67,11 +68,11 @@ end
 -- in GovernorSupport.lua.
 function SentientSystems_GetPromotionTexts(promotion, governor)
 	if not SentientSystems_IsPromotionHidden(promotion, governor) then
-		return Locale.Lookup(promotion.Name), Locale.Lookup(promotion.Description), nil
+		return Locale.Lookup(promotion.Name), SentientSystems_LookupText(promotion.Description), nil
 	end
 
 	local name = Locale.Lookup(HIDDEN_NAME_KEY)
 	local description = Locale.Lookup(HIDDEN_DESCRIPTION_KEY)
 
-	return name ~= HIDDEN_NAME_KEY and name or "?", description ~= HIDDEN_DESCRIPTION_KEY and description or "?", true
+	return name ~= HIDDEN_NAME_KEY and name or "?", description ~= HIDDEN_DESCRIPTION_KEY and SentientSystems_CleanText(description) or "?", true
 end

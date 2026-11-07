@@ -110,6 +110,20 @@ describe("SentientSystems_GetPromotionTexts", function()
 		assert.is_true(hidden)
 	end)
 
+	it("cleans the icons and colors from a description", function()
+		local text = {
+			LOC_GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2_DESCRIPTION = "+2 [ICON_Gold] [COLOR_GREEN]more[ENDCOLOR]",
+			LOC_GOVERNOR_PROMOTION_UNKNOWN_NAME = "???",
+			LOC_GOVERNOR_PROMOTION_UNKNOWN_DESCRIPTION = "[ICON_Bullet]Not yet revealed.",
+		}
+		local env = Load({ appointed = { OWLS } }, { text = text })
+		local _, visible = env.SentientSystems_GetPromotionTexts(Promotion(env, 2), Joined(env))
+		local _, hidden = env.SentientSystems_GetPromotionTexts(Promotion(env, 3), Joined(env))
+
+		assert.equal("+2 Gold more", visible)
+		assert.equal("-Not yet revealed.", hidden)
+	end)
+
 	it("gives ? for a hidden promotion when the game has no text for it", function()
 		local env = Load({ appointed = { OWLS } }, { text = {} })
 		local name, description, hidden = env.SentientSystems_GetPromotionTexts(Promotion(env, 3), nil)
