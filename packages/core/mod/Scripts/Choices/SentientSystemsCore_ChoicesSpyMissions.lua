@@ -2,6 +2,8 @@
 -- EspionageChooser.lua, EspionageSupport.lua, and EspionagePopup.lua.
 -- Shape: bridge/src/choices/spy-missions.ts.
 
+SentientSystems_Include("SentientSystemsCore_Text")
+
 local function GetCityRef(city)
 	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }
 end
@@ -81,18 +83,20 @@ local function GetDetails(operation, spy, city)
 	local type = operation.OperationType
 
 	if type == "UNITOPERATION_SPY_GREAT_WORK_HEIST" or type == "UNITOPERATION_SPY_FOMENT_UNREST" or type == "UNITOPERATION_SPY_FABRICATE_SCANDAL" or type == "UNITOPERATION_SPY_NEUTRALIZE_GOVERNOR" then
-		return Locale.Lookup("LOC_SPYMISSIONDETAILS_" .. type, details)
+		return SentientSystems_LookupText("LOC_SPYMISSIONDETAILS_" .. type, details)
 	end
 
 	if type == "UNITOPERATION_SPY_SIPHON_FUNDS" then
-		return Locale.Lookup("LOC_SPYMISSIONDETAILS_" .. type, Locale.ToUpper(city:GetName()), details)
+		return SentientSystems_LookupText("LOC_SPYMISSIONDETAILS_" .. type, Locale.ToUpper(city:GetName()), details)
 	end
 
-	if details ~= "" then
-		return details
+	local cleaned = SentientSystems_CleanText(details)
+
+	if cleaned ~= nil then
+		return cleaned
 	end
 
-	return Locale.Lookup("LOC_SPYMISSIONDETAILS_" .. type)
+	return SentientSystems_LookupText("LOC_SPYMISSIONDETAILS_" .. type)
 end
 
 -- Returns the chances of an offensive mission as whole percents, and the
@@ -124,7 +128,7 @@ local function GetChances(operation, spy, plot, city)
 		return chances, nil
 	end
 
-	return chances, Locale.Lookup("LOC_ESPIONAGEPOPUP_DISCOVERED_WARNING", PlayerConfigurations[city:GetOwner()]:GetPlayerName())
+	return chances, SentientSystems_LookupText("LOC_ESPIONAGEPOPUP_DISCOVERED_WARNING", PlayerConfigurations[city:GetOwner()]:GetPlayerName())
 end
 
 -- Returns one offensive mission at a target plot, as the chooser and the
@@ -175,7 +179,7 @@ local function GetOffensiveMissions(spy, city)
 				local reasons = {}
 
 				for i, reason in ipairs(results[UnitOperationResults.FAILURE_REASONS]) do
-					reasons[i] = Locale.Lookup(reason)
+					reasons[i] = SentientSystems_LookupText(reason)
 				end
 
 				local mission = GetOffensiveMission(operation, spy, city, cityPlot, nil)
@@ -209,7 +213,7 @@ local function GetCounterspyMissions(spy, city)
 							name = Locale.Lookup(operation.Description),
 							district = district.DistrictType,
 							districtName = Locale.Lookup(district.Name),
-							details = Locale.Lookup("LOC_ESPIONAGECHOOSER_COUNTERSPY", Locale.Lookup(district.Name)),
+							details = SentientSystems_LookupText("LOC_ESPIONAGECHOOSER_COUNTERSPY", Locale.Lookup(district.Name)),
 						}
 					end
 				end

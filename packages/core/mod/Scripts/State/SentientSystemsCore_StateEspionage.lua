@@ -185,10 +185,10 @@ local function GetLoot(mission, operation)
 		return Locale.Lookup(GameInfo.GreatWorks[Game.GetGreatWorkTypeFromIndex(mission.LootInfo)].Name)
 	elseif operation.Hash == UnitOperationTypes.SPY_SIPHON_FUNDS then
 		if mission.LootInfo == 0 then
-			return Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_NO_GOLD")
+			return SentientSystems_LookupText("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_NO_GOLD")
 		end
 
-		return Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_GOLD", mission.LootInfo)
+		return SentientSystems_LookupText("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_GOLD", mission.LootInfo)
 	end
 
 	return nil
@@ -242,15 +242,15 @@ local function GetMission(mission)
 
 	if operation.Hash == UnitOperationTypes.SPY_COUNTERSPY then
 		success, fate = true, nil
-		description = Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_SUCCESS_COUNTERSPY", city)
+		description = SentientSystems_LookupText("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_SUCCESS_COUNTERSPY", city)
 	elseif loot ~= nil then
 		-- The game words the loot of a detected success that escaped with its
 		-- own key, with no ESCAPED in it.
 		local lootKey = key == "SUCCESS_DETECTED_ESCAPED" and "SUCCESS_DETECTED" or key
 
-		description = Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_" .. lootKey .. "_STOLELOOT", loot, city)
+		description = SentientSystems_LookupText("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_" .. lootKey .. "_STOLELOOT", loot, city)
 	else
-		description = Locale.Lookup("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_" .. key, city)
+		description = SentientSystems_LookupText("LOC_ESPIONAGEOVERVIEW_MISSIONOUTCOME_" .. key, city)
 	end
 
 	return {

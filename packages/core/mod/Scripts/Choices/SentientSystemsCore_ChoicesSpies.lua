@@ -13,10 +13,10 @@ local function GetRoutes(city)
 
 	for i, districtType in ipairs(ROUTES) do
 		local district = GameInfo.Districts[districtType]
-		local route = { type = districtType, name = Locale.Lookup("LOC_ESPIONAGE_ESCAPE_CHOICE_" .. i) }
+		local route = { type = districtType, name = SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_CHOICE_" .. i) }
 
 		if i < #ROUTES and not city:GetDistricts():HasDistrict(district.Index, true, true) then
-			route.blocked = { Locale.Lookup("LOC_ESPIONAGE_ESCAPE_NO_DISTRICT", district.Name) }
+			route.blocked = { SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_NO_DISTRICT", district.Name) }
 		else
 			route.turns = district.TravelTime
 		end
@@ -51,9 +51,9 @@ function SentientSystems_GetSpyChoices(player)
 			spy = spy:GetID(),
 			name = Locale.Lookup(spy:GetName()),
 			city = { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) },
-			loot = Locale.Lookup(spy:GetLootName()),
-			pursuer = pursuer == "" and Locale.Lookup("LOC_ESPIONAGE_ESCAPE_PURSUIT_POLICE") or Locale.Lookup("LOC_ESPIONAGE_ESCAPE_PURSUIT_COUNTERSPY", pursuer),
-			description = Locale.Lookup("LOC_ESPIONAGE_ESCAPE_TOOLTIP"),
+			loot = SentientSystems_LookupText(spy:GetLootName()),
+			pursuer = pursuer == "" and SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_PURSUIT_POLICE") or SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_PURSUIT_COUNTERSPY", pursuer),
+			description = SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_TOOLTIP"),
 			routes = GetRoutes(city),
 		},
 	}

@@ -38,7 +38,7 @@ local PLOTS = {
 local OPS = {
 	UNITOPERATION_SPY_TRAVEL_NEW_CITY = {},
 	UNITOPERATION_SPY_COUNTERSPY = { plots = { { x = 10, y = 10 }, { x = 11, y = 10 } } },
-	UNITOPERATION_SPY_GAIN_SOURCES = { turns = 4, detail = "Two levels higher", chances = { ESPIONAGE_SUCCESS_UNDETECTED = 1 } },
+	UNITOPERATION_SPY_GAIN_SOURCES = { turns = 4, detail = "[ICON_Bullet]Two levels higher", chances = { ESPIONAGE_SUCCESS_UNDETECTED = 1 } },
 	UNITOPERATION_SPY_LISTENING_POST = { turns = 4, chances = { ESPIONAGE_SUCCESS_UNDETECTED = 1 } },
 	UNITOPERATION_SPY_SIPHON_FUNDS = {
 		plots = { { x = 31, y = 10 } },
@@ -144,7 +144,7 @@ describe("SentientSystems_GetSpyMissionChoices", function()
 		assert.truthy(json:find("\"chances\":{\"captured\":16,\"failure\":34,\"success\":50}", 1, true))
 		assert.truthy(json:find("\"details\":\"LOC_SPYMISSIONDETAILS_UNITOPERATION_SPY_SIPHON_FUNDS(LOC_CITY_RIVAL,+92)\",\"district\":\"DISTRICT_COMMERCIAL_HUB\"", 1, true))
 		assert.truthy(json:find("\"details\":\"LOC_SPYMISSIONDETAILS_UNITOPERATION_SPY_FOMENT_UNREST(-20)\"", 1, true))
-		assert.truthy(json:find("\"details\":\"Two levels higher\"", 1, true))
+		assert.truthy(json:find("\"details\":\"-Two levels higher\"", 1, true))
 	end)
 
 	it("warns that a rival will learn of a mission that can fail, and not a city-state", function()
