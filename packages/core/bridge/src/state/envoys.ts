@@ -36,9 +36,9 @@ export const ENVOYS = z.object({
 		),
 		quests: z.array(z.object({
 			type: z.string(),
-			name: z.string(),
-			description: z.string(),
-			reward: z.string(),
+			name: z.string().optional(),
+			description: z.string().optional(),
+			reward: z.string().optional(),
 		})).optional().describe("The quests the city-state gives the player, in the game's language. Left out with none."),
 		influencedBy: z.array(z.object({
 			player: z.number().optional().describe("There when it is the player or a player they have met."),

@@ -142,6 +142,19 @@ describe("SentientSystems_GetEnvoyState", function()
 		)
 	end)
 
+	it("leaves out a quest's empty description and reward", function()
+		local samarkand = CityState("SAMARKAND", "LEADER_MINOR_CIV_TRADE", {})
+
+		samarkand.minor.quests = {
+			[0] = { { type = "QUEST_ZONE_DISTRICT_TYPE", name = "Construct an Encampment.", description = "", reward = "" } },
+		}
+
+		assert.equal(
+			"[{\"name\":\"Construct an Encampment.\",\"type\":\"QUEST_ZONE_DISTRICT_TYPE\"}]",
+			EnvoysWith({ [0] = { met = { 12 } }, [1] = {}, [12] = samarkand }):match("\"quests\":(%b[])")
+		)
+	end)
+
 	it("lists the players with envoys there, most first, and hides those the player hasn't met", function()
 		local players = {
 			[0] = { met = { 2, 12 } },

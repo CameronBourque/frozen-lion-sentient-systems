@@ -68,6 +68,12 @@ describe("SentientSystems_GetGreatPeopleState", function()
 		assert.falsy(json:find("SUN_TZU", 1, true))
 	end)
 
+	it("leaves out an action's empty usage and effect", function()
+		local json = GreatPeopleWith({ With(SUN_TZU, { action = { name = "Retire", usage = "", effect = "" } }) })
+
+		assert.truthy(json:find("\"action\":{\"name\":\"Retire\"},", 1, true))
+	end)
+
 	it("gives the reason the player can't earn a great person, and hides a cost too high to show", function()
 		local json = GreatPeopleWith({ With(SUN_TZU, { cantEarn = "You must have a coastal city center.", gold = {}, faith = {} }) })
 

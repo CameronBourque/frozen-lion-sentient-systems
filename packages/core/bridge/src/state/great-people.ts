@@ -18,8 +18,8 @@ export const GREAT_PEOPLE = z.array(z.object({
 	),
 	action: z.object({
 		name: z.string(),
-		usage: z.string().describe("Where to use it."),
-		effect: z.string(),
+		usage: z.string().optional().describe("Where to use it. Left out when the game has no text for it."),
+		effect: z.string().optional().describe("Left out when the game has no text for it."),
 		charges: z.number().optional().describe("There only above 0."),
 	}).optional().describe("In the game's language. Left out for a great person with no action."),
 	patronage: z.object({ gold: PATRONAGE_COST.optional(), faith: PATRONAGE_COST.optional() }).optional().describe(
