@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.10.0...core-v0.11.0) (2026-11-07)
+
+
+### Features
+
+* **core:** add the unit and city details to the state ([#65](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/65)) ([43e0f96](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/43e0f9648df76dac90197077f6b0aa86abb468f7))
+
 ## [0.10.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.9.0...core-v0.10.0) (2026-11-07)
 
 
