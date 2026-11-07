@@ -23,6 +23,14 @@ export const UNIT = z.object({
 	attacksLeft: z.number().optional().describe("Left out for a unit that can't attack."),
 	buildCharges: z.number().optional().describe("The builder charges left. Left out at 0."),
 	formation: z.enum(["corps", "army"]).optional().describe("A corps or army, or a fleet or armada at sea. Left out for a single unit."),
+	religion: z.string().optional().describe("The religion of a religious unit, such as RELIGION_CHRISTIANITY. Left out for any other unit."),
+	spreadCharges: z.number().optional().describe("The spreads left. Left out at 0."),
+	healCharges: z.number().optional().describe("The heals left. Left out at 0."),
+	greatPerson: z.object({
+		class: z.string().describe("Such as GREAT_PERSON_CLASS_PROPHET."),
+		individual: z.string().optional().describe("Such as GREAT_PERSON_INDIVIDUAL_ZHANG_QIAN. Left out when the game has no row for it."),
+		charges: z.number().describe("The action charges left. The unit panel shows them only above 0."),
+	}).optional().describe("Left out for a unit that isn't a great person."),
 	experience: z.object({
 		points: z.number(),
 		nextLevel: z.number().describe("A unit whose points reach this can promote once it has moves."),

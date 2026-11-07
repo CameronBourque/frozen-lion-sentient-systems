@@ -99,6 +99,42 @@ describe("SentientSystems_GetUnitStates", function()
 		assert.is_nil(StateWith({ SCOUT }):find("formation", 1, true))
 	end)
 
+	it("gives the religion of a religious unit and its spread and heal charges", function()
+		local state = StateWith({ With(SCOUT, { religion = "RELIGION_BUDDHISM", religiousStrength = 110, spreadCharges = 3, healCharges = 2 }) })
+
+		assert.truthy(state:find("\"religion\":\"RELIGION_BUDDHISM\"", 1, true))
+		assert.truthy(state:find("\"spreadCharges\":3", 1, true))
+		assert.truthy(state:find("\"healCharges\":2", 1, true))
+	end)
+
+	it("leaves out the religion of a unit with no religious strength, and charges at 0", function()
+		local state = StateWith({ With(SCOUT, { religion = "RELIGION_BUDDHISM" }) })
+
+		assert.is_nil(state:find("RELIGION_BUDDHISM", 1, true))
+		assert.is_nil(state:find("spreadCharges", 1, true))
+		assert.is_nil(state:find("healCharges", 1, true))
+	end)
+
+	it("gives a great person's class, individual, and action charges", function()
+		local state = StateWith({ With(SCOUT, {
+			greatPerson = "GREAT_PERSON_CLASS_ENGINEER",
+			individual = "GREAT_PERSON_INDIVIDUAL_IMHOTEP",
+			greatPersonCharges = 4,
+		}) })
+
+		assert.truthy(state:find("\"greatPerson\":{\"charges\":4,\"class\":\"GREAT_PERSON_CLASS_ENGINEER\",\"individual\":\"GREAT_PERSON_INDIVIDUAL_IMHOTEP\"}", 1, true))
+	end)
+
+	it("gives a great person with no individual in the game's rows without one", function()
+		local state = StateWith({ With(SCOUT, { greatPerson = "GREAT_PERSON_CLASS_PROPHET" }) })
+
+		assert.truthy(state:find("\"greatPerson\":{\"charges\":0,\"class\":\"GREAT_PERSON_CLASS_PROPHET\"}", 1, true))
+	end)
+
+	it("leaves out the great person of a unit that isn't one", function()
+		assert.is_nil(StateWith({ SCOUT }):find("greatPerson", 1, true))
+	end)
+
 	it("adds the unit's experience and its promotions", function()
 		local state = StateWith({ With(SCOUT, {
 			experience = { points = 20, nextLevel = 45, promotions = { "PROMOTION_RANGER" } },

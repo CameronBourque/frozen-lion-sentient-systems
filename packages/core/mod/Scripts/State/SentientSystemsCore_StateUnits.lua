@@ -117,6 +117,52 @@ local function AddActivity(unit, state)
 	end
 end
 
+-- Returns the type of the religion the unit belongs to, or nil. The unit flag
+-- shows the religion of a unit with religious strength, for a religion above
+-- 0. See UnitFlagManager.lua, UpdateReligion.
+local function GetUnitReligion(unit)
+	local religion = unit:GetReligionType()
+
+	if religion > 0 and unit:GetReligiousStrength() > 0 then
+		return GameInfo.Religions[religion].ReligionType
+	end
+
+	return nil
+end
+
+-- Adds the unit's religion and its spread and heal charges to state. The panel
+-- shows a charge only above 0. See UnitPanel.lua.
+local function AddReligion(unit, state)
+	state.religion = GetUnitReligion(unit)
+
+	if unit:GetSpreadCharges() > 0 then
+		state.spreadCharges = unit:GetSpreadCharges()
+	end
+
+	if unit:GetReligiousHealCharges() > 0 then
+		state.healCharges = unit:GetReligiousHealCharges()
+	end
+end
+
+-- Adds a great person's class, individual, and action charges to state. A unit
+-- that isn't a great person has a class that GameInfo doesn't know. The panel
+-- reads the charges from the great person. See UnitPanel.lua.
+local function AddGreatPerson(unit, state)
+	local person = unit:GetGreatPerson()
+
+	if person == nil or GameInfo.GreatPersonClasses[person:GetClass()] == nil then
+		return
+	end
+
+	local individual = GameInfo.GreatPersonIndividuals[person:GetIndividual()]
+
+	state.greatPerson = {
+		class = GameInfo.GreatPersonClasses[person:GetClass()].GreatPersonClassType,
+		individual = individual and individual.GreatPersonIndividualType,
+		charges = person:GetActionCharges(),
+	}
+end
+
 function SentientSystems_GetUnitStates(player)
 	local units = {}
 
@@ -132,6 +178,8 @@ function SentientSystems_GetUnitStates(player)
 			}
 
 			AddActivity(unit, state)
+			AddReligion(unit, state)
+			AddGreatPerson(unit, state)
 			AddPromotions(unit, state)
 			units[#units + 1] = state
 		end

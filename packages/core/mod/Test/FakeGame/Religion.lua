@@ -52,6 +52,35 @@ return function(env, world, ctx)
 		end
 	end
 
+	-- A unit with a religion, a type, gets a row for it, after the pantheon row
+	-- that the game keeps at index 0.
+	for _, data in pairs(world.players or {}) do
+		for _, unit in ipairs(data.units or {}) do
+			if unit.religion then
+				AddRow("Religions", "ReligionType", "RELIGION_PANTHEON")
+				AddRow("Religions", "ReligionType", unit.religion)
+			end
+		end
+	end
+
+	ctx.OnUnit(function(unit, data)
+		function unit.GetReligionType()
+			return data.religion and indexes[data.religion] or -1
+		end
+
+		function unit.GetReligiousStrength()
+			return data.religiousStrength or 0
+		end
+
+		function unit.GetSpreadCharges()
+			return data.spreadCharges or 0
+		end
+
+		function unit.GetReligiousHealCharges()
+			return data.healCharges or 0
+		end
+	end)
+
 	ctx.OnCity(function(city, data)
 		city.GetReligion = function()
 			return {

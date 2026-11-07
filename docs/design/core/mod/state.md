@@ -10,7 +10,7 @@ A reveal that writes the player's visibility data, such as FireTuner's **Reveal 
 
 The view holds what a player sees on these screens, grouped by screen. The list below shows what it holds now, and the [roadmap](../../../roadmap/README.md) says when the rest comes:
 
-- **The map.** Revealed tiles, the player's units, and the rival cities and units the player can see. Each unit has what it is doing, its attacks left, its builder charges, and its formation.
+- **The map.** Revealed tiles, the player's units, and the rival cities and units the player can see. Each unit has what it is doing, its attacks left, its builder charges, and its formation. A religious unit has its religion and its spread and heal charges, and a great person its class, individual, and action charges.
 - **The city panel, and the City Status tab of Reports.** Each city's yields, growth, housing, amenities, loyalty, defense, districts, production, growth rate status, war weariness, and governor.
 - **The Next Turn button.** What blocks the end of the turn.
 - **The top bar.** The gold and faith balances, the science, culture, faith, gold, and tourism per turn, the trade route capacity, and, with Gathering Storm, diplomatic favor.
