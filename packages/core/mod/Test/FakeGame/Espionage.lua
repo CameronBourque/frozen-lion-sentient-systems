@@ -1,6 +1,6 @@
--- The Espionage screen. Fakes a player's spy capacity, the spies other players
--- hold, the spies on their way, and a spy unit's mission and level.
--- SpyMissions.lua and Spies.lua hold the rest of the spy calls.
+-- The Espionage screen. Fakes spy capacity, Gain Sources boosts, captured and
+-- traveling spies, and a spy unit's mission and level. SpyMissions.lua and
+-- Spies.lua hold the rest of the spy calls.
 
 return function(env, _, ctx)
 	local indexes = ctx.indexes
@@ -15,6 +15,16 @@ return function(env, _, ctx)
 
 			function diplomacy.GetSpyCapacity()
 				return data.spyCapacity or 0
+			end
+
+			function diplomacy.GetSourceTurnsRemaining(_, city)
+				for _, source in ipairs(data.sources or {}) do
+					if source.owner == city:GetOwner() and source.id == city:GetID() then
+						return source.turns
+					end
+				end
+
+				return 0
 			end
 
 			function diplomacy.GetNumSpiesCaptured()

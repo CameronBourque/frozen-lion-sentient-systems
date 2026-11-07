@@ -22,15 +22,26 @@ const OPERATIVE = z.object({
 		name: z.string().describe("In the game's language."),
 		turnsLeft: z.number(),
 		totalTurns: z.number(),
+		district: z.string().optional().describe("The district the spy works in, such as DISTRICT_CAMPUS. Left out with none."),
 	}).optional().describe("There on a mission only."),
 	turnsLeft: z.number().optional().describe("The turns until a traveling spy arrives."),
 	capturedBy: z.number().optional().describe("The player who holds a captured spy."),
 	captive: z.number().optional().describe("The captured spy's index, which a deal to get it back uses."),
 });
 
+const ACTIVITY = z.object({
+	owner: z.number().describe("A player ID."),
+	id: z.number(),
+	districts: z.array(z.string()).describe("The finished districts, such as DISTRICT_CAMPUS, without wonders, in the game's order."),
+	sourcesTurnsLeft: z.number().optional().describe("The turns a Gain Sources boost has left. Left out with none."),
+});
+
 export const ESPIONAGE = z.object({
 	capacity: z.number().describe("How many spies the player can have."),
 	operatives: z.array(OPERATIVE).describe(
 		"The idle spies, those on a mission, the captured ones, and then the traveling ones, as the tab lists them.",
+	),
+	cities: z.array(ACTIVITY).describe(
+		"The City Activity tab: the cities of other major players on tiles the player has revealed, as the cities section lists the player's own.",
 	),
 });

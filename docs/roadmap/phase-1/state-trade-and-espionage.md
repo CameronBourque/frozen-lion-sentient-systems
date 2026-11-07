@@ -11,11 +11,12 @@ Add the trade routes and the spies to the state, as the Trade Overview and Espio
 3. **Operatives.** Add every spy the player has: idle, on a mission with its operation, city, and turns left, traveling with its destination and turns left, and captured.
 
    Read the calls from the **Operatives** tab of `Base/Assets/UI/PartialScreens/EspionageOverview.lua`. A traveling spy comes from `GetDiplomacy():GetNumSpiesOffMap()`, and a captured one from each player's `GetNthCapturedSpy`. Commit: `feat(core): add the operatives to the state`.
-4. **City activity and mission history.** Add the enemy spies in the player's cities, and the past missions with their outcomes and loot. Read the calls from the **City Activity** and **Mission History** tabs. Commit: `feat(core): add the espionage activity to the state`.
+4. **City activity.** Add the other majors' revealed cities with their finished districts and Gain Sources boosts, and the district each spy works in. Read the calls from the **City Activity** tab. The tab shows no enemy spies. Commit: `feat(core): add the espionage city activity to the state`.
+5. **Mission history.** Add the recent missions with their outcomes and loot, and the enemy spies the player holds. Read the calls from the **Mission History** tab. Commit: `feat(core): add the espionage mission history to the state`.
 
 ## Done when
 
-In a running game, each section matches its screen tab: the routes of the first two tabs, the available routes of a city, the three kinds of spy, the enemy operatives in the player's cities, and the mission history.
+In a running game, each section matches its screen tab: the routes of the first two tabs, the available routes of a city, the three kinds of spy, the other majors' cities, and the mission history.
 
 ## Record
 

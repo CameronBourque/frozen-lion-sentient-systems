@@ -20,6 +20,13 @@ local function GetCityRef(city)
 	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }
 end
 
+-- Returns the type of the district on the tile, or nil with none.
+local function GetDistrictType(x, y)
+	local district = GameInfo.Districts[Map.GetPlot(x, y):GetDistrictType()]
+
+	return district and district.DistrictType or nil
+end
+
 -- Returns a spy on the map, idle or on a mission, with its city and the turns
 -- the mission has left. See AddOperative.
 local function GetSpy(spy)
@@ -42,6 +49,7 @@ local function GetSpy(spy)
 			name = Locale.Lookup(operation.Description),
 			turnsLeft = math.max(spy:GetSpyOperationEndTurn() - Game.GetCurrentGameTurn(), 0),
 			totalTurns = UnitManager.GetTimeToComplete(operationType, spy),
+			district = GetDistrictType(spy:GetX(), spy:GetY()),
 		}
 	end
 
@@ -119,9 +127,55 @@ local function GetTraveling(player)
 	return traveling
 end
 
--- Returns the espionage section: the spy capacity and every spy the player has,
+-- Returns a city's finished districts by type, without wonders, as the City
+-- Activity tab draws them. See AddDistrictIcon.
+local function GetDistricts(city)
+	local districts = {}
+
+	for _, district in city:GetDistricts():Members() do
+		local info = GameInfo.Districts[district:GetType()]
+
+		if district:IsComplete() and info ~= nil and info.DistrictType ~= "DISTRICT_WONDER" then
+			districts[#districts + 1] = info.DistrictType
+		end
+	end
+
+	return districts
+end
+
+-- Returns the cities of the other major players on tiles the player has
+-- revealed, with their districts and the turns a Gain Sources boost has left.
+-- The player's own cities are in the cities section. See AddPlayerCities and
+-- AddCity.
+local function GetActivity(player)
+	local visibility = PlayersVisibility[player:GetID()]
+	local diplomacy = player:GetDiplomacy()
+	local cities = {}
+
+	for _, other in ipairs(Game.GetPlayers()) do
+		if other:GetID() ~= player:GetID() and other:IsMajor() then
+			for _, city in other:GetCities():Members() do
+				if visibility:IsRevealed(city:GetX(), city:GetY()) then
+					local turns = diplomacy:GetSourceTurnsRemaining(city)
+
+					cities[#cities + 1] = {
+						owner = other:GetID(),
+						id = city:GetID(),
+						districts = GetDistricts(city),
+						sourcesTurnsLeft = turns > 0 and turns or nil,
+					}
+				end
+			end
+		end
+	end
+
+	return cities
+end
+
+-- Returns the espionage section: the spy capacity, every spy the player has,
 -- in the screen's order, the idle and active ones, the captured ones, and the
--- ones on the way.
+-- ones on the way, and the other majors' cities as the City Activity tab lists
+-- them.
 function SentientSystems_GetEspionageState(player)
 	local operatives = GetSpies(player)
 
@@ -131,5 +185,5 @@ function SentientSystems_GetEspionageState(player)
 		end
 	end
 
-	return { capacity = player:GetDiplomacy():GetSpyCapacity(), operatives = operatives }
+	return { capacity = player:GetDiplomacy():GetSpyCapacity(), operatives = operatives, cities = GetActivity(player) }
 end
