@@ -48,7 +48,7 @@ local function GetPolicyOptions(culture)
 	for row in GameInfo.Policies() do
 		if IsPolicyAvailable(culture, row.Hash) and not culture:IsPolicyActive(row.Hash) then
 			local list = options[row.GovernmentSlotType] or {}
-			local option = { type = row.PolicyType, description = Locale.Lookup(row.Description) }
+			local option = { type = row.PolicyType, description = SentientSystems_LookupText(row.Description) }
 
 			if civicThisTurn and civicThisTurn.CivicType == row.PrereqCivic then
 				option.new = true
@@ -88,7 +88,7 @@ local function GetUnlock(player, culture, hidden)
 	local balance = byFaith and player:GetReligion():GetFaithBalance() or player:GetTreasury():GetGoldBalance()
 
 	if balance < cost then
-		unlock.blocked = { Locale.Lookup(byFaith and "LOC_GOVT_NEED_FAITH" or "LOC_GOVT_NEED_GOLD", cost) }
+		unlock.blocked = { SentientSystems_LookupText(byFaith and "LOC_GOVT_NEED_FAITH" or "LOC_GOVT_NEED_GOLD", cost) }
 	elseif SentientSystems_HasExpansion2() and Game.GetWorldCongress():IsInSession() then
 		unlock.blocked = {}
 	end
@@ -184,7 +184,7 @@ local function GetGovernmentOption(culture, row, currentIndex)
 	}
 
 	if row.BonusType ~= nil and row.BonusType ~= "NO_GOVERNMENTBONUS" then
-		option.bonuses = { Locale.Lookup(row.InherentBonusDesc), Locale.Lookup(row.AccumulatedBonusShortDesc) }
+		option.bonuses = { SentientSystems_LookupText(row.InherentBonusDesc), SentientSystems_LookupText(row.AccumulatedBonusShortDesc) }
 
 		if GameCapabilities.HasCapability("CAPABILITY_GOVERNMENTS_LEGACY_BONUSES") then
 			option.legacyPercent = GetLegacyPercent(row)

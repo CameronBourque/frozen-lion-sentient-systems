@@ -2,6 +2,8 @@
 -- Follows GetData in ResearchChooser.lua and CivicsChooser.lua.
 -- Shape: bridge/src/choices/research.ts.
 
+SentientSystems_Include("SentientSystemsCore_Text")
+
 -- The game's calls for techs and for civics. Each reads from the player's
 -- store: GetTechs for techs, and GetCulture for civics.
 local KINDS = {
@@ -80,7 +82,7 @@ local function Boost(kind, store, row)
 		if boost[kind.typeColumn] == row[kind.typeColumn] then
 			return {
 				percent = boost.Boost,
-				trigger = Locale.Lookup(boost.TriggerDescription),
+				trigger = SentientSystems_LookupText(boost.TriggerDescription),
 				triggered = store:HasBoostBeenTriggered(row.Index),
 			}
 		end
@@ -164,7 +166,7 @@ function SentientSystems_GetResearchReader(kindName, player)
 		-- chooser leaves out the star for some civics, which show an icon for
 		-- an envoy or a governor title in its place.
 		if row.Description ~= nil then
-			option.description = Locale.Lookup(row.Description)
+			option.description = SentientSystems_LookupText(row.Description)
 		end
 
 		if recommended[row.Hash] then

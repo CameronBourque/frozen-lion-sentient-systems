@@ -104,6 +104,13 @@ describe("SentientSystems_GetPolicyChoices", function()
 		)
 	end)
 
+	it("cleans the icons from a policy and from the unlock text", function()
+		local text = { LOC_POLICY_SURVEY_DESCRIPTION = "+2 [ICON_Faith] Faith per [COLOR_RED]city[ENDCOLOR]", LOC_GOVT_NEED_GOLD = "You Need [ICON_GoldLarge]" }
+
+		assert.truthy(PoliciesWith({ government = CHIEFDOM, policies = { SURVEY } }, { text = text }):find("\"description\":\"+2 Faith per city\"", 1, true))
+		assert.truthy(PoliciesWith({ government = Chiefdom({ unlockCost = 50 }), gold = 49 }, { text = text }):find("\"blocked\":[\"You Need Gold(50)\"]", 1, true))
+	end)
+
 	it("gives the unlock in faith under the faith rule", function()
 		assert.equal(
 			"{\"canChange\":false,\"unlock\":{\"blocked\":[\"LOC_GOVT_NEED_FAITH(50)\"],\"cost\":50,\"yield\":\"YIELD_FAITH\"}}",

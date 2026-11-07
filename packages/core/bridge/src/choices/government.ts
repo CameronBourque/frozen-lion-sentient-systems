@@ -21,7 +21,7 @@ const UNLOCK = z.object({
 	cost: z.number().describe("In the yield."),
 	yield: z.string().describe("YIELD_GOLD or YIELD_FAITH."),
 	blocked: z.array(z.string()).optional().describe(
-		"There when the screen disables the button, with its text when the player can't afford it, such as You Need 50 [ICON_GoldLarge] Gold. Empty while the World Congress is in session.",
+		"There when the screen disables the button, with its text when the player can't afford it, such as You Need 50 Gold. Empty while the World Congress is in session.",
 	),
 }).optional().describe("The button to pay to change policies and governments. Left out when the screen hides it.");
 
