@@ -55,17 +55,6 @@ local function CannotProduce(item, results)
 	return WithReasons("This city can't produce " .. item, SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS))
 end
 
--- Returns whether the list holds the tile.
-local function HasTile(tiles, x, y)
-	for _, tile in ipairs(tiles) do
-		if tile.x == x and tile.y == y then
-			return true
-		end
-	end
-
-	return false
-end
-
 -- Returns why the tile is no place for the district or the wonder, or nil when
 -- the city owns it and the item can go there now. Tiles to buy get their own
 -- reason. See SentientSystems_GetPlacement.
@@ -83,11 +72,11 @@ local function CheckPlacementTile(city, row, key, item, x, y)
 		tiles, purchaseTiles = SentientSystems_GetWonderTiles(city, purchasable, row)
 	end
 
-	if HasTile(tiles, x, y) then
+	if SentientSystems_HasTile(tiles, x, y) then
 		return nil
 	end
 
-	if HasTile(purchaseTiles, x, y) then
+	if SentientSystems_HasTile(purchaseTiles, x, y) then
 		return "(" .. x .. ", " .. y .. ") isn't in the city's territory yet. Buy the tile first."
 	end
 

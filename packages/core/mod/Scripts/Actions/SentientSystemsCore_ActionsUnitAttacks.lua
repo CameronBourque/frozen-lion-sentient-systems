@@ -168,16 +168,6 @@ local function GetRaidTiles(unit)
 	return tiles
 end
 
-local function IsRaidTile(tiles, x, y)
-	for _, tile in ipairs(tiles) do
-		if tile.x == x and tile.y == y then
-			return true
-		end
-	end
-
-	return false
-end
-
 -- Requests a coastal raid on a tile of the raid list, or returns why it can't.
 local function Raid(unit, x, y)
 	local parameters = { [UnitOperationTypes.PARAM_X] = x, [UnitOperationTypes.PARAM_Y] = y }
@@ -219,7 +209,7 @@ SentientSystems_AddUnitAction("attack", function(playerID, unit, x, y)
 
 	local raid = GetRaidTiles(unit)
 
-	if kind == "melee" and IsRaidTile(raid, x, y) then
+	if kind == "melee" and SentientSystems_HasTile(raid, x, y) then
 		return Raid(unit, x, y)
 	end
 
@@ -229,7 +219,7 @@ SentientSystems_AddUnitAction("attack", function(playerID, unit, x, y)
 		failure = RangedAttack(unit, kind == "air" and UnitOperationTypes.AIR_ATTACK or UnitOperationTypes.RANGE_ATTACK, x, y)
 	end
 
-	if failure ~= nil and IsRaidTile(raid, x, y) then
+	if failure ~= nil and SentientSystems_HasTile(raid, x, y) then
 		return Raid(unit, x, y)
 	end
 

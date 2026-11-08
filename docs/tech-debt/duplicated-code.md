@@ -6,12 +6,6 @@ The same function, constant, or setup is written out in several files of the Lua
 
 The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/Test/`, `packages/core/bridge/src/`, and `packages/core/bridge/test/`.
 
-### Lua functions, identical in every copy
-
-| Helper | Body | Copies |
-| --- | --- | --- |
-| `HasTile`, `IsRaidTile` | A loop that checks a list of tiles for an `x` and `y` | 2, in `ActionsCities` and `ActionsUnitAttacks` |
-
 ### Lua code repeated inline
 
 - A city lookup by owner and ID that returns "Player 0 has no city 1." is written 6 times: 4 in `ActionsCities`, 1 in `ActionsSpies`, and 1 in `ActionsTrade`.

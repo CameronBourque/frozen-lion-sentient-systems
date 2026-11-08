@@ -29,3 +29,16 @@ describe("SentientSystems_RunAction", function()
 		assert.equal(1, env.SentientSystems_Stash(env.SentientSystems_RunAction("MoveUnit", function() end)))
 	end)
 end)
+
+describe("SentientSystems_HasTile", function()
+	local TILES = { { x = 3, y = 4 }, { x = 5, y = 6 } }
+
+	it("finds a tile in the list", function()
+		assert.is_true(env.SentientSystems_HasTile(TILES, 5, 6))
+	end)
+
+	it("misses a tile that matches only x or only y", function()
+		assert.is_false(env.SentientSystems_HasTile(TILES, 3, 6))
+		assert.is_false(env.SentientSystems_HasTile({}, 3, 4))
+	end)
+end)
