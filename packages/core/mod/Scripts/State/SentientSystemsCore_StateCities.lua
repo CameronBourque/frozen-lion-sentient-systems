@@ -1,16 +1,6 @@
 -- The cities section: the player's own cities, as the city panel shows them.
 -- Shape: bridge/src/state/cities.ts.
 
--- Each yield in the state, and its name in YieldTypes.
-local YIELDS = {
-	culture = "CULTURE",
-	faith = "FAITH",
-	food = "FOOD",
-	gold = "GOLD",
-	production = "PRODUCTION",
-	science = "SCIENCE",
-}
-
 -- Returns what the city is producing, with the turns left, or nil when it
 -- produces nothing. A hash of 0 means nothing. GameInfo reads 0 as a row index,
 -- so GameInfo.Types[0] is the first row, not the production. See
@@ -37,7 +27,7 @@ end
 local function GetYields(city)
 	local yields = {}
 
-	for key, name in pairs(YIELDS) do
+	for key, name in pairs(SENTIENTSYSTEMS_YIELDS) do
 		yields[key] = RoundDown(city:GetYield(YieldTypes[name]))
 	end
 

@@ -1,5 +1,17 @@
--- Lookups of the game's objects by the IDs the bridge sends, which the state,
--- the choices, the actions, the placement, and the trees share.
+-- Lookups of the game's objects by the IDs the bridge sends, and the yield
+-- names, which the state, the choices, the actions, the placement, and the
+-- trees share.
+
+-- Each yield, by its key in a city's yields and in an adjacency bonus, and its
+-- name in YieldTypes.
+SENTIENTSYSTEMS_YIELDS = {
+	culture = "CULTURE",
+	faith = "FAITH",
+	food = "FOOD",
+	gold = "GOLD",
+	production = "PRODUCTION",
+	science = "SCIENCE",
+}
 
 -- Returns the player by ID. Raises an error for an ID with no player.
 function SentientSystems_GetPlayer(playerID)

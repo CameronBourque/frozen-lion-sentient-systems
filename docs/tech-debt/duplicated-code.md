@@ -6,10 +6,6 @@ The same function, constant, or setup is written out in several files of the Lua
 
 The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/Test/`, `packages/core/bridge/src/`, and `packages/core/bridge/test/`.
 
-### Lua code repeated inline
-
-- The `YIELDS` table of yield names is in `Placement` and `StateCities`.
-
 ### Lua functions with one name and different bodies
 
 Each pair was read. They share a name only.

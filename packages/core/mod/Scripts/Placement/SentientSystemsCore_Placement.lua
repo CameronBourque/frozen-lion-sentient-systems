@@ -6,17 +6,6 @@ include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_Lookups")
 
--- Each yield, by its key in an adjacency bonus, and its name in YieldTypes. The
--- keys are the same as those of a city's yields in the state.
-local YIELDS = {
-	culture = "CULTURE",
-	faith = "FAITH",
-	food = "FOOD",
-	gold = "GOLD",
-	production = "PRODUCTION",
-	science = "SCIENCE",
-}
-
 -- Returns the tile at a plot index, with x and y. With a district's index, it
 -- adds the district's adjacency bonus on the tile, by yield, when there is one,
 -- as the placement view shows it.
@@ -27,7 +16,7 @@ local function Tile(city, plotIndex, districtIndex)
 	if districtIndex ~= nil then
 		local adjacency = {}
 
-		for key, name in pairs(YIELDS) do
+		for key, name in pairs(SENTIENTSYSTEMS_YIELDS) do
 			local bonus = plot:GetAdjacencyYield(city:GetOwner(), city:GetID(), districtIndex, YieldTypes[name])
 
 			if bonus > 0 then
