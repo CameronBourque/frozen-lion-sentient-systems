@@ -20,7 +20,7 @@ end
 
 -- Returns a spy on the map, idle or on a mission, with its city and the turns
 -- the mission has left. See AddOperative.
-local function GetSpy(spy)
+local function GetMapSpy(spy)
 	local operationType = spy:GetSpyOperation()
 	local level = spy:GetExperience():GetLevel()
 	local entry = {
@@ -56,7 +56,7 @@ local function GetSpies(player)
 		if GameInfo.Units[unit:GetUnitType()].Spy then
 			local list = unit:GetSpyOperation() == -1 and idle or active
 
-			list[#list + 1] = GetSpy(unit)
+			list[#list + 1] = GetMapSpy(unit)
 		end
 	end
 

@@ -61,8 +61,9 @@ function SentientSystems_GetSpyDestinations(player, spy)
 	return destinations
 end
 
--- Returns the district of the city on the plot, or nil.
-local function FindDistrict(city, plot)
+-- Returns the GameInfo.Districts row of the city's district on the plot, or
+-- nil.
+local function FindDistrictRowOnPlot(city, plot)
 	for _, district in city:GetDistricts():Members() do
 		if district:GetX() == plot:GetX() and district:GetY() == plot:GetY() then
 			return GameInfo.Districts[district:GetType()]
@@ -163,7 +164,7 @@ local function GetOffensiveMissions(spy, city)
 					local plot = Map.GetPlotByIndex(index)
 
 					if plot ~= nil then
-						missions[#missions + 1] = GetOffensiveMission(operation, spy, city, plot, FindDistrict(city, plot))
+						missions[#missions + 1] = GetOffensiveMission(operation, spy, city, plot, FindDistrictRowOnPlot(city, plot))
 						added = true
 					end
 				end
@@ -195,7 +196,7 @@ local function GetCounterspyMissions(spy, city)
 
 			if canStart then
 				for _, index in ipairs(results[UnitOperationResults.PLOTS]) do
-					local district = FindDistrict(city, Map.GetPlotByIndex(index))
+					local district = FindDistrictRowOnPlot(city, Map.GetPlotByIndex(index))
 
 					if district ~= nil then
 						missions[#missions + 1] = {

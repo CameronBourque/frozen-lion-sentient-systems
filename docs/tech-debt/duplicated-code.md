@@ -12,8 +12,6 @@ Each pair was read. They share a name only.
 
 | Name | Files | Fix |
 | --- | --- | --- |
-| `FindDistrict` | `ActionsSpies` finds a district by type, and `ChoicesSpyMissions` finds one by plot | Rename |
-| `GetSpy` | `ActionsSpies` checks that a spy is ready, and `StateEspionage` builds a spy's state entry | Rename |
 | `GetActivity`, `GetDistricts`, `GetKind`, `GetProduction` | Two files each, in `State/` and `Actions/`, with unrelated bodies | Rename |
 
 ### Bridge source
