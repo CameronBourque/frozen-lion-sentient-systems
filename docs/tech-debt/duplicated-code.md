@@ -20,7 +20,6 @@ Each pair was read. They share a name only.
 
 ### Bridge source
 
-- `CITY`, a city reference of `owner`, `id`, and `name`, is written out in `choices/spy-missions.ts`, `state/espionage.ts`, and `state/trade.ts`.
 - An object of the six yields, each an optional number, is in `placement/placement.ts` and `state/income.ts`.
 - `describeIssue` formats a zod issue in both `config.ts` and `stash.ts`, and `explainFailure` turns a tuner error into text in both `connect.ts` and `stash.ts`. The wording differs in places.
 

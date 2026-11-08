@@ -4,13 +4,12 @@
 
 import { z } from "zod";
 import { ROUTE_END } from "../choices/trade-routes.js";
-
-const CITY = z.object({ owner: z.number(), id: z.number(), name: z.string().describe("In the game's language.") });
+import { CITY_REF } from "../schemas.js";
 
 const ROUTE = z.object({
 	trader: z.number().describe("The trader's unit ID."),
-	origin: CITY,
-	destination: CITY,
+	origin: CITY_REF,
+	destination: CITY_REF,
 	pathBonus: z.boolean().describe("Whether the trading posts on the path add yields to the origin."),
 	yields: z.object({
 		origin: ROUTE_END.describe("What the origin city receives."),

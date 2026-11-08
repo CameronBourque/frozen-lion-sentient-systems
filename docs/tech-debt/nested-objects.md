@@ -10,7 +10,7 @@ The counts come from a scan of `packages/core/bridge/src/`.
 
 It is also a loose pair in function signatures: `moveUnit` in `actions/units.ts`, and `cityAttack` and `purchaseTile` in `actions/cities.ts`. `setProduction` takes it as an inline `{ x: number; y: number }`, and the `UnitAction` type in `actions/units.ts` repeats the pair in its union.
 
-**References.** `owner` and `id` of a city or unit are declared in 17 places in 13 files. The three copies of the city reference are in [duplicated-code.md](duplicated-code.md).
+**References.** `owner` and `id` of a city or unit are declared in 17 places in 13 files. The city reference with a name is `CITY_REF` in `src/schemas.ts`.
 
 **Objects with objects inside.** 49 schema fields are an inline `z.object` in another object, in 12 files. The most are in `state/cities.ts` (8), `state/diplomacy.ts` (7), and `state/player.ts` (4).
 
