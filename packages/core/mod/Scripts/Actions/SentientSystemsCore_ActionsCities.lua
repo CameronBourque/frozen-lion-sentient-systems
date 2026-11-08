@@ -2,6 +2,7 @@
 -- are in docs/findings/actions/.
 
 SentientSystems_Include("SentientSystemsCore_Placement")
+SentientSystems_Include("SentientSystemsCore_ChoicesPurchases")
 
 -- Returns what the type names: the table of its row, the key of the operation
 -- parameter that carries its hash, and whether it needs a tile. nil when the
@@ -196,27 +197,6 @@ function SentientSystems_SetProduction(playerID, cityID, item, x, y, append)
 	end)
 end
 
--- Each yield a city buys with, by the key the purchases choice uses: its name
--- in GameInfo.Yields, the player's store of it, and the text key the panel adds
--- when the player can't afford an item. See PURCHASE_YIELDS in
--- SentientSystemsCore_ChoicesPurchases.lua.
-local PURCHASE_YIELDS = {
-	gold = {
-		yield = "YIELD_GOLD",
-		store = function(player)
-			return player:GetTreasury()
-		end,
-		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FUNDS",
-	},
-	faith = {
-		yield = "YIELD_FAITH",
-		store = function(player)
-			return player:GetReligion()
-		end,
-		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FAITH",
-	},
-}
-
 -- Buys a unit or a building in the city with gold or faith, and returns the
 -- result as JSON.
 -- The item is the type of an option of the purchases choice, such as
@@ -232,7 +212,7 @@ function SentientSystems_Purchase(playerID, cityID, item, yield)
 			return failure
 		end
 
-		local purchase = PURCHASE_YIELDS[yield]
+		local purchase = SENTIENTSYSTEMS_PURCHASE_YIELDS[yield]
 
 		if purchase == nil then
 			return tostring(yield) .. " isn't a yield to buy with. Use gold or faith."
@@ -279,10 +259,6 @@ function SentientSystems_Purchase(playerID, cityID, item, yield)
 	end)
 end
 
--- The text key of the lens's tooltip on a tile the player can't afford, which
--- takes the gold still needed. See ShowPurchases in PlotInfo.lua.
-local NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
-
 -- Returns the plot index of the tile the city can buy at x and y, or nil.
 local function FindPurchasableTile(city, x, y)
 	for _, plotIndex in ipairs(SentientSystems_GetPurchasablePlots(city)) do
@@ -322,7 +298,7 @@ function SentientSystems_PurchaseTile(playerID, cityID, x, y)
 		local gold = Players[playerID]:GetTreasury():GetGoldBalance()
 
 		if cost > gold then
-			return SentientSystems_LookupText(NEED_MORE_GOLD_KEY, cost - math.floor(gold))
+			return SentientSystems_LookupText(SENTIENTSYSTEMS_NEED_MORE_GOLD_KEY, cost - math.floor(gold))
 		end
 
 		local params = {

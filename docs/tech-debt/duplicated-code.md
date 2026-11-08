@@ -18,11 +18,6 @@ Each pair was read. They share a name only.
 | `GetSpy` | `ActionsSpies` checks that a spy is ready, and `StateEspionage` builds a spy's state entry | Rename |
 | `GetActivity`, `GetDistricts`, `GetKind`, `GetProduction` | Two files each, in `State/` and `Actions/`, with unrelated bodies | Rename |
 
-### Lua constants
-
-- `NEED_MORE_GOLD_KEY` is the text key `LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE` in `ActionsCities` and in `ChoicesPurchases`. The keys `LOC_BUILDING_INSUFFICIENT_FUNDS` and `LOC_BUILDING_INSUFFICIENT_FAITH` are in both files too.
-- `PURCHASE_YIELDS` in `ActionsCities` repeats the yield, store, and text key of the table with the same name in `ChoicesPurchases`, which has more fields.
-
 ### Bridge source
 
 - `CITY`, a city reference of `owner`, `id`, and `name`, is written out in `choices/spy-missions.ts`, `state/espionage.ts`, and `state/trade.ts`.

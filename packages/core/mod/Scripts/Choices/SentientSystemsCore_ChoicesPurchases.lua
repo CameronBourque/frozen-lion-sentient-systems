@@ -4,18 +4,17 @@
 
 SentientSystems_Include("SentientSystemsCore_Placement")
 
--- Each yield the city can buy with: its key in a city's purchases, its name in
--- GameInfo.Yields, the player's store of it, the text key the panel adds when
--- the player can't afford an item, and whether the panel tries a unit or a
--- building with it. The panel tries every district with each yield. A city can
--- buy some units and buildings with faith that the game marks for gold, as with
--- a policy, and the panel asks the city for those. See GetData in
--- ProductionPanel.lua.
-local PURCHASE_YIELDS = {
-	{
-		key = "gold",
+-- Each yield the city can buy with, by its key in a city's purchases and in the
+-- purchase action: its name in GameInfo.Yields, the player's store of it, the
+-- text key the panel adds when the player can't afford an item, and whether the
+-- panel tries a unit or a building with it. The panel tries every district with
+-- each yield. A city can buy some units and buildings with faith that the game
+-- marks for gold, as with a policy, and the panel asks the city for those. See
+-- GetData in ProductionPanel.lua.
+SENTIENTSYSTEMS_PURCHASE_YIELDS = {
+	gold = {
 		yield = "YIELD_GOLD",
-		source = function(player)
+		store = function(player)
 			return player:GetTreasury()
 		end,
 		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FUNDS",
@@ -26,10 +25,9 @@ local PURCHASE_YIELDS = {
 			return row.PurchaseYield == "YIELD_GOLD"
 		end,
 	},
-	{
-		key = "faith",
+	faith = {
 		yield = "YIELD_FAITH",
-		source = function(player)
+		store = function(player)
 			return player:GetReligion()
 		end,
 		cantAffordKey = "LOC_BUILDING_INSUFFICIENT_FAITH",
@@ -49,16 +47,16 @@ local PURCHASE_YIELDS = {
 local function PurchaseOption(city, purchase, params, hash, formation)
 	local yieldIndex = GameInfo.Yields[purchase.yield].Index
 	local cityGold = city:GetGold()
-	local source = purchase.source(Players[city:GetOwner()])
+	local store = purchase.store(Players[city:GetOwner()])
 	local canStart, results = CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, false, params, true)
 	local option, canAfford
 
 	if formation == nil then
 		option = { cost = cityGold:GetPurchaseCost(yieldIndex, hash) }
-		canAfford = source:CanAfford(city:GetID(), hash)
+		canAfford = store:CanAfford(city:GetID(), hash)
 	else
 		option = { cost = cityGold:GetPurchaseCost(yieldIndex, hash, formation) }
-		canAfford = source:CanAfford(city:GetID(), hash, formation)
+		canAfford = store:CanAfford(city:GetID(), hash, formation)
 	end
 
 	if not canStart or not canAfford then
@@ -138,9 +136,9 @@ local function GetPurchases(city, purchase, rows, param, column, tries)
 	return options
 end
 
--- The text key of the tooltip on a tile the player can't afford, which takes
--- the gold still needed.
-local NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
+-- The text key of the lens's tooltip on a tile the player can't afford, which
+-- takes the gold still needed. See ShowPurchases in PlotInfo.lua.
+SENTIENTSYSTEMS_NEED_MORE_GOLD_KEY = "LOC_PLOTINFO_YOU_NEED_MORE_GOLD_TO_PURCHASE"
 
 -- Returns the tiles the city can buy with gold, in plot index order. A tile
 -- that costs more than the player's gold has the text of the tooltip the
@@ -157,7 +155,7 @@ local function GetTilePurchases(city)
 		local tile = { x = plot:GetX(), y = plot:GetY(), cost = cost }
 
 		if cost > gold then
-			tile.blocked = { SentientSystems_LookupText(NEED_MORE_GOLD_KEY, cost - math.floor(gold)) }
+			tile.blocked = { SentientSystems_LookupText(SENTIENTSYSTEMS_NEED_MORE_GOLD_KEY, cost - math.floor(gold)) }
 		end
 
 		tiles[#tiles + 1] = tile
@@ -175,8 +173,8 @@ function SentientSystems_GetPurchaseChoices(player)
 	for _, city in player:GetCities():Members() do
 		local entry = { city = city:GetID(), name = Locale.Lookup(city:GetName()) }
 
-		for _, purchase in ipairs(PURCHASE_YIELDS) do
-			entry[purchase.key] = {
+		for key, purchase in pairs(SENTIENTSYSTEMS_PURCHASE_YIELDS) do
+			entry[key] = {
 				units = GetUnitPurchases(city, purchase),
 				buildings = GetPurchases(city, purchase, GameInfo.Buildings, CityCommandTypes.PARAM_BUILDING_TYPE, "BuildingType", function(row)
 					return purchase.triesBuilding(row, city)
