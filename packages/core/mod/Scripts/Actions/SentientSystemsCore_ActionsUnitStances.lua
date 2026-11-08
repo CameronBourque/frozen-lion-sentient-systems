@@ -129,7 +129,7 @@ function SentientSystems_DoCommand(unit, action, options)
 end
 
 -- Returns the promotions the unit can pick now, each with its index and type.
-local function GetPromotions(unit)
+local function GetPickablePromotions(unit)
 	local canPromote, results = UnitManager.CanStartCommand(unit, UnitCommandTypes.PROMOTE, true, true)
 	local promotions = {}
 
@@ -146,7 +146,7 @@ end
 local function Promote(unit, promotionType)
 	local types = {}
 
-	for _, promotion in ipairs(GetPromotions(unit)) do
+	for _, promotion in ipairs(GetPickablePromotions(unit)) do
 		if promotion.type == promotionType then
 			UnitManager.RequestCommand(unit, UnitCommandTypes.PROMOTE, { [UnitCommandTypes.PARAM_PROMOTION_TYPE] = promotion.index })
 

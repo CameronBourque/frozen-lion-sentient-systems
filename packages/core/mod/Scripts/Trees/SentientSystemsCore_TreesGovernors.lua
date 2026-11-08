@@ -27,7 +27,7 @@ end
 -- is a candidate, whose card shows only the base ability as held. See
 -- CreatePromotionTree in GovernorDetailsPanel.lua, CreateSecretPromotionTree,
 -- and AddGovernorCandidate in GovernorPanel.lua.
-local function GetPromotions(governors, governor, definition, prerequisites)
+local function GetPromotionTree(governors, governor, definition, prerequisites)
 	local promotions = {}
 
 	for _, promotion in ipairs(SentientSystems_GetPromotionRows(definition)) do
@@ -58,7 +58,7 @@ end
 
 -- Returns one governor with their tree. A Secret Society has neither turns nor
 -- loyalty, as its card shows no stats.
-local function GetGovernor(governors, governor, definition, prerequisites)
+local function GetGovernorWithTree(governors, governor, definition, prerequisites)
 	local secret = SentientSystems_IsCannotAssign(definition)
 
 	return {
@@ -70,7 +70,7 @@ local function GetGovernor(governors, governor, definition, prerequisites)
 		secret = secret and true or nil,
 		turnsToEstablish = not secret and (governor and governor:GetTurnsToEstablish() or governors:GetTurnsToEstablish(definition.Hash)) or nil,
 		loyalty = not secret and (governor and governor:GetIdentityPressure() or definition.IdentityPressure) or nil,
-		promotions = GetPromotions(governors, governor, definition, prerequisites),
+		promotions = GetPromotionTree(governors, governor, definition, prerequisites),
 	}
 end
 
@@ -89,14 +89,14 @@ function SentientSystems_GetGovernorTree(playerID)
 		local _, appointed = governors:GetGovernorList()
 
 		for _, governor in ipairs(appointed or {}) do
-			entries[#entries + 1] = GetGovernor(governors, governor, GameInfo.Governors[governor:GetType()], prerequisites)
+			entries[#entries + 1] = GetGovernorWithTree(governors, governor, GameInfo.Governors[governor:GetType()], prerequisites)
 		end
 
 		for definition in GameInfo.Governors() do
 			local hash = definition.Hash
 
 			if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) then
-				entries[#entries + 1] = GetGovernor(governors, nil, definition, prerequisites)
+				entries[#entries + 1] = GetGovernorWithTree(governors, nil, definition, prerequisites)
 			end
 		end
 	end

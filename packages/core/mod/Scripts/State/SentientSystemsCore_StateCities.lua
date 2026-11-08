@@ -96,7 +96,7 @@ end
 -- Returns the city's governor, with type and established, whether they have
 -- settled in, or nil for none, and in a game without Rise and Fall, which adds
 -- governors. See CreateCityStatusInstance in ReportScreen_Expansion1.lua.
-local function GetGovernor(city)
+local function GetCityGovernor(city)
 	local governor = city.GetAssignedGovernor ~= nil and city:GetAssignedGovernor()
 
 	if not governor then
@@ -291,7 +291,7 @@ function SentientSystems_GetCityStates(player)
 			amenities = GetAmenities(city),
 			defense = SentientSystems_GetCityDefense(player, city),
 			districts = GetDistricts(city),
-			governor = GetGovernor(city),
+			governor = GetCityGovernor(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
 			power = GetPower(city),
