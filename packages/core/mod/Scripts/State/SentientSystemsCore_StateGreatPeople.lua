@@ -13,11 +13,6 @@ local PATRONAGE = {
 	{ key = "faith", yield = "FAITH", capability = "CAPABILITY_GREAT_PEOPLE_RECRUIT_WITH_FAITH" },
 }
 
--- Rounds a number to the nearest tenth, as the screen's Round(x, 1) does.
-local function RoundTenth(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
 -- Returns the patronage costs of a great person, gold and faith. The screen
 -- shows a button only while the player can neither recruit nor pass the person,
 -- and turns it off while Gathering Storm's World Congress is in session.
@@ -59,8 +54,8 @@ local function GetProgress(player, classIndex)
 			id = otherID,
 			player = known and otherID or nil,
 			unmet = (not known) or nil,
-			points = RoundTenth(points:GetPointsTotal(classIndex)),
-			perTurn = RoundTenth(points:GetPointsPerTurn(classIndex)),
+			points = SentientSystems_Round(points:GetPointsTotal(classIndex), 1),
+			perTurn = SentientSystems_Round(points:GetPointsPerTurn(classIndex), 1),
 		}
 	end
 

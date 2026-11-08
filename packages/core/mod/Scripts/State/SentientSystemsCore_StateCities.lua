@@ -33,11 +33,6 @@ local function RoundDown(number)
 	return math.floor(number * 10) / 10
 end
 
--- Rounds a number to the nearest tenth, as the city panel does for loyalty.
-local function RoundNearest(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
 -- Returns each yield per turn, rounded down as the city panel shows it.
 local function GetYields(city)
 	local yields = {}
@@ -133,9 +128,9 @@ local function GetLoyalty(city)
 	local identity = city:GetCulturalIdentity()
 
 	return {
-		value = RoundNearest(identity:GetLoyalty()),
+		value = SentientSystems_Round(identity:GetLoyalty(), 1),
 		max = identity:GetMaxLoyalty(),
-		perTurn = RoundNearest(identity:GetLoyaltyPerTurn()),
+		perTurn = SentientSystems_Round(identity:GetLoyaltyPerTurn(), 1),
 	}
 end
 
@@ -178,7 +173,7 @@ function SentientSystems_GetCityDefense(player, city)
 	local center = player:GetDistricts():FindID(city:GetDistrictID())
 	local garrison, walls = DefenseTypes.DISTRICT_GARRISON, DefenseTypes.DISTRICT_OUTER
 	local defense = {
-		strength = math.floor(center:GetDefenseStrength() + 0.5),
+		strength = SentientSystems_Round(center:GetDefenseStrength()),
 		garrison = SentientSystems_GetHealth(center:GetMaxDamage(garrison), center:GetDamage(garrison)),
 	}
 
@@ -198,7 +193,7 @@ local function GetPowerLines(sources)
 	for _, entry in ipairs(sources) do
 		local name, power = next(entry)
 
-		lines[#lines + 1] = { name = name, power = RoundNearest(power) }
+		lines[#lines + 1] = { name = name, power = SentientSystems_Round(power, 1) }
 	end
 
 	return lines
@@ -237,17 +232,12 @@ local function GetPower(city)
 
 	return {
 		status = status,
-		usable = RoundNearest(usable),
-		required = RoundNearest(required),
+		usable = SentientSystems_Round(usable, 1),
+		required = SentientSystems_Round(required, 1),
 		sources = sources,
 		requiredBy = GetPowerLines(power:GetRequiredPowerSources()),
 		generated = GetPowerLines(power:GetGeneratedPowerSources()),
 	}
-end
-
--- Rounds a number to the nearest whole number, as the banner rounds a pressure.
-local function RoundWhole(number)
-	return math.floor(number + 0.5)
 end
 
 -- Returns the religion the city will convert to and in how many turns, or nil.
@@ -283,14 +273,14 @@ function SentientSystems_GetCityReligion(city)
 		present[#present + 1] = {
 			type = pantheon and "RELIGION_PANTHEON" or GameInfo.Religions[entry.Religion].ReligionType,
 			followers = entry.Followers,
-			pressure = not pantheon and RoundWhole(cityReligion:GetTotalPressureOnCity(entry.Religion)) or nil,
-			totalPressure = not pantheon and RoundWhole(entry.Pressure) or nil,
+			pressure = not pantheon and SentientSystems_Round(cityReligion:GetTotalPressureOnCity(entry.Religion)) or nil,
+			totalPressure = not pantheon and SentientSystems_Round(entry.Pressure) or nil,
 		}
 	end
 
 	return {
 		majority = majority > 0 and GameInfo.Religions[majority].ReligionType or nil,
-		outwardPressure = RoundWhole(cityReligion:GetPressureFromCity()),
+		outwardPressure = SentientSystems_Round(cityReligion:GetPressureFromCity()),
 		present = present,
 		converting = GetConversion(cityReligion),
 	}

@@ -47,11 +47,6 @@ local YIELDS = {
 -- rounded to a tenth.
 local MIN_REMAINDER = 0.5
 
--- Rounds a number to the nearest tenth, as the top bar's number format does.
-local function RoundNearest(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
 local function Escape(text)
 	return (text:gsub("%p", "%%%0"))
 end
@@ -77,7 +72,7 @@ end
 -- GetGoldTooltip in ToolTipHelper_PlayerYields.lua.
 local function GetYield(yield, total, tooltip)
 	local lines = SentientSystems_GetTooltipLines(tooltip)
-	local result = { total = RoundNearest(total) }
+	local result = { total = SentientSystems_Round(total, 1) }
 	local found = 0
 
 	for _, list in ipairs({ COMMON_SOURCES, yield.extra }) do
@@ -94,7 +89,7 @@ local function GetYield(yield, total, tooltip)
 	local remainder = total - found
 
 	if math.abs(remainder) >= MIN_REMAINDER then
-		result.other = RoundNearest((result.other or 0) + remainder)
+		result.other = SentientSystems_Round((result.other or 0) + remainder, 1)
 	end
 
 	return result
@@ -118,7 +113,7 @@ local function CollectYields(read)
 	local yields, found = {}, false
 
 	for _, yield in ipairs(CITY_YIELDS) do
-		local amount = RoundNearest(read(yield.type))
+		local amount = SentientSystems_Round(read(yield.type), 1)
 
 		if amount ~= 0 then
 			yields[yield.key] = amount
@@ -347,7 +342,7 @@ local function GetCityIncomes(player)
 
 		list[#list + 1] = {
 			city = { owner = player:GetID(), id = city:GetID() },
-			tourism = RoundNearest(AddTileRows(player, city, sources)),
+			tourism = SentientSystems_Round(AddTileRows(player, city, sources), 1),
 			upkeep = upkeep,
 			sources = sources,
 		}
@@ -465,7 +460,7 @@ local function GetExpenses(treasury, units, deals, cities)
 	local remainder = total - cities - units - deals
 
 	if math.abs(remainder) >= MIN_REMAINDER then
-		expenses.other = RoundNearest(remainder)
+		expenses.other = SentientSystems_Round(remainder, 1)
 	end
 
 	return expenses

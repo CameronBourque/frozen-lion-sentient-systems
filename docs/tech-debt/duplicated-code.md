@@ -10,9 +10,7 @@ The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/
 
 | Helper | Body | Copies |
 | --- | --- | --- |
-| `RoundNearest`, `RoundTenth`, `RoundYield` | `math.floor(number * 10 + 0.5) / 10` | 7, in `StateCities`, `StatePlayer`, `StatePlayerIncome`, `StateVictories`, `StateVictoriesScience`, `StateGreatPeople`, and `ChoicesTradeRoutes` |
-| `RoundProgress` | `math.floor(progress * 1000 + 0.5) / 1000` | 2, in `StateVictories` and `StateVictoriesScience` |
-| `RoundWhole`, `Round` | `math.floor(number + 0.5)` | 2, in `StateCities` and `StateScoreboard`, and once inline in `StateCities` for the defense strength |
+| `RoundYield` | `math.floor(number * 10 + 0.5) / 10`, which `SentientSystems_Round` in `SentientSystemsCore_Math.lua` does | 1, in `ChoicesTradeRoutes` |
 | `HasTile`, `IsRaidTile` | A loop that checks a list of tiles for an `x` and `y` | 2, in `ActionsCities` and `ActionsUnitAttacks` |
 
 ### Lua code repeated inline

@@ -6,11 +6,6 @@ SentientSystems_Include("SentientSystemsCore_StatePlayerIncome")
 SentientSystems_Include("SentientSystemsCore_StatePlayerEra")
 SentientSystems_Include("SentientSystemsCore_StatePlayerResources")
 
--- Rounds a number to the nearest tenth, as the top bar's number format does.
-local function RoundNearest(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
 -- Returns the player's gold: the balance, rounded down, and the income less the
 -- upkeep per turn. See RefreshYields in TopPanel.lua.
 local function GetGold(player)
@@ -18,7 +13,7 @@ local function GetGold(player)
 
 	return {
 		balance = math.floor(treasury:GetGoldBalance()),
-		perTurn = RoundNearest(treasury:GetGoldYield() - treasury:GetTotalMaintenance()),
+		perTurn = SentientSystems_Round(treasury:GetGoldYield() - treasury:GetTotalMaintenance(), 1),
 	}
 end
 
@@ -27,7 +22,7 @@ end
 local function GetFaith(player)
 	local religion = player:GetReligion()
 
-	return { balance = RoundNearest(religion:GetFaithBalance()), perTurn = RoundNearest(religion:GetFaithYield()) }
+	return { balance = SentientSystems_Round(religion:GetFaithBalance(), 1), perTurn = SentientSystems_Round(religion:GetFaithYield(), 1) }
 end
 
 -- Returns the player section. tradeRoutes is left out while the capacity is 0,
@@ -39,9 +34,9 @@ function SentientSystems_GetPlayerState(player)
 	local state = {
 		gold = GetGold(player),
 		faith = GetFaith(player),
-		science = RoundNearest(player:GetTechs():GetScienceYield()),
-		culture = RoundNearest(player:GetCulture():GetCultureYield()),
-		tourism = RoundNearest(player:GetStats():GetTourism()),
+		science = SentientSystems_Round(player:GetTechs():GetScienceYield(), 1),
+		culture = SentientSystems_Round(player:GetCulture():GetCultureYield(), 1),
+		tourism = SentientSystems_Round(player:GetStats():GetTourism(), 1),
 		income = SentientSystems_GetIncomeState(player),
 		resources = SentientSystems_GetResourcesState(player),
 		era = SentientSystems_GetEraState(player),
@@ -52,7 +47,7 @@ function SentientSystems_GetPlayerState(player)
 	end
 
 	if player.GetFavorPerTurn ~= nil then
-		state.favor = { balance = player:GetFavor(), perTurn = RoundNearest(player:GetFavorPerTurn()) }
+		state.favor = { balance = player:GetFavor(), perTurn = SentientSystems_Round(player:GetFavorPerTurn(), 1) }
 	end
 
 	return state

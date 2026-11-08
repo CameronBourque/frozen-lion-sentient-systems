@@ -2,11 +2,6 @@
 -- numbers. Follows ViewScore in WorldRankings.lua and UpdateStatValues in
 -- DiplomacyRibbon.lua. Shape: bridge/src/state/scoreboard.ts.
 
--- Rounds to the nearest whole number, as the game's Round does.
-local function Round(number)
-	return math.floor(number + 0.5)
-end
-
 -- Returns the scoring categories that add to a score, each with its type, name,
 -- and the player's points. The tab's details list only the categories with a
 -- multiplier.
@@ -30,14 +25,14 @@ end
 -- down and the rest to the nearest whole number. The panel adds favor only with
 -- Gathering Storm, when the diplomatic victory is on.
 local function AddLeaderPanel(entry, other)
-	entry.military = Round(other:GetStats():GetMilitaryStrengthWithoutTreasury())
-	entry.science = Round(other:GetTechs():GetScienceYield())
-	entry.culture = Round(other:GetCulture():GetCultureYield())
+	entry.military = SentientSystems_Round(other:GetStats():GetMilitaryStrengthWithoutTreasury())
+	entry.science = SentientSystems_Round(other:GetTechs():GetScienceYield())
+	entry.culture = SentientSystems_Round(other:GetCulture():GetCultureYield())
 	entry.gold = math.floor(other:GetTreasury():GetGoldBalance())
-	entry.faith = Round(other:GetReligion():GetFaithBalance())
+	entry.faith = SentientSystems_Round(other:GetReligion():GetFaithBalance())
 
 	if other.GetFavorPerTurn ~= nil and Game.IsVictoryEnabled("VICTORY_DIPLOMATIC") then
-		entry.favor = Round(other:GetFavor())
+		entry.favor = SentientSystems_Round(other:GetFavor())
 	end
 end
 
