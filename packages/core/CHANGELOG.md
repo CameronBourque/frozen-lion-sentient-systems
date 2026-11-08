@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.13.0...core-v0.14.0) (2026-11-08)
+
+
+### Features
+
+* **core:** add the city actions ([#72](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/72)) ([2b756f5](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/2b756f52aa0c3f1deaa2521a2eab3305ba5230ba))
+
 ## [0.13.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.12.0...core-v0.13.0) (2026-11-07)
 
 
