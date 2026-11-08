@@ -19,6 +19,18 @@ function SentientSystems_GetBusyTraders(player)
 	return busy
 end
 
+-- Returns the parameters of a route from the trader's tile to the destination
+-- city, as RequestTradeRoute in TradeRouteChooser.lua builds them. The trade
+-- route action uses this too.
+function SentientSystems_GetRouteParams(destination, trader)
+	return {
+		[UnitOperationTypes.PARAM_X0] = destination:GetX(),
+		[UnitOperationTypes.PARAM_Y0] = destination:GetY(),
+		[UnitOperationTypes.PARAM_X1] = trader:GetX(),
+		[UnitOperationTypes.PARAM_Y1] = trader:GetY(),
+	}
+end
+
 -- Returns what one end of a potential route receives, as the yields the screen
 -- lists and the religious pressure on that end, and whether a trading post on
 -- the path adds to the origin. See GetYieldsForRoute and
@@ -122,14 +134,7 @@ local function GetDestinations(player, unit, originCity)
 
 	for _, owner in ipairs(owners) do
 		for _, city in owner:GetCities():Members() do
-			local params = {}
-
-			params[UnitOperationTypes.PARAM_X0] = city:GetX()
-			params[UnitOperationTypes.PARAM_Y0] = city:GetY()
-			params[UnitOperationTypes.PARAM_X1] = unit:GetX()
-			params[UnitOperationTypes.PARAM_Y1] = unit:GetY()
-
-			if UnitManager.CanStartOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, nil, params) then
+			if UnitManager.CanStartOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, nil, SentientSystems_GetRouteParams(city, unit)) then
 				destinations[#destinations + 1] = SentientSystems_GetRouteDestination(player, originCity, city)
 			end
 		end
