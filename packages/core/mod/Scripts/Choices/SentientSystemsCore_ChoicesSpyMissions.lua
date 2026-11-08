@@ -176,15 +176,9 @@ local function GetOffensiveMissions(spy, city)
 					missions[#missions + 1] = GetOffensiveMission(operation, spy, city, cityPlot, nil)
 				end
 			elseif results and results[UnitOperationResults.FAILURE_REASONS] then
-				local reasons = {}
-
-				for i, reason in ipairs(results[UnitOperationResults.FAILURE_REASONS]) do
-					reasons[i] = SentientSystems_LookupText(reason)
-				end
-
 				local mission = GetOffensiveMission(operation, spy, city, cityPlot, nil)
 
-				mission.disabled = reasons
+				mission.disabled = SentientSystems_GetFailureReasons(results, UnitOperationResults.FAILURE_REASONS)
 				missions[#missions + 1] = mission
 			end
 		end

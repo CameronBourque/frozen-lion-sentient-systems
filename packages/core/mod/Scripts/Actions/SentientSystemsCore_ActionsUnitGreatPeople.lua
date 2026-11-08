@@ -22,7 +22,7 @@ local function DoGreatPersonCommand(unit, action, commandType)
 	end
 
 	return SentientSystems_GetOrderFailure(unit, action, IsGreatPerson(unit), function()
-		return SentientSystems_GetCommandReasons(results)
+		return SentientSystems_GetFailureReasons(results, UnitCommandResults.FAILURE_REASONS, " ")
 	end)
 end
 

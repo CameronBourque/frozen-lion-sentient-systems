@@ -40,17 +40,6 @@ local function FindProductionItem(item)
 	return nil
 end
 
--- Returns the game's failure reasons in results, as text.
-local function FailureReasons(results)
-	local reasons = {}
-
-	for i, reason in ipairs(results and results[CityCommandResults.FAILURE_REASONS] or {}) do
-		reasons[i] = SentientSystems_LookupText(reason)
-	end
-
-	return reasons
-end
-
 -- Returns "<start> now" with the reasons after a colon, or without them.
 local function WithReasons(start, reasons)
 	if #reasons == 0 then
@@ -63,7 +52,7 @@ end
 -- Returns why the city can't produce the item, from the game's reasons when it
 -- gives some.
 local function CannotProduce(item, results)
-	return WithReasons("This city can't produce " .. item, FailureReasons(results))
+	return WithReasons("This city can't produce " .. item, SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS))
 end
 
 -- Returns whether the list holds the tile.
@@ -288,7 +277,7 @@ function SentientSystems_Purchase(playerID, cityID, item, yield)
 		local canAfford = purchase.store(player):CanAfford(cityID, row.Hash)
 
 		if not canStart or not canAfford then
-			local reasons = FailureReasons(results)
+			local reasons = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
 
 			if not canAfford then
 				reasons[#reasons + 1] = SentientSystems_LookupText(purchase.cantAffordKey)

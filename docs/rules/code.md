@@ -18,6 +18,7 @@ Rules for code in every package. Each architecture rule links to the design deci
 These conventions come from `scripts/check-docs/`, the first code in the repo. Expect them to change as the bridge and the mods add code.
 
 - **Use the standard library before a dependency.** Add a package only when the standard library can't do the job. Dev tools, such as the linter and the test runner, live in the root `package.json`.
+- **Share what several files repeat.** When two files do the same thing, move it into one helper that both call, and pass in what differs as parameters. A one-line helper is fine when several files call it and its parameters change what it does. Inline a helper that only renames another call.
 - **One file per concern.** Start each file with a short comment on its purpose. An entry file reads the input, prints the output, and calls the other files.
 - **Keep logic apart from input and output.** Functions take data and return results, so tests can pass in data without files or a network.
 - **Put rules in tables.** When code applies a list of similar rules, write each rule as one entry with a name, an example, and its logic. Then loop over the table.

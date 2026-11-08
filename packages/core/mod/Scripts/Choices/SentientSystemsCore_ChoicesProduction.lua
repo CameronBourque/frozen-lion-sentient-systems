@@ -12,7 +12,7 @@ local function CheckBlocked(buildQueue, params, option)
 	local canProduce, results = buildQueue:CanProduce(params, false, true)
 
 	if not canProduce then
-		option.blocked = SentientSystems_GetFailureReasons(results)
+		option.blocked = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
 	end
 
 	return results
@@ -163,7 +163,7 @@ local function GetDistrictOptions(city, purchasable)
 			end
 
 			if blocked then
-				option.blocked = SentientSystems_GetFailureReasons(results)
+				option.blocked = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
 			end
 
 			districts[#districts + 1] = option
@@ -216,7 +216,7 @@ local function GetBuildingAndWonderOptions(city, purchasable)
 				local noLocation = results ~= nil and results[CityOperationResults.NO_SUITABLE_LOCATION] == true
 
 				if not canProduce and not (noLocation and #tiles + #purchaseTiles > 0) then
-					option.blocked = SentientSystems_GetFailureReasons(results)
+					option.blocked = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
 				end
 
 				wonders[#wonders + 1] = option

@@ -270,3 +270,22 @@ end
 function SentientSystems_LookupText(key, ...)
 	return SentientSystems_CleanText(Locale.Lookup(key, ...)) or ""
 end
+
+-- Returns the game's failure reasons from the results of a check, as text. The
+-- key is the FAILURE_REASONS of the check's results table, which differs for a
+-- city command, a unit command, and an operation. The game gives each reason as
+-- text already, and the production panel passes it through Locale.Lookup, as
+-- this does. With a separator, returns the reasons joined, or nil for none.
+function SentientSystems_GetFailureReasons(results, key, separator)
+	local reasons = {}
+
+	for i, reason in ipairs(results and results[key] or {}) do
+		reasons[i] = SentientSystems_LookupText(reason)
+	end
+
+	if separator == nil then
+		return reasons
+	end
+
+	return #reasons > 0 and table.concat(reasons, separator) or nil
+end
