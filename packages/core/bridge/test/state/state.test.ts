@@ -1,13 +1,10 @@
 // Tests for state.ts, against the fake game. The schemas are tested in
 // contract.test.ts, against the JSON from the Lua tests.
 
-import { once } from "node:events";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { CORE_STATE } from "../../src/connect.js";
+import { beforeEach, describe, expect, test } from "vitest";
 import { readState, type State } from "../../src/state/state.js";
-import { TunerClient } from "../../src/tuner/client.js";
-import type { CommandResult } from "../tuner/fake-game.js";
-import { FakeGame } from "../tuner/fake-game.js";
+import type { TunerClient } from "../../src/tuner/client.js";
+import { type CommandResult, type FakeGame, startGame } from "../tuner/fake-game.js";
 
 // The smallest state the schema accepts: every section, empty where it can be,
 // with one blocker so the text has a name to cut in the middle. The schemas are
@@ -56,17 +53,7 @@ describe("readState", () => {
 	let client: TunerClient;
 
 	beforeEach(async () => {
-		game = await FakeGame.start();
-		game.states = [{ index: 0, name: "Main State" }, { index: 130, name: CORE_STATE }];
-		// A short timeout, so the timeout test takes milliseconds.
-		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
-		client.connect();
-		await once(client, "connected");
-	});
-
-	afterEach(async () => {
-		client.close();
-		await game.close();
+		({ game, client } = await startGame());
 	});
 
 	// Answers the stash with the number of pieces, and each piece with its

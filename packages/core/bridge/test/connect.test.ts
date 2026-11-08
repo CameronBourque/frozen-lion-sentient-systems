@@ -2,11 +2,11 @@
 
 import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
-import { CORE_STATE, onConnect } from "../src/connect.js";
+import { onConnect } from "../src/connect.js";
 import { Logger } from "../src/log.js";
-import { TunerClient } from "../src/tuner/client.js";
+import type { TunerClient } from "../src/tuner/client.js";
 import { Tag } from "../src/tuner/framing.js";
-import { FakeGame } from "./tuner/fake-game.js";
+import { type FakeGame, startGame } from "./tuner/fake-game.js";
 
 describe("onConnect", () => {
 	let game: FakeGame;
@@ -16,20 +16,13 @@ describe("onConnect", () => {
 	const logger = new Logger("debug");
 
 	beforeEach(async () => {
-		game = await FakeGame.start();
-		game.states = [{ index: 0, name: "Main State" }, { index: 130, name: CORE_STATE }];
-		// A short timeout, so the timeout test takes milliseconds.
-		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
+		({ game, client } = await startGame());
 		logged = vi.spyOn(console, "log").mockImplementation(() => {});
 		warned = vi.spyOn(console, "warn").mockImplementation(() => {});
-		client.connect();
-		await once(client, "connected");
 	});
 
-	afterEach(async () => {
+	afterEach(() => {
 		vi.restoreAllMocks();
-		client.close();
-		await game.close();
 	});
 
 	// The text of the only warning, without the time in front.

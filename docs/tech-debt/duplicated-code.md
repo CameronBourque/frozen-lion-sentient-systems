@@ -24,7 +24,6 @@ The bridge schemas left share a name only: `CITY`, `TILE`, `YIELD`, and `PLAYER`
 
 ### Tests
 
-- The block that starts a `FakeGame`, sets its states, connects a `TunerClient`, and closes both after each test appears 10 times in 9 bridge test files. The tests in `test/actions/` use `startGame` in its place.
 - In the Lua tests, `Failed` is the same in 15 files, and `Entry` is the same in 3 files. `With`, a shallow copy with changes, is in 24 files, and 20 of them differ only in the name of the first parameter.
 
 ## Proposal
@@ -77,7 +76,7 @@ Each task is one commit. Each one that adds a file adds its tests, and each Lua 
 ### Tests
 
 19. Add `startGame(states)` to `test/tuner/fake-game.ts`, which returns the game and the client and closes both after each test. Use it in `test/actions/`.
-20. Use `startGame` in the other 9 bridge test files.
+20. Use `startGame` in the other bridge test files that read the core mod. `test/tuner/client.test.ts` and `test/tuner/connection.test.ts` keep their own setup, because they test the client and the connection themselves.
 21. Add `Test/Helpers.lua` with `With`, `Failed`, and `Entry`, and use it in the Lua tests. Keep a local `With` where the body differs.
 
 ### Names with different bodies

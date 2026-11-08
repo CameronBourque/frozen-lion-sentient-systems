@@ -214,6 +214,7 @@ export async function startGame(states = CORE_STATES): Promise<{ game: FakeGame;
 
 	game.states = states;
 
+	// A short timeout, so a timeout test takes milliseconds.
 	const client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
 
 	onTestFinished(async () => {
