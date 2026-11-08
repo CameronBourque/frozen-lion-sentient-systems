@@ -8,16 +8,32 @@ Of the 40-odd helpers in `packages/core/mod/Scripts/` whose body is one `return`
 
 `CannotProduce` in `Actions/SentientSystemsCore_ActionsCities.lua` is one call to `WithReasons`, which wraps `FailureReasons`. Three helpers build a reason message for four call sites.
 
-The copies of the same helper in several files are in [duplicated-code.md](duplicated-code.md).
+`FailureReasons` is one of six copies of a loop that reads the game's failure reasons from a results table and looks up the text of each. The copies differ only in the results table key and in how the reasons are joined:
+
+| File | Copy | Results key | Returns |
+| --- | --- | --- | --- |
+| `Choices/SentientSystemsCore_Choices.lua` | `SentientSystems_GetFailureReasons` | `CityCommandResults` | A list |
+| `Actions/SentientSystemsCore_ActionsCities.lua` | `FailureReasons` | `CityCommandResults` | A list |
+| `Choices/SentientSystemsCore_ChoicesGovernors.lua` | Inline | `PlayerOperationResults` | A list |
+| `Choices/SentientSystemsCore_ChoicesSpyMissions.lua` | Inline | `UnitOperationResults` | A list |
+| `Actions/SentientSystemsCore_ActionsUnitJobs.lua` | `SentientSystems_GetOperationReasons` | `UnitOperationResults` | The reasons joined with spaces, or nil |
+| `Actions/SentientSystemsCore_ActionsUnitUpgrade.lua` | `SentientSystems_GetCommandReasons` | `UnitCommandResults` | The reasons joined with spaces, or nil |
+
+The other copies of the same helper in several files are in [duplicated-code.md](duplicated-code.md).
 
 ## Proposal
 
-Inline a helper that only renames a call, or fold a chain of them into one. Keep a one-line helper that names an idea or gives a long expression a short name. Start with the city action helpers, since the code is new.
+Follow the shared helper rule in [rules/code.md](../rules/code.md#conventions). One helper in `SentientSystemsCore_Text.lua` reads the failure reasons for every file, with the results key as a parameter. The city actions build their reason message with one local helper on top of it.
 
-## Questions
+## Tasks
 
-1. What separates a helper that names an idea from one that only renames a call? A test, such as "more than one caller, or a name that explains a condition", would settle the rest.
+1. **Shared failure reasons.** Move `SentientSystems_GetFailureReasons` to `SentientSystemsCore_Text.lua`, which the actions and the choices both include. Give it the results key as a second parameter, and return the list.
+
+   Replace the other five copies with calls to it. A caller that wants one string joins the list itself, so `SentientSystems_GetOperationReasons` and `SentientSystems_GetCommandReasons` go away. Commit: `refactor(core): share one failure reasons helper`.
+2. **City action reasons.** In `ActionsCities.lua`, fold `CannotProduce` and `WithReasons` into one `CantNow(start, reasons)` that the four call sites use. `SentientSystems_Purchase` adds its reason for the cost to the list before the call.
+
+   `CantNow` stays local while only this file builds a "now" message with the game's reasons. Commit: `refactor(core): fold the city action reason helpers into one`.
 
 ## Done when
 
-No helper in `packages/core/mod/Scripts/` only forwards to another with the same arguments. The Lua tests and coverage pass.
+No helper in `packages/core/mod/Scripts/` only forwards to another with the same arguments. One function reads the game's failure reasons. The Lua tests and coverage pass.
