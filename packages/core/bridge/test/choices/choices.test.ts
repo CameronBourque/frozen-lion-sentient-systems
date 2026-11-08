@@ -77,6 +77,6 @@ describe("readChoices", () => {
 	test("names the choices in the game's error", async () => {
 		answer({ [STASH]: { luaError: "no player 0\nstack traceback:\n\t[C]: in function 'error'" } });
 
-		expect(await readChoices(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the choices: no player 0" });
+		expect(await readChoices(client, 0)).toEqual({ ok: false, error: "The choices request failed in the game: no player 0" });
 	});
 });

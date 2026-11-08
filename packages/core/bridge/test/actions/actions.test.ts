@@ -62,6 +62,6 @@ describe("sendAction", () => {
 	test("returns the game's error as a failed result", async () => {
 		game.onCommand = () => ({ luaError: "attempt to call a nil value\nstack traceback:" });
 
-		expect(await sendAction(client, CALL)).toEqual({ ok: false, reason: "The core mod failed to build the action result: attempt to call a nil value" });
+		expect(await sendAction(client, CALL)).toEqual({ ok: false, reason: "The action result request failed in the game: attempt to call a nil value" });
 	});
 });

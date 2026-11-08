@@ -4,8 +4,8 @@
 
 import type { z } from "zod";
 import { CORE_STATE } from "./connect.js";
-import { describeIssue } from "./errors.js";
-import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "./tuner/client.js";
+import { describeIssue, explainFailure } from "./errors.js";
+import type { TunerClient } from "./tuner/client.js";
 
 export type StashResult<T> =
 	| { ok: true; value: T; bytes: number }
@@ -19,7 +19,7 @@ export async function readStash<T>(client: TunerClient, call: string, schema: z.
 	try {
 		json = await readPieces(client, call);
 	} catch (error) {
-		return { ok: false, error: explainFailure(error, what) };
+		return { ok: false, error: explainFailure(error, `${what} request`) };
 	}
 
 	let value: unknown;
@@ -59,20 +59,4 @@ async function readPieces(client: TunerClient, call: string): Promise<string> {
 	}
 
 	return pieces.join("");
-}
-
-function explainFailure(error: unknown, what: string): string {
-	if (error instanceof TunerMissingStateError) {
-		return `The core mod's state ${CORE_STATE} isn't loaded. Turn on Sentient Systems Core in Additional Content, then load a game`;
-	}
-
-	if (error instanceof TunerTimeoutError) {
-		return `The game didn't answer the ${what} request in time, maybe because a game is loading`;
-	}
-
-	if (error instanceof TunerLuaError) {
-		return `The core mod failed to build the ${what}: ${error.message.split("\n")[0]}`;
-	}
-
-	return `Reading the ${what} failed: ${error instanceof Error ? error.message : String(error)}`;
 }

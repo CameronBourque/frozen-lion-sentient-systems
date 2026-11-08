@@ -114,7 +114,7 @@ describe("readState", () => {
 	test("fails when the stash doesn't print a piece count", async () => {
 		answer({ [STASH]: { output: ["nope"] } });
 
-		expect(await readState(client, 0)).toEqual({ ok: false, error: "Reading the state failed: SentientSystems_Stash printed [\"nope\"], not a piece count" });
+		expect(await readState(client, 0)).toEqual({ ok: false, error: "The state request failed: SentientSystems_Stash printed [\"nope\"], not a piece count" });
 	});
 
 	test("fails when the stash prints more than one line", async () => {
@@ -143,7 +143,7 @@ describe("readState", () => {
 	test("fails with the game's error when the core mod can't build the state", async () => {
 		answer({ [STASH]: { luaError: "no player 0\nstack traceback:\n\t[C]: in function 'error'" } });
 
-		expect(await readState(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the state: no player 0" });
+		expect(await readState(client, 0)).toEqual({ ok: false, error: "The state request failed in the game: no player 0" });
 	});
 
 	test("fails when the core mod's state isn't loaded", async () => {

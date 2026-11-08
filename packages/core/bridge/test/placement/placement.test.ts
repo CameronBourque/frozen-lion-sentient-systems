@@ -64,7 +64,7 @@ describe("readPlacement", () => {
 
 		expect(await readPlacement(client, 0, 65536, "DISTRICT_CAMPUS")).toEqual({
 			ok: false,
-			error: "The core mod failed to build the placement: BUILDING_GRANARY isn't a district or a wonder",
+			error: "The placement request failed in the game: BUILDING_GRANARY isn't a district or a wonder",
 		});
 	});
 });

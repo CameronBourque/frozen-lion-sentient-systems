@@ -59,7 +59,7 @@ describe("readTechTree and readCivicTree", () => {
 	test("names the tech tree in the game's error", async () => {
 		answer({ [STASH]: { luaError: "no player 0" } });
 
-		expect(await readTechTree(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the tech tree: no player 0" });
+		expect(await readTechTree(client, 0)).toEqual({ ok: false, error: "The tech tree request failed in the game: no player 0" });
 	});
 
 	test("reads the civic tree with its own call", async () => {
@@ -71,6 +71,6 @@ describe("readTechTree and readCivicTree", () => {
 	test("names the civic tree in the game's error", async () => {
 		answer({ "SentientSystems_Stash(SentientSystems_GetCivicTree(0))": { luaError: "no player 0" } });
 
-		expect(await readCivicTree(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the civic tree: no player 0" });
+		expect(await readCivicTree(client, 0)).toEqual({ ok: false, error: "The civic tree request failed in the game: no player 0" });
 	});
 });

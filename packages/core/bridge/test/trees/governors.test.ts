@@ -78,6 +78,6 @@ describe("readGovernorTree", () => {
 	test("names the governor tree in the game's error", async () => {
 		answer({ [STASH]: { luaError: "no player 0" } });
 
-		expect(await readGovernorTree(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the governor tree: no player 0" });
+		expect(await readGovernorTree(client, 0)).toEqual({ ok: false, error: "The governor tree request failed in the game: no player 0" });
 	});
 });
