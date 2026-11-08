@@ -100,7 +100,7 @@ Where each kind of fact lives:
 
 Each check is its own file in `src/`, with its tests in `test/`. CI runs the check on every pull request, in the `check-docs` job of `.github/workflows/docs.yml`.
 
-To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [code.md](code.md#lint-and-test) describes. Lint checks the doc paths in code comments, as that section also describes.
+To run it locally, run `node scripts/check-docs/src/index.mjs` from the repo root. Its tests run with the other tests, as [testing.md](testing.md) describes. Lint checks the doc paths in code comments, as [code.md](code.md#lint) describes.
 
 The check skips `writing.md` for the pattern rules, because that file quotes the patterns. It reads the inflated words and metaphor nouns from the lists in `writing.md`, so edit those lists there.
 

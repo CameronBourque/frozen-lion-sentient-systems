@@ -8,11 +8,11 @@ Start at [docs/README.md](docs/README.md). It maps each folder to the questions 
 
 ## Rules
 
-Follow [docs/rules/](docs/rules/README.md): [docs](docs/rules/docs.md), [writing](docs/rules/writing.md), [code](docs/rules/code.md), and [commits](docs/rules/commits.md).
+Follow [docs/rules/](docs/rules/README.md): [docs](docs/rules/docs.md), [writing](docs/rules/writing.md), [code](docs/rules/code.md), [testing](docs/rules/testing.md), and [commits](docs/rules/commits.md).
 
 ## Checks
 
-Before you open a pull request, run `npm run lint`, `npm run coverage`, and `npm run check-docs` from the repo root. [code.md](docs/rules/code.md#lint-and-test) and [docs.md](docs/rules/docs.md#automated-check) describe them.
+Before you open a pull request, run `npm run lint`, `npm run coverage`, and `npm run check-docs` from the repo root. [code.md](docs/rules/code.md#lint), [testing.md](docs/rules/testing.md), and [docs.md](docs/rules/docs.md#automated-check) describe them.
 
 ## Layout
 

@@ -13,7 +13,7 @@ It added the serializer for one player, filtered by visibility.
 - The state calls are in [state/state.md](../../../findings/state/state.md) and [state/rivals.md](../../../findings/state/rivals.md).
 - What a player can know about each tile, the visibility layers, and the map reveal are in [state/tile-visibility.md](../../../findings/state/tile-visibility.md).
 - The Lua dialect is in [lua/dialect.md](../../../findings/lua/dialect.md#lua-51-comparison), and the output size limit in [tuner/printing.md](../../../findings/tuner/printing.md#what-we-know-now).
-- The Lua tests and coverage are under **Lint and test** in [code.md](../../../rules/code.md#lint-and-test).
+- The Lua tests and coverage are in [testing.md](../../../rules/testing.md).
 
 ## State: choices, blockers, and scoreboard
 

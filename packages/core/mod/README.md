@@ -6,7 +6,7 @@ Design: [docs/design/core/mod/](../../../docs/design/core/mod/README.md). Game A
 
 ## Tests
 
-The Lua tests are in `Test/`. From the repo root, run `npm run test:lua`. They need Lua 5.1.5 and busted. See **Lint and test** in [code.md](../../../docs/rules/code.md#lint-and-test).
+The Lua tests are in `Test/`. From the repo root, run `npm run test:lua`. They need Lua 5.1.5 and busted. See [testing.md](../../../docs/rules/testing.md).
 
 ## Install for testing
 
