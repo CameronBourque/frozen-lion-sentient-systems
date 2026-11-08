@@ -77,6 +77,8 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
 - `npm test` runs Vitest. Put code in a `src/` folder and tests in a `test/` folder beside it, in each package and script folder.
 
   `test/` mirrors `src/`, so the tests for `src/tuner/framing.ts` go in `test/tuner/framing.test.ts`. Shared test helpers go in `test/` too. Give each rule a case that it catches and a case that it lets through.
+
+  `startGame` in `test/tuner/fake-game.ts` starts the fake game and connects a client for a test, and closes both when the test ends.
 - `npm run coverage` runs the tests and measures coverage. Statements, branches, functions, and lines must each stay at 98% or more, or the run fails.
 
   To leave a file out, add it to the coverage `exclude` list in `vitest.config.js` with a comment that gives the reason. It runs `npm run coverage:lua` first, which writes the Lua fixtures that `test/contract.test.ts` reads.

@@ -10,7 +10,7 @@ The counts come from a scan of `packages/core/bridge/src/`.
 
 It is also a loose pair in function signatures: `moveUnit` in `actions/units.ts`, and `cityAttack` and `purchaseTile` in `actions/cities.ts`. `setProduction` takes it as an inline `{ x: number; y: number }`, and the `UnitAction` type in `actions/units.ts` repeats the pair in its union.
 
-**References.** `owner` and `id` of a city or unit are declared in 17 places in 13 files. The city reference with a name is `CITY_REF` in `src/schemas.ts`.
+**References.** A city named by `owner` and `id` is `CITY_ID` in `src/schemas.ts`, and `CITY_REF` adds its name. Every schema uses them. A unit is named by its ID alone, because the player only acts on their own units.
 
 **Objects with objects inside.** 49 schema fields are an inline `z.object` in another object, in 12 files. The most are in `state/cities.ts` (8), `state/diplomacy.ts` (7), and `state/player.ts` (4).
 
@@ -20,13 +20,13 @@ An inline object has no name, so a reader can't tell whether two of them are the
 
 ## Proposal
 
-Give each repeated shape one named schema and type, and use it everywhere. Start with `Position`, a schema and type of `x` and `y`, and then the city and unit references.
+Give each repeated shape one named schema and type, and use it everywhere. Start with `Position`, a schema and type of `x` and `y`.
 
 The signatures take the object: `moveUnit(client, playerID, unitID, position)`, `purchaseTile(client, playerID, cityID, position)`, and `tile?: Position` in `setProduction`. The Lua calls keep their separate `x` and `y` arguments, so the bridge builds the call from the object.
 
 Then move each inline nested object that has a meaning of its own into a named schema in the same file, such as `Moves` or `Range`. Leave a small object that appears once and has no use outside its parent.
 
-This depends on the shared schemas file in [duplicated-code.md](duplicated-code.md), which is where `Position` lives. Do `Position` first, one commit for the schema and one for each file that moves to it, and the nested objects after.
+`Position` goes in `src/schemas.ts`, with the city references. Do `Position` first, one commit for the schema and one for each file that moves to it, and the nested objects after.
 
 ## Questions
 
@@ -36,4 +36,4 @@ This depends on the shared schemas file in [duplicated-code.md](duplicated-code.
 
 ## Done when
 
-`Position` and the city and unit references each have one definition, and the action functions take them in place of loose values. No inline nested object in `packages/core/bridge/src/` appears twice or is passed to a function. The bridge tests and coverage pass.
+`Position` has one definition, and the action functions take it and the city references in place of loose values. No inline nested object in `packages/core/bridge/src/` appears twice or is passed to a function. The bridge tests and coverage pass.
