@@ -4,14 +4,29 @@
 import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
 
-// Replaces what a city is producing. The item is the type of an option of the
-// production choice, such as UNIT_WARRIOR. A district or a wonder also takes
-// the tile, x and y, from the placement call. An ok result means the game took
-// the order.
-export function setProduction(client: TunerClient, playerID: number, cityID: number, item: string, tile?: { x: number; y: number }): Promise<ActionResult> {
-	const place = tile === undefined ? "" : `, ${tile.x}, ${tile.y}`;
+// Replaces what a city is producing, or adds the item to the end of its
+// queue with append. The item is the type of an option of the production
+// choice, such as UNIT_WARRIOR. A district or a wonder also takes the tile, x
+// and y, from the placement call. An ok result means the game took the order.
+export function setProduction(
+	client: TunerClient,
+	playerID: number,
+	cityID: number,
+	item: string,
+	options: { tile?: { x: number; y: number }; append?: boolean } = {},
+): Promise<ActionResult> {
+	const { tile, append } = options;
+	const args: (number | string)[] = [playerID, cityID, JSON.stringify(item)];
 
-	return sendAction(client, `SentientSystems_SetProduction(${playerID}, ${cityID}, ${JSON.stringify(item)}${place})`);
+	if (tile !== undefined || append === true) {
+		args.push(tile?.x ?? "nil", tile?.y ?? "nil");
+	}
+
+	if (append === true) {
+		args.push("true");
+	}
+
+	return sendAction(client, `SentientSystems_SetProduction(${args.join(", ")})`);
 }
 
 // Buys a unit or a building in a city. The item is the type of an option of the

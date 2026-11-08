@@ -1,6 +1,6 @@
 # Production actions
 
-Status: open. Setting a city's production to a unit, a building, a project, a district, or a wonder is confirmed in a running game. Purchases and the queue aren't checked yet.
+Status: confirmed. Setting a city's production to a unit, a building, a project, a district, or a wonder, and adding to its queue, are confirmed in a running game.
 
 The game call that the production action wraps, with the Lua state it runs in and the reasons its checks give. The items a city can pick are in [choices/production.md](../choices/production.md).
 
@@ -32,6 +32,16 @@ Both run after the player clicks a tile in the placement view. Confirmed in file
 - `CanProduce` refuses a district or a wonder with `NO_SUITABLE_LOCATION` when it has no tile, so the action checks the tile first and asks the game only about the request itself.
 - The game only allows one city at a time to build a given wonder, so a wonder another city is building is off the menu.
 
+### The queue
+
+A city's `GetBuildQueue()` holds the current item and up to `MAX_QUEUE_SIZE` more, 7 in `Base/Assets/UI/ProductionHelper.lua`, line 8. `GetSize()` counts the current item, and `GetAt(i)` reads an entry from 0.
+
+- **Adding.** `GetBuildInsertMode` sets `PARAM_INSERT_MODE` to `VALUE_APPEND` to add to the end. The queue as a whole is a list of `BUILD` requests, so adding sends the same request as setting production.
+- **Full queue.** When `GetSize() - 1 >= MAX_QUEUE_SIZE`, the panel replaces the last item instead. The action returns a reason.
+- **Removing.** `RemoveQueueItem` sends `BUILD` with `PARAM_INSERT_MODE` `VALUE_REMOVE_AT` and `PARAM_QUEUE_LOCATION` set to the index.
+- **Holding a build list.** The game builds the queued items in order with no new request, and the queue moves up as each is built. Confirmed on Windows on 2026-11-07, as the results below show.
+- **Existing queues.** A city can already hold a queue. Adding goes after it, so a build list that must come first needs the old items removed.
+
 ### The checks
 
 - `buildQueue:CanProduce(params, true)` is the test the panel uses to list an item. The action reads a refusal as an item that isn't among the city's choices.
@@ -42,7 +52,10 @@ Both run after the player clicks a tile in the placement view. Confirmed in file
 
 1. For a district or a wonder, read its tiles with `readPlacement`.
 2. Send the file's code to `SentientSystemsCore_UI` as in [choices/production.md](../choices/production.md#method), step 4, and call `SentientSystems_SetProduction(playerID, cityID, item, x, y)`. A unit, a building, and a project take no `x` and `y`.
-3. Read the city's production with `city:GetBuildQueue():GetCurrentProductionTypeHash()` and `GameInfo.Types`, before the call and a second after, since the game takes the request a moment later.
+3. To test the queue, add the items with `append` and read the queue with `GetSize()` and `GetAt(i)`, whose entries hold `UnitType`, `BuildingType`, `ProjectType`, or `DistrictType`.
+
+   End turns with `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` as in [actions/end-turn.md](end-turn.md), and read the queue and the player's units after each.
+4. Read the city's production with `city:GetBuildQueue():GetCurrentProductionTypeHash()` and `GameInfo.Types`, before the call and a second after, since the game takes the request a moment later.
 
    For a district, loop over `city:GetDistricts():Members()` and compare `GetX` and `GetY`.
 
@@ -63,5 +76,19 @@ A single-player game on turn 56, on Windows, in `SentientSystemsCore_UI`, for th
 | `BUILDING_CRISTO_REDENTOR` on (42, 48), the first of Aduatuca's tiles | `{"ok":true}`. A second later the city produced it |
 | `DISTRICT_HOLY_SITE` on (49, 37), a tile Lisieux could buy | `(49, 37) isn't in the city's territory yet. Buy the tile first.` |
 | `BUILDING_CRISTO_REDENTOR` in another city, while Aduatuca built it | The item isn't one of the city's choices |
+
+The queue, on turn 85 in the same game, in Ratumacos, with the five Send Aid projects it held removed. The queue was a Military Engineer, a Coal Power Plant, and a Builder, which differs from the order of their costs:
+
+| Turn | Queue | Military Engineers | Builders | Coal Power Plant |
+| --- | --- | --- | --- | --- |
+| 85 | Engineer, Power Plant, Builder | 16 | 39 | No |
+| 86 | Power Plant, Builder | 17 | 39 | No |
+| 87 and 88 | Power Plant, Builder | 17 | 39 | No |
+| 89 | Builder | 17 | 38 | Yes |
+| 90 | Empty | 17 | 39 | Yes |
+
+The city built the three in order with no new request. The Builder count dropped by one on turn 89 for a Builder used elsewhere, and rose on turn 90 when the new one appeared.
+
+Adding to the end of the empty queue of Ratumacos with `append`: the first item became the current one, each later item went to the end, and the queue held 8 items. A ninth was refused with `This city's production queue is full. It holds 7 items after the current one.`
 
 Date checked: 2026-11-07.

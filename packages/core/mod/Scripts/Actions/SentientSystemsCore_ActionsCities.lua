@@ -116,14 +116,40 @@ local function NeedsTile(city, row, needsPlacement)
 	return not city:GetBuildings():HasBuilding(row.Hash)
 end
 
--- Replaces what the city is producing with the item, and returns the result as
--- JSON. The item is the type of an option of the production choice, such as
--- UNIT_WARRIOR. A district or a wonder also takes the tile, x and y, from the
--- city's placement tiles, unless the city has placed it already. The panel
--- replaces the current item at position 0 when its queue is closed. See
--- GetBuildInsertMode in ProductionPanel.lua and ConfirmPlaceDistrict and
--- ConfirmPlaceWonder in StrategicView_MapPlacement.lua.
-function SentientSystems_SetProduction(playerID, cityID, item, x, y)
+-- The most items the production queue holds after the current one. See
+-- MAX_QUEUE_SIZE in ProductionHelper.lua.
+local MAX_QUEUE_SIZE = 7
+
+-- Sets where the build goes in the queue and returns why it can't, or nil. The
+-- panel replaces the current item at position 0 when its queue is closed, and
+-- adds to the end when it is open. It replaces the last item when the queue is
+-- full, which the action refuses instead. See GetBuildInsertMode in
+-- ProductionPanel.lua.
+local function SetInsertMode(parameters, buildQueue, append)
+	if not append then
+		parameters[CityOperationTypes.PARAM_INSERT_MODE] = CityOperationTypes.VALUE_REPLACE_AT
+		parameters[CityOperationTypes.PARAM_QUEUE_DESTINATION_LOCATION] = 0
+
+		return nil
+	end
+
+	if buildQueue:GetSize() - 1 >= MAX_QUEUE_SIZE then
+		return "This city's production queue is full. It holds " .. MAX_QUEUE_SIZE .. " items after the current one."
+	end
+
+	parameters[CityOperationTypes.PARAM_INSERT_MODE] = CityOperationTypes.VALUE_APPEND
+
+	return nil
+end
+
+-- Replaces what the city is producing with the item, or adds the item to the
+-- end of its queue when append is true, and returns the result as JSON. The
+-- item is the type of an option of the production choice, such as UNIT_WARRIOR.
+-- A district or a wonder also takes the tile, x and y, from the city's
+-- placement tiles, unless the city has placed it already. See
+-- ConfirmPlaceDistrict and ConfirmPlaceWonder in
+-- StrategicView_MapPlacement.lua.
+function SentientSystems_SetProduction(playerID, cityID, item, x, y, append)
 	return SentientSystems_RunAction("SetProduction", function()
 		local player = Players[playerID]
 		local city = player and player:GetCities():FindID(cityID)
@@ -151,11 +177,12 @@ function SentientSystems_SetProduction(playerID, cityID, item, x, y)
 		end
 
 		local needsTile = NeedsTile(city, row, needsPlacement)
-		local parameters = {
-			[key] = row.Hash,
-			[CityOperationTypes.PARAM_INSERT_MODE] = CityOperationTypes.VALUE_REPLACE_AT,
-			[CityOperationTypes.PARAM_QUEUE_DESTINATION_LOCATION] = 0,
-		}
+		local parameters = { [key] = row.Hash }
+		local queueReason = SetInsertMode(parameters, buildQueue, append)
+
+		if queueReason ~= nil then
+			return queueReason
+		end
 
 		-- CanProduce refuses a district or a wonder for want of a tile, which
 		-- the tile check explains better, so only the other items are asked.

@@ -198,6 +198,28 @@ describe("SentientSystems_SetProduction", function()
 		assert.same({}, env.requests)
 	end)
 
+	it("adds the item to the end of the queue with append", function()
+		local env = Load(PRODUCER)
+		local O = env.CityOperationTypes
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_BUILDER", nil, nil, true))
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetProduction(0, PRODUCER.id, "DISTRICT_CAMPUS", 21, 20, true))
+		assert.equal(O.VALUE_APPEND, env.requests[1].parameters[O.PARAM_INSERT_MODE])
+		assert.is_nil(env.requests[1].parameters[O.PARAM_QUEUE_DESTINATION_LOCATION])
+		assert.equal(O.VALUE_APPEND, env.requests[2].parameters[O.PARAM_INSERT_MODE])
+		assert.equal(21, env.requests[2].parameters[O.PARAM_X])
+	end)
+
+	it("fails to append to a full queue, and replaces the current item in one", function()
+		local full = Load(With(PRODUCER, { queueSize = 8 }))
+		local last = Load(With(PRODUCER, { queueSize = 7 }))
+
+		assert.equal(Failed("This city's production queue is full. It holds 7 items after the current one."), full.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_BUILDER", nil, nil, true))
+		assert.same({}, full.requests)
+		assert.equal("{\"ok\":true}", last.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_BUILDER", nil, nil, true))
+		assert.equal("{\"ok\":true}", full.SentientSystems_SetProduction(0, PRODUCER.id, "UNIT_BUILDER"))
+	end)
+
 	it("fails when the game won't start the build", function()
 		local env = Load(With(PRODUCER, { operationBlocked = true }))
 

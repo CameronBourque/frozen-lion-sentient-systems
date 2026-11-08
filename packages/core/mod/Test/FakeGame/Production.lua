@@ -101,6 +101,11 @@ return function(env, world, ctx)
 				GetCurrentProductionTypeHash = function()
 					return hash
 				end,
+				-- The items in the queue, the current one included. It is
+				-- queueSize, or 1 for a city that is producing, or 0.
+				GetSize = function()
+					return data.queueSize or (production and 1 or 0)
+				end,
 				-- The plot index of the district or wonder being built, or -1.
 				GetConstructionPlot = function()
 					local plot = production and production.plot

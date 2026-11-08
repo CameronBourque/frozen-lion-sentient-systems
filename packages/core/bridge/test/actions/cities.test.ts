@@ -63,7 +63,23 @@ describe("setProduction", () => {
 
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
 
-		expect(await setProduction(client, 0, 65536, "DISTRICT_CAMPUS", { x: 21, y: 20 })).toEqual({ ok: true });
+		expect(await setProduction(client, 0, 65536, "DISTRICT_CAMPUS", { tile: { x: 21, y: 20 } })).toEqual({ ok: true });
+	});
+
+	test("passes append to add the item to the queue, with no tile", async () => {
+		const stash = "SentientSystems_Stash(SentientSystems_SetProduction(0, 65536, \"UNIT_BUILDER\", nil, nil, true))";
+
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
+
+		expect(await setProduction(client, 0, 65536, "UNIT_BUILDER", { append: true })).toEqual({ ok: true });
+	});
+
+	test("passes append after the tile of a district", async () => {
+		const stash = "SentientSystems_Stash(SentientSystems_SetProduction(0, 65536, \"DISTRICT_CAMPUS\", 21, 20, true))";
+
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
+
+		expect(await setProduction(client, 0, 65536, "DISTRICT_CAMPUS", { tile: { x: 21, y: 20 }, append: true })).toEqual({ ok: true });
 	});
 });
 
