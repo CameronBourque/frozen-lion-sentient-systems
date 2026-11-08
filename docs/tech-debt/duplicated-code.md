@@ -72,7 +72,7 @@ Each task is one commit. Each one that adds a file adds its tests, and each Lua 
 ### Bridge source
 
 15. Add `src/schemas.ts` with the city reference, and use it in the 3 files.
-16. Add the yields object and the city ID of `owner` and `id` to `src/schemas.ts`. Use the yields in `placement/placement.ts` and `state/income.ts`, and the city ID in `state/income.ts` and `state/resources.ts`.
+16. Add the yields object and the city ID of `owner` and `id` to `src/schemas.ts`, and use them in place of each inline copy. Use the city reference in place of its inline copies in `choices/spies.ts` and `choices/trade-routes.ts`.
 17. Add `src/errors.ts` with one `describeIssue` that keeps the unknown field case of `config.ts`, and use it in `config.ts` and `stash.ts`.
 18. Move `explainFailure` into `src/errors.ts`, with the request name and the retry text as parameters, and use it in `connect.ts` and `stash.ts`.
 

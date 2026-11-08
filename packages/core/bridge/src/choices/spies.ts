@@ -2,11 +2,12 @@
 // as the escape screen offers them. All text is in the game's language.
 
 import { z } from "zod";
+import { CITY_REF } from "../schemas.js";
 
 export const SPIES_CHOICE = z.array(z.object({
 	spy: z.number().describe("The spy's unit ID."),
 	name: z.string(),
-	city: z.object({ owner: z.number(), id: z.number(), name: z.string() }).describe(
+	city: CITY_REF.describe(
 		"The city it escapes from.",
 	),
 	loot: z.string().describe("What it took."),

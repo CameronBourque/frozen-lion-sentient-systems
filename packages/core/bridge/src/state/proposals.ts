@@ -2,6 +2,7 @@
 // have put to the player, as the deal screen shows them.
 
 import { z } from "zod";
+import { CITY_ID } from "../schemas.js";
 
 const ITEM = z.object({
 	id: z.number(),
@@ -14,7 +15,7 @@ const ITEM = z.object({
 	allianceType: z.string().optional().describe("For an alliance."),
 	target: z.number().optional().describe("A player ID, for a joint war."),
 	war: z.string().optional().describe("The war type, for a joint war."),
-	city: z.object({ owner: z.number(), id: z.number() }).optional(),
+	city: CITY_ID.optional(),
 	cedeOccupied: z.literal(true).optional().describe("For a city ceded back."),
 	greatWork: z.string().optional(),
 	name: z.string().optional().describe("The game's text for a city, great work, captive, unit, or tech."),

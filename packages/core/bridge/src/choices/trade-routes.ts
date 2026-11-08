@@ -3,6 +3,7 @@
 // language.
 
 import { z } from "zod";
+import { CITY_REF } from "../schemas.js";
 
 export const ROUTE_END = z.object({
 	yields: z.array(z.object({
@@ -32,7 +33,7 @@ const DESTINATION = z.object({
 export const TRADE_ROUTES_CHOICE = z.array(z.object({
 	unit: z.number().describe("The trader's unit ID."),
 	name: z.string(),
-	city: z.object({ owner: z.number(), id: z.number(), name: z.string() }).describe("The city the route starts from."),
+	city: CITY_REF.describe("The city the route starts from."),
 	destinations: z.array(DESTINATION).describe(
 		"The cities the game lets the trader start a route to, with a path from the origin, the player's own first.",
 	),
