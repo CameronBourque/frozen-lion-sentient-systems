@@ -1,24 +1,13 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local Failed, With = Helpers.Failed, Helpers.With
 
 local HOME = { id = 1, name = "Home", x = 10, y = 10, population = 5, routes = {} }
 local OWN = { id = 2, name = "Own", x = 13, y = 10, population = 5 }
 local FOREIGN = { minor = { name = "FOREIGN", leader = "LEADER_MINOR_CIV_FOREIGN" }, cities = { { id = 1, name = "Foreign", x = 30, y = 10, population = 5 } } }
 local TRADER = { id = 100, type = "UNIT_TRADER", x = 10, y = 10, trader = true, tradeTo = { { player = 0, id = 2 }, { player = 1, id = 1 } } }
-
-local function With(base, changes)
-	local copy = {}
-
-	for key, value in pairs(base) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
 
 -- Returns an environment with the actions loaded into a fake game where
 -- player 0 has the unit, a home city, and an own city, with room for routes
@@ -36,10 +25,6 @@ local function Load(unit, trade, home, routes)
 	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
 
 	return env
-end
-
-local function Failed(reason)
-	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
 end
 
 describe("SentientSystems_TradeRoute", function()

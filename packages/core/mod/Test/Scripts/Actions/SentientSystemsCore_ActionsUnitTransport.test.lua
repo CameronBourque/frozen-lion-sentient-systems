@@ -1,26 +1,11 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local Failed, With = Helpers.Failed, Helpers.With
 
 local KNIGHT = { id = 7405612, type = "UNIT_KNIGHT", x = 20, y = 20, moves = 4 }
 local SPEC_OPS = { id = 7405612, type = "UNIT_SPEC_OPS", x = 20, y = 20, moves = 3, paradrop = true }
-
-local function With(unit, changes)
-	local copy = {}
-
-	for key, value in pairs(unit) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
-
-local function Failed(reason)
-	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
-end
 
 -- Runs the action for the unit in a fake game where player 0 has only it.
 local function Run(unit, action, x, y)

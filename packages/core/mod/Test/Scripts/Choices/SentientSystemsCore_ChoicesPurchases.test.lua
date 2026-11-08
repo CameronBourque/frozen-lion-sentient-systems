@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local With = Helpers.With
 
 local BUILDER = { type = "UNIT_BUILDER", cost = 100 }
 local CANT_AFFORD = "LOC_BUILDING_INSUFFICIENT_FUNDS"
@@ -13,20 +16,6 @@ local function PurchasesWith(purchases, text)
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
 	return env.SentientSystems_GetChoices(0):match("\"purchases\":(%b[])")
-end
-
-local function With(option, changes)
-	local copy = {}
-
-	for key, value in pairs(option) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
 end
 
 describe("SentientSystems_GetPurchaseChoices", function()

@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local Failed, With = Helpers.Failed, Helpers.With
 
 local ENGINEER = { id = 5898263, type = "UNIT_GREAT_ENGINEER", x = 10, y = 10, moves = 4, greatPerson = "GREAT_PERSON_CLASS_ENGINEER" }
 
@@ -12,24 +15,6 @@ local function Load(unit)
 	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
 
 	return env
-end
-
-local function With(unit, changes)
-	local copy = {}
-
-	for key, value in pairs(unit) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
-
-local function Failed(reason)
-	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
 end
 
 local ORDERS = {

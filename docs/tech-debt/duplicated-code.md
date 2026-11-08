@@ -22,10 +22,6 @@ Each pair was read. They share a name only.
 
 The bridge schemas left share a name only: `CITY`, `TILE`, `YIELD`, and `PLAYER` each describe a different object in the files that define them. `BLOCKED` in `choices/production.ts` and `choices/purchases.ts` is one line of schema with a different description in each, so it stays.
 
-### Tests
-
-- In the Lua tests, `Failed` is the same in 15 files, and `Entry` is the same in 3 files. `With`, a shallow copy with changes, is in 24 files, and 20 of them differ only in the name of the first parameter.
-
 ## Proposal
 
 Move each copy into one shared helper that takes what differs as parameters, as [rules/code.md](../rules/code.md) says, and delete the rest. Each Lua helper goes in the smallest file that every caller loads:

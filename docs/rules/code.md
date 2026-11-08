@@ -87,6 +87,8 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
   A test file ends in `.test.lua`, so the tests for `Scripts/SentientSystemsCore_Common.lua` go in `Test/Scripts/SentientSystemsCore_Common.test.lua`.
 
   `Test/Game.lua` loads a mod file into an environment that matches the game's Lua. Its `include` finds files through `ImportFiles` in the `.modinfo`, as the game does, so a file missing from the `.modinfo` fails in the tests too.
+
+  `Test/Helpers.lua` holds the helpers that many tests share, such as `With`, which copies a table with changes. Add a helper there once a second test file needs it.
 - The Lua tests also record the JSON that each top-level call returns, such as `SentientSystems_GetState`, as fixtures in `packages/core/bridge/test/lua-fixtures/`, which `.gitignore` lists.
 
   `Test/Game.lua` wraps the calls and writes one file per call, named by the test file and the call's order in it. `npm run test:lua` and `npm run coverage:lua` empty the folder first.

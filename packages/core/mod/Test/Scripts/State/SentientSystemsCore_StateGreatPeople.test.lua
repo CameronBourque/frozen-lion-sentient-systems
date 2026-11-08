@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local With = Helpers.With
 
 local SUN_TZU = {
 	class = "GREAT_PERSON_CLASS_GENERAL",
@@ -12,20 +15,6 @@ local SUN_TZU = {
 	gold = { cost = 650, can = true },
 	faith = { cost = 450 },
 }
-
-local function With(person, changes)
-	local copy = {}
-
-	for key, value in pairs(person) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
 
 -- Returns the great people section JSON for player 0, in a world with the great
 -- people and players given, and the world fields in extra.

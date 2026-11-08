@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local With = Helpers.With
 
 -- Cities of player 0 and of player 1, a rival, and of player 5, a city-state,
 -- with the districts and the plots each mission targets.
@@ -56,20 +59,6 @@ local OPS = {
 }
 
 local TRAVEL = { { player = 0, id = 1, travel = 1, establish = 0 }, { player = 1, id = 1, travel = 2, establish = 1 }, { player = 5, id = 1, travel = 3, establish = 1 } }
-
-local function With(base, changes)
-	local copy = {}
-
-	for key, value in pairs(base) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
 
 -- A spy of player 0 standing at x, y.
 local function Spy(x, y, changes)

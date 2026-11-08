@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local With = Helpers.With
 
 local POTTERY = { type = "TECH_POTTERY", cost = 25, turns = 4, researched = true, locked = true, unlocks = { "BUILDING_GRANARY" } }
 local IRRIGATION = {
@@ -23,20 +26,6 @@ end
 
 local function NodesWith(techs)
 	return Load({ players = { [0] = { techs = techs } } }).SentientSystems_GetTechTree(0):match("\"nodes\":(%b[])")
-end
-
-local function With(tech, changes)
-	local copy = {}
-
-	for key, value in pairs(tech) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
 end
 
 describe("SentientSystems_GetTechTree", function()
