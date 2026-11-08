@@ -49,3 +49,26 @@ describe("SentientSystems_GetPlayerState", function()
 		assert.falsy(PlayerWith({ favor = 5 }):find("favor", 1, true))
 	end)
 end)
+
+describe("SentientSystems_GetDealItems", function()
+	it("gives each item of the type with an amount that is negative when the player gives it", function()
+		local env = Game.new()
+		local deals = {
+			{ player = 4, gold = 5, duration = 30, enacted = 70, outgoing = true },
+			{ player = 4, gold = 3, duration = 30, enacted = 73 },
+			{ player = 4, gold = 9, duration = 0, enacted = 73 },
+			{ player = 4, resource = "RESOURCE_TURTLES", amount = 2, duration = 30, enacted = 70 },
+		}
+
+		FakeGame.Install(env, { turn = 85, players = { [0] = { deals = deals }, [4] = {} } })
+		Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
+
+		local list = {}
+
+		for i, entry in ipairs(env.SentientSystems_GetDealItems(0, env.DealItemTypes.GOLD)) do
+			list[i] = { player = entry.player, turnsLeft = entry.turnsLeft, amount = entry.amount }
+		end
+
+		assert.same({ { player = 4, turnsLeft = 15, amount = -5 }, { player = 4, turnsLeft = 18, amount = 3 } }, list)
+	end)
+end)

@@ -77,27 +77,8 @@ end
 -- which are negative, and imports, with the turns left. See GetData in
 -- ReportScreen.lua.
 local function AddDeals(player, entries)
-	local playerID = player:GetID()
-	local turn = Game.GetCurrentGameTurn()
-
-	for _, other in ipairs(PlayerManager.GetAliveMajors()) do
-		local otherID = other:GetID()
-
-		if otherID ~= playerID then
-			for _, deal in ipairs(DealManager.GetPlayerDeals(playerID, otherID) or {}) do
-				for _, side in ipairs({ { owner = playerID, sign = -1 }, { owner = otherID, sign = 1 } }) do
-					for _, item in ipairs(deal:FindItemsByType(DealItemTypes.RESOURCES, DealItemSubTypes.NONE, side.owner) or {}) do
-						local duration = item:GetDuration()
-
-						if duration ~= 0 then
-							local source = { kind = "deal", player = otherID, turnsLeft = duration - (turn - item:GetEnactedTurn()) }
-
-							Add(entries, item:GetValueType(), source, side.sign * item:GetAmount())
-						end
-					end
-				end
-			end
-		end
+	for _, entry in ipairs(SentientSystems_GetDealItems(player:GetID(), DealItemTypes.RESOURCES)) do
+		Add(entries, entry.item:GetValueType(), { kind = "deal", player = entry.player, turnsLeft = entry.turnsLeft }, entry.amount)
 	end
 end
 

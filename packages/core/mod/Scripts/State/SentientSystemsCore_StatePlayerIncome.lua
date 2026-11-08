@@ -422,29 +422,12 @@ end
 -- A deal item with no duration is left out. See GetData in ReportScreen.lua.
 local function GetDeals(playerID)
 	local list, paid = {}, 0
-	local turn = Game.GetCurrentGameTurn()
 
-	for _, other in ipairs(PlayerManager.GetAliveMajors()) do
-		local otherID = other:GetID()
+	for i, entry in ipairs(SentientSystems_GetDealItems(playerID, DealItemTypes.GOLD)) do
+		list[i] = { player = entry.player, turnsLeft = entry.turnsLeft, gold = entry.amount }
 
-		if otherID ~= playerID then
-			for _, deal in ipairs(DealManager.GetPlayerDeals(playerID, otherID) or {}) do
-				for _, side in ipairs({ { owner = playerID, sign = -1 }, { owner = otherID, sign = 1 } }) do
-					for _, item in ipairs(deal:FindItemsByType(DealItemTypes.GOLD, DealItemSubTypes.NONE, side.owner) or {}) do
-						local duration = item:GetDuration()
-
-						if duration ~= 0 then
-							local gold = side.sign * item:GetAmount()
-
-							list[#list + 1] = { player = otherID, turnsLeft = duration - (turn - item:GetEnactedTurn()), gold = gold }
-
-							if gold < 0 then
-								paid = paid - gold
-							end
-						end
-					end
-				end
-			end
+		if entry.amount < 0 then
+			paid = paid - entry.amount
 		end
 	end
 
