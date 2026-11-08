@@ -1,9 +1,6 @@
 -- The attack orders, with a ship's coastal raid. The units file loads this
 -- file. The calls are in docs/findings/actions/.
 
--- The most targets a reason lists before it gives a count.
-local MAX_LISTED = 8
-
 -- Returns the tiles the operation can hit, which the UI's attack range marks as
 -- targets, each as x and y.
 function SentientSystems_GetTargetTiles(results, plots, modifiers, isTarget)
@@ -26,15 +23,7 @@ function SentientSystems_GetNotTargetReason(tiles)
 		return "That tile isn't a target, and nothing is in range."
 	end
 
-	local listed = {}
-
-	for i = 1, math.min(#tiles, MAX_LISTED) do
-		listed[i] = "(" .. tiles[i].x .. ", " .. tiles[i].y .. ")"
-	end
-
-	local more = #tiles > MAX_LISTED and ", and " .. (#tiles - MAX_LISTED) .. " more" or ""
-
-	return "That tile isn't a target. The targets in range are " .. table.concat(listed, ", ") .. more .. "."
+	return "That tile isn't a target. The targets in range are " .. SentientSystems_ListTiles(tiles) .. "."
 end
 
 -- Returns whether the tile holds a unit that the player sees or a city that
@@ -183,13 +172,7 @@ end
 
 -- Returns how a refusal ends: the tiles a ship could raid instead.
 local function ListRaidTiles(tiles)
-	local listed = {}
-
-	for i = 1, math.min(#tiles, MAX_LISTED) do
-		listed[i] = "(" .. tiles[i].x .. ", " .. tiles[i].y .. ")"
-	end
-
-	return " A coastal raid can hit " .. table.concat(listed, ", ") .. (#tiles > MAX_LISTED and ", and " .. (#tiles - MAX_LISTED) .. " more" or "") .. "."
+	return " A coastal raid can hit " .. SentientSystems_ListTiles(tiles) .. "."
 end
 
 -- The UI tries a ranged attack, then a coastal raid, and then a move that

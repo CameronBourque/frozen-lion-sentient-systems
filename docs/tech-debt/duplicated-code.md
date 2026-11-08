@@ -10,7 +10,6 @@ The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/
 
 - A city lookup by owner and ID that returns "Player 0 has no city 1." is written 6 times: 4 in `ActionsCities`, 1 in `ActionsSpies`, and 1 in `ActionsTrade`.
 - A player lookup that raises `no player <id>` is written 5 times, in the entry files `State`, `Choices`, `Placement`, `TreesGovernors`, and `TreesResearch`.
-- The text that lists tiles as "(x, y)" and ends with "and N more" past `MAX_LISTED`, which is 8, is in `ActionsUnitAttacks` and `ActionsUnitTileOrders`.
 - The walk over every deal item of a type, with its side and turns left, is in `GetDeals` in `StatePlayerIncome` and `AddDeals` in `StatePlayerResources`. Only the item type and what each does with an item differ.
 - The loop over `GameInfo.GovernorPromotionSets` for one governor is in `ChoicesGovernors`, `StateGovernors`, and `TreesGovernors`.
 - The unit kind check `row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"` is in `ActionsUnitStances` and `ActionsUnitTiles`.

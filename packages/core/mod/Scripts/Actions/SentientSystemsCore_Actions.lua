@@ -5,6 +5,9 @@ include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_Text")
 
+-- The most tiles a reason lists before it gives a count.
+local MAX_LISTED = 8
+
 -- Runs an action and returns its result as JSON for the bridge. The action
 -- returns nil when it worked, and the reason it failed as text otherwise. A
 -- Lua error in it comes back as a failure too, with the error's first line.
@@ -31,6 +34,20 @@ function SentientSystems_HasTile(tiles, x, y)
 	end
 
 	return false
+end
+
+-- Returns the tiles as text for a reason: the first MAX_LISTED in the list's
+-- order, then a count of the rest.
+function SentientSystems_ListTiles(tiles)
+	local listed = {}
+
+	for i = 1, math.min(#tiles, MAX_LISTED) do
+		listed[i] = "(" .. tiles[i].x .. ", " .. tiles[i].y .. ")"
+	end
+
+	local more = #tiles > MAX_LISTED and ", and " .. (#tiles - MAX_LISTED) .. " more" or ""
+
+	return table.concat(listed, ", ") .. more
 end
 
 SentientSystems_Include("SentientSystemsCore_ActionsUnits")
