@@ -94,6 +94,12 @@ function SentientSystems_AddUnitAction(name, action)
 	ACTIONS[name] = action
 end
 
+-- Returns whether the kind of unit in the row can pillage and plunder: it has
+-- strength and isn't an air unit. See docs/findings/actions/trade.md.
+function SentientSystems_CanPillage(row)
+	return row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"
+end
+
 SentientSystems_Include("SentientSystemsCore_ActionsUnitStances")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitTiles")
 SentientSystems_Include("SentientSystemsCore_ActionsUnitJobs")

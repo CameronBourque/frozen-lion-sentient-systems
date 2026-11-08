@@ -179,9 +179,7 @@ end
 -- no failure reasons for it, so the tile's hint says what it needs.
 SentientSystems_AddUnitAction("plunder", function(_, unit)
 	return SentientSystems_DoCommand(unit, "plunder", {
-		kind = function(row)
-			return row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"
-		end,
+		kind = SentientSystems_CanPillage,
 		hint = function()
 			return "No trade route of a player at war with you is on the tile, or it is immune to plunder."
 		end,

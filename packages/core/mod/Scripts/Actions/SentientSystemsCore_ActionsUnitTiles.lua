@@ -169,9 +169,7 @@ end)
 -- orders, the improvement first.
 SentientSystems_AddUnitAction("pillage", function(playerID, unit)
 	local options = {
-		kind = function(row)
-			return row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"
-		end,
+		kind = SentientSystems_CanPillage,
 		hint = function()
 			return GetPillageHint(playerID, unit)
 		end,

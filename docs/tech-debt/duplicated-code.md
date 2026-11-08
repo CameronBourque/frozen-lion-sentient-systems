@@ -11,7 +11,6 @@ The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/
 - A player lookup that raises `no player <id>` is written 4 times, in the entry files `State`, `Choices`, `TreesGovernors`, and `TreesResearch`.
 - The walk over every deal item of a type, with its side and turns left, is in `GetDeals` in `StatePlayerIncome` and `AddDeals` in `StatePlayerResources`. Only the item type and what each does with an item differ.
 - The loop over `GameInfo.GovernorPromotionSets` for one governor is in `ChoicesGovernors`, `StateGovernors`, and `TreesGovernors`.
-- The unit kind check `row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"` is in `ActionsUnitStances` and `ActionsUnitTiles`.
 - The trade route operation parameters `PARAM_X0` to `PARAM_Y1` are built in `ActionsTrade` and `ChoicesTradeRoutes`.
 - The `YIELDS` table of yield names is in `Placement` and `StateCities`.
 
