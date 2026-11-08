@@ -11,15 +11,6 @@ local function GetRank(level)
 	return Locale.Lookup("LOC_ESPIONAGE_LEVEL_1_NAME")
 end
 
--- Returns a city's owner, ID, and name, or nil with no city.
-local function GetCityRef(city)
-	if city == nil then
-		return nil
-	end
-
-	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }
-end
-
 -- Returns the type of the district on the tile, or nil with none.
 local function GetDistrictType(x, y)
 	local district = GameInfo.Districts[Map.GetPlot(x, y):GetDistrictType()]
@@ -38,7 +29,7 @@ local function GetSpy(spy)
 		name = Locale.Lookup(spy:GetName()),
 		level = level,
 		rank = GetRank(level),
-		city = GetCityRef(Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())),
+		city = SentientSystems_GetCityRef(Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())),
 	}
 
 	if operationType ~= -1 then
@@ -118,7 +109,7 @@ local function GetTraveling(player)
 				name = Locale.Lookup(spy.Name),
 				level = spy.Level,
 				rank = GetRank(spy.Level),
-				city = GetCityRef(Cities.GetPlotPurchaseCity(spy.XLocation, spy.YLocation)),
+				city = SentientSystems_GetCityRef(Cities.GetPlotPurchaseCity(spy.XLocation, spy.YLocation)),
 				turnsLeft = spy.ReturnTurn - Game.GetCurrentGameTurn(),
 			}
 		end

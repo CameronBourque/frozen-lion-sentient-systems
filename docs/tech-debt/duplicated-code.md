@@ -12,11 +12,10 @@ The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/
 
 ### Lua functions with one name and different bodies
 
-Each pair was read. Only `GetCityRef` is one idea written twice. The others share a name only.
+Each pair was read. They share a name only.
 
 | Name | Files | Fix |
 | --- | --- | --- |
-| `GetCityRef` | `ChoicesSpyMissions`, `StateEspionage`, and `StateTrade`. All build `{ owner, id, name }`, and only the copy in `StateEspionage` accepts `nil` | Merge |
 | `GetPromotions` | `ActionsUnitStances` lists a unit's promotions. `ChoicesGovernors`, `StateGovernors`, and `TreesGovernors` each list a governor's promotions in a different shape | Rename |
 | `GetGovernor` | `StateCities`, `StateGovernors`, and `TreesGovernors`, each a different shape | Rename |
 | `FindDistrict` | `ActionsSpies` finds a district by type, and `ChoicesSpyMissions` finds one by plot | Rename |

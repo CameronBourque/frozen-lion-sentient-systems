@@ -12,6 +12,16 @@ function SentientSystems_GetPlayer(playerID)
 	return player
 end
 
+-- Returns a city's owner, ID, and name, the reference the bridge sends back to
+-- name it, or nil with no city.
+function SentientSystems_GetCityRef(city)
+	if city == nil then
+		return nil
+	end
+
+	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }
+end
+
 -- Returns the city of the player by ID, or nil and the reason. A number that is
 -- no player has an object whose GetCities returns nothing.
 function SentientSystems_FindCity(playerID, cityID)

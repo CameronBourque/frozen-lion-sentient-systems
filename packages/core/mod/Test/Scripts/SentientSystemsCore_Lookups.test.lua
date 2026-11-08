@@ -5,7 +5,7 @@ local env
 
 before_each(function()
 	env = Game.new()
-	FakeGame.Install(env, { players = { [0] = { cities = { { id = 65536, x = 20, y = 20 } } } } })
+	FakeGame.Install(env, { players = { [0] = { cities = { { id = 65536, x = 20, y = 20, name = "LOC_CITY_NAME_ROME" } } } }, text = { LOC_CITY_NAME_ROME = "Rome" } })
 	Game.run(env, "Scripts/SentientSystemsCore_Lookups.lua")
 end)
 
@@ -18,6 +18,16 @@ describe("SentientSystems_GetPlayer", function()
 		assert.has_error(function()
 			env.SentientSystems_GetPlayer(7)
 		end, "no player 7")
+	end)
+end)
+
+describe("SentientSystems_GetCityRef", function()
+	it("returns the city's owner, ID, and name", function()
+		assert.same({ owner = 0, id = 65536, name = "Rome" }, env.SentientSystems_GetCityRef(env.SentientSystems_FindCity(0, 65536)))
+	end)
+
+	it("returns nil with no city", function()
+		assert.is_nil(env.SentientSystems_GetCityRef(nil))
 	end)
 end)
 
