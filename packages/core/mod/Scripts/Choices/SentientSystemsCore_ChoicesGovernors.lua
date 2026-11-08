@@ -43,15 +43,11 @@ end
 local function GetPromotions(governors, governor, definition)
 	local promotions = {}
 
-	for set in GameInfo.GovernorPromotionSets() do
-		if set.GovernorType == definition.GovernorType then
-			local promotion = GameInfo.GovernorPromotions[set.GovernorPromotion]
+	for _, promotion in ipairs(SentientSystems_GetPromotionRows(definition)) do
+		if not governor:HasPromotion(promotion.Hash) and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
+			local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
 
-			if not governor:HasPromotion(promotion.Hash) and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
-				local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
-
-				promotions[#promotions + 1] = { type = promotion.GovernorPromotionType, name = name, description = description, hidden = hidden }
-			end
+			promotions[#promotions + 1] = { type = promotion.GovernorPromotionType, name = name, description = description, hidden = hidden }
 		end
 	end
 

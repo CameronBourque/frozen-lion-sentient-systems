@@ -29,30 +29,27 @@ end
 local function GetPromotions(governors, governor, definition, prerequisites)
 	local promotions = {}
 
-	for set in GameInfo.GovernorPromotionSets() do
-		if set.GovernorType == definition.GovernorType then
-			local promotion = GameInfo.GovernorPromotions[set.GovernorPromotion]
-			local status = "locked"
+	for _, promotion in ipairs(SentientSystems_GetPromotionRows(definition)) do
+		local status = "locked"
 
-			if governor == nil and promotion.BaseAbility or governor ~= nil and governor:HasPromotion(promotion.Hash) then
-				status = "held"
-			elseif governor ~= nil and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
-				status = "available"
-			end
-
-			local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
-
-			promotions[#promotions + 1] = {
-				type = promotion.GovernorPromotionType,
-				name = name,
-				description = description,
-				hidden = hidden,
-				level = promotion.Level,
-				column = promotion.Column,
-				requires = prerequisites[promotion.GovernorPromotionType] or {},
-				status = status,
-			}
+		if governor == nil and promotion.BaseAbility or governor ~= nil and governor:HasPromotion(promotion.Hash) then
+			status = "held"
+		elseif governor ~= nil and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
+			status = "available"
 		end
+
+		local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
+
+		promotions[#promotions + 1] = {
+			type = promotion.GovernorPromotionType,
+			name = name,
+			description = description,
+			hidden = hidden,
+			level = promotion.Level,
+			column = promotion.Column,
+			requires = prerequisites[promotion.GovernorPromotionType] or {},
+			status = status,
+		}
 	end
 
 	return promotions

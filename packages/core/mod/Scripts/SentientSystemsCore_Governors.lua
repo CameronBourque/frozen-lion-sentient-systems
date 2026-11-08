@@ -1,6 +1,6 @@
 -- The governor rules that the state, the choice, and the tree share: which
--- governors are Secret Societies, and which promotions the panel hides.
--- Follows GovernorSupport.lua.
+-- governors are Secret Societies, their promotions, and which ones the panel
+-- hides. Follows GovernorSupport.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Text")
@@ -8,6 +8,21 @@ SentientSystems_Include("SentientSystemsCore_Text")
 -- The name and description the game shows for a promotion that is still hidden.
 local HIDDEN_NAME_KEY = "LOC_GOVERNOR_PROMOTION_UNKNOWN_NAME"
 local HIDDEN_DESCRIPTION_KEY = "LOC_GOVERNOR_PROMOTION_UNKNOWN_DESCRIPTION"
+
+-- Returns the GameInfo.GovernorPromotions rows of a governor, in the order of
+-- GameInfo.GovernorPromotionSets. See CreatePromotionTree in
+-- GovernorDetailsPanel.lua.
+function SentientSystems_GetPromotionRows(definition)
+	local rows = {}
+
+	for set in GameInfo.GovernorPromotionSets() do
+		if set.GovernorType == definition.GovernorType then
+			rows[#rows + 1] = GameInfo.GovernorPromotions[set.GovernorPromotion]
+		end
+	end
+
+	return rows
+end
 
 -- Returns whether a governor can't be assigned to a city, which only a Secret
 -- Society can't. The panel shows such a governor as a society, with no stats

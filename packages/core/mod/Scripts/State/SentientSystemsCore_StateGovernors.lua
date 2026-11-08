@@ -9,13 +9,9 @@ SentientSystems_Include("SentientSystemsCore_Governors")
 local function GetPromotions(governor, definition)
 	local promotions = {}
 
-	for set in GameInfo.GovernorPromotionSets() do
-		if set.GovernorType == definition.GovernorType then
-			local promotion = GameInfo.GovernorPromotions[set.GovernorPromotion]
-
-			if governor:HasPromotion(promotion.Hash) then
-				promotions[#promotions + 1] = promotion.GovernorPromotionType
-			end
+	for _, promotion in ipairs(SentientSystems_GetPromotionRows(definition)) do
+		if governor:HasPromotion(promotion.Hash) then
+			promotions[#promotions + 1] = promotion.GovernorPromotionType
 		end
 	end
 

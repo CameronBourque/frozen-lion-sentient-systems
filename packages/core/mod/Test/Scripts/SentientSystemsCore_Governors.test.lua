@@ -44,6 +44,14 @@ local function Joined(env)
 	return list[1]
 end
 
+describe("SentientSystems_GetPromotionRows", function()
+	it("gives the governor's promotion rows in the order of its set, and none of another governor's", function()
+		local env = Load({ appointed = { OWLS }, candidates = { { type = "GOVERNOR_THE_DEFENDER", promotions = { { type = "GOVERNOR_PROMOTION_DEFENDER_1" } } } } })
+
+		assert.same({ Promotion(env, 1), Promotion(env, 2), Promotion(env, 3) }, env.SentientSystems_GetPromotionRows(env.GameInfo.Governors["GOVERNOR_OWLS_OF_MINERVA"]))
+	end)
+end)
+
 describe("SentientSystems_IsCannotAssign", function()
 	it("is true for a Secret Society and false for another governor", function()
 		local env = Load({ appointed = { OWLS }, candidates = { { type = "GOVERNOR_THE_DEFENDER" } } })
