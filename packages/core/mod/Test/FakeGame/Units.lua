@@ -1,6 +1,6 @@
 -- A player's units. Fakes each unit's position, health, experience,
--- promotions, and formation, with the GameInfo rows they need and the promotion
--- command. FakeGame/Maintenance.lua names and hashes the unit rows.
+-- promotions, abilities, and formation, with their GameInfo rows and the
+-- promotion command. FakeGame/Maintenance.lua names and hashes the unit rows.
 
 return function(env, world, ctx)
 	local indexes, AddRow = ctx.indexes, ctx.AddRow
@@ -41,6 +41,10 @@ return function(env, world, ctx)
 		for _, unit in ipairs(data.units or {}) do
 			AddRow("Units", "UnitType", unit.type)
 
+			for _, typeName in ipairs(unit.abilities or {}) do
+				AddRow("UnitAbilities", "UnitAbilityType", typeName)
+			end
+
 			if unit.experience ~= nil then
 				for _, list in ipairs({ unit.experience.promotions or {}, unit.experience.available or {} }) do
 					for _, typeName in ipairs(list) do
@@ -68,6 +72,16 @@ return function(env, world, ctx)
 		unit.availablePromotions = experience and Indexes(experience.available)
 		-- Whether other players' IsUnitVisible hides the unit.
 		unit.hidden = data.hidden == true
+
+		-- The UI lists a unit's active abilities by index, from the types in
+		-- abilities.
+		function unit.GetAbility()
+			return {
+				GetAbilities = function()
+					return Indexes(data.abilities)
+				end,
+			}
+		end
 
 		function unit.GetExperience()
 			if experience == nil then

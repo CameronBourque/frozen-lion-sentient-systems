@@ -38,12 +38,9 @@ return function(env, world, ctx)
 
 			local found = {}
 
-			for id, player in pairs(env.Players) do
+			for _, player in pairs(env.Players) do
 				for _, unit in player:GetUnits():Members() do
 					if unit.GetX() == x and unit.GetY() == y then
-						unit.GetOwner = function()
-							return id
-						end
 						found[#found + 1] = unit
 					end
 				end

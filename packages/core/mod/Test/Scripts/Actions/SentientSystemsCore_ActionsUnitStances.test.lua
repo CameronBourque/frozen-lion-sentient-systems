@@ -82,12 +82,45 @@ describe("the stance, wake, delete, plunder, and promote actions", function()
 		assert.same({ { unit = KNIGHT.id, command = env.UnitCommandTypes.PLUNDER_TRADE_ROUTE } }, env.requests)
 	end)
 
-	it("fails to plunder for a unit with no strength, and explains the tile for one with", function()
+	it("fails to plunder for a unit with no strength", function()
 		assert.equal(Failed("This kind of unit can't plunder."), Load(With(KNIGHT, { type = "UNIT_SCOUT" })).SentientSystems_UnitAction(0, KNIGHT.id, "plunder"))
-		assert.equal(
-			Failed("No trade route of a player at war with you is on the tile, or it is immune to plunder."),
-			Load(KNIGHT).SentientSystems_UnitAction(0, KNIGHT.id, "plunder")
-		)
+	end)
+
+	describe("the plunder reason", function()
+		local TRADER = { id = 100, type = "UNIT_TRADER", x = 10, y = 10, trader = true }
+
+		-- Returns the reason the knight can't plunder, with player 1's trader
+		-- on the tile when given, and player 0 at war with the players in
+		-- atWar.
+		local function Plunder(knight, trader, atWar)
+			local env = Game.new()
+
+			FakeGame.Install(env, { players = { [0] = { units = { knight }, atWar = atWar }, [1] = { units = { trader } } } })
+			Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
+
+			return env.SentientSystems_UnitAction(0, knight.id, "plunder")
+		end
+
+		it("says the unit has no moves left first", function()
+			assert.equal(Failed("The unit has no moves left."), Plunder(With(KNIGHT, { moves = 0 }), TRADER, { 1 }))
+		end)
+
+		it("says no trader is on the tile, for an empty tile and the player's own units", function()
+			assert.equal(Failed("No trader of another player is on the tile."), Plunder(KNIGHT, nil, { 1 }))
+			assert.equal(Failed("No trader of another player is on the tile."), Plunder(KNIGHT, With(TRADER, { x = 11 }), { 1 }))
+		end)
+
+		it("says no trader is of a player at war, for a trader at peace", function()
+			assert.equal(Failed("No trader on the tile is of a player at war with you."), Plunder(KNIGHT, TRADER, {}))
+		end)
+
+		it("says the route is immune for a trader at war with the immunity ability", function()
+			assert.equal(Failed("The trade route on the tile is immune to plunder."), Plunder(KNIGHT, With(TRADER, { abilities = { "ABILITY_ECONOMIC_GOLDEN_AGE_PLUNDER_IMMUNITY" } }), { 1 }))
+		end)
+
+		it("gives the general reason for a trader at war without it", function()
+			assert.equal(Failed("The unit can't plunder now."), Plunder(KNIGHT, TRADER, { 1 }))
+		end)
 	end)
 
 	it("tells a unit that isn't awake to wake first, when the game would wake it", function()

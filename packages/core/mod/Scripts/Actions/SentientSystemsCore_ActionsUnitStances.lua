@@ -175,14 +175,66 @@ for _, action in ipairs({ "wake", "delete" }) do
 	end)
 end
 
--- Plunder is the command for an enemy trader on the unit's tile. The game gives
--- no failure reasons for it, so the tile's hint says what it needs.
+-- The trader ability of the economic golden age dedication, which makes its
+-- route immune to plunder. See docs/findings/actions/trade.md.
+local IMMUNITY = "ABILITY_ECONOMIC_GOLDEN_AGE_PLUNDER_IMMUNITY"
+
+-- Returns whether the trader's route is immune to plunder. The UI's unit has
+-- GetAbilities, the indexes of its active abilities, but no GetAbilityCount.
+local function IsImmune(trader)
+	for _, index in ipairs(trader:GetAbility():GetAbilities() or {}) do
+		local row = GameInfo.UnitAbilities[index]
+
+		if row ~= nil and row.UnitAbilityType == IMMUNITY then
+			return true
+		end
+	end
+
+	return false
+end
+
+-- Returns why the unit can't plunder on its tile, or nil when nothing here
+-- explains it. The game gives no reasons for the check, and its text has two:
+-- the trader's owner must be at war with the player, and the route can be
+-- immune.
+local function GetPlunderHint(unit)
+	local playerID = unit:GetOwner()
+	local hasTrader, hasImmune = false, false
+
+	if unit:GetMovesRemaining() <= 0 then
+		return "The unit has no moves left."
+	end
+
+	for _, other in ipairs(Units.GetUnitsInPlotLayerID(unit:GetX(), unit:GetY(), MapLayers.ANY)) do
+		local ownerID = other:GetOwner()
+
+		if ownerID ~= playerID and GameInfo.Units[other:GetUnitType()].MakeTradeRoute then
+			if not Players[playerID]:GetDiplomacy():IsAtWarWith(ownerID) then
+				hasTrader = true
+			elseif IsImmune(other) then
+				hasImmune = true
+			else
+				return nil
+			end
+		end
+	end
+
+	if hasImmune then
+		return "The trade route on the tile is immune to plunder."
+	end
+
+	if hasTrader then
+		return "No trader on the tile is of a player at war with you."
+	end
+
+	return "No trader of another player is on the tile."
+end
+
+-- Plunder is the command for an enemy trader on the unit's tile.
 SentientSystems_AddUnitAction("plunder", function(_, unit)
 	return SentientSystems_DoCommand(unit, "plunder", {
 		kind = SentientSystems_CanPillage,
-		hint = function()
-			return "No trade route of a player at war with you is on the tile, or it is immune to plunder."
-		end,
+		hint = GetPlunderHint,
 	})
 end)
 

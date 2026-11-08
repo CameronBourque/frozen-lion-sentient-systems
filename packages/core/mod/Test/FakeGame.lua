@@ -265,6 +265,7 @@ function FakeGame.Install(env, world)
 		Units = {},
 		GreatWorks = {},
 		UnitPromotions = {},
+		UnitAbilities = {},
 		Terrains = {},
 		Features = {},
 		Resources = {},

@@ -1,6 +1,6 @@
 # Trade route actions
 
-Status: open. Starting a trade route and plundering one are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The plunder removes the trader and pays gold.
+Status: open. Starting a trade route and plundering one are confirmed in a running game with Gathering Storm, with the files sent through the tuner. The plunder removes the trader and pays gold. The plunder reasons, immunity among them, are confirmed the same way.
 
 The game calls the trade route action and the plunder order wrap, with the Lua state each runs in and the reasons their checks give. The destinations a trader can reach are in [choices/trade-routes.md](../choices/trade-routes.md).
 
@@ -8,7 +8,7 @@ The core mod's result format is in [design/core/mod/actions.md](../../design/cor
 
 ## Questions
 
-None open.
+1. Why does the check refuse an embarked knight on the tile of an enemy trader at sea, when a frigate on the same tile can plunder? The action gives its general reason for it.
 
 ## What we know now
 
@@ -29,6 +29,12 @@ The text has two reasons for it, `LOC_UNITCOMMAND_PLUNDER_TRADE_ROUTE_REQUIRES_W
 
 - The loose check, `CanStartCommand(unit, command, true)`, fails on a tile with no enemy trade route as well, so the kind of unit comes from its row: strength, and not an air unit. This is how `pillage` does it.
 - `UnitCommandResults.FAILURE_REASONS` was empty whenever the check refused, so the action's reason says what the tile needs.
+- Immunity is the trader ability `ABILITY_ECONOMIC_GOLDEN_AGE_PLUNDER_IMMUNITY`, which the economic golden age dedication gives, `COMMEMORATION_ECONOMIC` in `Expansion1_Moments.xml`.
+
+  In the UI state, a unit's `GetAbility()` has `GetAbilities()`, the indexes of its active abilities in `GameInfo.UnitAbilities`, and no `GetAbilityCount` or `HasAbility`.
+
+  In `GameCore_Tuner` it has `GetAbilityCount` and `ChangeAbilityCount`. Confirmed in files and on Windows on 2026-11-07.
+- The check refused every plunder on the turn the war was declared, and allowed it on the next. Confirmed on Windows on 2026-11-07.
 
 ## Method
 
@@ -37,6 +43,10 @@ The text has two reasons for it, `LOC_UNITCOMMAND_PLUNDER_TRADE_ROUTE_REQUIRES_W
 3. To plunder, find the tile of an enemy trader: a route's `TraderUnitID` in `city:GetTrade():GetOutgoingRoutes()`, with `TraderUnitPlayer`, and `UnitManager.GetUnit(player, id)` for its position.
 
    The player must be at war with its owner. Send `UnitManager.InitUnit(0, "UNIT_KNIGHT", x, y)` there in `GameCore_Tuner`, then call `SentientSystems_UnitAction(0, <unit>, "plunder")`.
+4. To check the plunder reasons, send `UnitManager.InitUnit(0, "UNIT_KNIGHT", x, y)` in `GameCore_Tuner` on a trader of a player at peace and on an empty tile, and `UnitManager.FinishMoves(unit)` for one with no moves.
+5. To check immunity, in `GameCore_Tuner`, send `Players[0]:GetDiplomacy():DeclareWarOn(<player>, WarTypes.FORMAL_WAR, true)` and the trader's `GetAbility():ChangeAbilityCount("ABILITY_ECONOMIC_GOLDEN_AGE_PLUNDER_IMMUNITY", 1)`.
+
+   End the turn, then plunder with a unit on its tile. A trader at sea needs a naval unit, such as `UNIT_FRIGATE`.
 
 ## Results
 
@@ -52,4 +62,17 @@ A single-player game on turn 56, on Windows, in `SentientSystemsCore_UI`, at war
 | The enemy's route count after the plunder | Unchanged at once. It is expected to update on its owner's turn, as the trader's removal reaches the route then |
 | Knights on tiles of the enemy's territory and of a city-state's, with no trader | `false` for the loose and the real check, with the plunder reason of the action |
 
-Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06.
+The plunder reasons, on the same save on turns 85 and 86, at war with player 1 from turn 85:
+
+| Check | Result |
+| --- | --- |
+| A knight on a trader of a player at peace | `No trader on the tile is of a player at war with you.` |
+| A knight with no moves on a trader | `The unit has no moves left.` |
+| A knight on an empty tile | `No trader of another player is on the tile.` |
+| `GetAbilities()` in the UI state, for a trader given the immunity | The index of `ABILITY_ECONOMIC_GOLDEN_AGE_PLUNDER_IMMUNITY`, and none for the other traders |
+| Knights on the tiles of traders of player 1 on turn 85, immune or not | `false` for the check, so the war was too new |
+| Embarked knights on two tiles of traders at sea on turn 86 | `false` for the check, with the general reason |
+| Frigates on the same tiles on turn 86 | `{"ok":true}` for a lone trader. On a tile with an immune trader and another, the other was plundered |
+| A second frigate on that tile, with only the immune trader left | `false` for the check, and `The trade route on the tile is immune to plunder.` |
+
+Date checked: game files on 2026-11-06 and 2026-11-07. Running game on Windows on 2026-11-06 and 2026-11-07.
