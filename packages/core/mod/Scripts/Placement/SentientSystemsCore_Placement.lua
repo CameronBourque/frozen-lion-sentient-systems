@@ -4,6 +4,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Lookups")
 
 -- Each yield, by its key in an adjacency bonus, and its name in YieldTypes. The
 -- keys are the same as those of a city's yields in the state.
@@ -113,16 +114,10 @@ end
 -- SentientSystems_Stash(SentientSystems_GetPlacement(playerID, cityID,
 -- typeName)).
 function SentientSystems_GetPlacement(playerID, cityID, typeName)
-	local player = Players[playerID]
+	local city, failure = SentientSystems_FindCity(playerID, cityID)
 
-	if player == nil then
-		error("no player " .. tostring(playerID), 0)
-	end
-
-	local city = player:GetCities():FindID(cityID)
-
-	if city == nil then
-		error("no city " .. tostring(cityID) .. " for player " .. tostring(playerID), 0)
+	if failure ~= nil then
+		error(failure, 0)
 	end
 
 	local district = GameInfo.Districts[typeName]

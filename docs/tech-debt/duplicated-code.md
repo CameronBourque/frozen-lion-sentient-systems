@@ -8,8 +8,7 @@ The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/
 
 ### Lua code repeated inline
 
-- A city lookup by owner and ID that returns "Player 0 has no city 1." is written 6 times: 4 in `ActionsCities`, 1 in `ActionsSpies`, and 1 in `ActionsTrade`.
-- A player lookup that raises `no player <id>` is written 5 times, in the entry files `State`, `Choices`, `Placement`, `TreesGovernors`, and `TreesResearch`.
+- A player lookup that raises `no player <id>` is written 4 times, in the entry files `State`, `Choices`, `TreesGovernors`, and `TreesResearch`.
 - The walk over every deal item of a type, with its side and turns left, is in `GetDeals` in `StatePlayerIncome` and `AddDeals` in `StatePlayerResources`. Only the item type and what each does with an item differ.
 - The loop over `GameInfo.GovernorPromotionSets` for one governor is in `ChoicesGovernors`, `StateGovernors`, and `TreesGovernors`.
 - The unit kind check `row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"` is in `ActionsUnitStances` and `ActionsUnitTiles`.
@@ -52,7 +51,7 @@ Other schemas share a name only: `CITY`, `TILE`, `YIELD`, and `PLAYER` each desc
 Move each copy into one shared helper that takes what differs as parameters, as [rules/code.md](../rules/code.md) says, and delete the rest. Each Lua helper goes in the smallest file that every caller loads:
 
 - `SentientSystemsCore_Math.lua*` holds the rounding.
-- `SentientSystemsCore_Lookups.lua*` holds the lookups that the state, the choices, the placement, and the trees share.
+- `SentientSystemsCore_Lookups.lua` holds the lookups that the actions, the state, the choices, the placement, and the trees share.
 - `Actions.lua`, `ChoicesTradeRoutes.lua`, `ChoicesPurchases.lua`, and `Governors.lua` hold what only their own callers use. A file that needs them includes them, as `ActionsSpies` includes `ChoicesSpyMissions`.
 - `SentientSystemsCore_Common.lua` keeps its name and holds only what every script needs to run: tagged printing, error catching, and the checked include.
 
@@ -74,12 +73,12 @@ Each task is one commit. Each one that adds a file adds its tests, and each Lua 
 ### Repeated Lua code
 
 5. Add `SentientSystems_ListTiles(tiles)` with `MAX_LISTED` to `Actions.lua`, and use it in `ActionsUnitAttacks` and `ActionsUnitTileOrders`.
-6. Add `SentientSystems_FindCity(playerID, cityID)` to `Actions.lua`. It returns the city, or `nil` and the reason. Use it in the 6 city lookups.
+6. Add `SentientSystemsCore_Lookups.lua` with `SentientSystems_FindCity(playerID, cityID)`. It returns the city, or `nil` and the reason. Use it in the 6 city lookups of the actions and in `Placement`, which raises the reason.
 7. Move the unit kind check of pillage and plunder into one function in `ActionsUnits.lua`.
 8. Add `SentientSystems_GetRouteParams(city, unit)` to `ChoicesTradeRoutes`, and use it in `ActionsTrade`, which already includes that file.
 9. Add a walk over a player's deal items of one type to `StatePlayer.lua`, above its includes, and use it in `GetDeals` and `AddDeals`.
 10. Add `SentientSystems_GetPromotionRows(definition)` to `Governors.lua`, and use it in the three governor `GetPromotions`.
-11. Add `SentientSystemsCore_Lookups.lua` with `SentientSystems_GetPlayer(playerID)`, which raises `no player <id>`, and use it in the 5 entry files.
+11. Add `SentientSystems_GetPlayer(playerID)` to `Lookups.lua`, which raises `no player <id>`, and use it in the 4 entry files.
 12. Merge `GetCityRef` into `SentientSystems_GetCityRef(city)` in `Lookups.lua`, which returns `nil` for `nil`, and delete the 3 copies.
 13. Move `YIELDS` into `Lookups.lua` as `SENTIENTSYSTEMS_YIELDS`, and use it in `Placement` and `StateCities`.
 

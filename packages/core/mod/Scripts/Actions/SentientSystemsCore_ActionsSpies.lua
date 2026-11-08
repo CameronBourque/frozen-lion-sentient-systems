@@ -153,12 +153,10 @@ function SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)
 			return failure
 		end
 
-		local owner = Players[ownerID]
-		local cities = owner and owner:GetCities()
-		local city = cities and cities:FindID(cityID)
+		local city, failure = SentientSystems_FindCity(ownerID, cityID)
 
-		if city == nil then
-			return "Player " .. tostring(ownerID) .. " has no city " .. tostring(cityID) .. "."
+		if failure ~= nil then
+			return failure
 		end
 
 		if not SentientSystems_CanSpyTravel(spy) then

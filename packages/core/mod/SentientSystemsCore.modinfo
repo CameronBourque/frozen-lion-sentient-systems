@@ -19,6 +19,7 @@
 			<File>Scripts/SentientSystemsCore_Json.lua</File>
 			<File>Scripts/SentientSystemsCore_Text.lua</File>
 			<File>Scripts/SentientSystemsCore_Math.lua</File>
+			<File>Scripts/SentientSystemsCore_Lookups.lua</File>
 			<File>Scripts/SentientSystemsCore_Governors.lua</File>
 			<File>Scripts/SentientSystemsCore_Eras.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
@@ -91,6 +92,7 @@
 		<File>Scripts/SentientSystemsCore_Json.lua</File>
 		<File>Scripts/SentientSystemsCore_Text.lua</File>
 		<File>Scripts/SentientSystemsCore_Math.lua</File>
+		<File>Scripts/SentientSystemsCore_Lookups.lua</File>
 		<File>Scripts/SentientSystemsCore_Governors.lua</File>
 		<File>Scripts/SentientSystemsCore_Eras.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>

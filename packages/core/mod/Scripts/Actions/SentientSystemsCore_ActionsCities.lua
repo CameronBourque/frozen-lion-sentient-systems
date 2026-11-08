@@ -129,11 +129,10 @@ end
 -- StrategicView_MapPlacement.lua.
 function SentientSystems_SetProduction(playerID, cityID, item, x, y, append)
 	return SentientSystems_RunAction("SetProduction", function()
-		local player = Players[playerID]
-		local city = player and player:GetCities():FindID(cityID)
+		local city, failure = SentientSystems_FindCity(playerID, cityID)
 
-		if city == nil then
-			return "Player " .. playerID .. " has no city " .. cityID .. "."
+		if failure ~= nil then
+			return failure
 		end
 
 		local row, key, needsPlacement = FindProductionItem(item)
@@ -227,11 +226,10 @@ local PURCHASE_YIELDS = {
 -- PurchaseUnit and PurchaseBuilding in ProductionPanel.lua.
 function SentientSystems_Purchase(playerID, cityID, item, yield)
 	return SentientSystems_RunAction("Purchase", function()
-		local player = Players[playerID]
-		local city = player and player:GetCities():FindID(cityID)
+		local city, failure = SentientSystems_FindCity(playerID, cityID)
 
-		if city == nil then
-			return "Player " .. playerID .. " has no city " .. cityID .. "."
+		if failure ~= nil then
+			return failure
 		end
 
 		local purchase = PURCHASE_YIELDS[yield]
@@ -263,7 +261,7 @@ function SentientSystems_Purchase(playerID, cityID, item, yield)
 		end
 
 		local canStart, results = CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, false, params, true)
-		local canAfford = purchase.store(player):CanAfford(cityID, row.Hash)
+		local canAfford = purchase.store(Players[playerID]):CanAfford(cityID, row.Hash)
 
 		if not canStart or not canAfford then
 			local reasons = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
@@ -304,11 +302,10 @@ end
 -- as the choice has it. See OnClickPurchasePlot in PlotInfo.lua.
 function SentientSystems_PurchaseTile(playerID, cityID, x, y)
 	return SentientSystems_RunAction("PurchaseTile", function()
-		local player = Players[playerID]
-		local city = player and player:GetCities():FindID(cityID)
+		local city, failure = SentientSystems_FindCity(playerID, cityID)
 
-		if city == nil then
-			return "Player " .. playerID .. " has no city " .. cityID .. "."
+		if failure ~= nil then
+			return failure
 		end
 
 		if x == nil or y == nil or not Map.IsPlot(x, y) then
@@ -322,7 +319,7 @@ function SentientSystems_PurchaseTile(playerID, cityID, x, y)
 		end
 
 		local cost = city:GetGold():GetPlotPurchaseCost(plotIndex)
-		local gold = player:GetTreasury():GetGoldBalance()
+		local gold = Players[playerID]:GetTreasury():GetGoldBalance()
 
 		if cost > gold then
 			return SentientSystems_LookupText(NEED_MORE_GOLD_KEY, cost - math.floor(gold))
@@ -348,11 +345,10 @@ end
 -- JSON. A city's shot is a city command, and the UI shows no war dialog for it.
 function SentientSystems_CityAttack(playerID, cityID, x, y)
 	return SentientSystems_RunAction("CityAttack", function()
-		local player = Players[playerID]
-		local city = player and player:GetCities():FindID(cityID)
+		local city, failure = SentientSystems_FindCity(playerID, cityID)
 
-		if city == nil then
-			return "Player " .. playerID .. " has no city " .. cityID .. "."
+		if failure ~= nil then
+			return failure
 		end
 
 		if x == nil or y == nil or not Map.IsPlot(x, y) then

@@ -4,6 +4,7 @@
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_Text")
+SentientSystems_Include("SentientSystemsCore_Lookups")
 
 -- The most tiles a reason lists before it gives a count.
 local MAX_LISTED = 8
