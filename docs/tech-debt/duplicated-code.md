@@ -8,7 +8,6 @@ The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/
 
 ### Lua code repeated inline
 
-- A player lookup that raises `no player <id>` is written 4 times, in the entry files `State`, `Choices`, `TreesGovernors`, and `TreesResearch`.
 - The `YIELDS` table of yield names is in `Placement` and `StateCities`.
 
 ### Lua functions with one name and different bodies

@@ -9,6 +9,18 @@ before_each(function()
 	Game.run(env, "Scripts/SentientSystemsCore_Lookups.lua")
 end)
 
+describe("SentientSystems_GetPlayer", function()
+	it("returns the player", function()
+		assert.equal(0, env.SentientSystems_GetPlayer(0):GetID())
+	end)
+
+	it("raises an error for an ID with no player", function()
+		assert.has_error(function()
+			env.SentientSystems_GetPlayer(7)
+		end, "no player 7")
+	end)
+end)
+
 describe("SentientSystems_FindCity", function()
 	it("returns the city of the player", function()
 		local city, failure = env.SentientSystems_FindCity(0, 65536)

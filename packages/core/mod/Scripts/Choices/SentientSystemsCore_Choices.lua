@@ -4,6 +4,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Lookups")
 SentientSystems_Include("SentientSystemsCore_Text")
 
 SentientSystems_Include("SentientSystemsCore_ChoicesProduction")
@@ -27,11 +28,7 @@ SentientSystems_Include("SentientSystemsCore_ChoicesWorldCongress")
 -- for an ID with no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetChoices(playerID)).
 function SentientSystems_GetChoices(playerID)
-	local player = Players[playerID]
-
-	if player == nil then
-		error("no player " .. tostring(playerID), 0)
-	end
+	local player = SentientSystems_GetPlayer(playerID)
 
 	return SentientSystems_EncodeJson({
 		production = SentientSystems_GetProductionChoices(player),

@@ -1,5 +1,16 @@
--- Lookups of the game's objects by the IDs the bridge sends, which the actions
--- and the placement share.
+-- Lookups of the game's objects by the IDs the bridge sends, which the state,
+-- the choices, the actions, the placement, and the trees share.
+
+-- Returns the player by ID. Raises an error for an ID with no player.
+function SentientSystems_GetPlayer(playerID)
+	local player = Players[playerID]
+
+	if player == nil then
+		error("no player " .. tostring(playerID), 0)
+	end
+
+	return player
+end
 
 -- Returns the city of the player by ID, or nil and the reason. A number that is
 -- no player has an object whose GetCities returns nothing.

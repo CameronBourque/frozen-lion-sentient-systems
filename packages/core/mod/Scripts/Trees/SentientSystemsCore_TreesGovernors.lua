@@ -4,6 +4,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Lookups")
 SentientSystems_Include("SentientSystemsCore_Governors")
 
 -- Returns the promotions each promotion follows, by type, from
@@ -78,11 +79,7 @@ end
 -- SentientSystems_Stash(SentientSystems_GetGovernorTree(playerID)). See Refresh
 -- in GovernorPanel.lua.
 function SentientSystems_GetGovernorTree(playerID)
-	local player = Players[playerID]
-
-	if player == nil then
-		error("no player " .. tostring(playerID), 0)
-	end
+	local player = SentientSystems_GetPlayer(playerID)
 
 	local entries = {}
 
