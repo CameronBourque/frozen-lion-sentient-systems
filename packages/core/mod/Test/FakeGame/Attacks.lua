@@ -135,6 +135,15 @@ return function(env, world, ctx)
 		env.requests[#env.requests + 1] = { city = city.GetID(), command = command, parameters = parameters }
 	end
 
+	-- The game refuses an operation on a city whose operationBlocked is set.
+	env.CityManager.CanStartOperation = function(city)
+		return not city.operationBlocked
+	end
+
+	env.CityManager.RequestOperation = function(city, operation, parameters)
+		env.requests[#env.requests + 1] = { city = city.GetID(), operation = operation, parameters = parameters }
+	end
+
 	ctx.OnUnit(function(unit, data)
 		unit.targets = data.targets or {}
 		unit.raidTiles = data.raidTiles
@@ -159,5 +168,6 @@ return function(env, world, ctx)
 	ctx.OnCity(function(city, data)
 		city.attackTargets = data.attackTargets or {}
 		city.attackBlocked = data.attackBlocked == true
+		city.operationBlocked = data.operationBlocked == true
 	end)
 end

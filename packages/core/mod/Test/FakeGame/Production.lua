@@ -30,6 +30,7 @@ return function(env, world, ctx)
 				row.Hash = hashes[building.type]
 				row.MustPurchase = building.mustPurchase == true
 				row.IsWonder = building.wonder == true
+				row.RequiresPlacement = building.wonder == true
 				row.PrereqDistrict = building.district
 			end
 
@@ -42,6 +43,7 @@ return function(env, world, ctx)
 				row.Hash = hashes[district.type]
 				row.OnePerCity = district.onePerCity ~= false
 				row.InternalOnly = district.internalOnly == true
+				row.RequiresPlacement = district.requiresPlacement ~= false
 			end
 
 			for _, project in ipairs((city.options or {}).projects or {}) do
@@ -98,6 +100,11 @@ return function(env, world, ctx)
 			return {
 				GetCurrentProductionTypeHash = function()
 					return hash
+				end,
+				-- The items in the queue, the current one included. It is
+				-- queueSize, or 1 for a city that is producing, or 0.
+				GetSize = function()
+					return data.queueSize or (production and 1 or 0)
 				end,
 				-- The plot index of the district or wonder being built, or -1.
 				GetConstructionPlot = function()
@@ -165,6 +172,10 @@ return function(env, world, ctx)
 						[CITY_OPERATION_RESULTS.CAN_TRAIN_CORPS] = unit.corps ~= nil or nil,
 						[CITY_OPERATION_RESULTS.CAN_TRAIN_ARMY] = unit.army ~= nil or nil,
 					}
+				end,
+				-- Whether the city has placed the district or wonder already.
+				HasBeenPlaced = function(_, hash)
+					return (districtsByHash[hash] or buildingsByHash[hash] or {}).placed == true
 				end,
 				GetUnitCost = function(_, index)
 					return unitsByIndex[index].cost

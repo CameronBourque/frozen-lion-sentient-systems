@@ -54,6 +54,7 @@ return function(env, world, ctx)
 		end
 
 		city.PurchaseOption = PurchaseOption
+		city.tileBlocked = data.tileBlocked == true
 
 		city.GetGold = function()
 			return {
@@ -92,6 +93,15 @@ return function(env, world, ctx)
 	-- bought.
 	env.CityManager.CanStartCommand = function(city, command, testOnly, params, withResults)
 		assert(command == CITY_COMMAND_TYPES.PURCHASE, "no fake for this command")
+
+		-- A tile purchase passes its parameters in place of testOnly, as
+		-- PlotInfo.lua does, and names its tile. The game refuses it when the
+		-- city has tileBlocked.
+		if type(testOnly) == "table" then
+			assert(testOnly[CITY_COMMAND_TYPES.PARAM_X] ~= nil, "no fake for this call")
+
+			return not city.tileBlocked
+		end
 
 		local hash = params[CITY_COMMAND_TYPES.PARAM_UNIT_TYPE] or params[CITY_COMMAND_TYPES.PARAM_BUILDING_TYPE] or params[CITY_COMMAND_TYPES.PARAM_DISTRICT_TYPE]
 		local yieldIndex = params[CITY_COMMAND_TYPES.PARAM_YIELD_TYPE]

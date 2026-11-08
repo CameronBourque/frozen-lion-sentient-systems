@@ -42,6 +42,30 @@ A ship's attack on a land tile it can raid is a coastal raid, and a refusal list
 
 `SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot.
 
+### Production
+
+`SentientSystems_SetProduction(playerID, cityID, item, x, y, append)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` replaces what a city is producing.
+
+The item is the `type` of an option of the `production` choice, such as `UNIT_BUILDER`. A unit is a standard unit, not a corps or an army.
+
+Its reasons name a type that is no unit, building, district, wonder, or project, and an item the panel doesn't list for the city. An item the panel greys out gets the game's own reasons.
+
+With `append` the item goes to the end of the city's queue in place of replacing the current item.
+
+The action refuses a full queue, which the panel would answer by replacing the last item.
+
+A district or a wonder also takes the tile, `x` and `y`, from the `tiles` of the [placement call](choices.md#placement), unless the city has placed it already.
+
+Its reasons for a tile name a missing tile, a tile that isn't a placement tile, and a tile to buy first. See [production.md](../../../findings/actions/production.md).
+
+### Purchases
+
+`SentientSystems_Purchase(playerID, cityID, item, yield)` in the same file buys a unit or a building. The item is the `type` of an option of the `purchases` choice, and the yield is the key it is listed under, `gold` or `faith`. A unit is a standard unit, and a district isn't bought here.
+
+Its reasons name a yield that is neither, a type the game doesn't know, and an item the choice doesn't list for the yield. The game's reasons come back for a greyed-out item, with the panel's text when the player can't afford it. See [purchases.md](../../../findings/actions/purchases.md).
+
+`SentientSystems_PurchaseTile(playerID, cityID, x, y)` buys one of the `tiles` of the `purchases` choice with gold. Its reasons name a tile off the map, a tile the city can't buy, and the lens's tooltip when the player's gold falls short.
+
 ### Trade routes
 
 `SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)` in `Scripts/Actions/SentientSystemsCore_ActionsTrade.lua` starts a route from the city a trader stands in to a destination of the `tradeRoutes` choice. The city is named by its owner and its ID, as the choice lists it.

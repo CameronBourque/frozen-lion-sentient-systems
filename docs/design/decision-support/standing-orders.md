@@ -30,7 +30,9 @@ These are the first kinds of order. The list is partial.
 | Research path | A target tech or civic | The target is researched |
 | Repeat | One action each time it becomes possible, such as renewing a trade route | The agent cancels it |
 
-Where the game already keeps a multi-turn plan, the order uses it. A unit's move to a far tile already lasts several turns through the game's pathfinding. Whether the game's own production queue can hold a build list is unconfirmed. The [Action API: cities](../../roadmap/phase-1/action-api-cities.md) step checks it.
+Where the game already keeps a multi-turn plan, the order uses it. A unit's move to a far tile already lasts several turns through the game's pathfinding. 
+
+A city's build list is the game's own production queue. It holds up to 7 items after the current one and builds them in order with no request per turn. See [production.md](../../findings/actions/production.md#the-queue).
 
 ## Running orders
 
@@ -98,7 +100,6 @@ The diff runs in the bridge, in TypeScript, on the two serialized states. The co
 ## Open questions
 
 - How many turns pass between wakes with no trigger? It may depend on the sweat level.
-- Can the game's production queue hold a build list, or does the bridge keep the list and set one item at a time?
 - How close must an enemy unit be to wake the model? A fixed distance may be too wide in a crowded start.
 - How many orders can one agent hold before the diff gets too long?
 
