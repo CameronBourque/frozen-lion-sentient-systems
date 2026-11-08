@@ -27,9 +27,9 @@ Follow the shared helper rule in [rules/code.md](../rules/code.md#conventions). 
 
 ## Tasks
 
-1. **Shared failure reasons.** Move `SentientSystems_GetFailureReasons` to `SentientSystemsCore_Text.lua`, which the actions and the choices both include. Give it the results key as a second parameter, and return the list.
+1. **Shared failure reasons.** Move `SentientSystems_GetFailureReasons` to `SentientSystemsCore_Text.lua`, which the actions and the choices both include. Give it the results key as a second parameter, and an optional separator that joins the reasons into one string, or nil for none.
 
-   Replace the other five copies with calls to it. A caller that wants one string joins the list itself, so `SentientSystems_GetOperationReasons` and `SentientSystems_GetCommandReasons` go away. Commit: `refactor(core): share one failure reasons helper`.
+   Replace the other five copies with calls to it. `SentientSystems_GetCommandReasons` goes away. `SentientSystems_GetOperationReasons` stays, because it runs the game's check too, and two files call it. Commit: `refactor(core): share one failure reasons helper`.
 2. **City action reasons.** In `ActionsCities.lua`, fold `CannotProduce` and `WithReasons` into one `CantNow(start, reasons)` that the four call sites use. `SentientSystems_Purchase` adds its reason for the cost to the list before the call.
 
    `CantNow` stays local while only this file builds a "now" message with the game's reasons. Commit: `refactor(core): fold the city action reason helpers into one`.

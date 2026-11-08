@@ -73,13 +73,7 @@ local function GetBlockedReasons(governors, definition, city)
 		return nil
 	end
 
-	local reasons = {}
-
-	for i, reason in ipairs(results and results[PlayerOperationResults.FAILURE_REASONS] or {}) do
-		reasons[i] = SentientSystems_LookupText(reason)
-	end
-
-	return reasons
+	return SentientSystems_GetFailureReasons(results, PlayerOperationResults.FAILURE_REASONS)
 end
 
 -- Returns the places a governor can go, in the chooser's order: each of the

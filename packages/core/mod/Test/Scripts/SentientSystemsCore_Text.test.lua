@@ -128,3 +128,29 @@ describe("SentientSystems_LookupText", function()
 		assert.equal("", env.SentientSystems_LookupText("LOC_BLANK"))
 	end)
 end)
+
+describe("SentientSystems_GetFailureReasons", function()
+	local KEY = 7
+
+	before_each(function()
+		FakeGame.Install(env, { text = { LOC_NO_GOLD = "[COLOR_RED]Not enough gold[ENDCOLOR]", LOC_NO_TILE = "No tile" } })
+		Game.run(env, "Scripts/SentientSystemsCore_Text.lua")
+	end)
+
+	it("returns the reasons under the key as cleaned text", function()
+		assert.same({ "Not enough gold", "No tile" }, env.SentientSystems_GetFailureReasons({ [KEY] = { "LOC_NO_GOLD", "LOC_NO_TILE" } }, KEY))
+	end)
+
+	it("returns no reasons for no results, and for results without the key", function()
+		assert.same({}, env.SentientSystems_GetFailureReasons(nil, KEY))
+		assert.same({}, env.SentientSystems_GetFailureReasons({}, KEY))
+	end)
+
+	it("joins the reasons with a separator", function()
+		assert.equal("Not enough gold No tile", env.SentientSystems_GetFailureReasons({ [KEY] = { "LOC_NO_GOLD", "LOC_NO_TILE" } }, KEY, " "))
+	end)
+
+	it("returns nil with a separator and no reasons", function()
+		assert.is_nil(env.SentientSystems_GetFailureReasons({ [KEY] = {} }, KEY, " "))
+	end)
+end)

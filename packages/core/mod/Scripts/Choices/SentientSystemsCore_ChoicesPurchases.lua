@@ -62,7 +62,7 @@ local function PurchaseOption(city, purchase, params, hash, formation)
 	end
 
 	if not canStart or not canAfford then
-		option.blocked = SentientSystems_GetFailureReasons(results)
+		option.blocked = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
 
 		if not canAfford then
 			option.blocked[#option.blocked + 1] = SentientSystems_LookupText(purchase.cantAffordKey)

@@ -59,7 +59,7 @@ SentientSystems_AddUnitAction("condemn_heretic", function(_, unit)
 		hint = function()
 			local _, results = UnitManager.CanStartCommand(unit, UnitCommandTypes.CONDEMN_HERETIC, false, true)
 
-			return SentientSystems_GetCommandReasons(results) or "It needs a religious unit of another religion, owned by a player at war with you, on its tile."
+			return SentientSystems_GetFailureReasons(results, UnitCommandResults.FAILURE_REASONS, " ") or "It needs a religious unit of another religion, owned by a player at war with you, on its tile."
 		end,
 	})
 end)

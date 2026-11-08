@@ -42,19 +42,8 @@ end
 -- orders use this too.
 function SentientSystems_GetOperationReasons(unit, hash)
 	local _, results = UnitManager.CanStartOperation(unit, hash, nil, false, OperationResultsTypes.ALL)
-	local reasons = results and results[UnitOperationResults.FAILURE_REASONS]
 
-	if reasons == nil or #reasons == 0 then
-		return nil
-	end
-
-	local texts = {}
-
-	for i, reason in ipairs(reasons) do
-		texts[i] = SentientSystems_LookupText(reason)
-	end
-
-	return table.concat(texts, " ")
+	return SentientSystems_GetFailureReasons(results, UnitOperationResults.FAILURE_REASONS, " ")
 end
 
 -- Returns why the unit can't start a job at all, or nil. Removing a feature and
