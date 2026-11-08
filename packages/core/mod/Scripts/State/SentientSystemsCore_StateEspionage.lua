@@ -120,7 +120,7 @@ end
 
 -- Returns a city's finished districts by type, without wonders, as the City
 -- Activity tab draws them. See AddDistrictIcon.
-local function GetDistricts(city)
+local function GetFinishedDistrictTypes(city)
 	local districts = {}
 
 	for _, district in city:GetDistricts():Members() do
@@ -138,7 +138,7 @@ end
 -- revealed, with their districts and the turns a Gain Sources boost has left.
 -- The player's own cities are in the cities section. See AddPlayerCities and
 -- AddCity.
-local function GetActivity(player)
+local function GetRivalCities(player)
 	local visibility = PlayersVisibility[player:GetID()]
 	local diplomacy = player:GetDiplomacy()
 	local cities = {}
@@ -152,7 +152,7 @@ local function GetActivity(player)
 					cities[#cities + 1] = {
 						owner = other:GetID(),
 						id = city:GetID(),
-						districts = GetDistricts(city),
+						districts = GetFinishedDistrictTypes(city),
 						sourcesTurnsLeft = turns > 0 and turns or nil,
 					}
 				end
@@ -309,7 +309,7 @@ function SentientSystems_GetEspionageState(player)
 	return {
 		capacity = player:GetDiplomacy():GetSpyCapacity(),
 		operatives = operatives,
-		cities = GetActivity(player),
+		cities = GetRivalCities(player),
 		history = GetHistory(player),
 		captives = GetCaptives(player),
 	}

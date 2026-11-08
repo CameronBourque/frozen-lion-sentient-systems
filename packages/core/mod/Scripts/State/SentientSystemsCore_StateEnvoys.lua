@@ -15,7 +15,7 @@ local BONUS_SIZES = { "SMALL", "MEDIUM", "LARGE" }
 
 -- Returns the kind of a city-state from its leader or the leader it inherits
 -- from, or nil for a leader of no kind. See GetCityStateType in CityStates.lua.
-local function GetKind(playerID)
+local function GetCityStateKind(playerID)
 	local leader = PlayerConfigurations[playerID]:GetLeaderTypeName()
 	local row = GameInfo.Leaders[leader]
 
@@ -144,7 +144,7 @@ local function GetCityState(player, cityState)
 	local entry = {
 		player = cityStateID,
 		name = Locale.Lookup(PlayerConfigurations[cityStateID]:GetCivilizationShortDescription()),
-		type = GetKind(cityStateID),
+		type = GetCityStateKind(cityStateID),
 		envoys = influence:GetTokensReceived(playerID),
 		suzerainNeeds = math.max(MIN_SUZERAIN_ENVOYS, suzerain == playerID and most or most + 1),
 		suzerainBonus = GetSuzerainBonus(cityStateID),

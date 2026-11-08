@@ -6,14 +6,6 @@ The same function, constant, or setup is written out in several files of the Lua
 
 The counts come from a scan of `packages/core/mod/Scripts/`, `packages/core/mod/Test/`, `packages/core/bridge/src/`, and `packages/core/bridge/test/`.
 
-### Lua functions with one name and different bodies
-
-Each pair was read. They share a name only.
-
-| Name | Files | Fix |
-| --- | --- | --- |
-| `GetActivity`, `GetDistricts`, `GetKind`, `GetProduction` | Two files each, in `State/` and `Actions/`, with unrelated bodies | Rename |
-
 ### Bridge source
 
 The bridge schemas left share a name only: `CITY`, `TILE`, `YIELD`, and `PLAYER` each describe a different object in the files that define them. `BLOCKED` in `choices/production.ts` and `choices/purchases.ts` is one line of schema with a different description in each, so it stays.

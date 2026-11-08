@@ -5,7 +5,7 @@
 -- produces nothing. A hash of 0 means nothing. GameInfo reads 0 as a row index,
 -- so GameInfo.Types[0] is the first row, not the production. See
 -- docs/findings/state/state.md.
-local function GetProduction(city)
+local function GetCityProduction(city)
 	local queue = city:GetBuildQueue()
 	local hash = queue:GetCurrentProductionTypeHash()
 
@@ -127,7 +127,7 @@ end
 -- Returns the city's districts, each with its built buildings. A district that
 -- is placed but not built yet has complete set to false. Wonders sit in their
 -- own DISTRICT_WONDER. GetCityData in CitySupport.lua reads the same calls.
-local function GetDistricts(city)
+local function GetCityDistricts(city)
 	local buildings = city:GetBuildings()
 	local districts = {}
 
@@ -290,12 +290,12 @@ function SentientSystems_GetCityStates(player)
 			population = city:GetPopulation(),
 			amenities = GetAmenities(city),
 			defense = SentientSystems_GetCityDefense(player, city),
-			districts = GetDistricts(city),
+			districts = GetCityDistricts(city),
 			governor = GetCityGovernor(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
 			power = GetPower(city),
-			production = GetProduction(city),
+			production = GetCityProduction(city),
 			religion = SentientSystems_GetCityReligion(city),
 			yields = GetYields(city),
 		}
