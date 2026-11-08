@@ -4,6 +4,7 @@
 
 import type { z } from "zod";
 import { CORE_STATE } from "./connect.js";
+import { describeIssue } from "./errors.js";
 import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "./tuner/client.js";
 
 export type StashResult<T> =
@@ -32,7 +33,7 @@ export async function readStash<T>(client: TunerClient, call: string, schema: z.
 	const parsed = schema.safeParse(value);
 
 	if (!parsed.success) {
-		return { ok: false, error: `The core mod's ${what} JSON doesn't match the schema: ${parsed.error.issues.map((issue) => describeIssue(issue, what)).join("; ")}` };
+		return { ok: false, error: `The core mod's ${what} JSON doesn't match the schema: ${parsed.error.issues.flatMap((issue) => describeIssue(issue, `the ${what}`)).join("; ")}` };
 	}
 
 	return { ok: true, value: parsed.data, bytes: Buffer.byteLength(json) };
@@ -58,10 +59,6 @@ async function readPieces(client: TunerClient, call: string): Promise<string> {
 	}
 
 	return pieces.join("");
-}
-
-function describeIssue(issue: z.core.$ZodIssue, what: string): string {
-	return `${issue.path.join(".") || `the ${what}`}: ${issue.message}`;
 }
 
 function explainFailure(error: unknown, what: string): string {

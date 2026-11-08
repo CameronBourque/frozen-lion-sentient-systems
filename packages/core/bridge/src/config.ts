@@ -4,6 +4,7 @@
 
 import { parseDocument } from "yaml";
 import { z } from "zod";
+import { describeIssue } from "./errors.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 // Bump this when the format changes, and migrate older files when they load.
@@ -44,17 +45,5 @@ export function parseConfig(text: string): ConfigResult {
 
 	return parsed.success
 		? { ok: true, config: parsed.data }
-		: { ok: false, errors: parsed.error.issues.flatMap(describeIssue) };
-}
-
-function describeIssue(issue: z.core.$ZodIssue): string[] {
-	const path = issue.path.join(".");
-
-	// One issue lists every unknown field in an object, so give each field its
-	// own error.
-	if (issue.code === "unrecognized_keys") {
-		return issue.keys.map((key) => `${path === "" ? key : `${path}.${key}`}: Unknown field`);
-	}
-
-	return [`${path === "" ? "The file" : path}: ${issue.message}`];
+		: { ok: false, errors: parsed.error.issues.flatMap((issue) => describeIssue(issue, "The file")) };
 }

@@ -20,7 +20,7 @@ Each pair was read. They share a name only.
 
 ### Bridge source
 
-- `describeIssue` formats a zod issue in both `config.ts` and `stash.ts`, and `explainFailure` turns a tuner error into text in both `connect.ts` and `stash.ts`. The wording differs in places.
+- `explainFailure` turns a tuner error into text in both `connect.ts` and `stash.ts`. The wording differs in places.
 
 Other schemas share a name only: `CITY`, `TILE`, `YIELD`, and `PLAYER` each describe a different object in the files that define them. `BLOCKED` in `choices/production.ts` and `choices/purchases.ts` is one line of schema with a different description in each, so it stays.
 
