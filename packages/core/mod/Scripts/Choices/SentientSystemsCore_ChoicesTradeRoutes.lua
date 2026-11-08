@@ -2,6 +2,8 @@
 -- TradeRouteChooser.lua, TradeSupport.lua, and TradeOverview.lua.
 -- Shape: bridge/src/choices/trade-routes.ts.
 
+SentientSystems_Include("SentientSystemsCore_Math")
+
 -- Returns the traders that already have a route, by unit ID. A trader is idle
 -- when no outgoing route names it. See GetIdleTradeUnits in TradeSupport.lua.
 -- The trade route action uses this too.
@@ -15,11 +17,6 @@ function SentientSystems_GetBusyTraders(player)
 	end
 
 	return busy
-end
-
--- Rounds to one decimal, as the screen's Round does.
-local function RoundYield(amount)
-	return math.floor(amount * 10 + 0.5) / 10
 end
 
 -- Returns what one end of a potential route receives, as the yields the screen
@@ -51,7 +48,7 @@ function SentientSystems_GetRouteEnd(originCity, destinationCity, side)
 			end
 
 			if total ~= 0 then
-				yields[#yields + 1] = { type = info.YieldType, amount = RoundYield(total) }
+				yields[#yields + 1] = { type = info.YieldType, amount = SentientSystems_Round(total, 1) }
 			end
 
 			pathBonus = pathBonus or path[i] > 0
