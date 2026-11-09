@@ -121,6 +121,73 @@ local function SetInsertMode(parameters, buildQueue, append)
 	return nil
 end
 
+local function SetProduction(playerID, cityID, item, x, y, append)
+	local city, failure = SentientSystems_FindCity(playerID, cityID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local row, key, needsPlacement = FindProductionItem(item)
+
+	if row == nil then
+		return tostring(item) .. " isn't a unit, building, district, wonder, or project. Use the type of an option of the production choice."
+	end
+
+	local buildQueue = city:GetBuildQueue()
+	local checkParams = row.Hash
+
+	if key == CityOperationTypes.PARAM_UNIT_TYPE then
+		checkParams = { UnitType = row.Hash, MilitaryFormationType = MilitaryFormationTypes.STANDARD_MILITARY_FORMATION }
+	end
+
+	-- The panel lists only what CanProduce allows when it only tests.
+	if not buildQueue:CanProduce(checkParams, true) then
+		return item .. " isn't one of this city's production choices."
+	end
+
+	local needsTile = NeedsTile(city, row, needsPlacement)
+	local parameters = { [key] = row.Hash }
+	local queueReason = SetInsertMode(parameters, buildQueue, append)
+
+	if queueReason ~= nil then
+		return queueReason
+	end
+
+	-- CanProduce refuses a district or a wonder for want of a tile, which
+	-- the tile check explains better, so only the other items are asked.
+	if needsTile then
+		local reason = CheckPlacementTile(city, row, key, item, x, y)
+
+		if reason ~= nil then
+			return reason
+		end
+
+		parameters[CityOperationTypes.PARAM_X] = x
+		parameters[CityOperationTypes.PARAM_Y] = y
+	else
+		local canProduce, results = buildQueue:CanProduce(checkParams, false, true)
+
+		if not canProduce then
+			return CannotProduce(item, results)
+		end
+	end
+
+	if not CityManager.CanStartOperation(city, CityOperationTypes.BUILD, parameters, true) then
+		local canProduce, results = buildQueue:CanProduce(checkParams, false, true)
+
+		if not canProduce then
+			return CannotProduce(item, results)
+		end
+
+		return "The game won't start " .. item .. " in this city."
+	end
+
+	CityManager.RequestOperation(city, CityOperationTypes.BUILD, parameters)
+
+	return nil
+end
+
 -- Replaces what the city is producing with the item, or adds the item to the
 -- end of its queue when append is true, and returns the result as JSON. The
 -- item is the type of an option of the production choice, such as UNIT_WARRIOR.
@@ -129,72 +196,60 @@ end
 -- ConfirmPlaceDistrict and ConfirmPlaceWonder in
 -- StrategicView_MapPlacement.lua.
 function SentientSystems_SetProduction(playerID, cityID, item, x, y, append)
-	return SentientSystems_RunAction("SetProduction", function()
-		local city, failure = SentientSystems_FindCity(playerID, cityID)
+	return SentientSystems_RunAction("SetProduction", SetProduction, playerID, cityID, item, x, y, append)
+end
 
-		if failure ~= nil then
-			return failure
+local function Purchase(playerID, cityID, item, yield)
+	local city, failure = SentientSystems_FindCity(playerID, cityID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local purchase = SENTIENTSYSTEMS_PURCHASE_YIELDS[yield]
+
+	if purchase == nil then
+		return tostring(yield) .. " isn't a yield to buy with. Use gold or faith."
+	end
+
+	local row, key = FindProductionItem(item)
+
+	if row == nil then
+		return tostring(item) .. " isn't a unit, building, district, wonder, or project. Use the type of an option of the purchases choice."
+	end
+
+	local params = { [CityCommandTypes.PARAM_YIELD_TYPE] = GameInfo.Yields[purchase.yield].Index }
+
+	if key == CityOperationTypes.PARAM_UNIT_TYPE then
+		params[CityCommandTypes.PARAM_UNIT_TYPE] = row.Hash
+		params[CityCommandTypes.PARAM_MILITARY_FORMATION_TYPE] = MilitaryFormationTypes.STANDARD_MILITARY_FORMATION
+	elseif key == CityOperationTypes.PARAM_BUILDING_TYPE then
+		params[CityCommandTypes.PARAM_BUILDING_TYPE] = row.Hash
+	else
+		return item .. " can't be bought with this action, which buys units and buildings."
+	end
+
+	-- The panel lists only what CanStartCommand allows when it only tests.
+	if not CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, true, params, false) then
+		return item .. " isn't one of this city's " .. yield .. " purchase choices."
+	end
+
+	local canStart, results = CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, false, params, true)
+	local canAfford = purchase.store(Players[playerID]):CanAfford(cityID, row.Hash)
+
+	if not canStart or not canAfford then
+		local reasons = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
+
+		if not canAfford then
+			reasons[#reasons + 1] = SentientSystems_LookupText(purchase.cantAffordKey)
 		end
 
-		local row, key, needsPlacement = FindProductionItem(item)
+		return WithReasons("This city can't buy " .. item .. " with " .. yield, reasons)
+	end
 
-		if row == nil then
-			return tostring(item) .. " isn't a unit, building, district, wonder, or project. Use the type of an option of the production choice."
-		end
+	CityManager.RequestCommand(city, CityCommandTypes.PURCHASE, params)
 
-		local buildQueue = city:GetBuildQueue()
-		local checkParams = row.Hash
-
-		if key == CityOperationTypes.PARAM_UNIT_TYPE then
-			checkParams = { UnitType = row.Hash, MilitaryFormationType = MilitaryFormationTypes.STANDARD_MILITARY_FORMATION }
-		end
-
-		-- The panel lists only what CanProduce allows when it only tests.
-		if not buildQueue:CanProduce(checkParams, true) then
-			return item .. " isn't one of this city's production choices."
-		end
-
-		local needsTile = NeedsTile(city, row, needsPlacement)
-		local parameters = { [key] = row.Hash }
-		local queueReason = SetInsertMode(parameters, buildQueue, append)
-
-		if queueReason ~= nil then
-			return queueReason
-		end
-
-		-- CanProduce refuses a district or a wonder for want of a tile, which
-		-- the tile check explains better, so only the other items are asked.
-		if needsTile then
-			local reason = CheckPlacementTile(city, row, key, item, x, y)
-
-			if reason ~= nil then
-				return reason
-			end
-
-			parameters[CityOperationTypes.PARAM_X] = x
-			parameters[CityOperationTypes.PARAM_Y] = y
-		else
-			local canProduce, results = buildQueue:CanProduce(checkParams, false, true)
-
-			if not canProduce then
-				return CannotProduce(item, results)
-			end
-		end
-
-		if not CityManager.CanStartOperation(city, CityOperationTypes.BUILD, parameters, true) then
-			local canProduce, results = buildQueue:CanProduce(checkParams, false, true)
-
-			if not canProduce then
-				return CannotProduce(item, results)
-			end
-
-			return "The game won't start " .. item .. " in this city."
-		end
-
-		CityManager.RequestOperation(city, CityOperationTypes.BUILD, parameters)
-
-		return nil
-	end)
+	return nil
 end
 
 -- Buys a unit or a building in the city with gold or faith, and returns the
@@ -205,58 +260,7 @@ end
 -- afford an item, so the panel's text is added, as the choice does. See
 -- PurchaseUnit and PurchaseBuilding in ProductionPanel.lua.
 function SentientSystems_Purchase(playerID, cityID, item, yield)
-	return SentientSystems_RunAction("Purchase", function()
-		local city, failure = SentientSystems_FindCity(playerID, cityID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		local purchase = SENTIENTSYSTEMS_PURCHASE_YIELDS[yield]
-
-		if purchase == nil then
-			return tostring(yield) .. " isn't a yield to buy with. Use gold or faith."
-		end
-
-		local row, key = FindProductionItem(item)
-
-		if row == nil then
-			return tostring(item) .. " isn't a unit, building, district, wonder, or project. Use the type of an option of the purchases choice."
-		end
-
-		local params = { [CityCommandTypes.PARAM_YIELD_TYPE] = GameInfo.Yields[purchase.yield].Index }
-
-		if key == CityOperationTypes.PARAM_UNIT_TYPE then
-			params[CityCommandTypes.PARAM_UNIT_TYPE] = row.Hash
-			params[CityCommandTypes.PARAM_MILITARY_FORMATION_TYPE] = MilitaryFormationTypes.STANDARD_MILITARY_FORMATION
-		elseif key == CityOperationTypes.PARAM_BUILDING_TYPE then
-			params[CityCommandTypes.PARAM_BUILDING_TYPE] = row.Hash
-		else
-			return item .. " can't be bought with this action, which buys units and buildings."
-		end
-
-		-- The panel lists only what CanStartCommand allows when it only tests.
-		if not CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, true, params, false) then
-			return item .. " isn't one of this city's " .. yield .. " purchase choices."
-		end
-
-		local canStart, results = CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, false, params, true)
-		local canAfford = purchase.store(Players[playerID]):CanAfford(cityID, row.Hash)
-
-		if not canStart or not canAfford then
-			local reasons = SentientSystems_GetFailureReasons(results, CityCommandResults.FAILURE_REASONS)
-
-			if not canAfford then
-				reasons[#reasons + 1] = SentientSystems_LookupText(purchase.cantAffordKey)
-			end
-
-			return WithReasons("This city can't buy " .. item .. " with " .. yield, reasons)
-		end
-
-		CityManager.RequestCommand(city, CityCommandTypes.PURCHASE, params)
-
-		return nil
-	end)
+	return SentientSystems_RunAction("Purchase", Purchase, playerID, cityID, item, yield)
 end
 
 -- Returns the plot index of the tile the city can buy at x and y, or nil.
@@ -272,88 +276,92 @@ local function FindPurchasableTile(city, x, y)
 	return nil
 end
 
+local function PurchaseTile(playerID, cityID, x, y)
+	local city, failure = SentientSystems_FindCity(playerID, cityID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	failure = SentientSystems_GetOffMapFailure(x, y)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local plotIndex = FindPurchasableTile(city, x, y)
+
+	if plotIndex == nil then
+		return "(" .. x .. ", " .. y .. ") isn't a tile this city can buy. Use a tile from the purchases choice."
+	end
+
+	local cost = city:GetGold():GetPlotPurchaseCost(plotIndex)
+	local gold = Players[playerID]:GetTreasury():GetGoldBalance()
+
+	if cost > gold then
+		return SentientSystems_LookupText(SENTIENTSYSTEMS_NEED_MORE_GOLD_KEY, cost - math.floor(gold))
+	end
+
+	local params = SentientSystems_GetTileParams(CityCommandTypes, x, y)
+
+	params[CityCommandTypes.PARAM_PLOT_PURCHASE] = UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE)
+
+	if not CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, params) then
+		return "The game won't buy (" .. x .. ", " .. y .. ") for this city."
+	end
+
+	CityManager.RequestCommand(city, CityCommandTypes.PURCHASE, params)
+
+	return nil
+end
+
 -- Buys the tile at x and y for the city with gold, and returns the result as
 -- JSON. The tile is one of the tiles of the purchases choice. The game gives no
 -- reason when the player can't afford it, so the lens's tooltip is the reason,
 -- as the choice has it. See OnClickPurchasePlot in PlotInfo.lua.
 function SentientSystems_PurchaseTile(playerID, cityID, x, y)
-	return SentientSystems_RunAction("PurchaseTile", function()
-		local city, failure = SentientSystems_FindCity(playerID, cityID)
+	return SentientSystems_RunAction("PurchaseTile", PurchaseTile, playerID, cityID, x, y)
+end
 
-		if failure ~= nil then
-			return failure
-		end
+local function CityAttack(playerID, cityID, x, y)
+	local city, failure = SentientSystems_FindCity(playerID, cityID)
 
-		failure = SentientSystems_GetOffMapFailure(x, y)
+	if failure ~= nil then
+		return failure
+	end
 
-		if failure ~= nil then
-			return failure
-		end
+	failure = SentientSystems_GetOffMapFailure(x, y)
 
-		local plotIndex = FindPurchasableTile(city, x, y)
+	if failure ~= nil then
+		return failure
+	end
 
-		if plotIndex == nil then
-			return "(" .. x .. ", " .. y .. ") isn't a tile this city can buy. Use a tile from the purchases choice."
-		end
+	if not PlayersVisibility[playerID]:IsVisible(x, y) then
+		return "You can't see that tile."
+	end
 
-		local cost = city:GetGold():GetPlotPurchaseCost(plotIndex)
-		local gold = Players[playerID]:GetTreasury():GetGoldBalance()
+	local R = CityCommandResults
+	local tiles = SentientSystems_GetTargetTiles(CityManager.GetCommandTargets(city, CityCommandTypes.RANGE_ATTACK, {}), R.PLOTS, R.MODIFIERS, R.MODIFIER_IS_TARGET)
 
-		if cost > gold then
-			return SentientSystems_LookupText(SENTIENTSYSTEMS_NEED_MORE_GOLD_KEY, cost - math.floor(gold))
-		end
+	failure = SentientSystems_GetTargetFailure(tiles, x, y)
 
-		local params = SentientSystems_GetTileParams(CityCommandTypes, x, y)
+	if failure ~= nil then
+		return failure
+	end
 
-		params[CityCommandTypes.PARAM_PLOT_PURCHASE] = UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE)
+	local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
 
-		if not CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, params) then
-			return "The game won't buy (" .. x .. ", " .. y .. ") for this city."
-		end
+	if not CityManager.CanStartCommand(city, CityCommandTypes.RANGE_ATTACK, parameters) then
+		return "The game won't start that attack."
+	end
 
-		CityManager.RequestCommand(city, CityCommandTypes.PURCHASE, params)
+	CityManager.RequestCommand(city, CityCommandTypes.RANGE_ATTACK, parameters)
 
-		return nil
-	end)
+	return nil
 end
 
 -- Orders a city to shoot at a tile in its range, and returns the result as
 -- JSON. A city's shot is a city command, and the UI shows no war dialog for it.
 function SentientSystems_CityAttack(playerID, cityID, x, y)
-	return SentientSystems_RunAction("CityAttack", function()
-		local city, failure = SentientSystems_FindCity(playerID, cityID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		failure = SentientSystems_GetOffMapFailure(x, y)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		if not PlayersVisibility[playerID]:IsVisible(x, y) then
-			return "You can't see that tile."
-		end
-
-		local R = CityCommandResults
-		local tiles = SentientSystems_GetTargetTiles(CityManager.GetCommandTargets(city, CityCommandTypes.RANGE_ATTACK, {}), R.PLOTS, R.MODIFIERS, R.MODIFIER_IS_TARGET)
-
-		failure = SentientSystems_GetTargetFailure(tiles, x, y)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
-
-		if not CityManager.CanStartCommand(city, CityCommandTypes.RANGE_ATTACK, parameters) then
-			return "The game won't start that attack."
-		end
-
-		CityManager.RequestCommand(city, CityCommandTypes.RANGE_ATTACK, parameters)
-
-		return nil
-	end)
+	return SentientSystems_RunAction("CityAttack", CityAttack, playerID, cityID, x, y)
 end

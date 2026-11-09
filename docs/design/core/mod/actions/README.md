@@ -16,9 +16,11 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 
 ### Results
 
-Every action returns the same JSON, `{ "ok": true }` or `{ "ok": false, "reason": "<text>" }`, with no `reason` when it worked. `SentientSystems_RunAction(name, action)` in `Scripts/Actions/SentientSystemsCore_Actions.lua` builds it, and the UI script loads the file.
+Every action returns the same JSON, `{ "ok": true }` or `{ "ok": false, "reason": "<text>" }`, with no `reason` when it worked. `SentientSystems_RunAction(name, action, ...)` in `Scripts/Actions/SentientSystemsCore_Actions.lua` builds it, and the UI script loads the file.
 
-The action is a function that returns nothing when it worked and the reason as text when it failed. A Lua error in it comes back as a failure with the error's first line, so the bridge always reads a reason.
+The action is a named local function that takes the arguments after it. It returns nothing when it worked and the reason as text when it failed.
+
+The public function is one line that passes its arguments to `RunAction`, so a search for the global finds its parameters and its comment. A Lua error in it comes back as a failure with the error's first line, so the bridge always reads a reason.
 
 The bridge reads the result through the stash. `sendAction` in [actions.ts](../../../../../packages/core/bridge/src/actions/actions.ts) turns a failure to reach the game, or a reply that isn't a result, into a failed result with that error as the reason. The shape is the schema in the same file.
 

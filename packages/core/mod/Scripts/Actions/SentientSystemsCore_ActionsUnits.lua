@@ -55,34 +55,36 @@ local function GetMoveFailure(playerID, unit, x, y)
 	return nil
 end
 
+local function MoveUnit(playerID, unitID, x, y)
+	local unit, failure = SentientSystems_FindUnit(playerID, unitID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	failure = GetMoveFailure(playerID, unit, x, y)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
+
+	parameters[UnitOperationTypes.PARAM_MODIFIERS] = UnitOperationMoveModifiers.MOVE_IGNORE_UNEXPLORED_DESTINATION
+
+	if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MOVE_TO, nil, parameters) then
+		return "The game won't start that move."
+	end
+
+	UnitManager.RequestOperation(unit, UnitOperationTypes.MOVE_TO, parameters)
+end
+
 -- Moves the unit to x, y by the game's own path, over as many turns as it
 -- takes, and returns the result as JSON. It never attacks: a tile with an enemy
 -- unit has no route. A result of ok means the game took the request, not that
 -- the unit has arrived.
 function SentientSystems_MoveUnit(playerID, unitID, x, y)
-	return SentientSystems_RunAction("MoveUnit", function()
-		local unit, failure = SentientSystems_FindUnit(playerID, unitID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		failure = GetMoveFailure(playerID, unit, x, y)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
-
-		parameters[UnitOperationTypes.PARAM_MODIFIERS] = UnitOperationMoveModifiers.MOVE_IGNORE_UNEXPLORED_DESTINATION
-
-		if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MOVE_TO, nil, parameters) then
-			return "The game won't start that move."
-		end
-
-		UnitManager.RequestOperation(unit, UnitOperationTypes.MOVE_TO, parameters)
-	end)
+	return SentientSystems_RunAction("MoveUnit", MoveUnit, playerID, unitID, x, y)
 end
 
 -- The unit actions, by name. Each function takes the player ID, the unit, x, y,
@@ -127,21 +129,23 @@ local function GetActionNames()
 	return table.concat(names, ", ")
 end
 
+local function UnitAction(playerID, unitID, action, x, y, type)
+	local unit, failure = SentientSystems_FindUnit(playerID, unitID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	if ACTIONS[action] == nil then
+		return "Unknown unit action " .. tostring(action) .. ". The actions are " .. GetActionNames() .. "."
+	end
+
+	return ACTIONS[action](playerID, unit, x, y, type)
+end
+
 -- Gives a unit an order and returns the result as JSON. type is the promotion
 -- to take for promote, the improvement to build for improve, and the route to
 -- build for build_road. x and y are for the actions that name a tile.
 function SentientSystems_UnitAction(playerID, unitID, action, x, y, type)
-	return SentientSystems_RunAction("UnitAction", function()
-		local unit, failure = SentientSystems_FindUnit(playerID, unitID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		if ACTIONS[action] == nil then
-			return "Unknown unit action " .. tostring(action) .. ". The actions are " .. GetActionNames() .. "."
-		end
-
-		return ACTIONS[action](playerID, unit, x, y, type)
-	end)
+	return SentientSystems_RunAction("UnitAction", UnitAction, playerID, unitID, action, x, y, type)
 end

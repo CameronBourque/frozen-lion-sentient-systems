@@ -18,6 +18,12 @@ describe("SentientSystems_RunAction", function()
 		end))
 	end)
 
+	it("passes the arguments after the action to it, nil ones included", function()
+		assert.equal("{\"ok\":false,\"reason\":\"3 nil 5\"}", env.SentientSystems_RunAction("MoveUnit", function(x, y, z)
+			return x .. " " .. tostring(y) .. " " .. z
+		end, 3, nil, 5))
+	end)
+
 	it("returns a Lua error as a failure with its first line", function()
 		assert.equal("{\"ok\":false,\"reason\":\"MoveUnit failed: no unit 7\"}", env.SentientSystems_RunAction("MoveUnit", function()
 			error("no unit 7\nstack traceback:\n\t[C]: in function 'error'", 0)

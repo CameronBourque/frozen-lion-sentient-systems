@@ -29,43 +29,45 @@ local function GetStartFailure(player, unit)
 	return nil
 end
 
+local function TradeRoute(playerID, unitID, ownerID, cityID)
+	local unit, failure = SentientSystems_FindUnit(playerID, unitID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	failure = GetStartFailure(Players[playerID], unit)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local city, failure = SentientSystems_FindCity(ownerID, cityID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local params = SentientSystems_GetRouteParams(city, unit)
+
+	local origin = Cities.GetCityInPlot(unit:GetX(), unit:GetY())
+	local path = Game.GetTradeManager():GetTradeRoutePath(origin:GetOwner(), origin:GetID(), ownerID, cityID)
+
+	-- The game's check gives no reasons, so every case it refuses is one
+	-- answer: the choice lists the cities that pass.
+	if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, nil, params) or path == nil or #path == 0 then
+		return "The trader can't reach " .. Locale.Lookup(city:GetName()) .. ". Pick a city from its destinations in the trade route choices."
+	end
+
+	UnitManager.RequestOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, params)
+
+	return nil
+end
+
 -- Starts a trade route from the trader's city to the city of the choice, and
 -- returns the result as JSON. The city is named by its owner and its ID, as the
 -- choice lists it. An ok result means the game took the route, which the trader
 -- then travels.
 function SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)
-	return SentientSystems_RunAction("TradeRoute", function()
-		local unit, failure = SentientSystems_FindUnit(playerID, unitID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		failure = GetStartFailure(Players[playerID], unit)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		local city, failure = SentientSystems_FindCity(ownerID, cityID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		local params = SentientSystems_GetRouteParams(city, unit)
-
-		local origin = Cities.GetCityInPlot(unit:GetX(), unit:GetY())
-		local path = Game.GetTradeManager():GetTradeRoutePath(origin:GetOwner(), origin:GetID(), ownerID, cityID)
-
-		-- The game's check gives no reasons, so every case it refuses is one
-		-- answer: the choice lists the cities that pass.
-		if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, nil, params) or path == nil or #path == 0 then
-			return "The trader can't reach " .. Locale.Lookup(city:GetName()) .. ". Pick a city from its destinations in the trade route choices."
-		end
-
-		UnitManager.RequestOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, params)
-
-		return nil
-	end)
+	return SentientSystems_RunAction("TradeRoute", TradeRoute, playerID, unitID, ownerID, cityID)
 end

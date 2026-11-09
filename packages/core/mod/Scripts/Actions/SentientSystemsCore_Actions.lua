@@ -9,11 +9,12 @@ SentientSystems_Include("SentientSystemsCore_Lookups")
 -- The most tiles a reason lists before it gives a count.
 local MAX_LISTED = 8
 
--- Runs an action and returns its result as JSON for the bridge. The action
--- returns nil when it worked, and the reason it failed as text otherwise. A
--- Lua error in it comes back as a failure too, with the error's first line.
-function SentientSystems_RunAction(name, action)
-	local ok, reason = pcall(action)
+-- Runs an action with the arguments after it and returns its result as JSON
+-- for the bridge. The action returns nil when it worked, and the reason it
+-- failed as text otherwise. A Lua error in it comes back as a failure too, with
+-- the error's first line.
+function SentientSystems_RunAction(name, action, ...)
+	local ok, reason = pcall(action, ...)
 
 	if not ok then
 		reason = name .. " failed: " .. tostring(reason):match("[^\n]*")
