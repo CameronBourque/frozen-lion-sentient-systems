@@ -1,6 +1,6 @@
--- Lookups of the game's objects by the IDs the bridge sends, and the yield
--- names, which the state, the choices, the actions, the placement, and the
--- trees share.
+-- Lookups of the game's objects by the IDs the bridge sends, the yield names,
+-- and a plot's position, which the state, the choices, the actions, the
+-- placement, and the trees share.
 
 -- Each yield, by its key in a city's yields and in an adjacency bonus, and its
 -- name in YieldTypes.
@@ -46,4 +46,9 @@ function SentientSystems_FindCity(playerID, cityID)
 	end
 
 	return city, nil
+end
+
+-- Returns a plot's position, as POSITION in bridge/src/schemas.ts reads it.
+function SentientSystems_GetPosition(plot)
+	return { x = plot:GetX(), y = plot:GetY() }
 end

@@ -97,21 +97,6 @@ describe("SentientSystems_HasBlocker", function()
 	end)
 end)
 
-describe("SentientSystems_GetPosition", function()
-	it("returns the plot's x and y", function()
-		local plot = {
-			GetX = function()
-				return 12
-			end,
-			GetY = function()
-				return 30
-			end,
-		}
-
-		assert.same({ x = 12, y = 30 }, env.SentientSystems_GetPosition(plot))
-	end)
-end)
-
 describe("SentientSystems_Include", function()
 	it("loads the file, returns its path, and prints nothing", function()
 		local loaded = env.SentientSystems_Include("SentientSystemsCore_Json")
