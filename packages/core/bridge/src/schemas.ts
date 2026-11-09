@@ -15,6 +15,13 @@ export const POSITION = z.object({ x: z.number(), y: z.number() });
 
 export type Position = z.infer<typeof POSITION>;
 
+// A tech's or a civic's boost, as the research choice and the tree show it.
+export const BOOST = z.object({
+	percent: z.number().describe("The share of the cost that the boost gives."),
+	trigger: z.string().describe("The trigger's text, in the game's language."),
+	triggered: z.boolean(),
+});
+
 // An amount of each of the six yields. A yield can be left out.
 export const YIELDS = z.object({
 	food: z.number().optional(),
