@@ -3,37 +3,29 @@
 // screen's extra icons for envoys and governor titles.
 
 import { z } from "zod";
-import { BOOST } from "../schemas.js";
+import { RESEARCH_ITEM } from "../schemas.js";
 import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 
 // A node of the tree. In Tech and Civic Shuffle mode the screen shows a node
-// the player hasn't revealed as an Unrevealed box, so it keeps only era,
-// status, turns, progress, and prerequisites.
-const NODE = z.object({
-	type: z.string().describe(
-		"An unrevealed node has a question mark and a number instead, in the tree's order. The numbers link the hidden nodes within one read.",
+// the player hasn't revealed as an Unrevealed box. The tree's status takes the
+// place of the choice's current.
+const NODE = RESEARCH_ITEM.extend({
+	type: RESEARCH_ITEM.shape.type.describe(
+		"Such as TECH_SAILING. An unrevealed node has a question mark and a number instead, in the tree's order. The numbers link the hidden nodes within one read.",
 	),
 	era: z.string(),
 	status: z.enum(["researched", "current", "ready", "blocked"]),
-	cost: z.number().optional().describe("Left out for an unrevealed node."),
-	turns: z.number().optional().describe(
+	cost: RESEARCH_ITEM.shape.cost.optional().describe("Left out for an unrevealed node."),
+	turns: RESEARCH_ITEM.shape.turns.optional().describe(
 		"There while it is above 0 and the node isn't researched. For the node in research, it is the turns left.",
 	),
-	progress: z.number().optional().describe("There while it is above 0. Never on a researched node."),
 	prerequisites: z.array(z.string()).describe(
 		"By type, or by number such as ?1 for an unrevealed node, as the screen's lines link it.",
 	),
-	boost: BOOST.optional().describe(
-		"Left out for an unrevealed or researched node. Works as in ../choices/research.ts.",
-	),
-	unlocks: z.array(z.string()).optional().describe("Works as in ../choices/research.ts."),
-	description: z.string().optional().describe("Works as in ../choices/research.ts."),
-	recommended: z.literal(true).optional().describe("The advisor's pick. Never on a researched node."),
-	queue: z.number().optional().describe(
-		"Its place in the research queue, as the screen's path markers number it. Works as in ../choices/research.ts. Never on an unrevealed node.",
-	),
-});
+}).describe(
+	"An unrevealed node keeps only type, era, status, turns, progress, and prerequisites. A researched node has no boost, progress, recommended, or queue.",
+);
 
 // The player or a player they have met, as the timeline at the bottom of the
 // screen marks them.

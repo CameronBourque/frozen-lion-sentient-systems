@@ -22,6 +22,29 @@ export const BOOST = z.object({
 	triggered: z.boolean(),
 });
 
+// A tech or a civic as the research choosers and the tree screens show it. The
+// core mod builds both with reader.Option in
+// Scripts/Choices/SentientSystemsCore_ChoicesResearch.lua.
+export const RESEARCH_ITEM = z.object({
+	type: z.string().describe("Such as TECH_SAILING or CIVIC_CRAFTSMANSHIP."),
+	cost: z.number(),
+	turns: z.number(),
+	progress: z.number().optional().describe("There once it is above 0."),
+	boost: BOOST.optional().describe("Left out for one with no boost."),
+	unlocks: z.array(z.string()).optional().describe(
+		"What it unlocks, by type, such as UNIT_GALLEY or POLICY_AGOGE. Left out when the game's unlocks file is missing.",
+	),
+	description: z.string().optional().describe(
+		"The special unlock the screen shows as a star, in the game's language. Left out for one without it.",
+	),
+	recommended: z.literal(true).optional().describe(
+		"True when the game's advisor recommends it. Left out otherwise.",
+	),
+	queue: z.number().optional().describe(
+		"Its place in the research queue, from 1 for the one in research, as the chooser and the tree screen number it. Left out when it isn't queued.",
+	),
+});
+
 // An amount of one yield, for a list that names each yield it holds.
 export const YIELD_AMOUNT = z.object({ type: z.string().describe("A yield type, such as YIELD_CULTURE."), amount: z.number() });
 
