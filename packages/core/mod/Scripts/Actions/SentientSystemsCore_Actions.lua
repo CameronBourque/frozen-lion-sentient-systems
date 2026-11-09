@@ -51,6 +51,21 @@ function SentientSystems_GetOffMapFailure(x, y)
 	return nil
 end
 
+-- Returns why x and y name no tile on the map that the player sees, or nil.
+function SentientSystems_GetUnseenTileFailure(playerID, x, y)
+	local offMap = SentientSystems_GetOffMapFailure(x, y)
+
+	if offMap ~= nil then
+		return offMap
+	end
+
+	if not PlayersVisibility[playerID]:IsVisible(x, y) then
+		return "You can't see that tile."
+	end
+
+	return nil
+end
+
 -- Returns the parameters that name the tile at x and y to a request. types is
 -- the table of the request's kind, which holds its PARAM_X and PARAM_Y keys.
 function SentientSystems_GetTileParams(types, x, y)

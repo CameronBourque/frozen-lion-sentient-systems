@@ -75,14 +75,10 @@ local function GetAttackFailure(playerID, unit, x, y)
 		return "An attack needs the tile to hit."
 	end
 
-	local offMap = SentientSystems_GetOffMapFailure(x, y)
+	local unseen = SentientSystems_GetUnseenTileFailure(playerID, x, y)
 
-	if offMap ~= nil then
-		return offMap
-	end
-
-	if not PlayersVisibility[playerID]:IsVisible(x, y) then
-		return "You can't see that tile."
+	if unseen ~= nil then
+		return unseen
 	end
 
 	if unit:GetAttacksRemaining() <= 0 then
