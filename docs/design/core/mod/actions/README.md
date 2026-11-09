@@ -29,3 +29,6 @@ The bridge reads the result through the stash. `sendAction` in [actions.ts](../.
 | Decision | Reason |
 | --- | --- |
 | Every failed action returns a reason | The agent can decide again instead of repeating a mistake |
+| Each action is a named local function, and its public function is a written-out one-line wrapper | A search for the global finds its definition, its parameters, and its comment. A helper that defines the global by name would hide all three |
+| An action calls one named function per major step, and each step returns the reason or nil | A step can be read alone, and a later action can reuse it. A step that several action files call moves to `SentientSystemsCore_Actions.lua` |
+| Actions have no line limit | Splitting by step keeps them short, and a fixed number would split some steps in the wrong place |
