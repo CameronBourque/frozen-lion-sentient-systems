@@ -2,14 +2,13 @@
 // as the placement view shows it, through the stash in stash.ts.
 
 import { z } from "zod";
-import { YIELDS } from "../schemas.js";
+import { POSITION, YIELDS } from "../schemas.js";
 import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 
 // A tile where a district or a wonder can go.
 const TILE = z.object({
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	adjacency: YIELDS.optional().describe(
 		"A district's adjacency bonus on the tile, by yield, such as science 3, as the placement view shows it. Left out for a wonder, and for a tile with no bonus.",
 	),
