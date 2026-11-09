@@ -9,7 +9,7 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 | [state.md](state.md) | The state serializer and `SentientSystems_GetState` |
 | [choices.md](choices.md) | The choices and the placement tiles |
 | [trees.md](trees.md) | The tech, civic, and governor trees |
-| [actions.md](actions.md) | The action API |
+| [actions/](actions/README.md) | The action API |
 
 ## Checkpoint ID
 

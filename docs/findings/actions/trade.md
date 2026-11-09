@@ -4,7 +4,7 @@ Status: open. Starting a trade route and plundering one are confirmed in a runni
 
 The game calls the trade route action and the plunder order wrap, with the Lua state each runs in and the reasons their checks give. The destinations a trader can reach are in [choices/trade-routes.md](../choices/trade-routes.md).
 
-The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md). The other unit actions are in the [actions index](README.md).
+The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other unit actions are in the [actions index](README.md).
 
 ## Questions
 

@@ -40,7 +40,7 @@ AI turns get slower as a game goes on, because the AI has more to do. `IsTurnAct
 
 ### Where actions can come from
 
-The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](../game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/mod/actions.md](../../design/core/mod/actions.md).
+The UI moves units with `UnitManager.RequestOperation` and ends turns with `UI.RequestAction`. See [game-api.md](../game-api.md). These are request functions. The engine checks each action and applies it only if it is legal. The design requires this path. See [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md).
 
 The core mod's own UI state has `UnitManager.RequestOperation` and `UI.RequestAction`. See [the core mod's states](#the-core-mods-states). A move requested there takes effect.
 

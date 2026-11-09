@@ -4,7 +4,7 @@ Status: confirmed. Setting a city's production to a unit, a building, a project,
 
 The game call that the production action wraps, with the Lua state it runs in and the reasons its checks give. The items a city can pick are in [choices/production.md](../choices/production.md).
 
-The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md). The other actions are in the [actions index](README.md).
+The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other actions are in the [actions index](README.md).
 
 ## Questions
 

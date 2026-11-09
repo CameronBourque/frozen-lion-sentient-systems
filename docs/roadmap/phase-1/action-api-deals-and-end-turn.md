@@ -29,5 +29,5 @@ With an agent as the local player, a wonder that the player completes shows no p
 ## Record
 
 - Each request function, its Lua state, and its result, in `findings/actions/end-turn.md`.
-- The reasons, in [design/core/mod/actions.md](../../design/core/mod/actions.md).
+- The reasons, in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md).
 - The rows of each action, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md).

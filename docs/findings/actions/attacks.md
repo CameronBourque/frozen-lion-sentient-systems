@@ -4,7 +4,7 @@ Status: open. Ranged, air, melee, city, and coastal raid attacks are confirmed i
 
 The game calls the attack actions wrap, with the Lua state each runs in and where we found each call.
 
-"Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md).
+"Confirmed in files", "tested", and "used by civ6-mcp" mean what they mean in [game-api.md](../game-api.md). The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md).
 
 The move path and the war dialog are in [actions/move-unit.md](move-unit.md).
 

@@ -4,7 +4,7 @@ Status: open. Starting a mission, a counterspy mission, and a trip are confirmed
 
 The game calls the spy actions wrap, with the Lua state each runs in and the reasons their checks give. The cities and missions a spy can choose are in [choices/spy-missions.md](../choices/spy-missions.md).
 
-The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md). The other unit actions are in the [actions index](README.md).
+The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other unit actions are in the [actions index](README.md).
 
 ## Questions
 

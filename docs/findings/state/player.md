@@ -2,7 +2,7 @@
 
 Status: open. The `player` section of `SentientSystems_GetState`, what the top bar shows about the player as a whole, is confirmed in a running game with Gathering Storm, with the file sent through the tuner. It matches the top bar.
 
-The calls the player section of the state uses, as the top bar shows them. The Reports tabs are in [state/reports.md](reports.md), and the Era Progress panel in [state/eras.md](eras.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
+The calls the player section of the state uses, as the top bar shows them. The Reports tabs are in [state/reports/](reports/README.md), and the Era Progress panel in [state/eras.md](eras.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
 
 ## Questions
 
