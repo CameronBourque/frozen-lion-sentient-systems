@@ -7,10 +7,10 @@ SentientSystems_Include("SentientSystemsCore_ChoicesSpyMissions")
 -- only when it is ready to move and awake, as the chooser opens only then. See
 -- GoToProperInterfaceMode in EspionageChooser.lua.
 local function FindReadySpy(playerID, unitID)
-	local spy = UnitManager.GetUnit(playerID, unitID)
+	local spy, failure = SentientSystems_FindUnit(playerID, unitID)
 
-	if spy == nil then
-		return nil, "Player " .. playerID .. " has no unit " .. unitID .. "."
+	if failure ~= nil then
+		return nil, failure
 	end
 
 	if not GameInfo.Units[spy:GetUnitType()].Spy then
@@ -86,6 +86,71 @@ local function FindDistrictByType(city, districtType)
 	end
 end
 
+-- Returns the operation row of the spy mission and whether it is a counterspy
+-- mission, or nil and the reason. A counterspy mission needs the district to
+-- guard. missions is what the spy can start in its city.
+local function FindSpyOperation(missions, mission, district)
+	local operation = GameInfo.UnitOperations[tostring(mission)]
+	local counterspy = operation ~= nil and operation.OperationType == "UNITOPERATION_SPY_COUNTERSPY"
+
+	if operation == nil or not counterspy and operation.CategoryInUI ~= "OFFENSIVESPY" then
+		return nil, nil, tostring(mission) .. " isn't a spy mission. The spy can start " .. ListField(missions, "type") .. "."
+	end
+
+	if counterspy and district == nil then
+		return nil, nil, "A counterspy mission needs the district to guard. The districts are " .. ListField(missions, "district") .. "."
+	end
+
+	return operation, counterspy, nil
+end
+
+-- Requests the mission. A counterspy mission targets the district's tile, and
+-- the others take no target.
+local function StartMission(spy, city, operation, counterspy, district)
+	if not counterspy then
+		UnitManager.RequestOperation(spy, operation.Hash)
+
+		return nil
+	end
+
+	local target = FindDistrictByType(city, district)
+
+	UnitManager.RequestOperation(spy, UnitOperationTypes.SPY_COUNTERSPY, SentientSystems_GetTileParams(UnitOperationTypes, target:GetX(), target:GetY()))
+
+	return nil
+end
+
+local function SpyMission(playerID, unitID, mission, district)
+	local spy, failure = FindReadySpy(playerID, unitID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local city = Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())
+
+	if city == nil then
+		return "The spy isn't in a city. Send it to one first."
+	end
+
+	local missions = SentientSystems_GetSpyCityMissions(Players[playerID], spy, city)
+	local operation, counterspy
+
+	operation, counterspy, failure = FindSpyOperation(missions, mission, district)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	failure = GetMissionFailure(missions, mission, counterspy and district or nil)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	return StartMission(spy, city, operation, counterspy, district)
+end
+
 -- Starts a mission in the city the spy stands in, and returns the result as
 -- JSON. mission is the type of a mission from the spy missions choice, such as
 -- a counterspy or a siphon. A counterspy mission also takes the district to
@@ -93,99 +158,62 @@ end
 -- briefing does, so a district isn't needed. An ok result means the mission has
 -- begun, not that it has finished.
 function SentientSystems_SpyMission(playerID, unitID, mission, district)
-	return SentientSystems_RunAction("SpyMission", function()
-		local spy, failure = FindReadySpy(playerID, unitID)
+	return SentientSystems_RunAction("SpyMission", SpyMission, playerID, unitID, mission, district)
+end
 
-		if failure ~= nil then
-			return failure
-		end
+-- Returns why the spy can't travel to the city, or nil. It must be free to
+-- travel, not already there, and the city must be one of its destinations.
+local function GetTravelFailure(player, spy, city, name)
+	if not SentientSystems_CanSpyTravel(spy) then
+		return "The game won't send the spy to another city now."
+	end
 
-		local city = Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())
+	local here = Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())
 
-		if city == nil then
-			return "The spy isn't in a city. Send it to one first."
-		end
+	if here ~= nil and here:GetOwner() == city:GetOwner() and here:GetID() == city:GetID() then
+		return "The spy is already in " .. name .. "."
+	end
 
-		local operation = GameInfo.UnitOperations[tostring(mission)]
-		local missions = SentientSystems_GetSpyCityMissions(Players[playerID], spy, city)
-
-		local counterspy = operation ~= nil and operation.OperationType == "UNITOPERATION_SPY_COUNTERSPY"
-
-		if operation == nil or not counterspy and operation.CategoryInUI ~= "OFFENSIVESPY" then
-			return tostring(mission) .. " isn't a spy mission. The spy can start " .. ListField(missions, "type") .. "."
-		end
-
-		if counterspy and district == nil then
-			return "A counterspy mission needs the district to guard. The districts are " .. ListField(missions, "district") .. "."
-		end
-
-		failure = GetMissionFailure(missions, mission, counterspy and district or nil)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		if not counterspy then
-			UnitManager.RequestOperation(spy, operation.Hash)
-
+	for _, destination in ipairs(SentientSystems_GetSpyDestinations(player, spy)) do
+		if destination.owner == city:GetOwner() and destination.id == city:GetID() then
 			return nil
 		end
+	end
 
-		local target = FindDistrictByType(city, district)
+	return name .. " isn't a destination of this spy. Pick a city from its destinations in the spy missions choice."
+end
 
-		UnitManager.RequestOperation(spy, UnitOperationTypes.SPY_COUNTERSPY, {
-			[UnitOperationTypes.PARAM_X] = target:GetX(),
-			[UnitOperationTypes.PARAM_Y] = target:GetY(),
-		})
+local function SpyTravel(playerID, unitID, ownerID, cityID)
+	local spy, failure = FindReadySpy(playerID, unitID)
 
-		return nil
-	end)
+	if failure ~= nil then
+		return failure
+	end
+
+	local city
+
+	city, failure = SentientSystems_FindCity(ownerID, cityID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local name = Locale.Lookup(city:GetName())
+
+	failure = GetTravelFailure(Players[playerID], spy, city, name)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local params = SentientSystems_GetTileParams(UnitOperationTypes, city:GetX(), city:GetY())
+
+	return SentientSystems_RequestUnitOperation(spy, UnitOperationTypes.SPY_TRAVEL_NEW_CITY, params, "The game won't send the spy to " .. name .. ".", Map.GetPlot(city:GetX(), city:GetY()))
 end
 
 -- Sends the spy to a city of the spy missions choice, named by its owner and
 -- its ID, and returns the result as JSON. An ok result means the spy has set
 -- out, not that it has arrived.
 function SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)
-	return SentientSystems_RunAction("SpyTravel", function()
-		local spy, failure = FindReadySpy(playerID, unitID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		local city, failure = SentientSystems_FindCity(ownerID, cityID)
-
-		if failure ~= nil then
-			return failure
-		end
-
-		if not SentientSystems_CanSpyTravel(spy) then
-			return "The game won't send the spy to another city now."
-		end
-
-		local here = Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())
-
-		if here ~= nil and here:GetOwner() == ownerID and here:GetID() == cityID then
-			return "The spy is already in " .. Locale.Lookup(city:GetName()) .. "."
-		end
-
-		for _, destination in ipairs(SentientSystems_GetSpyDestinations(Players[playerID], spy)) do
-			if destination.owner == ownerID and destination.id == cityID then
-				local params = {
-					[UnitOperationTypes.PARAM_X] = city:GetX(),
-					[UnitOperationTypes.PARAM_Y] = city:GetY(),
-				}
-
-				if not UnitManager.CanStartOperation(spy, UnitOperationTypes.SPY_TRAVEL_NEW_CITY, Map.GetPlot(city:GetX(), city:GetY()), params) then
-					return "The game won't send the spy to " .. Locale.Lookup(city:GetName()) .. "."
-				end
-
-				UnitManager.RequestOperation(spy, UnitOperationTypes.SPY_TRAVEL_NEW_CITY, params)
-
-				return nil
-			end
-		end
-
-		return Locale.Lookup(city:GetName()) .. " isn't a destination of this spy. Pick a city from its destinations in the spy missions choice."
-	end)
+	return SentientSystems_RunAction("SpyTravel", SpyTravel, playerID, unitID, ownerID, cityID)
 end

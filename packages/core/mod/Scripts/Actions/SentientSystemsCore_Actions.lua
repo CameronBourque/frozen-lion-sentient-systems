@@ -9,11 +9,12 @@ SentientSystems_Include("SentientSystemsCore_Lookups")
 -- The most tiles a reason lists before it gives a count.
 local MAX_LISTED = 8
 
--- Runs an action and returns its result as JSON for the bridge. The action
--- returns nil when it worked, and the reason it failed as text otherwise. A
--- Lua error in it comes back as a failure too, with the error's first line.
-function SentientSystems_RunAction(name, action)
-	local ok, reason = pcall(action)
+-- Runs an action with the arguments after it and returns its result as JSON
+-- for the bridge. The action returns nil when it worked, and the reason it
+-- failed as text otherwise. A Lua error in it comes back as a failure too, with
+-- the error's first line.
+function SentientSystems_RunAction(name, action, ...)
+	local ok, reason = pcall(action, ...)
 
 	if not ok then
 		reason = name .. " failed: " .. tostring(reason):match("[^\n]*")
@@ -24,6 +25,63 @@ function SentientSystems_RunAction(name, action)
 	end
 
 	return SentientSystems_EncodeJson({ ok = false, reason = tostring(reason) })
+end
+
+-- Returns the player's unit by ID, or nil and the reason.
+function SentientSystems_FindUnit(playerID, unitID)
+	local unit = UnitManager.GetUnit(playerID, unitID)
+
+	if unit == nil then
+		return nil, "Player " .. tostring(playerID) .. " has no unit " .. tostring(unitID) .. "."
+	end
+
+	return unit, nil
+end
+
+-- Returns why x and y name no tile on the map, or nil when they name one.
+function SentientSystems_GetOffMapFailure(x, y)
+	if x == nil or y == nil then
+		return "That action needs a tile. Give x and y."
+	end
+
+	if not Map.IsPlot(x, y) then
+		return "The tile (" .. x .. ", " .. y .. ") is off the map."
+	end
+
+	return nil
+end
+
+-- Returns why x and y name no tile on the map that the player sees, or nil.
+function SentientSystems_GetUnseenTileFailure(playerID, x, y)
+	local offMap = SentientSystems_GetOffMapFailure(x, y)
+
+	if offMap ~= nil then
+		return offMap
+	end
+
+	if not PlayersVisibility[playerID]:IsVisible(x, y) then
+		return "You can't see that tile."
+	end
+
+	return nil
+end
+
+-- Returns the parameters that name the tile at x and y to a request. types is
+-- the table of the request's kind, which holds its PARAM_X and PARAM_Y keys.
+function SentientSystems_GetTileParams(types, x, y)
+	return { [types.PARAM_X] = x, [types.PARAM_Y] = y }
+end
+
+-- Requests the unit operation when the game allows it, or returns the refusal.
+-- plot is the target tile that a few operations check, and nil for the rest.
+function SentientSystems_RequestUnitOperation(unit, operation, params, refusal, plot)
+	if not UnitManager.CanStartOperation(unit, operation, plot, params) then
+		return refusal
+	end
+
+	UnitManager.RequestOperation(unit, operation, params)
+
+	return nil
 end
 
 -- Returns whether the list of tiles holds the tile at x and y.

@@ -139,7 +139,7 @@ end
 -- Requests the improvement of that type on the unit's tile, or returns why the
 -- unit can't build it.
 local function Improve(unit, improvementType)
-	local parameters = { [UnitOperationTypes.PARAM_X] = unit:GetX(), [UnitOperationTypes.PARAM_Y] = unit:GetY() }
+	local parameters = SentientSystems_GetTileParams(UnitOperationTypes, unit:GetX(), unit:GetY())
 	local improvements = GetImprovements(unit, parameters)
 
 	for _, improvement in ipairs(improvements) do

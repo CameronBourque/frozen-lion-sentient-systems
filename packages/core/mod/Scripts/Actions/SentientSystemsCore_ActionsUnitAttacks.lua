@@ -17,8 +17,13 @@ function SentientSystems_GetTargetTiles(results, plots, modifiers, isTarget)
 	return tiles
 end
 
--- Returns the reason a tile isn't a target, with the tiles that are.
-function SentientSystems_GetNotTargetReason(tiles)
+-- Returns nil when x, y is one of the target tiles, and the reason it isn't,
+-- with the tiles that are, otherwise.
+function SentientSystems_GetTargetFailure(tiles, x, y)
+	if SentientSystems_HasTile(tiles, x, y) then
+		return nil
+	end
+
 	if #tiles == 0 then
 		return "That tile isn't a target, and nothing is in range."
 	end
@@ -70,12 +75,10 @@ local function GetAttackFailure(playerID, unit, x, y)
 		return "An attack needs the tile to hit."
 	end
 
-	if not Map.IsPlot(x, y) then
-		return "The tile (" .. x .. ", " .. y .. ") is off the map."
-	end
+	local unseen = SentientSystems_GetUnseenTileFailure(playerID, x, y)
 
-	if not PlayersVisibility[playerID]:IsVisible(x, y) then
-		return "You can't see that tile."
+	if unseen ~= nil then
+		return unseen
 	end
 
 	if unit:GetAttacksRemaining() <= 0 then
@@ -87,11 +90,9 @@ end
 
 -- Requests a melee attack on an adjacent tile, or returns why it can't.
 local function MeleeAttack(playerID, unit, x, y)
-	local parameters = {
-		[UnitOperationTypes.PARAM_X] = x,
-		[UnitOperationTypes.PARAM_Y] = y,
-		[UnitOperationTypes.PARAM_MODIFIERS] = UnitOperationMoveModifiers.ATTACK + UnitOperationMoveModifiers.MOVE_IGNORE_UNEXPLORED_DESTINATION,
-	}
+	local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
+
+	parameters[UnitOperationTypes.PARAM_MODIFIERS] = UnitOperationMoveModifiers.ATTACK + UnitOperationMoveModifiers.MOVE_IGNORE_UNEXPLORED_DESTINATION
 
 	if Map.GetPlotDistance(unit:GetX(), unit:GetY(), x, y) ~= 1 then
 		return "A melee unit attacks an adjacent tile. Move next to it first."
@@ -105,13 +106,7 @@ local function MeleeAttack(playerID, unit, x, y)
 		return "There is nothing to attack on that tile."
 	end
 
-	if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MOVE_TO, nil, parameters) then
-		return "The game won't start that attack."
-	end
-
-	UnitManager.RequestOperation(unit, UnitOperationTypes.MOVE_TO, parameters)
-
-	return nil
+	return SentientSystems_RequestUnitOperation(unit, UnitOperationTypes.MOVE_TO, parameters, "The game won't start that attack.")
 end
 
 -- Requests a ranged or an air attack on a tile in range, or returns why it
@@ -119,21 +114,13 @@ end
 local function RangedAttack(unit, operation, x, y)
 	local R = UnitOperationResults
 	local tiles = SentientSystems_GetTargetTiles(UnitManager.GetOperationTargets(unit, operation), R.PLOTS, R.MODIFIERS, R.MODIFIER_IS_TARGET)
-	local parameters = { [UnitOperationTypes.PARAM_X] = x, [UnitOperationTypes.PARAM_Y] = y }
+	local failure = SentientSystems_GetTargetFailure(tiles, x, y)
 
-	for _, tile in ipairs(tiles) do
-		if tile.x == x and tile.y == y then
-			if not UnitManager.CanStartOperation(unit, operation, nil, parameters) then
-				return "The game won't start that attack."
-			end
-
-			UnitManager.RequestOperation(unit, operation, parameters)
-
-			return nil
-		end
+	if failure ~= nil then
+		return failure
 	end
 
-	return SentientSystems_GetNotTargetReason(tiles)
+	return SentientSystems_RequestUnitOperation(unit, operation, SentientSystems_GetTileParams(UnitOperationTypes, x, y), "The game won't start that attack.")
 end
 
 -- Returns the land tiles a ship can hit with a coastal raid. The UI marks all
@@ -159,15 +146,7 @@ end
 
 -- Requests a coastal raid on a tile of the raid list, or returns why it can't.
 local function Raid(unit, x, y)
-	local parameters = { [UnitOperationTypes.PARAM_X] = x, [UnitOperationTypes.PARAM_Y] = y }
-
-	if not UnitManager.CanStartOperation(unit, UnitOperationTypes.COASTAL_RAID, nil, parameters) then
-		return "The game won't start that raid."
-	end
-
-	UnitManager.RequestOperation(unit, UnitOperationTypes.COASTAL_RAID, parameters)
-
-	return nil
+	return SentientSystems_RequestUnitOperation(unit, UnitOperationTypes.COASTAL_RAID, SentientSystems_GetTileParams(UnitOperationTypes, x, y), "The game won't start that raid.")
 end
 
 -- Returns how a refusal ends: the tiles a ship could raid instead.

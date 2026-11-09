@@ -33,7 +33,7 @@ end
 -- checks the order with the tile, and a command takes it as the third argument.
 local function Start(unit, order, x, y)
 	if order.operation ~= nil then
-		local parameters = { [UnitOperationTypes.PARAM_X] = x, [UnitOperationTypes.PARAM_Y] = y }
+		local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
 		local hash = UnitOperationTypes[order.operation]
 
 		if not UnitManager.CanStartOperation(unit, hash, nil, parameters) then
@@ -45,7 +45,7 @@ local function Start(unit, order, x, y)
 		return true
 	end
 
-	local parameters = { [UnitCommandTypes.PARAM_X] = x, [UnitCommandTypes.PARAM_Y] = y }
+	local parameters = SentientSystems_GetTileParams(UnitCommandTypes, x, y)
 	local command = UnitCommandTypes[order.command]
 
 	if not UnitManager.CanStartCommand(unit, command, parameters) then
@@ -72,8 +72,10 @@ end
 -- Requests the order for x, y, or returns why it can't start. The game gives no
 -- reasons, so the kind, the moves, and the listed tiles are checked in turn.
 local function Run(unit, order, x, y)
-	if not Map.IsPlot(x, y) then
-		return "The tile (" .. tostring(x) .. ", " .. tostring(y) .. ") is off the map."
+	local offMap = SentientSystems_GetOffMapFailure(x, y)
+
+	if offMap ~= nil then
+		return offMap
 	end
 
 	if order.kind ~= nil and not order.kind(unit) then

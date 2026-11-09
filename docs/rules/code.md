@@ -9,6 +9,7 @@ Rules for code in every package. Each architecture rule links to the design deci
 - [Actions go through the game's own request functions, so the game checks legality](../design/core/mod/actions/README.md).
 - [Agent state comes from the player's visibility data, never from the screen](../design/core/mod/state.md#decisions).
 - [Every failed action returns a reason](../design/core/mod/actions/README.md#decisions).
+- [Each action is a named function that calls one named step per major step](../design/core/mod/actions/README.md#decisions).
 - [Every action tool has a required `reason` field](../design/agents/narration-and-messaging.md#narrator-panel).
 - [The API key never goes into a game setup parameter](../design/core/settings.md).
 - [A file format change bumps that file's schema version and ships a migration](../design/versioning.md#bump-rules).
