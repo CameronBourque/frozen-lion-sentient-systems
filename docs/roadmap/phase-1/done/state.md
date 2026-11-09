@@ -22,7 +22,7 @@ Pull request: [feat(core): add blockers, choices, trees, and the scoreboard](htt
 It added end-turn blockers, legal options and purchases with details, placement tiles, the tech and civic trees, the player's overview, diplomacy status, and victory progress.
 
 - The format of each is in [design/core/mod/](../../../design/core/mod/README.md), and `readPlacement` and the readers are in [bridge.md](../../../design/core/bridge.md).
-- The state calls are in [state/end-turn-blockers.md](../../../findings/state/end-turn-blockers.md), [state/player.md](../../../findings/state/player.md), [state/reports.md](../../../findings/state/reports.md), [state/eras.md](../../../findings/state/eras.md), [state/diplomacy.md](../../../findings/state/diplomacy.md), [state/scoreboard.md](../../../findings/state/scoreboard.md), and [state/victories.md](../../../findings/state/victories.md).
+- The state calls are in [state/end-turn-blockers.md](../../../findings/state/end-turn-blockers.md), [state/player.md](../../../findings/state/player.md), [state/reports/](../../../findings/state/reports/README.md), [state/eras.md](../../../findings/state/eras.md), [state/diplomacy.md](../../../findings/state/diplomacy.md), [state/scoreboard.md](../../../findings/state/scoreboard.md), and [state/victories.md](../../../findings/state/victories.md).
 - The choice calls are in [choices/production.md](../../../findings/choices/production.md), [choices/districts.md](../../../findings/choices/districts.md), [choices/purchases.md](../../../findings/choices/purchases.md), [choices/research.md](../../../findings/choices/research.md), and [choices/placement.md](../../../findings/choices/placement.md).
 - The state sizes are in [testing.md](../../../design/testing.md#state-size).
 

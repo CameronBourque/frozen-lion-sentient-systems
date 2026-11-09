@@ -1,20 +1,14 @@
-# Reports tabs
+# City Status tab
 
-Status: open. The City Status tab's growth rate, war weariness, and governor, which sit in `cities`, are confirmed on the same game.
+Status: open. The City Status tab's growth rate, war weariness, and governor, which sit in `cities`, are confirmed in a running game with Gathering Storm.
 
-The calls the state uses for the City Status tab of Reports. The Yields tab is in [reports/yields.md](reports/yields.md), and the Resources tab in [reports/resources.md](reports/resources.md). The top bar is in [state/player.md](player.md). See [design/core/mod/state.md](../../design/core/mod/state.md).
+The calls the state uses for the City Status tab of Reports. The top bar is in [state/player.md](../player.md). See [design/core/mod/state.md](../../../design/core/mod/state.md) and the [Reports index](README.md).
 
 ## Questions
 
-None open for these tabs.
+None open.
 
 ## What we know now
-
-The Yields tab is in [reports/yields.md](reports/yields.md).
-
-The Resources tab is in [reports/resources.md](reports/resources.md).
-
-### City Status tab
 
 `CreateCityStatusInstance` in `ReportScreen.lua`, which the Rise and Fall `ReportScreen_Expansion1.lua` replaces for Rise and Fall and Gathering Storm, builds each row from `GetCityData` in `CitySupport.lua`.
 
@@ -29,7 +23,7 @@ The Rise and Fall row drops the base game's Under Siege column and adds loyalty 
 
 ## Method
 
-1. For the City Status tab, send `SentientSystemsCore_StateCities.lua` without its comments, then print each city's `growth.rate`, `amenities`, and `governor`, and compare with the tab.
+1. Send `SentientSystemsCore_StateCities.lua` without its comments, then print each city's `growth.rate`, `amenities`, and `governor`, and compare with the tab.
 
 ## Results
 
