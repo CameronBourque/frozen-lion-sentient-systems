@@ -2,10 +2,10 @@
 // Scripts/State/SentientSystemsCore_StateTiles.lua.
 
 import { z } from "zod";
+import { POSITION } from "../schemas.js";
 
 export const TILE = z.object({
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	terrain: z.string().describe("Such as TERRAIN_GRASS_HILLS."),
 	feature: z.string().optional().describe("Such as FEATURE_FOREST. Left out for a tile with none."),
 	resource: z.string().optional().describe(
