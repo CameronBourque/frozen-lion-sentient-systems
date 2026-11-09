@@ -3,12 +3,12 @@
 // it in Scripts/Choices/SentientSystemsCore_ChoicesArtifacts.lua.
 
 import { z } from "zod";
+import { POSITION } from "../schemas.js";
 
 export const ARTIFACTS_CHOICE = z.array(z.object({
 	archaeologist: z.number().describe("The archaeologist's unit ID."),
 	name: z.string(),
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	era: z.string().describe("The era the site is from, such as ERA_INDUSTRIAL."),
 	description: z.string().describe("The screen's explanation, in the game's language."),
 	options: z.array(z.object({
