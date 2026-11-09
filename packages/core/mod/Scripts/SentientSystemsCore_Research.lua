@@ -1,13 +1,15 @@
 -- The game's calls for techs and for civics, which the choices, the trees, and
--- the actions share. Follows ResearchChooser.lua and CivicsChooser.lua.
+-- the actions share. Follows the research choosers and the tree screens.
 
 include("SentientSystemsCore_Common")
 
 -- Each kind by name, "tech" or "civic". Each reads from the player's store:
--- GetTechs for techs, and GetCulture for civics. operation and parameter name
--- the request the chooser sends, as keys of PlayerOperations. See
--- OnChooseResearch in ResearchChooser.lua and OnChooseCivic in
--- CivicsChooser.lua.
+-- GetTechs for techs, and GetCulture for civics. Without the Tech and Civic
+-- Shuffle mode, a store may have no IsTechRevealed or IsCivicRevealed, and
+-- every row is revealed. path lists the indexes to research, in order, to reach
+-- a row, and queue the indexes in the queue, the one in research first.
+-- operation and parameter name the request the tree screen sends, as keys of
+-- PlayerOperations. See SetCurrentNode in TechTree.lua, and in CivicsTree.lua.
 SENTIENTSYSTEMS_RESEARCH_KINDS = {
 	tech = {
 		name = "tech",
@@ -30,6 +32,15 @@ SENTIENTSYSTEMS_RESEARCH_KINDS = {
 		end,
 		has = function(store, index)
 			return store:HasTech(index)
+		end,
+		revealed = function(store, index)
+			return store.IsTechRevealed == nil or store:IsTechRevealed(index)
+		end,
+		path = function(store, hash)
+			return store:GetResearchPath(hash)
+		end,
+		queue = function(store)
+			return store:GetResearchQueue()
 		end,
 		cost = function(store, index)
 			return store:GetResearchCost(index)
@@ -74,6 +85,15 @@ SENTIENTSYSTEMS_RESEARCH_KINDS = {
 		has = function(store, index)
 			return store:HasCivic(index)
 		end,
+		revealed = function(store, index)
+			return store.IsCivicRevealed == nil or store:IsCivicRevealed(index)
+		end,
+		path = function(store, hash)
+			return store:GetCivicPath(hash)
+		end,
+		queue = function(store)
+			return store:GetCivicQueue()
+		end,
 		cost = function(store, index)
 			return store:GetCultureCost(index)
 		end,
@@ -94,10 +114,3 @@ SENTIENTSYSTEMS_RESEARCH_KINDS = {
 		parameter = "PARAM_CIVIC_TYPE",
 	},
 }
-
--- Returns whether the chooser lists the row: the one in research, or one the
--- player can research now. See GetData in ResearchChooser.lua, and in
--- CivicsChooser.lua.
-function SentientSystems_IsResearchOption(kind, store, current, index)
-	return index == current or kind.canProgress(store, index)
-end

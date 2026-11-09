@@ -29,10 +29,7 @@ end
 
 -- The game's calls for the tech tree and the civic tree. Each screen lists the
 -- nodes from UITree, with the prerequisites the running game has. See
--- PopulateItemData in TechTree.lua, and in CivicsTree.lua. Without the Tech and
--- Civic Shuffle mode, a store may have no IsTechRevealed or IsCivicRevealed,
--- and every node is revealed. See GetCurrentData in TechTree.lua, and in
--- CivicsTree.lua.
+-- PopulateItemData in TechTree.lua, and in CivicsTree.lua.
 local TREES = {
 	tech = {
 		nodes = function()
@@ -41,9 +38,6 @@ local TREES = {
 		-- The field of a node that holds its type.
 		name = "Name",
 		prerequisites = "PrereqTechTypes",
-		revealed = function(store, index)
-			return store.IsTechRevealed == nil or store:IsTechRevealed(index)
-		end,
 	},
 	civic = {
 		nodes = function()
@@ -53,9 +47,6 @@ local TREES = {
 		-- See PopulateItemData in CivicsTree.lua.
 		name = "CivicName",
 		prerequisites = "PrereqCivicTypes",
-		revealed = function(store, index)
-			return store.IsCivicRevealed == nil or store:IsCivicRevealed(index)
-		end,
 	},
 }
 
@@ -82,7 +73,7 @@ local function NodeNames(tree, reader, nodes)
 	local hidden = 0
 
 	for _, node in ipairs(nodes) do
-		if tree.revealed(reader.store, reader.kind.row(node[tree.name]).Index) then
+		if reader.kind.revealed(reader.store, reader.kind.row(node[tree.name]).Index) then
 			names[node[tree.name]] = node[tree.name]
 		else
 			hidden = hidden + 1

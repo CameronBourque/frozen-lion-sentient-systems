@@ -20,4 +20,7 @@ export const RESEARCH_OPTION = z.object({
 	recommended: z.literal(true).optional().describe(
 		"True when the game's advisor recommends it. Left out otherwise.",
 	),
+	queue: z.number().optional().describe(
+		"Its place in the research queue, from 1 for the one in research, as the chooser numbers it. Left out when it isn't queued.",
+	),
 });

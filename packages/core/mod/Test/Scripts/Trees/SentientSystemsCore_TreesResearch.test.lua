@@ -53,6 +53,13 @@ describe("SentientSystems_GetTechTree", function()
 		assert.is_nil(nodes:find("recommended", 1, true))
 	end)
 
+	it("numbers each node in the queue, as the path markers do", function()
+		local nodes = NodesWith({ current = "TECH_IRRIGATION", queue = { "TECH_IRRIGATION", "TECH_CURRENCY" }, options = { POTTERY, IRRIGATION, CURRENCY } })
+
+		assert.truthy(nodes:find("\"queue\":1,\"status\":\"current\"", 1, true))
+		assert.truthy(nodes:find("\"queue\":2,\"status\":\"blocked\"", 1, true))
+	end)
+
 	it("leaves out turns that aren't above 0, as before a city makes science", function()
 		assert.is_nil(NodesWith({ options = { With(IRRIGATION, { turns = -1 }) } }):find("turns", 1, true))
 	end)

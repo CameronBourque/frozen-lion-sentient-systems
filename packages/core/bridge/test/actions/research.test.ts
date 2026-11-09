@@ -23,10 +23,23 @@ describe("setResearch and setCivic", () => {
 
 	test("asks the core mod to research the civic, and returns its reason", async () => {
 		const stash = "SentientSystems_Stash(SentientSystems_SetCivic(0, \"CIVIC_THEOLOGY\"))";
-		const reason = "CIVIC_THEOLOGY isn't one of the civics you can research now.";
+		const reason = "You have CIVIC_THEOLOGY already.";
 
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify({ ok: false, reason })] } })[lua] ?? {};
 
 		expect(await setCivic(client, 0, "CIVIC_THEOLOGY")).toEqual({ ok: false, reason });
+	});
+
+	test("passes append to add the tech or civic to the queue", async () => {
+		const ok = { output: ["{\"ok\":true}"] };
+
+		game.onCommand = (_stateIndex, lua) => ({
+			"SentientSystems_Stash(SentientSystems_SetResearch(0, \"TECH_IRON_WORKING\", true))": { output: ["1"] },
+			"SentientSystems_Stash(SentientSystems_SetCivic(0, \"CIVIC_THEOLOGY\", true))": { output: ["1"] },
+			"SentientSystems_PrintPiece(1)": ok,
+		})[lua] ?? {};
+
+		expect(await setResearch(client, 0, "TECH_IRON_WORKING", { append: true })).toEqual({ ok: true });
+		expect(await setCivic(client, 0, "CIVIC_THEOLOGY", { append: true })).toEqual({ ok: true });
 	});
 });

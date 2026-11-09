@@ -30,6 +30,9 @@ const NODE = z.object({
 	unlocks: z.array(z.string()).optional().describe("Works as in ../choices/research.ts."),
 	description: z.string().optional().describe("Works as in ../choices/research.ts."),
 	recommended: z.literal(true).optional().describe("The advisor's pick. Never on a researched node."),
+	queue: z.number().optional().describe(
+		"Its place in the research queue, as the screen's path markers number it. Works as in ../choices/research.ts. Never on an unrevealed node.",
+	),
 });
 
 // The player or a player they have met, as the timeline at the bottom of the

@@ -61,6 +61,13 @@ describe("SentientSystems_GetTechChoices", function()
 		assert.truthy(TechsWith({ current = "TECH_SAILING", options = { With(SAILING, { locked = true }) } }):find("TECH_SAILING", 1, true))
 	end)
 
+	it("numbers each tech in the queue, from 1 for the one in research", function()
+		local techs = TechsWith({ current = "TECH_MINING", queue = { "TECH_MINING", "TECH_SAILING" }, options = { SAILING, { type = "TECH_MINING", cost = 12, turns = 1 } } })
+
+		assert.truthy(techs:find("\"queue\":2,.-\"type\":\"TECH_SAILING\""))
+		assert.truthy(techs:find("\"queue\":1,.-\"type\":\"TECH_MINING\""))
+	end)
+
 	it("lists more than one tech, in the game's order", function()
 		local techs = TechsWith({ options = { SAILING, { type = "TECH_MINING", cost = 12, turns = 1 } } })
 

@@ -28,6 +28,9 @@ The expansions' replacement, `ResearchChooser_Expansion1.lua`, only adds the res
   `items` is `GetFilteredUnlockableItems(playerID)`, which is slow to build, so the caller builds it once. `include("TechAndCivicUnlockables")` loads the file in `SentientSystemsCore_UI`.
 
   The function then draws a star, a special unlock, with the tech's `Description` as its tooltip, at lines 391 to 412. Confirmed in files and on Windows on 2026-10-26.
+- **Queue.** `GetData` reads `GetResearchQueue()`, a list of tech indexes from 1 with the tech in research first, and numbers each listed tech with its place. `RealizePathMarkers` in `TechTree.lua` numbers each node in the queue the same way.
+
+  For civics, both read `GetCivicQueue()`. A tech or civic the player has never stays in the queue. Confirmed in files and on Windows on 2026-11-09.
 - **Civics.** `GetData` in `Base/Assets/UI/Choosers/CivicsChooser.lua`, lines 45 to 96, and `GetCivicData` in `TechAndCivicSupport.lua`, lines 653 to 695, work as for techs, with `GameInfo.Civics()` and `player:GetCulture()`.
 
   The calls are `CanProgress(index)`, `GetProgressingCivic()`, `GetCultureCost(index)`, `GetCulturalProgress(index)`, `GetTurnsToProgressCivic(index)`, and `HasBoostBeenTriggered(index)`.
@@ -88,4 +91,8 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 
   20,047 bytes. Egypt, met, had 2 techs and 1 civic.
 
-Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.
+- **Queue on Rome's save on turn 15, after `setResearch(TECH_IRON_WORKING)`, then `setResearch(TECH_MATHEMATICS)` with `append`.** The techs choice gave Mining 1, as current, and Currency 4, the only queued techs it lists.
+
+  The tech tree gave Mining 1, Bronze Working 2, Iron Working 3, Currency 4, and Mathematics 5. With Drama and Poetry in research and Theology and Games and Recreation queued, the civics choice gave Drama and Poetry 1, Mysticism 2, and Games and Recreation 4.
+
+Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26, and the queue on 2026-11-09.
