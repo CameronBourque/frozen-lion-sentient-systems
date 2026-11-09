@@ -91,7 +91,7 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 
   20,047 bytes. Egypt, met, had 2 techs and 1 civic.
 
-- **Queue on Rome's save on turn 15, after `setResearch(TECH_IRON_WORKING)`, then `setResearch(TECH_MATHEMATICS)` with `append`.** The techs choice gave Mining 1, as current, and Currency 4, the only queued techs it lists.
+- **Queue on Rome's save on turn 15, after `setResearch(TECH_IRON_WORKING)`, then `queueResearch(TECH_MATHEMATICS)`.** The techs choice gave Mining 1, as current, and Currency 4, the only queued techs it lists.
 
   The tech tree gave Mining 1, Bronze Working 2, Iron Working 3, Currency 4, and Mathematics 5. With Drama and Poetry in research and Theology and Games and Recreation queued, the civics choice gave Drama and Poetry 1, Mysticism 2, and Games and Recreation 4.
 

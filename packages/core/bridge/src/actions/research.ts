@@ -15,13 +15,22 @@ function sendResearch(client: TunerClient, luaFunction: string, playerID: number
 }
 
 // Researches a tech, such as TECH_MINING, and the prerequisites it needs, in
-// place of the queue, or after it with append. An ok result means the game
-// took the order.
-export function setResearch(client: TunerClient, playerID: number, tech: string, options: { append?: boolean } = {}): Promise<ActionResult> {
-	return sendResearch(client, "SentientSystems_SetResearch", playerID, tech, options.append === true);
+// place of the queue. An ok result means the game took the order.
+export function setResearch(client: TunerClient, playerID: number, tech: string): Promise<ActionResult> {
+	return sendResearch(client, "SentientSystems_SetResearch", playerID, tech, false);
+}
+
+// Adds a tech and the prerequisites it needs to the end of the queue.
+export function queueResearch(client: TunerClient, playerID: number, tech: string): Promise<ActionResult> {
+	return sendResearch(client, "SentientSystems_SetResearch", playerID, tech, true);
 }
 
 // Researches a civic, such as CIVIC_MYSTICISM, as setResearch does for a tech.
-export function setCivic(client: TunerClient, playerID: number, civic: string, options: { append?: boolean } = {}): Promise<ActionResult> {
-	return sendResearch(client, "SentientSystems_SetCivic", playerID, civic, options.append === true);
+export function setCivic(client: TunerClient, playerID: number, civic: string): Promise<ActionResult> {
+	return sendResearch(client, "SentientSystems_SetCivic", playerID, civic, false);
+}
+
+// Adds a civic to the end of the queue, as queueResearch does for a tech.
+export function queueCivic(client: TunerClient, playerID: number, civic: string): Promise<ActionResult> {
+	return sendResearch(client, "SentientSystems_SetCivic", playerID, civic, true);
 }

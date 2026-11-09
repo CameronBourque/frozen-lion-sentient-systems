@@ -1,11 +1,11 @@
 // Tests for research.ts, against the fake game.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { setCivic, setResearch } from "../../src/actions/research.js";
+import { queueCivic, queueResearch, setCivic, setResearch } from "../../src/actions/research.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
-describe("setResearch and setCivic", () => {
+describe("setResearch, setCivic, queueResearch, and queueCivic", () => {
 	let game: FakeGame;
 	let client: TunerClient;
 
@@ -30,7 +30,7 @@ describe("setResearch and setCivic", () => {
 		expect(await setCivic(client, 0, "CIVIC_THEOLOGY")).toEqual({ ok: false, reason });
 	});
 
-	test("passes append to add the tech or civic to the queue", async () => {
+	test("passes append to queue the tech or civic", async () => {
 		const ok = { output: ["{\"ok\":true}"] };
 
 		game.onCommand = (_stateIndex, lua) => ({
@@ -39,7 +39,7 @@ describe("setResearch and setCivic", () => {
 			"SentientSystems_PrintPiece(1)": ok,
 		})[lua] ?? {};
 
-		expect(await setResearch(client, 0, "TECH_IRON_WORKING", { append: true })).toEqual({ ok: true });
-		expect(await setCivic(client, 0, "CIVIC_THEOLOGY", { append: true })).toEqual({ ok: true });
+		expect(await queueResearch(client, 0, "TECH_IRON_WORKING")).toEqual({ ok: true });
+		expect(await queueCivic(client, 0, "CIVIC_THEOLOGY")).toEqual({ ok: true });
 	});
 });

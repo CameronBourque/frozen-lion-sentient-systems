@@ -16,7 +16,7 @@ Its reasons, in order, name a type that is no tech or civic, a tech or civic the
 
 The choice and the tree give each queued tech or civic its place in the queue, so the agent sees what it queued.
 
-On the bridge, `setResearch` and `setCivic` in `src/actions/research.ts` share one helper, `sendResearch`, and take `append` as an option.
+On the bridge, `src/actions/research.ts` has `setResearch` and `setCivic`, and `queueResearch` and `queueCivic`, which pass `append`. All four share one helper, `sendResearch`.
 
 ## Decisions
 
@@ -26,4 +26,4 @@ On the bridge, `setResearch` and `setCivic` in `src/actions/research.ts` share o
 | The action sends the tree screen's path for every tech or civic, an option or a later one | One request covers both, and the game takes a tech out of order when it gets a hash alone |
 | The action takes a type from the tree, not only from the choice | The agent can plan several techs ahead, as a player does on the tree screen |
 | A researched or unrevealed tech or civic gets its own reason | The tree screen takes no click on either, and the agent learns which case it hit |
-| Queuing is an `append` flag on the same action, not an action of its own | The request differs only in its insert mode, as the tree screen's click and shift-click do |
+| Queuing is an `append` flag on the same Lua action, and a function of its own on the bridge | The request differs only in its insert mode, as the tree screen's click and shift-click do. On the bridge, a name says what a call does where a bare `true` doesn't |

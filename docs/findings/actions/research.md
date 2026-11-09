@@ -42,7 +42,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 ## Method
 
 1. Send the file's code to `SentientSystemsCore_UI` as in [choices/production.md](../choices/production.md#method), step 4. Send `Scripts/SentientSystemsCore_Research.lua` first, then the research choices, trees, and actions files.
-2. Call `setResearch` and `setCivic` from the bridge, with and without `append`. Wait 1.5 seconds, then read `GetResearchQueue()` and `GetCivicQueue()`, and look up each index in `GameInfo.Technologies` and `GameInfo.Civics`.
+2. Call `setResearch`, `setCivic`, `queueResearch`, and `queueCivic` from the bridge. Wait 1.5 seconds, then read `GetResearchQueue()` and `GetCivicQueue()`, and look up each index in `GameInfo.Technologies` and `GameInfo.Civics`.
 3. To see the queue move on, append a tech after a tech that is 1 turn from done. End the turn as in [actions/end-turn.md](end-turn.md), then read the queue.
 4. To see what the game takes, send `UI.RequestPlayerOperation` with a tech's hash alone, for a tech that `CanResearch` refuses.
 
@@ -55,13 +55,13 @@ A single-player game with Gathering Storm, on Rome's save on turn 15, in `Sentie
 | `setResearch(TECH_SAILING)`, with Bronze Working in research | `{"ok":true}`. The tech in research became Sailing |
 | `setCivic(CIVIC_DRAMA_POETRY)`, with Mysticism in research | `{"ok":true}`. The civic in research became Drama and Poetry |
 | `setResearch(TECH_IRON_WORKING)` | `{"ok":true}`. The queue became Mining, Bronze Working, and Iron Working |
-| `setResearch(TECH_MATHEMATICS)` with `append` | `{"ok":true}`. Currency and Mathematics went to the end |
-| `setResearch(TECH_BRONZE_WORKING)` with `append` | `{"ok":true}`, and the queue didn't change, as it held Mining and Bronze Working |
-| `setCivic(CIVIC_THEOLOGY)`, then `setCivic(CIVIC_GAMES_RECREATION)` with `append` | The queue became Drama and Poetry, Mysticism, Theology, and Games and Recreation |
+| `queueResearch(TECH_MATHEMATICS)` | `{"ok":true}`. Currency and Mathematics went to the end |
+| `queueResearch(TECH_BRONZE_WORKING)` | `{"ok":true}`, and the queue didn't change, as it held Mining and Bronze Working |
+| `setCivic(CIVIC_THEOLOGY)`, then `queueCivic(CIVIC_GAMES_RECREATION)` | The queue became Drama and Poetry, Mysticism, Theology, and Games and Recreation |
 | `setResearch(TECH_POTTERY)`, researched | `You have TECH_POTTERY already.` |
 | `setResearch(TECH_NOPE)` | `TECH_NOPE isn't a tech.`, and a pointer to the choice |
 | `setCivic(CIVIC_CODE_OF_LAWS)`, researched | `You have CIVIC_CODE_OF_LAWS already.` |
 
-With Sailing 1 turn from done, `setResearch(TECH_MINING)` with `append` gave the queue Sailing and Mining. After ending turn 15, Sailing was researched, and the queue held Mining alone, in research.
+With Sailing 1 turn from done, `queueResearch(TECH_MINING)` gave the queue Sailing and Mining. After ending turn 15, Sailing was researched, and the queue held Mining alone, in research.
 
 Date checked: 2026-11-09.
