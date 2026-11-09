@@ -1,7 +1,7 @@
 // Tests for schemas.ts.
 
 import { describe, expect, test } from "vitest";
-import { BOOST, CITY_ID, CITY_REF, POSITION, YIELDS } from "../src/schemas.js";
+import { BOOST, CITY_ID, CITY_REF, POSITION, YIELD_AMOUNT, YIELDS } from "../src/schemas.js";
 
 describe("CITY_REF", () => {
 	test("reads a city's owner, ID, and name", () => {
@@ -38,6 +38,16 @@ describe("BOOST", () => {
 
 	test("rejects a boost with no trigger", () => {
 		expect(BOOST.safeParse({ percent: 40, triggered: false }).success).toBe(false);
+	});
+});
+
+describe("YIELD_AMOUNT", () => {
+	test("reads a yield's type and amount", () => {
+		expect(YIELD_AMOUNT.parse({ type: "YIELD_CULTURE", amount: 2 })).toEqual({ type: "YIELD_CULTURE", amount: 2 });
+	});
+
+	test("rejects an amount that isn't a number", () => {
+		expect(YIELD_AMOUNT.safeParse({ type: "YIELD_CULTURE", amount: "2" }).success).toBe(false);
 	});
 });
 

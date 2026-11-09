@@ -22,6 +22,9 @@ export const BOOST = z.object({
 	triggered: z.boolean(),
 });
 
+// An amount of one yield, for a list that names each yield it holds.
+export const YIELD_AMOUNT = z.object({ type: z.string().describe("A yield type, such as YIELD_CULTURE."), amount: z.number() });
+
 // An amount of each of the six yields. A yield can be left out.
 export const YIELDS = z.object({
 	food: z.number().optional(),
