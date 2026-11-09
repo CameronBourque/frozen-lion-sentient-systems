@@ -57,6 +57,11 @@ function SentientSystems_HasBlocker(playerID, ...)
 	return false
 end
 
+-- Returns a plot's position, as POSITION in bridge/src/schemas.ts reads it.
+function SentientSystems_GetPosition(plot)
+	return { x = plot:GetX(), y = plot:GetY() }
+end
+
 -- Escapes text for one tagged line: each backslash as \\, each newline as \n,
 -- and each percent sign as \p, because the game's log prints text as a printf
 -- format, where a raw % prints garbage or crashes the game. See

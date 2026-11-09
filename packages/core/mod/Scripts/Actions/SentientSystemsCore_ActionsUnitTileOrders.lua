@@ -22,7 +22,7 @@ local function GetTiles(unit, order)
 		if not order.marked or targets[CityCommandResults.MODIFIERS][i] == CityCommandResults.MODIFIER_IS_TARGET then
 			local plot = Map.GetPlotByIndex(index)
 
-			tiles[#tiles + 1] = { x = plot:GetX(), y = plot:GetY() }
+			tiles[#tiles + 1] = SentientSystems_GetPosition(plot)
 		end
 	end
 
