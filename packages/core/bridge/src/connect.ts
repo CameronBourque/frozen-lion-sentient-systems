@@ -2,9 +2,10 @@
 // is active. A failure warns and never throws: a game load resets the socket,
 // and the next connect tries again. docs/design/core/bridge.md has the design.
 
+import { explainFailure } from "./errors.js";
 import { readLine } from "./events.js";
 import type { Logger } from "./log.js";
-import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "./tuner/client.js";
+import type { TunerClient } from "./tuner/client.js";
 
 // The core mod's UI state, where its functions for the bridge live.
 export const CORE_STATE = "SentientSystemsCore_UI";
@@ -15,7 +16,7 @@ export async function onConnect(client: TunerClient, logger: Logger): Promise<vo
 		// A failed version call skips this one, which would fail the same way.
 		await callCore(client, logger, "SentientSystems_Resync()");
 	} catch (error) {
-		logger.warn("core_check_failed", explainFailure(error));
+		logger.warn("core_check_failed", explainFailure(error, "core mod check", ". The bridge checks again when it reconnects"));
 	}
 }
 
@@ -24,20 +25,4 @@ async function callCore(client: TunerClient, logger: Logger, lua: string): Promi
 	const { lines } = await client.run(CORE_STATE, lua);
 
 	lines.forEach((line) => readLine(line, logger));
-}
-
-function explainFailure(error: unknown): string {
-	if (error instanceof TunerMissingStateError) {
-		return `The core mod's state ${CORE_STATE} isn't loaded. Turn on Sentient Systems Core in Additional Content, then load a game. The bridge checks again when it reconnects`;
-	}
-
-	if (error instanceof TunerTimeoutError) {
-		return "The game didn't answer the core mod check in time, maybe because a game is loading. The bridge checks again when it reconnects";
-	}
-
-	if (error instanceof TunerLuaError) {
-		return `The core mod check failed in the game: ${error.message}`;
-	}
-
-	return `The core mod check failed: ${error instanceof Error ? error.message : String(error)}`;
 }

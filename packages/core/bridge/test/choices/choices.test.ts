@@ -1,13 +1,10 @@
 // Tests for choices.ts, against the fake game. The stash's failures are tested
 // in state.test.ts, through readState.
 
-import { once } from "node:events";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { CORE_STATE } from "../../src/connect.js";
+import { beforeEach, describe, expect, test } from "vitest";
 import { readChoices } from "../../src/choices/choices.js";
-import { TunerClient } from "../../src/tuner/client.js";
-import type { CommandResult } from "../tuner/fake-game.js";
-import { FakeGame } from "../tuner/fake-game.js";
+import type { TunerClient } from "../../src/tuner/client.js";
+import { type CommandResult, type FakeGame, startGame } from "../tuner/fake-game.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetChoices(0))";
 
@@ -29,17 +26,7 @@ describe("readChoices", () => {
 	let client: TunerClient;
 
 	beforeEach(async () => {
-		game = await FakeGame.start();
-		game.states = [{ index: 0, name: "Main State" }, { index: 130, name: CORE_STATE }];
-		// A short timeout, so the timeout test takes milliseconds.
-		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
-		client.connect();
-		await once(client, "connected");
-	});
-
-	afterEach(async () => {
-		client.close();
-		await game.close();
+		({ game, client } = await startGame());
 	});
 
 	// Answers each command with the result given for it. Other Lua prints
@@ -77,6 +64,6 @@ describe("readChoices", () => {
 	test("names the choices in the game's error", async () => {
 		answer({ [STASH]: { luaError: "no player 0\nstack traceback:\n\t[C]: in function 'error'" } });
 
-		expect(await readChoices(client, 0)).toEqual({ ok: false, error: "The core mod failed to build the choices: no player 0" });
+		expect(await readChoices(client, 0)).toEqual({ ok: false, error: "The choices request failed in the game: no player 0" });
 	});
 });

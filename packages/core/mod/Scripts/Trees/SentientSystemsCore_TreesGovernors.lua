@@ -4,6 +4,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Lookups")
 SentientSystems_Include("SentientSystemsCore_Governors")
 
 -- Returns the promotions each promotion follows, by type, from
@@ -26,33 +27,30 @@ end
 -- is a candidate, whose card shows only the base ability as held. See
 -- CreatePromotionTree in GovernorDetailsPanel.lua, CreateSecretPromotionTree,
 -- and AddGovernorCandidate in GovernorPanel.lua.
-local function GetPromotions(governors, governor, definition, prerequisites)
+local function GetPromotionTree(governors, governor, definition, prerequisites)
 	local promotions = {}
 
-	for set in GameInfo.GovernorPromotionSets() do
-		if set.GovernorType == definition.GovernorType then
-			local promotion = GameInfo.GovernorPromotions[set.GovernorPromotion]
-			local status = "locked"
+	for _, promotion in ipairs(SentientSystems_GetPromotionRows(definition)) do
+		local status = "locked"
 
-			if governor == nil and promotion.BaseAbility or governor ~= nil and governor:HasPromotion(promotion.Hash) then
-				status = "held"
-			elseif governor ~= nil and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
-				status = "available"
-			end
-
-			local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
-
-			promotions[#promotions + 1] = {
-				type = promotion.GovernorPromotionType,
-				name = name,
-				description = description,
-				hidden = hidden,
-				level = promotion.Level,
-				column = promotion.Column,
-				requires = prerequisites[promotion.GovernorPromotionType] or {},
-				status = status,
-			}
+		if governor == nil and promotion.BaseAbility or governor ~= nil and governor:HasPromotion(promotion.Hash) then
+			status = "held"
+		elseif governor ~= nil and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
+			status = "available"
 		end
+
+		local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
+
+		promotions[#promotions + 1] = {
+			type = promotion.GovernorPromotionType,
+			name = name,
+			description = description,
+			hidden = hidden,
+			level = promotion.Level,
+			column = promotion.Column,
+			requires = prerequisites[promotion.GovernorPromotionType] or {},
+			status = status,
+		}
 	end
 
 	return promotions
@@ -60,7 +58,7 @@ end
 
 -- Returns one governor with their tree. A Secret Society has neither turns nor
 -- loyalty, as its card shows no stats.
-local function GetGovernor(governors, governor, definition, prerequisites)
+local function GetGovernorWithTree(governors, governor, definition, prerequisites)
 	local secret = SentientSystems_IsCannotAssign(definition)
 
 	return {
@@ -72,7 +70,7 @@ local function GetGovernor(governors, governor, definition, prerequisites)
 		secret = secret and true or nil,
 		turnsToEstablish = not secret and (governor and governor:GetTurnsToEstablish() or governors:GetTurnsToEstablish(definition.Hash)) or nil,
 		loyalty = not secret and (governor and governor:GetIdentityPressure() or definition.IdentityPressure) or nil,
-		promotions = GetPromotions(governors, governor, definition, prerequisites),
+		promotions = GetPromotionTree(governors, governor, definition, prerequisites),
 	}
 end
 
@@ -81,11 +79,7 @@ end
 -- SentientSystems_Stash(SentientSystems_GetGovernorTree(playerID)). See Refresh
 -- in GovernorPanel.lua.
 function SentientSystems_GetGovernorTree(playerID)
-	local player = Players[playerID]
-
-	if player == nil then
-		error("no player " .. tostring(playerID), 0)
-	end
+	local player = SentientSystems_GetPlayer(playerID)
 
 	local entries = {}
 
@@ -95,14 +89,14 @@ function SentientSystems_GetGovernorTree(playerID)
 		local _, appointed = governors:GetGovernorList()
 
 		for _, governor in ipairs(appointed or {}) do
-			entries[#entries + 1] = GetGovernor(governors, governor, GameInfo.Governors[governor:GetType()], prerequisites)
+			entries[#entries + 1] = GetGovernorWithTree(governors, governor, GameInfo.Governors[governor:GetType()], prerequisites)
 		end
 
 		for definition in GameInfo.Governors() do
 			local hash = definition.Hash
 
 			if not governors:HasGovernor(hash) and governors:CanEverAppointGovernor(hash) then
-				entries[#entries + 1] = GetGovernor(governors, nil, definition, prerequisites)
+				entries[#entries + 1] = GetGovernorWithTree(governors, nil, definition, prerequisites)
 			end
 		end
 	end

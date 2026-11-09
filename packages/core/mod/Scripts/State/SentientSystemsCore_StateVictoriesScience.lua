@@ -20,16 +20,6 @@ local function GetStageProjects()
 	return stages
 end
 
--- Rounds to the nearest thousandth, which the game's single precision floats
--- leave long.
-local function RoundProgress(progress)
-	return math.floor(progress * 1000 + 0.5) / 1000
-end
-
-local function RoundNearest(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
 local function HasSpaceport(other)
 	local spaceport = GameInfo.Districts["DISTRICT_SPACEPORT"].Index
 
@@ -109,7 +99,7 @@ function SentientSystems_GetScienceDetails(player, other)
 		local progress, total, finished = GetStageProgress(other, projects, i > 2)
 
 		details.stages[i] = {
-			progress = total == 0 and 0 or RoundProgress(progress / total),
+			progress = total == 0 and 0 or SentientSystems_Round(progress / total, 3),
 			done = total ~= 0 and progress == total,
 			tasks = GetTasks(other, projects, finished, i == 1),
 		}
@@ -119,9 +109,9 @@ function SentientSystems_GetScienceDetails(player, other)
 		local needed = player:GetStats():GetScienceVictoryPointsTotalNeeded()
 
 		details.lightYears = {
-			current = RoundNearest(math.min(stats:GetScienceVictoryPoints(), needed)),
+			current = SentientSystems_Round(math.min(stats:GetScienceVictoryPoints(), needed), 1),
 			needed = needed,
-			perTurn = RoundNearest(stats:GetScienceVictoryPointsPerTurn()),
+			perTurn = SentientSystems_Round(stats:GetScienceVictoryPointsPerTurn(), 1),
 		}
 	end
 

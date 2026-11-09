@@ -4,10 +4,6 @@
 
 SentientSystems_Include("SentientSystemsCore_Text")
 
-local function GetCityRef(city)
-	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }
-end
-
 -- Returns the types of the districts the chooser shows as icons for a city:
 -- the complete ones, wonders left out.
 local function GetDistrictTypes(city)
@@ -47,7 +43,7 @@ function SentientSystems_GetSpyDestinations(player, spy)
 		if ListsPlayer(player, other) then
 			for _, city in other:GetCities():Members() do
 				if visibility:IsRevealed(city:GetX(), city:GetY()) then
-					local destination = GetCityRef(city)
+					local destination = SentientSystems_GetCityRef(city)
 					local travel = UnitManager.GetTravelTime(spy, city)
 					local establish = UnitManager.GetEstablishInCityTime(spy, city)
 
@@ -65,8 +61,9 @@ function SentientSystems_GetSpyDestinations(player, spy)
 	return destinations
 end
 
--- Returns the district of the city on the plot, or nil.
-local function FindDistrict(city, plot)
+-- Returns the GameInfo.Districts row of the city's district on the plot, or
+-- nil.
+local function FindDistrictRowOnPlot(city, plot)
 	for _, district in city:GetDistricts():Members() do
 		if district:GetX() == plot:GetX() and district:GetY() == plot:GetY() then
 			return GameInfo.Districts[district:GetType()]
@@ -167,7 +164,7 @@ local function GetOffensiveMissions(spy, city)
 					local plot = Map.GetPlotByIndex(index)
 
 					if plot ~= nil then
-						missions[#missions + 1] = GetOffensiveMission(operation, spy, city, plot, FindDistrict(city, plot))
+						missions[#missions + 1] = GetOffensiveMission(operation, spy, city, plot, FindDistrictRowOnPlot(city, plot))
 						added = true
 					end
 				end
@@ -199,7 +196,7 @@ local function GetCounterspyMissions(spy, city)
 
 			if canStart then
 				for _, index in ipairs(results[UnitOperationResults.PLOTS]) do
-					local district = FindDistrict(city, Map.GetPlotByIndex(index))
+					local district = FindDistrictRowOnPlot(city, Map.GetPlotByIndex(index))
 
 					if district ~= nil then
 						missions[#missions + 1] = {
@@ -253,7 +250,7 @@ function SentientSystems_GetSpyMissionChoices(player)
 			local choice = { spy = spy:GetID(), name = Locale.Lookup(spy:GetName()) }
 
 			if city ~= nil then
-				choice.city = GetCityRef(city)
+				choice.city = SentientSystems_GetCityRef(city)
 				choice.missions = SentientSystems_GetSpyCityMissions(player, spy, city)
 			end
 

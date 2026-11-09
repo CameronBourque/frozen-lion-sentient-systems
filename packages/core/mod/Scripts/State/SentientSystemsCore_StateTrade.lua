@@ -4,11 +4,6 @@
 
 SentientSystems_Include("SentientSystemsCore_ChoicesTradeRoutes")
 
--- Returns a city's owner, ID, and name for a route's end.
-local function GetCityRef(city)
-	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }
-end
-
 -- Returns one route, or nil when either city is gone. Its yields are what the
 -- screen shows for the route, as GetYieldsForRoute works them out.
 local function GetRoute(route)
@@ -23,8 +18,8 @@ local function GetRoute(route)
 
 	return {
 		trader = route.TraderUnitID,
-		origin = GetCityRef(origin),
-		destination = GetCityRef(destination),
+		origin = SentientSystems_GetCityRef(origin),
+		destination = SentientSystems_GetCityRef(destination),
 		pathBonus = pathBonus,
 		yields = { origin = originEnd, destination = SentientSystems_GetRouteEnd(origin, destination, "Destination") },
 	}

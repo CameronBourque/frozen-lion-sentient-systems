@@ -3,8 +3,7 @@
 // mod builds it in Scripts/State/SentientSystemsCore_StateEspionage.lua.
 
 import { z } from "zod";
-
-const CITY = z.object({ owner: z.number(), id: z.number(), name: z.string() });
+import { CITY_REF } from "../schemas.js";
 
 const OPERATIVE = z.object({
 	status: z.enum(["idle", "mission", "traveling", "captured"]).describe(
@@ -14,7 +13,7 @@ const OPERATIVE = z.object({
 	name: z.string().describe("In the game's language."),
 	level: z.number().describe("1 to 4."),
 	rank: z.string().describe("The rank's name, in the game's language."),
-	city: CITY.optional().describe(
+	city: CITY_REF.optional().describe(
 		"The city whose land the spy stands in, or, for a traveling spy, the city it is going to.",
 	),
 	operation: z.object({

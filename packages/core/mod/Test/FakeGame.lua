@@ -144,11 +144,15 @@ end
 
 -- A unit from data: its identity, id and type, and its place, x and y. The rest
 -- is added by FakeGame/Units.lua, with OnUnit, which describes the data it
--- reads. indexes maps each unit type to its GameInfo index.
-local function Unit(data, indexes)
+-- reads. indexes maps each unit type to its GameInfo index, and ownerID is the
+-- ID of the player who owns it.
+local function Unit(data, indexes, ownerID)
 	local unit = {
 		GetID = function()
 			return data.id
+		end,
+		GetOwner = function()
+			return ownerID
 		end,
 		GetType = function()
 			return indexes[data.type]
@@ -183,7 +187,7 @@ local function BuildPlayer(id, data, hashes, indexes)
 	end
 
 	for i, unit in ipairs(data.units or {}) do
-		units[i] = Unit(unit, indexes)
+		units[i] = Unit(unit, indexes, id)
 	end
 
 	return {
@@ -261,6 +265,7 @@ function FakeGame.Install(env, world)
 		Units = {},
 		GreatWorks = {},
 		UnitPromotions = {},
+		UnitAbilities = {},
 		Terrains = {},
 		Features = {},
 		Resources = {},

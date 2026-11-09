@@ -1,27 +1,12 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local Failed, With = Helpers.Failed, Helpers.With
 
 local ENGINEER = { id = 7405612, type = "UNIT_MILITARY_ENGINEER", x = 20, y = 20, moves = 2, charges = 2 }
 local FLOOD_BARRIER = { type = "BUILDING_FLOOD_BARRIER", turns = 3, cost = 40, progress = 0 }
 local AQUEDUCT = { type = "DISTRICT_AQUEDUCT", plot = { x = 21, y = 20 } }
-
-local function With(unit, changes)
-	local copy = {}
-
-	for key, value in pairs(unit) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
-
-local function Failed(reason)
-	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
-end
 
 -- Runs the action for the unit in a fake game where player 0 has the unit and,
 -- when producing is given, a city on the unit's tile producing it.

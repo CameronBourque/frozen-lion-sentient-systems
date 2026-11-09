@@ -14,7 +14,8 @@ The calls the player section of the state uses, as the top bar shows them. The R
 
 `TopPanel.lua` draws the bar. The Rise and Fall file, `TopPanel_Expansion1.lua`, only changes the bar's background for a golden or dark age, and the Gathering Storm file, `TopPanel_Expansion2.lua`, adds the favor button and the strategic stockpiles. Confirmed in files.
 
-- **Science and culture.** `RefreshYields` shows `GetTechs():GetScienceYield()` and `GetCulture():GetCultureYield()` per turn, in the number format `{1: number +#,###.#;-#,###.#}`, which rounds to the nearest tenth.
+- **Per turn numbers.** The bar writes every number per turn through `FormatValuePerTurn` in `TopPanel.lua`, in the number format `{1: number +#,###.#;-#,###.#}`, which rounds to the nearest tenth. Science, culture, faith, gold, and favor use it. Confirmed in files on 2026-11-07.
+- **Science and culture.** `RefreshYields` shows `GetTechs():GetScienceYield()` and `GetCulture():GetCultureYield()` per turn.
 
   They were 123.50390625 and 216.62109375, and the bar showed +123.5 and +216.6. Confirmed in files and on Windows on 2026-10-29.
 - **Faith.** `GetReligion():GetFaithBalance()` in the format `#,###.#`, and `GetFaithYield()` per turn. They were 2357.01 and 109, and the bar showed 2,357 and +109. Confirmed in files and on Windows on 2026-10-29.
@@ -41,4 +42,4 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | The player section against the top bar | Science 123.5, culture 216.6, faith 2,357 and 109, gold 9,610 and 265.1, tourism 92, trade routes 17 of 20, favor 335 and 3. All matched the bar 
 | The player section on turn 1 of a new game | Science 0, culture 0, faith 0 and 0, gold 5 and 0, favor 0 and 0, tourism 0, and no trade routes. The bar showed the same, with the favor button showing 0 and 0, no tourism, and the envoy counter at 0 |
 
-Date checked: game files and a running game on Windows on 2026-10-29.
+Date checked: game files and a running game on Windows on 2026-10-29, and the per turn format in game files on 2026-11-07.

@@ -26,7 +26,8 @@ end
 
 -- Returns why the settler can't found a city on its tile, or nil when nothing
 -- here explains it. The game gives no reasons for the check.
-local function GetFoundCityHint(playerID, unit)
+local function GetFoundCityHint(unit)
+	local playerID = unit:GetOwner()
 	local plot = Map.GetPlot(unit:GetX(), unit:GetY())
 	local owner = plot:GetOwner()
 
@@ -54,7 +55,8 @@ end
 -- Returns why the unit can't pillage its tile, or nil when nothing here
 -- explains it. The game gives no reasons for the check. The tile has an
 -- improvement, a road, or both to pillage.
-local function GetPillageHint(playerID, unit)
+local function GetPillageHint(unit)
+	local playerID = unit:GetOwner()
 	local plot = Map.GetPlot(unit:GetX(), unit:GetY())
 	local improvement = plot:GetImprovementType() ~= -1
 	local road = plot:GetRouteType() ~= -1
@@ -152,14 +154,12 @@ local function Improve(unit, improvementType)
 	return GetImproveFailure(unit, improvementType, improvements)
 end
 
-SentientSystems_AddUnitAction("found_city", function(playerID, unit)
+SentientSystems_AddUnitAction("found_city", function(_, unit)
 	return SentientSystems_DoOperation(unit, "found_city", "UNITOPERATION_FOUND_CITY", {
 		kind = function(row)
 			return row.FoundCity
 		end,
-		hint = function()
-			return GetFoundCityHint(playerID, unit)
-		end,
+		hint = GetFoundCityHint,
 	})
 end)
 
@@ -167,14 +167,10 @@ end)
 -- but a road is there to take, it pillages the road. UnitPanel.lua lists them
 -- as two orders, "Pillage" and "Pillage Road". A tile with both takes two
 -- orders, the improvement first.
-SentientSystems_AddUnitAction("pillage", function(playerID, unit)
+SentientSystems_AddUnitAction("pillage", function(_, unit)
 	local options = {
-		kind = function(row)
-			return row.Combat > 0 and row.Domain ~= "DOMAIN_AIR"
-		end,
-		hint = function()
-			return GetPillageHint(playerID, unit)
-		end,
+		kind = SentientSystems_CanPillage,
+		hint = GetPillageHint,
 	}
 	local failure = SentientSystems_DoOperation(unit, "pillage", "UNITOPERATION_PILLAGE", options)
 

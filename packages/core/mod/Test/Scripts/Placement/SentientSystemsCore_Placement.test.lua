@@ -121,10 +121,10 @@ describe("SentientSystems_GetPlacement", function()
 
 		assert.has_error(function()
 			env.SentientSystems_GetPlacement(5, 65536, "DISTRICT_CAMPUS")
-		end, "no player 5")
+		end, "Player 5 has no city 65536.")
 		assert.has_error(function()
 			env.SentientSystems_GetPlacement(0, 7, "DISTRICT_CAMPUS")
-		end, "no city 7 for player 0")
+		end, "Player 0 has no city 7.")
 	end)
 
 	it("loads the JSON encoder without an ERROR line, so the bridge can stash the tiles", function()

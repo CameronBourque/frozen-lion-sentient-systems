@@ -47,11 +47,6 @@ local YIELDS = {
 -- rounded to a tenth.
 local MIN_REMAINDER = 0.5
 
--- Rounds a number to the nearest tenth, as the top bar's number format does.
-local function RoundNearest(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
 local function Escape(text)
 	return (text:gsub("%p", "%%%0"))
 end
@@ -77,7 +72,7 @@ end
 -- GetGoldTooltip in ToolTipHelper_PlayerYields.lua.
 local function GetYield(yield, total, tooltip)
 	local lines = SentientSystems_GetTooltipLines(tooltip)
-	local result = { total = RoundNearest(total) }
+	local result = { total = SentientSystems_Round(total, 1) }
 	local found = 0
 
 	for _, list in ipairs({ COMMON_SOURCES, yield.extra }) do
@@ -94,7 +89,7 @@ local function GetYield(yield, total, tooltip)
 	local remainder = total - found
 
 	if math.abs(remainder) >= MIN_REMAINDER then
-		result.other = RoundNearest((result.other or 0) + remainder)
+		result.other = SentientSystems_Round((result.other or 0) + remainder, 1)
 	end
 
 	return result
@@ -118,7 +113,7 @@ local function CollectYields(read)
 	local yields, found = {}, false
 
 	for _, yield in ipairs(CITY_YIELDS) do
-		local amount = RoundNearest(read(yield.type))
+		local amount = SentientSystems_Round(read(yield.type), 1)
 
 		if amount ~= 0 then
 			yields[yield.key] = amount
@@ -347,7 +342,7 @@ local function GetCityIncomes(player)
 
 		list[#list + 1] = {
 			city = { owner = player:GetID(), id = city:GetID() },
-			tourism = RoundNearest(AddTileRows(player, city, sources)),
+			tourism = SentientSystems_Round(AddTileRows(player, city, sources), 1),
 			upkeep = upkeep,
 			sources = sources,
 		}
@@ -427,29 +422,12 @@ end
 -- A deal item with no duration is left out. See GetData in ReportScreen.lua.
 local function GetDeals(playerID)
 	local list, paid = {}, 0
-	local turn = Game.GetCurrentGameTurn()
 
-	for _, other in ipairs(PlayerManager.GetAliveMajors()) do
-		local otherID = other:GetID()
+	for i, entry in ipairs(SentientSystems_GetDealItems(playerID, DealItemTypes.GOLD)) do
+		list[i] = { player = entry.player, turnsLeft = entry.turnsLeft, gold = entry.amount }
 
-		if otherID ~= playerID then
-			for _, deal in ipairs(DealManager.GetPlayerDeals(playerID, otherID) or {}) do
-				for _, side in ipairs({ { owner = playerID, sign = -1 }, { owner = otherID, sign = 1 } }) do
-					for _, item in ipairs(deal:FindItemsByType(DealItemTypes.GOLD, DealItemSubTypes.NONE, side.owner) or {}) do
-						local duration = item:GetDuration()
-
-						if duration ~= 0 then
-							local gold = side.sign * item:GetAmount()
-
-							list[#list + 1] = { player = otherID, turnsLeft = duration - (turn - item:GetEnactedTurn()), gold = gold }
-
-							if gold < 0 then
-								paid = paid - gold
-							end
-						end
-					end
-				end
-			end
+		if entry.amount < 0 then
+			paid = paid - entry.amount
 		end
 	end
 
@@ -465,7 +443,7 @@ local function GetExpenses(treasury, units, deals, cities)
 	local remainder = total - cities - units - deals
 
 	if math.abs(remainder) >= MIN_REMAINDER then
-		expenses.other = RoundNearest(remainder)
+		expenses.other = SentientSystems_Round(remainder, 1)
 	end
 
 	return expenses

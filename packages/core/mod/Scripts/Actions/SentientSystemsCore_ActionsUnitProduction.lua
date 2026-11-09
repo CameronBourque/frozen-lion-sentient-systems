@@ -12,7 +12,7 @@ local COMMANDS = {
 
 -- Returns the name of what the city is producing and its hash, or nil when it
 -- builds nothing.
-local function GetProduction(city)
+local function GetProducedItem(city)
 	local hash = city:GetBuildQueue():GetCurrentProductionTypeHash()
 
 	for _, tableName in ipairs({ "Buildings", "Districts", "Units", "Projects" }) do
@@ -46,7 +46,7 @@ local function GetFailure(unit)
 	end
 
 	local cityName = Locale.Lookup(city:GetName())
-	local production, hash = GetProduction(city)
+	local production, hash = GetProducedItem(city)
 
 	if production == nil then
 		return cityName .. " is not building anything."

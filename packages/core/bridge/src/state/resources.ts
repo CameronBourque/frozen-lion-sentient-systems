@@ -3,13 +3,12 @@
 // Scripts/State/SentientSystemsCore_StatePlayerResources.lua.
 
 import { z } from "zod";
-
-const CITY = z.object({ owner: z.number(), id: z.number() });
+import { CITY_ID } from "../schemas.js";
 
 const SOURCE = z.discriminatedUnion("kind", [
 	z.object({
 		kind: z.literal("city"),
-		city: CITY,
+		city: CITY_ID,
 		name: z.string(),
 		amount: z.number(),
 	}).describe("A city that owns the resource."),
@@ -39,7 +38,7 @@ export const RESOURCES = z.array(z.object({
 	name: z.string(),
 	class: z.enum(["strategic", "luxury", "bonus"]),
 	sources: z.array(SOURCE),
-	cities: z.array(z.object({ city: CITY, amount: z.number() })).optional().describe(
+	cities: z.array(z.object({ city: CITY_ID, amount: z.number() })).optional().describe(
 		"The cities the game gives the resource to. Left out for none.",
 	),
 	total: z.number().optional().describe(

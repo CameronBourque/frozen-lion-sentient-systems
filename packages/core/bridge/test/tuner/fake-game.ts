@@ -4,6 +4,9 @@
 
 import { EventEmitter, once } from "node:events";
 import net from "node:net";
+import { onTestFinished } from "vitest";
+import { CORE_STATE } from "../../src/connect.js";
+import { TunerClient } from "../../src/tuner/client.js";
 import { encodeFrame, type Frame, FrameDecoder, Tag } from "../../src/tuner/framing.js";
 import * as captured from "./captured.js";
 
@@ -199,6 +202,29 @@ export class FakeGame extends EventEmitter {
 		// TCP segment.
 		socket.write(Buffer.concat(frames));
 	}
+}
+
+// The states of a game with the core mod loaded.
+export const CORE_STATES = [{ index: 0, name: "Main State" }, { index: 130, name: CORE_STATE }];
+
+// Starts a fake game with the states and connects a client to it. Both close
+// when the test that called it ends, so a beforeEach or a test can call it.
+export async function startGame(states = CORE_STATES): Promise<{ game: FakeGame; client: TunerClient }> {
+	const game = await FakeGame.start();
+
+	game.states = states;
+
+	// A short timeout, so a timeout test takes milliseconds.
+	const client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
+
+	onTestFinished(async () => {
+		client.close();
+		await game.close();
+	});
+	client.connect();
+	await once(client, "connected");
+
+	return { game, client };
 }
 
 // Every state but Main State puts its name before printed text, such as

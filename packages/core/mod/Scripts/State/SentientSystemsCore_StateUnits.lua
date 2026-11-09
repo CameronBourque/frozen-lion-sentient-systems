@@ -70,7 +70,7 @@ local ACTIVITIES = {
 }
 
 -- Returns what the unit is doing, or nil for NO_ACTIVITY.
-local function GetActivity(unit)
+local function GetUnitActivity(unit)
 	local activity = UnitManager.GetActivityType(unit)
 
 	for _, row in ipairs(ACTIVITIES) do
@@ -92,7 +92,7 @@ end
 -- unit as fortified when it isn't awake and has fortify turns, and the panel
 -- shows a charge only above 0. See UnitPanel.lua.
 local function AddActivity(unit, state)
-	local name, activity = GetActivity(unit)
+	local name, activity = GetUnitActivity(unit)
 
 	state.activity = name
 

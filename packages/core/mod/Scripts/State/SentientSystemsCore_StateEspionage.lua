@@ -11,15 +11,6 @@ local function GetRank(level)
 	return Locale.Lookup("LOC_ESPIONAGE_LEVEL_1_NAME")
 end
 
--- Returns a city's owner, ID, and name, or nil with no city.
-local function GetCityRef(city)
-	if city == nil then
-		return nil
-	end
-
-	return { owner = city:GetOwner(), id = city:GetID(), name = Locale.Lookup(city:GetName()) }
-end
-
 -- Returns the type of the district on the tile, or nil with none.
 local function GetDistrictType(x, y)
 	local district = GameInfo.Districts[Map.GetPlot(x, y):GetDistrictType()]
@@ -29,7 +20,7 @@ end
 
 -- Returns a spy on the map, idle or on a mission, with its city and the turns
 -- the mission has left. See AddOperative.
-local function GetSpy(spy)
+local function GetMapSpy(spy)
 	local operationType = spy:GetSpyOperation()
 	local level = spy:GetExperience():GetLevel()
 	local entry = {
@@ -38,7 +29,7 @@ local function GetSpy(spy)
 		name = Locale.Lookup(spy:GetName()),
 		level = level,
 		rank = GetRank(level),
-		city = GetCityRef(Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())),
+		city = SentientSystems_GetCityRef(Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())),
 	}
 
 	if operationType ~= -1 then
@@ -65,7 +56,7 @@ local function GetSpies(player)
 		if GameInfo.Units[unit:GetUnitType()].Spy then
 			local list = unit:GetSpyOperation() == -1 and idle or active
 
-			list[#list + 1] = GetSpy(unit)
+			list[#list + 1] = GetMapSpy(unit)
 		end
 	end
 
@@ -118,7 +109,7 @@ local function GetTraveling(player)
 				name = Locale.Lookup(spy.Name),
 				level = spy.Level,
 				rank = GetRank(spy.Level),
-				city = GetCityRef(Cities.GetPlotPurchaseCity(spy.XLocation, spy.YLocation)),
+				city = SentientSystems_GetCityRef(Cities.GetPlotPurchaseCity(spy.XLocation, spy.YLocation)),
 				turnsLeft = spy.ReturnTurn - Game.GetCurrentGameTurn(),
 			}
 		end
@@ -129,7 +120,7 @@ end
 
 -- Returns a city's finished districts by type, without wonders, as the City
 -- Activity tab draws them. See AddDistrictIcon.
-local function GetDistricts(city)
+local function GetFinishedDistrictTypes(city)
 	local districts = {}
 
 	for _, district in city:GetDistricts():Members() do
@@ -147,7 +138,7 @@ end
 -- revealed, with their districts and the turns a Gain Sources boost has left.
 -- The player's own cities are in the cities section. See AddPlayerCities and
 -- AddCity.
-local function GetActivity(player)
+local function GetRivalCities(player)
 	local visibility = PlayersVisibility[player:GetID()]
 	local diplomacy = player:GetDiplomacy()
 	local cities = {}
@@ -161,7 +152,7 @@ local function GetActivity(player)
 					cities[#cities + 1] = {
 						owner = other:GetID(),
 						id = city:GetID(),
-						districts = GetDistricts(city),
+						districts = GetFinishedDistrictTypes(city),
 						sourcesTurnsLeft = turns > 0 and turns or nil,
 					}
 				end
@@ -318,7 +309,7 @@ function SentientSystems_GetEspionageState(player)
 	return {
 		capacity = player:GetDiplomacy():GetSpyCapacity(),
 		operatives = operatives,
-		cities = GetActivity(player),
+		cities = GetRivalCities(player),
 		history = GetHistory(player),
 		captives = GetCaptives(player),
 	}

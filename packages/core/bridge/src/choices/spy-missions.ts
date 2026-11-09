@@ -3,8 +3,7 @@
 // the espionage chooser lists them. All text is in the game's language.
 
 import { z } from "zod";
-
-const CITY = z.object({ owner: z.number(), id: z.number(), name: z.string() });
+import { CITY_REF } from "../schemas.js";
 
 const MISSION = z.object({
 	type: z.string().describe("The operation, such as UNITOPERATION_SPY_SIPHON_FUNDS."),
@@ -25,11 +24,11 @@ const MISSION = z.object({
 export const SPY_MISSIONS_CHOICE = z.array(z.object({
 	spy: z.number().describe("The spy's unit ID."),
 	name: z.string(),
-	city: CITY.optional().describe("The city it stands in. Left out when it stands in none."),
+	city: CITY_REF.optional().describe("The city it stands in. Left out when it stands in none."),
 	missions: z.array(MISSION).optional().describe(
 		"What it can start in that city: counterspy missions in a city of the player's, and the game's offensive missions in another's.",
 	),
-	destinations: z.array(CITY.extend({
+	destinations: z.array(CITY_REF.extend({
 		capital: z.boolean().optional().describe("Only for a major civilization's capital."),
 		turns: z.number().describe("The turns to get there and settle in."),
 		travel: z.number(),

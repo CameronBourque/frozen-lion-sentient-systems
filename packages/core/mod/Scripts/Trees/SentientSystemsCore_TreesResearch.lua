@@ -4,6 +4,7 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Lookups")
 SentientSystems_Include("SentientSystemsCore_ChoicesResearch")
 
 -- Returns the number of rows that the player has, and the latest era of those
@@ -177,11 +178,7 @@ local function PlayerProgress(tree, player)
 end
 
 local function GetTree(kindName, playerID)
-	local player = Players[playerID]
-
-	if player == nil then
-		error("no player " .. tostring(playerID), 0)
-	end
+	local player = SentientSystems_GetPlayer(playerID)
 
 	local tree = TREES[kindName]
 	local reader = SentientSystems_GetResearchReader(kindName, player)

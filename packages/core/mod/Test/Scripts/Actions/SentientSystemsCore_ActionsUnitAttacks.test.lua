@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local Failed, With = Helpers.Failed, Helpers.With
 
 -- A knight at (20, 20) with a melee strength, an attack left, and moves.
 local KNIGHT = { id = 6160397, type = "UNIT_KNIGHT", x = 20, y = 20, moves = 2, combat = 50, attacks = 1, paths = { { x = 21, y = 20 } } }
@@ -32,24 +35,6 @@ local function Load(unit, visible, rivals, cities)
 	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
 
 	return env
-end
-
-local function With(unit, changes)
-	local copy = {}
-
-	for key, value in pairs(unit) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
-
-local function Failed(reason)
-	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
 end
 
 local function Rival(x, y, changes)

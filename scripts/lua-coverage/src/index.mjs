@@ -1,6 +1,6 @@
 // Runs the core mod's Lua tests with luacov, prints the coverage summary, and
 // exits 1 below the threshold. It needs busted and luacov, as
-// docs/rules/code.md says. The logic is in summary.mjs.
+// docs/rules/testing.md says. The logic is in summary.mjs.
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";

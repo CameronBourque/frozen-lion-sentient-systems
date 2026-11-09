@@ -13,17 +13,6 @@ SentientSystems_Include("SentientSystemsCore_StateVictoriesCulture")
 SentientSystems_Include("SentientSystemsCore_StateVictoriesDomination")
 SentientSystems_Include("SentientSystemsCore_StateVictoriesReligion")
 
--- Rounds to the nearest tenth, as the tooltips round.
-local function RoundNearest(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
--- Rounds a progress to the nearest thousandth, which the game's single
--- precision floats leave long.
-local function RoundProgress(progress)
-	return math.floor(progress * 1000 + 0.5) / 1000
-end
-
 -- The victories in the Overall tab's order. values returns the two numbers that
 -- the tooltip shows and that break a tie, the first one first, and what the
 -- section names them. A player is in the section as { primary, secondary,
@@ -105,14 +94,14 @@ local function GetRanked(player, other, victory)
 	}
 
 	if met then
-		ranked.entry = { player = id, progress = RoundProgress(ranked.progress) }
+		ranked.entry = { player = id, progress = SentientSystems_Round(ranked.progress, 3) }
 
 		if firstKey ~= nil then
-			ranked.entry[firstKey] = RoundNearest(first)
+			ranked.entry[firstKey] = SentientSystems_Round(first, 1)
 		end
 
 		if secondKey ~= nil then
-			ranked.entry[secondKey] = RoundNearest(second)
+			ranked.entry[secondKey] = SentientSystems_Round(second, 1)
 		end
 	end
 

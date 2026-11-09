@@ -2,9 +2,6 @@
 -- and each order file passes its orders to SentientSystems_AddTileOrders. The
 -- calls are in docs/findings/actions/.
 
--- The most tiles a reason lists before it gives a count.
-local MAX_LISTED = 8
-
 -- Returns the tiles the game lists for the order, each as x and y. An order
 -- with marked set lists only the tiles the game marks as a target, as the UI's
 -- range display does.
@@ -69,15 +66,7 @@ local function GetNotListedReason(unit, order, tiles)
 		return Map.GetPlotDistance(ux, uy, a.x, a.y) < Map.GetPlotDistance(ux, uy, b.x, b.y)
 	end)
 
-	local listed = {}
-
-	for i = 1, math.min(#tiles, MAX_LISTED) do
-		listed[i] = "(" .. tiles[i].x .. ", " .. tiles[i].y .. ")"
-	end
-
-	local more = #tiles > MAX_LISTED and ", and " .. (#tiles - MAX_LISTED) .. " more" or ""
-
-	return "That tile isn't one the unit can " .. order.verb .. " " .. order.prep .. ". The nearest that are " .. table.concat(listed, ", ") .. more .. "."
+	return "That tile isn't one the unit can " .. order.verb .. " " .. order.prep .. ". The nearest that are " .. SentientSystems_ListTiles(tiles) .. "."
 end
 
 -- Requests the order for x, y, or returns why it can't start. The game gives no

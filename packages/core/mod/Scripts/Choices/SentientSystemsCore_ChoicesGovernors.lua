@@ -40,18 +40,14 @@ end
 -- Returns the promotions a governor can earn now, in the game's order. See
 -- CreatePromotionTree in GovernorDetailsPanel.lua, and
 -- CreateSecretPromotionTree.
-local function GetPromotions(governors, governor, definition)
+local function GetEarnablePromotions(governors, governor, definition)
 	local promotions = {}
 
-	for set in GameInfo.GovernorPromotionSets() do
-		if set.GovernorType == definition.GovernorType then
-			local promotion = GameInfo.GovernorPromotions[set.GovernorPromotion]
+	for _, promotion in ipairs(SentientSystems_GetPromotionRows(definition)) do
+		if not governor:HasPromotion(promotion.Hash) and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
+			local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
 
-			if not governor:HasPromotion(promotion.Hash) and governors:CanEarnPromotion(definition.Hash, promotion.Hash) then
-				local name, description, hidden = SentientSystems_GetPromotionTexts(promotion, governor)
-
-				promotions[#promotions + 1] = { type = promotion.GovernorPromotionType, name = name, description = description, hidden = hidden }
-			end
+			promotions[#promotions + 1] = { type = promotion.GovernorPromotionType, name = name, description = description, hidden = hidden }
 		end
 	end
 
@@ -138,7 +134,7 @@ function SentientSystems_GetGovernorChoices(player)
 		local definition = GameInfo.Governors[governor:GetType()]
 
 		if governors:CanPromoteGovernor(definition.Hash) then
-			local promotions = GetPromotions(governors, governor, definition)
+			local promotions = GetEarnablePromotions(governors, governor, definition)
 
 			if #promotions > 0 then
 				promote[#promote + 1] = { governor = definition.GovernorType, promotions = promotions }

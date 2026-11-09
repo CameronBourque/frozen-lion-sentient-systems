@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local With = Helpers.With
 
 local SETTLER = { type = "UNIT_SETTLER", cost = 40, turns = 6 }
 
@@ -15,20 +18,6 @@ local function ProductionWith(units)
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
 	return env.SentientSystems_GetChoices(0):match("\"production\":(%b[])")
-end
-
-local function With(unit, changes)
-	local copy = {}
-
-	for key, value in pairs(unit) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
 end
 
 describe("SentientSystems_GetProductionChoices for units", function()

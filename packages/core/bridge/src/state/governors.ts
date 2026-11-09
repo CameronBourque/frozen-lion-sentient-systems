@@ -3,6 +3,7 @@
 // core mod builds it in Scripts/State/SentientSystemsCore_StateGovernors.lua.
 
 import { z } from "zod";
+import { CITY_ID } from "../schemas.js";
 
 export const GOVERNORS = z.object({
 	titles: z.number().describe("The titles the player can still spend."),
@@ -11,7 +12,7 @@ export const GOVERNORS = z.object({
 		type: z.string().describe("Such as GOVERNOR_THE_MERCHANT."),
 		name: z.string().describe("In the game's language."),
 		title: z.string().describe("In the game's language."),
-		city: z.object({ owner: z.number(), id: z.number() }).optional().describe(
+		city: CITY_ID.optional().describe(
 			"Where they are assigned. Left out while they have none.",
 		),
 		established: z.boolean().optional().describe("Whether they have settled in there."),

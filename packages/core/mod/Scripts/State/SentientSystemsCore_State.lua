@@ -4,7 +4,9 @@
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
+SentientSystems_Include("SentientSystemsCore_Lookups")
 SentientSystems_Include("SentientSystemsCore_Text")
+SentientSystems_Include("SentientSystemsCore_Math")
 SentientSystems_Include("SentientSystemsCore_StateCities")
 SentientSystems_Include("SentientSystemsCore_StateContinents")
 SentientSystems_Include("SentientSystemsCore_StateDiplomacy")
@@ -28,11 +30,7 @@ SentientSystems_Include("SentientSystemsCore_StateVictories")
 -- an ID with no player. The bridge reads it through the stash, as
 -- SentientSystems_Stash(SentientSystems_GetState(playerID)).
 function SentientSystems_GetState(playerID)
-	local player = Players[playerID]
-
-	if player == nil then
-		error("no player " .. tostring(playerID), 0)
-	end
+	local player = SentientSystems_GetPlayer(playerID)
 
 	return SentientSystems_EncodeJson({
 		blockers = SentientSystems_GetBlockerState(playerID),

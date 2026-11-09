@@ -16,6 +16,8 @@ The calls the state uses for the Yields, Resources, and City Status tabs of Repo
 
 `ReportScreen.lua` and its Rise and Fall and Gathering Storm replacements draw the tab, with `CitySupport.lua` for the city data. The replacements change only the city status and the resources, so the yields come from the base file. Confirmed in files.
 
+The tab writes its numbers with `toPlusMinusString` in `Civ6Common.lua`, which rounds to the nearest tenth. Confirmed in files on 2026-11-07.
+
 - **Totals.** The bar at the bottom shows `GetTreasury():GetGoldYield()`, which is the income before the upkeep, and `GetTotalMaintenance()` as the expenses.
 
   They were 475.08 and 210, and the screen showed +475, -210, and +265 net. The faith, science, and culture totals are the top bar's. Confirmed in files and on Windows on 2026-10-29.
@@ -83,7 +85,7 @@ The calls the state uses for the Yields, Resources, and City Status tabs of Repo
 
   Whales were 1 for 4 cities. Aluminum, Coal, Oil, and Uranium were 105 from Gameplay Bonuses with a stockpile of 105 out of 105, as set with the tuner.
 
-  Iron was 6 a turn with 105 out of 105, and Niter 2 with 32. Taking Uranium to 0 with `ChangeResourceAmount` dropped it from the list. Confirmed on Windows on 2026-10-29.
+  Iron was 6 a turn with 105 out of 105, and Niter 2 with 32. Confirmed on Windows on 2026-10-29.
 
 ### City Status tab
 
@@ -112,11 +114,11 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 
 - **The Yields tab's totals and tables on a save with 15 cities.** Gold 475.1 with 420 from cities, 22 from deals, and 33 from envoys, faith 109 with 101 and 8, science 123.5 and culture 216.6 from cities.
 
-  Expenses 210: 117 from cities, 88 from units, and 5 from deals. 7 unit groups and 4 deals, as the screen's tables had them. The state's totals matched the bar and the gold tooltip.
+  Expenses 210: 117 from cities, 88 from units, and 5 from deals. The state's totals matched the bar and the gold tooltip.
 - **The per-city rows through the bridge's reader.** `INCOME` parsed. Aduatuca's 21 rows matched the report's table, with a Shipyard upkeep of 1 and a Factory upkeep of 2, and its upkeep of 9 and tourism of 18 as the table and the sum of its Stable, Armory, and the rest gave.
 - **The Resources tab on the same save, through the bridge's reader.** `RESOURCES` parsed 23 resources. Totals, sources, the export deal, and the 4-city allocations matched the two screenshots, and the strips' stockpiles matched. With Uranium at 0 it was left out.
 - **The City Status tab on the same save.** The 15 cities' growth rates matched the tab row for row, with 8 slowed and 7 normal, the amenities had and needed matched, war weariness was 0 for all, and the governors on Aduatuca, Samarobriva, and Cenabum matched its icons.
 
   Halted, accelerated, and war weariness above 0 weren't on the save, and are tested against the fake game only.
 
-Date checked: game files and a running game on Windows on 2026-10-29.
+Date checked: game files and a running game on Windows on 2026-10-29, and game files on 2026-11-07.

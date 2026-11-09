@@ -1,6 +1,5 @@
 // Tests for game-load.ts, against the fake game.
 
-import { once } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -8,9 +7,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { readLine } from "../src/events.js";
 import { onLoadEvent } from "../src/game-load.js";
 import { Logger } from "../src/log.js";
-import { TunerClient } from "../src/tuner/client.js";
+import type { TunerClient } from "../src/tuner/client.js";
 import { Tag } from "../src/tuner/framing.js";
-import { FakeGame } from "./tuner/fake-game.js";
+import { type FakeGame, startGame } from "./tuner/fake-game.js";
 
 describe("onLoadEvent", () => {
 	let game: FakeGame;
@@ -20,22 +19,16 @@ describe("onLoadEvent", () => {
 	let files: number;
 
 	beforeEach(async () => {
-		game = await FakeGame.start();
-		game.states = [{ index: 0, name: "Main State" }, { index: 119, name: "InGame" }];
-		client = new TunerClient({ port: game.port, retryDelayMs: 10, timeoutMs: 100 });
+		({ game, client } = await startGame([{ index: 0, name: "Main State" }, { index: 119, name: "InGame" }]));
 		folder = fs.mkdtempSync(path.join(os.tmpdir(), "sentient-systems-"));
 		logger = new Logger("debug", "");
 		files = 0;
 		vi.spyOn(console, "log").mockImplementation(() => {});
-		client.connect();
-		await once(client, "connected");
 	});
 
-	afterEach(async () => {
+	afterEach(() => {
 		vi.restoreAllMocks();
 		logger.closeFile();
-		client.close();
-		await game.close();
 		fs.rmSync(folder, { recursive: true, force: true });
 	});
 

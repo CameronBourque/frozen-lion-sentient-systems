@@ -1,21 +1,11 @@
 -- The cities section: the player's own cities, as the city panel shows them.
 -- Shape: bridge/src/state/cities.ts.
 
--- Each yield in the state, and its name in YieldTypes.
-local YIELDS = {
-	culture = "CULTURE",
-	faith = "FAITH",
-	food = "FOOD",
-	gold = "GOLD",
-	production = "PRODUCTION",
-	science = "SCIENCE",
-}
-
 -- Returns what the city is producing, with the turns left, or nil when it
 -- produces nothing. A hash of 0 means nothing. GameInfo reads 0 as a row index,
 -- so GameInfo.Types[0] is the first row, not the production. See
 -- docs/findings/state/state.md.
-local function GetProduction(city)
+local function GetCityProduction(city)
 	local queue = city:GetBuildQueue()
 	local hash = queue:GetCurrentProductionTypeHash()
 
@@ -33,16 +23,11 @@ local function RoundDown(number)
 	return math.floor(number * 10) / 10
 end
 
--- Rounds a number to the nearest tenth, as the city panel does for loyalty.
-local function RoundNearest(number)
-	return math.floor(number * 10 + 0.5) / 10
-end
-
 -- Returns each yield per turn, rounded down as the city panel shows it.
 local function GetYields(city)
 	local yields = {}
 
-	for key, name in pairs(YIELDS) do
+	for key, name in pairs(SENTIENTSYSTEMS_YIELDS) do
 		yields[key] = RoundDown(city:GetYield(YieldTypes[name]))
 	end
 
@@ -111,7 +96,7 @@ end
 -- Returns the city's governor, with type and established, whether they have
 -- settled in, or nil for none, and in a game without Rise and Fall, which adds
 -- governors. See CreateCityStatusInstance in ReportScreen_Expansion1.lua.
-local function GetGovernor(city)
+local function GetCityGovernor(city)
 	local governor = city.GetAssignedGovernor ~= nil and city:GetAssignedGovernor()
 
 	if not governor then
@@ -133,16 +118,16 @@ local function GetLoyalty(city)
 	local identity = city:GetCulturalIdentity()
 
 	return {
-		value = RoundNearest(identity:GetLoyalty()),
+		value = SentientSystems_Round(identity:GetLoyalty(), 1),
 		max = identity:GetMaxLoyalty(),
-		perTurn = RoundNearest(identity:GetLoyaltyPerTurn()),
+		perTurn = SentientSystems_Round(identity:GetLoyaltyPerTurn(), 1),
 	}
 end
 
 -- Returns the city's districts, each with its built buildings. A district that
 -- is placed but not built yet has complete set to false. Wonders sit in their
 -- own DISTRICT_WONDER. GetCityData in CitySupport.lua reads the same calls.
-local function GetDistricts(city)
+local function GetCityDistricts(city)
 	local buildings = city:GetBuildings()
 	local districts = {}
 
@@ -178,7 +163,7 @@ function SentientSystems_GetCityDefense(player, city)
 	local center = player:GetDistricts():FindID(city:GetDistrictID())
 	local garrison, walls = DefenseTypes.DISTRICT_GARRISON, DefenseTypes.DISTRICT_OUTER
 	local defense = {
-		strength = math.floor(center:GetDefenseStrength() + 0.5),
+		strength = SentientSystems_Round(center:GetDefenseStrength()),
 		garrison = SentientSystems_GetHealth(center:GetMaxDamage(garrison), center:GetDamage(garrison)),
 	}
 
@@ -198,7 +183,7 @@ local function GetPowerLines(sources)
 	for _, entry in ipairs(sources) do
 		local name, power = next(entry)
 
-		lines[#lines + 1] = { name = name, power = RoundNearest(power) }
+		lines[#lines + 1] = { name = name, power = SentientSystems_Round(power, 1) }
 	end
 
 	return lines
@@ -237,17 +222,12 @@ local function GetPower(city)
 
 	return {
 		status = status,
-		usable = RoundNearest(usable),
-		required = RoundNearest(required),
+		usable = SentientSystems_Round(usable, 1),
+		required = SentientSystems_Round(required, 1),
 		sources = sources,
 		requiredBy = GetPowerLines(power:GetRequiredPowerSources()),
 		generated = GetPowerLines(power:GetGeneratedPowerSources()),
 	}
-end
-
--- Rounds a number to the nearest whole number, as the banner rounds a pressure.
-local function RoundWhole(number)
-	return math.floor(number + 0.5)
 end
 
 -- Returns the religion the city will convert to and in how many turns, or nil.
@@ -283,14 +263,14 @@ function SentientSystems_GetCityReligion(city)
 		present[#present + 1] = {
 			type = pantheon and "RELIGION_PANTHEON" or GameInfo.Religions[entry.Religion].ReligionType,
 			followers = entry.Followers,
-			pressure = not pantheon and RoundWhole(cityReligion:GetTotalPressureOnCity(entry.Religion)) or nil,
-			totalPressure = not pantheon and RoundWhole(entry.Pressure) or nil,
+			pressure = not pantheon and SentientSystems_Round(cityReligion:GetTotalPressureOnCity(entry.Religion)) or nil,
+			totalPressure = not pantheon and SentientSystems_Round(entry.Pressure) or nil,
 		}
 	end
 
 	return {
 		majority = majority > 0 and GameInfo.Religions[majority].ReligionType or nil,
-		outwardPressure = RoundWhole(cityReligion:GetPressureFromCity()),
+		outwardPressure = SentientSystems_Round(cityReligion:GetPressureFromCity()),
 		present = present,
 		converting = GetConversion(cityReligion),
 	}
@@ -310,12 +290,12 @@ function SentientSystems_GetCityStates(player)
 			population = city:GetPopulation(),
 			amenities = GetAmenities(city),
 			defense = SentientSystems_GetCityDefense(player, city),
-			districts = GetDistricts(city),
-			governor = GetGovernor(city),
+			districts = GetCityDistricts(city),
+			governor = GetCityGovernor(city),
 			growth = GetGrowth(city),
 			loyalty = GetLoyalty(city),
 			power = GetPower(city),
-			production = GetProduction(city),
+			production = GetCityProduction(city),
 			religion = SentientSystems_GetCityReligion(city),
 			yields = GetYields(city),
 		}

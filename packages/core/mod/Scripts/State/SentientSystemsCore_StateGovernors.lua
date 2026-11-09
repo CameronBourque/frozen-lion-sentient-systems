@@ -6,16 +6,12 @@ SentientSystems_Include("SentientSystemsCore_Governors")
 
 -- Returns the promotions an appointed governor has, by type, in the order the
 -- panel lists them. See AddGovernorAppointed in GovernorPanel.lua.
-local function GetPromotions(governor, definition)
+local function GetHeldPromotions(governor, definition)
 	local promotions = {}
 
-	for set in GameInfo.GovernorPromotionSets() do
-		if set.GovernorType == definition.GovernorType then
-			local promotion = GameInfo.GovernorPromotions[set.GovernorPromotion]
-
-			if governor:HasPromotion(promotion.Hash) then
-				promotions[#promotions + 1] = promotion.GovernorPromotionType
-			end
+	for _, promotion in ipairs(SentientSystems_GetPromotionRows(definition)) do
+		if governor:HasPromotion(promotion.Hash) then
+			promotions[#promotions + 1] = promotion.GovernorPromotionType
 		end
 	end
 
@@ -26,7 +22,7 @@ end
 -- turns, as its card shows no stats. See GetGovernorStatus in
 -- GovernorSupport.lua, AddGovernorInstance in GovernorAssignmentChooser.lua,
 -- and AddSecretGovernorAppointed in GovernorPanel.lua.
-local function GetGovernor(governor)
+local function GetAppointedGovernor(governor)
 	local definition = GameInfo.Governors[governor:GetType()]
 	local city = governor:GetAssignedCity()
 	local neutralized = governor:GetNeutralizedTurns()
@@ -39,7 +35,7 @@ local function GetGovernor(governor)
 		neutralized = neutralized > 0 and neutralized or nil,
 		loyalty = not secret and governor:GetIdentityPressure() or nil,
 		turnsToEstablish = not secret and governor:GetTurnsToEstablish() or nil,
-		promotions = GetPromotions(governor, definition),
+		promotions = GetHeldPromotions(governor, definition),
 	}
 
 	if city ~= nil then
@@ -67,7 +63,7 @@ function SentientSystems_GetGovernorState(player)
 	local appointed = {}
 
 	for i, governor in ipairs(list or {}) do
-		appointed[i] = GetGovernor(governor)
+		appointed[i] = GetAppointedGovernor(governor)
 	end
 
 	return { titles = governors:GetGovernorPoints() - spent, spent = spent, appointed = appointed }

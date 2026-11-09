@@ -85,7 +85,8 @@ end
 
 -- Returns why the unit can't remove the feature on its tile, or nil. A feature
 -- needs a tech, an empty tile, and a tile in the player's borders.
-local function GetRemoveFeatureHint(playerID, unit)
+local function GetRemoveFeatureHint(unit)
+	local playerID = unit:GetOwner()
 	local plot = GetPlot(unit)
 	local reason = GetUnitHint(unit, true)
 
@@ -127,7 +128,8 @@ end
 
 -- Returns why the unit can't harvest the resource on its tile, or nil. A
 -- resource the player can't see yet doesn't count.
-local function GetHarvestHint(playerID, unit)
+local function GetHarvestHint(unit)
+	local playerID = unit:GetOwner()
 	local plot = GetPlot(unit)
 	local reason = GetUnitHint(unit, true)
 
@@ -188,7 +190,7 @@ end
 
 -- Returns why the unit can't repair its tile, or nil. The game gives a reason
 -- of its own for a drought.
-local function GetRepairHint(unit, operation)
+local function GetRepairHint(unit)
 	local plot = GetPlot(unit)
 	local reason = GetUnitHint(unit, false)
 
@@ -202,7 +204,7 @@ local function GetRepairHint(unit, operation)
 		return "Nothing on the tile is pillaged."
 	end
 
-	return SentientSystems_GetOperationReasons(unit, GameInfo.UnitOperations[operation].Hash)
+	return SentientSystems_GetOperationReasons(unit, GameInfo.UnitOperations[GetRepairOperation(unit)].Hash)
 end
 
 SentientSystems_AddUnitAction("build_road", function(_, unit, _, _, type)
@@ -219,46 +221,34 @@ SentientSystems_AddUnitAction("build_road", function(_, unit, _, _, type)
 
 	return SentientSystems_DoOperation(unit, "build_road", "UNITOPERATION_BUILD_ROUTE", {
 		kind = BuildsRoutes,
-		hint = function()
-			return GetBuildRoadHint(unit)
-		end,
+		hint = GetBuildRoadHint,
 	})
 end)
 
-SentientSystems_AddUnitAction("remove_feature", function(playerID, unit)
+SentientSystems_AddUnitAction("remove_feature", function(_, unit)
 	return SentientSystems_DoOperation(unit, "remove_feature", "UNITOPERATION_REMOVE_FEATURE", {
 		kind = SentientSystems_IsBuilder,
-		hint = function()
-			return GetRemoveFeatureHint(playerID, unit)
-		end,
+		hint = GetRemoveFeatureHint,
 	})
 end)
 
-SentientSystems_AddUnitAction("harvest", function(playerID, unit)
+SentientSystems_AddUnitAction("harvest", function(_, unit)
 	return SentientSystems_DoOperation(unit, "harvest", "UNITOPERATION_HARVEST_RESOURCE", {
 		kind = SentientSystems_IsBuilder,
-		hint = function()
-			return GetHarvestHint(playerID, unit)
-		end,
+		hint = GetHarvestHint,
 	})
 end)
 
 SentientSystems_AddUnitAction("repair", function(_, unit)
-	local operation = GetRepairOperation(unit)
-
-	return SentientSystems_DoOperation(unit, "repair", operation, {
+	return SentientSystems_DoOperation(unit, "repair", GetRepairOperation(unit), {
 		kind = SentientSystems_IsBuilder,
-		hint = function()
-			return GetRepairHint(unit, operation)
-		end,
+		hint = GetRepairHint,
 	})
 end)
 
 SentientSystems_AddUnitAction("remove_improvement", function(_, unit)
 	return SentientSystems_DoOperation(unit, "remove_improvement", "UNITOPERATION_REMOVE_IMPROVEMENT", {
 		kind = SentientSystems_IsBuilder,
-		hint = function()
-			return GetRemoveImprovementHint(unit)
-		end,
+		hint = GetRemoveImprovementHint,
 	})
 end)

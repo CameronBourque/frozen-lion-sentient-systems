@@ -3,8 +3,7 @@
 // Scripts/State/SentientSystemsCore_StatePlayerIncome.lua.
 
 import { z } from "zod";
-
-const CITY = z.object({ owner: z.number(), id: z.number() });
+import { CITY_ID, YIELDS } from "../schemas.js";
 
 // One yield per turn. Each source is the one the game's tooltip for the yield
 // names, and is left out while it is 0.
@@ -42,7 +41,7 @@ export const INCOME = z.object({
 		other: z.number().optional().describe("What the others don't cover, when it is at least half a point."),
 	}).describe("The gold the player pays each turn."),
 	cities: z.array(z.object({
-		city: CITY,
+		city: CITY_ID,
 		tourism: z.number().describe(
 			"The tourism of the city's tiles, which the city's yields in the state's cities don't hold.",
 		),
@@ -55,15 +54,8 @@ export const INCOME = z.object({
 			type: z.string().optional().describe(
 				"There for a district, building, wonder, or great work, such as BUILDING_FACTORY.",
 			),
-			city: CITY.optional().describe("The destination of a route."),
-			yields: z.object({
-				food: z.number().optional(),
-				production: z.number().optional(),
-				gold: z.number().optional(),
-				science: z.number().optional(),
-				culture: z.number().optional(),
-				faith: z.number().optional(),
-			}).optional().describe("Each yield that isn't 0."),
+			city: CITY_ID.optional().describe("The destination of a route."),
+			yields: YIELDS.optional().describe("Each yield that isn't 0."),
 			upkeep: z.number().optional().describe("The gold the source costs."),
 		})).describe("The rows of the report's city table, in its order. A row with no yield and no upkeep is left out."),
 	})),

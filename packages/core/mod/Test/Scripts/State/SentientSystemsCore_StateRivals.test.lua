@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local With = Helpers.With
 
 local RA_KEDET = {
 	id = 65536, name = "LOC_CITY_NAME_RA_KEDET", x = 30, y = 18, population = 2, capital = true,
@@ -31,20 +34,6 @@ local function RivalUnitsFor(me, egyptUnits)
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
 	return env.SentientSystems_GetState(0):match("\"rivals\":{\"cities\":%b[],\"units\":(%b[])")
-end
-
-local function With(unit, changes)
-	local copy = {}
-
-	for key, value in pairs(unit) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
 end
 
 describe("SentientSystems_GetRivalCityStates", function()

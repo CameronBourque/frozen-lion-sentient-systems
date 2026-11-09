@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local Entry = Helpers.Entry
 
 -- Returns the domination entries of player 0 in a world.
 local function DominationOf(players)
@@ -9,16 +12,6 @@ local function DominationOf(players)
 	Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
 
 	return env.SentientSystems_GetState(0):match("\"domination\":(%b[])")
-end
-
-local function Entry(json, id)
-	for entry in json:gmatch("%b{}") do
-		if id == nil and entry:find("\"unmet\":true", 1, true) then
-			return entry
-		elseif id ~= nil and entry:find("\"player\":" .. id .. ",", 1, true) then
-			return entry
-		end
-	end
 end
 
 local function City(id, data)

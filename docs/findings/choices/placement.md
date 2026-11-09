@@ -43,6 +43,6 @@ A single-player game with Gathering Storm, on turn 14, with one city, Rome, at 3
 
 - **`SentientSystems_GetPlacement` through `readPlacement`, for Rome.** The campus had the same 3 tiles and 8 tiles to buy, with the same bonuses, 335 bytes.
 
-  The Pyramids had no tile and 1 tile to buy, (17,17), 46 bytes. The granary raised `BUILDING_GRANARY isn't a district or a wonder`, and city 7 raised `no city 7 for player 0`.
+  The Pyramids had no tile and 1 tile to buy, (17,17), 46 bytes. The granary raised `BUILDING_GRANARY isn't a district or a wonder`, and city 7 raised an error for the missing city.
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-10-26.

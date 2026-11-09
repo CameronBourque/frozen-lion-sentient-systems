@@ -72,7 +72,11 @@ Its reasons name a yield that is neither, a type the game doesn't know, and an i
 
 Its reasons name a unit that isn't a trader, a trader that already has a route, a trader outside a city, and a player with no free route slot. A city the game refuses, or one with no path, gets one reason that points at the choice. See [trade.md](../../../findings/actions/trade.md).
 
-`plunder` is a unit order with no parameters, in the stances file. It plunders the enemy trade route on the unit's tile with the game's own command, for a unit with strength that isn't an air unit. The game gives no reasons for it, so the reason says what the tile needs.
+`plunder` is a unit order with no parameters, in the stances file. It plunders the enemy trade route on the unit's tile with the game's own command, for a unit with strength that isn't an air unit.
+
+The game gives no reasons for it, so the action checks, in order, that the unit has moves, that a trader of another player is on the tile in any layer, and that the player is at war with that trader's owner.
+
+A trader at war is immune when it has the immunity ability. When none of these explains the refusal, the reason is the general one.
 
 ### Great people
 

@@ -1,5 +1,8 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local With = Helpers.With
 
 local SAILING = {
 	type = "TECH_SAILING",
@@ -17,20 +20,6 @@ local function TechsWith(techs, text)
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
 	return env.SentientSystems_GetChoices(0):match("\"techs\":(%b[])")
-end
-
-local function With(tech, changes)
-	local copy = {}
-
-	for key, value in pairs(tech) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
 end
 
 describe("SentientSystems_GetTechChoices", function()

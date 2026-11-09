@@ -1,23 +1,12 @@
 local FakeGame = require("FakeGame")
 local Game = require("Game")
+local Helpers = require("Helpers")
+
+local Failed, With = Helpers.Failed, Helpers.With
 
 local KNIGHT = { id = 7405612, type = "UNIT_KNIGHT", x = 20, y = 20, moves = 4 }
 local OTHER = { id = 7405613, type = "UNIT_KNIGHT", x = 21, y = 20, moves = 4 }
 local BUILDER = { id = 7405614, type = "UNIT_BUILDER", x = 20, y = 20, moves = 2, formationClass = "FORMATION_CLASS_CIVILIAN" }
-
-local function With(unit, changes)
-	local copy = {}
-
-	for key, value in pairs(unit) do
-		copy[key] = value
-	end
-
-	for key, value in pairs(changes) do
-		copy[key] = value
-	end
-
-	return copy
-end
 
 -- Returns an environment with the actions loaded into a fake game that has the
 -- units for player 0 and the civics player 0 has researched.
@@ -40,10 +29,6 @@ local function Load(units, researched)
 	end
 
 	return env
-end
-
-local function Failed(reason)
-	return "{\"ok\":false,\"reason\":\"" .. reason .. "\"}"
 end
 
 -- Runs the action for the first unit, with the other units in the world.

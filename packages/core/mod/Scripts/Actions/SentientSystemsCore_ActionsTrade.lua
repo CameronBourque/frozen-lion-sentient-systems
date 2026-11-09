@@ -47,22 +47,13 @@ function SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)
 			return failure
 		end
 
-		-- A number that is no player has an object whose GetCities returns
-		-- nothing.
-		local owner = Players[ownerID]
-		local cities = owner and owner:GetCities()
-		local city = cities and cities:FindID(cityID)
+		local city, failure = SentientSystems_FindCity(ownerID, cityID)
 
-		if city == nil then
-			return "Player " .. tostring(ownerID) .. " has no city " .. tostring(cityID) .. "."
+		if failure ~= nil then
+			return failure
 		end
 
-		local params = {}
-
-		params[UnitOperationTypes.PARAM_X0] = city:GetX()
-		params[UnitOperationTypes.PARAM_Y0] = city:GetY()
-		params[UnitOperationTypes.PARAM_X1] = unit:GetX()
-		params[UnitOperationTypes.PARAM_Y1] = unit:GetY()
+		local params = SentientSystems_GetRouteParams(city, unit)
 
 		local origin = Cities.GetCityInPlot(unit:GetX(), unit:GetY())
 		local path = Game.GetTradeManager():GetTradeRoutePath(origin:GetOwner(), origin:GetID(), ownerID, cityID)

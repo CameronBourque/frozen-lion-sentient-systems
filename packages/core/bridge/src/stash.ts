@@ -4,7 +4,8 @@
 
 import type { z } from "zod";
 import { CORE_STATE } from "./connect.js";
-import { type TunerClient, TunerLuaError, TunerMissingStateError, TunerTimeoutError } from "./tuner/client.js";
+import { describeIssue, explainFailure } from "./errors.js";
+import type { TunerClient } from "./tuner/client.js";
 
 export type StashResult<T> =
 	| { ok: true; value: T; bytes: number }
@@ -18,7 +19,7 @@ export async function readStash<T>(client: TunerClient, call: string, schema: z.
 	try {
 		json = await readPieces(client, call);
 	} catch (error) {
-		return { ok: false, error: explainFailure(error, what) };
+		return { ok: false, error: explainFailure(error, `${what} request`) };
 	}
 
 	let value: unknown;
@@ -32,7 +33,7 @@ export async function readStash<T>(client: TunerClient, call: string, schema: z.
 	const parsed = schema.safeParse(value);
 
 	if (!parsed.success) {
-		return { ok: false, error: `The core mod's ${what} JSON doesn't match the schema: ${parsed.error.issues.map((issue) => describeIssue(issue, what)).join("; ")}` };
+		return { ok: false, error: `The core mod's ${what} JSON doesn't match the schema: ${parsed.error.issues.flatMap((issue) => describeIssue(issue, `the ${what}`)).join("; ")}` };
 	}
 
 	return { ok: true, value: parsed.data, bytes: Buffer.byteLength(json) };
@@ -58,24 +59,4 @@ async function readPieces(client: TunerClient, call: string): Promise<string> {
 	}
 
 	return pieces.join("");
-}
-
-function describeIssue(issue: z.core.$ZodIssue, what: string): string {
-	return `${issue.path.join(".") || `the ${what}`}: ${issue.message}`;
-}
-
-function explainFailure(error: unknown, what: string): string {
-	if (error instanceof TunerMissingStateError) {
-		return `The core mod's state ${CORE_STATE} isn't loaded. Turn on Sentient Systems Core in Additional Content, then load a game`;
-	}
-
-	if (error instanceof TunerTimeoutError) {
-		return `The game didn't answer the ${what} request in time, maybe because a game is loading`;
-	}
-
-	if (error instanceof TunerLuaError) {
-		return `The core mod failed to build the ${what}: ${error.message.split("\n")[0]}`;
-	}
-
-	return `Reading the ${what} failed: ${error instanceof Error ? error.message : String(error)}`;
 }

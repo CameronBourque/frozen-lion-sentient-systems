@@ -6,7 +6,7 @@ SentientSystems_Include("SentientSystemsCore_ChoicesSpyMissions")
 -- Returns the player's spy, or the reason it can't act. A spy takes orders
 -- only when it is ready to move and awake, as the chooser opens only then. See
 -- GoToProperInterfaceMode in EspionageChooser.lua.
-local function GetSpy(playerID, unitID)
+local function FindReadySpy(playerID, unitID)
 	local spy = UnitManager.GetUnit(playerID, unitID)
 
 	if spy == nil then
@@ -78,7 +78,7 @@ end
 
 -- Returns the district of the city by its type. The caller has checked that the
 -- city has it, because the district came from the spy's missions.
-local function FindDistrict(city, districtType)
+local function FindDistrictByType(city, districtType)
 	for _, district in city:GetDistricts():Members() do
 		if GameInfo.Districts[district:GetType()].DistrictType == districtType then
 			return district
@@ -94,7 +94,7 @@ end
 -- begun, not that it has finished.
 function SentientSystems_SpyMission(playerID, unitID, mission, district)
 	return SentientSystems_RunAction("SpyMission", function()
-		local spy, failure = GetSpy(playerID, unitID)
+		local spy, failure = FindReadySpy(playerID, unitID)
 
 		if failure ~= nil then
 			return failure
@@ -131,7 +131,7 @@ function SentientSystems_SpyMission(playerID, unitID, mission, district)
 			return nil
 		end
 
-		local target = FindDistrict(city, district)
+		local target = FindDistrictByType(city, district)
 
 		UnitManager.RequestOperation(spy, UnitOperationTypes.SPY_COUNTERSPY, {
 			[UnitOperationTypes.PARAM_X] = target:GetX(),
@@ -147,18 +147,16 @@ end
 -- out, not that it has arrived.
 function SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)
 	return SentientSystems_RunAction("SpyTravel", function()
-		local spy, failure = GetSpy(playerID, unitID)
+		local spy, failure = FindReadySpy(playerID, unitID)
 
 		if failure ~= nil then
 			return failure
 		end
 
-		local owner = Players[ownerID]
-		local cities = owner and owner:GetCities()
-		local city = cities and cities:FindID(cityID)
+		local city, failure = SentientSystems_FindCity(ownerID, cityID)
 
-		if city == nil then
-			return "Player " .. tostring(ownerID) .. " has no city " .. tostring(cityID) .. "."
+		if failure ~= nil then
+			return failure
 		end
 
 		if not SentientSystems_CanSpyTravel(spy) then
