@@ -3,75 +3,9 @@
 -- Shape: bridge/src/choices/research.ts.
 
 SentientSystems_Include("SentientSystemsCore_Text")
+SentientSystems_Include("SentientSystemsCore_Research")
 
--- The game's calls for techs and for civics. Each reads from the player's
--- store: GetTechs for techs, and GetCulture for civics.
-local KINDS = {
-	tech = {
-		rows = function()
-			return GameInfo.Technologies()
-		end,
-		typeColumn = "TechnologyType",
-		store = function(player)
-			return player:GetTechs()
-		end,
-		current = function(store)
-			return store:GetResearchingTech()
-		end,
-		canProgress = function(store, index)
-			return store:CanResearch(index)
-		end,
-		cost = function(store, index)
-			return store:GetResearchCost(index)
-		end,
-		progress = function(store, index)
-			return store:GetResearchProgress(index)
-		end,
-		turns = function(store, index)
-			return store:GetTurnsToResearch(index)
-		end,
-		recommendations = function(strategicAI)
-			return strategicAI:GetTechRecommendations()
-		end,
-		hashField = "TechHash",
-		-- The game's function from TechAndCivicUnlockables.lua, read when it is
-		-- called, as the file may load later.
-		unlocksFunction = function()
-			return GetUnlockablesForTech
-		end,
-	},
-	civic = {
-		rows = function()
-			return GameInfo.Civics()
-		end,
-		typeColumn = "CivicType",
-		store = function(player)
-			return player:GetCulture()
-		end,
-		current = function(store)
-			return store:GetProgressingCivic()
-		end,
-		canProgress = function(store, index)
-			return store:CanProgress(index)
-		end,
-		cost = function(store, index)
-			return store:GetCultureCost(index)
-		end,
-		progress = function(store, index)
-			return store:GetCulturalProgress(index)
-		end,
-		turns = function(store, index)
-			return store:GetTurnsToProgressCivic(index)
-		end,
-		recommendations = function(strategicAI)
-			return strategicAI:GetCivicsRecommendations()
-		end,
-		hashField = "CivicHash",
-		unlocksFunction = function()
-			return GetUnlockablesForCivic
-		end,
-	},
-}
+local KINDS = SENTIENTSYSTEMS_RESEARCH_KINDS
 
 -- Returns the boost of a tech or civic, with its percent of the cost, the text
 -- of its trigger, and whether it has been triggered, or nil for one with no
@@ -180,14 +114,13 @@ function SentientSystems_GetResearchReader(kindName, player)
 end
 
 -- Returns a list of the techs or civics the player can research now, and the
--- one in research, in the game's order. See GetData in ResearchChooser.lua, and
--- in CivicsChooser.lua.
+-- one in research, in the game's order.
 local function GetResearchChoices(kindName, player)
 	local reader = SentientSystems_GetResearchReader(kindName, player)
 	local options = {}
 
 	for row in reader.kind.rows() do
-		if row.Index == reader.current or reader.kind.canProgress(reader.store, row.Index) then
+		if SentientSystems_IsResearchOption(reader.kind, reader.store, reader.current, row.Index) then
 			local option = reader.Option(row)
 
 			if row.Index == reader.current then

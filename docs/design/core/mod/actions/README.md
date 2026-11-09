@@ -13,6 +13,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [units.md](units.md) | Moves, unit orders, stances, attacks, upgrades, formations, and air and transport |
 | [unit-jobs.md](unit-jobs.md) | Builder jobs, adding production, great people, and religious units |
 | [cities.md](cities.md) | Production, purchases, trade routes, and spy missions |
+| [research.md](research.md) | The tech and the civic in research |
 
 ### Results
 
