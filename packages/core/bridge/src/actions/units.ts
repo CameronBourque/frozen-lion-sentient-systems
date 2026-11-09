@@ -1,6 +1,7 @@
 // The unit actions, which run the calls in
 // Scripts/Actions/SentientSystemsCore_ActionsUnits.lua.
 
+import type { Position } from "../schemas.js";
 import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
 
@@ -13,13 +14,13 @@ export type UnitOrder =
 	| { action: "promote"; promotion: string }
 	| { action: "build_road"; route?: string }
 	| { action: "improve"; improvement: string }
-	| { action: "attack" | "priority_target" | "rebase" | "deploy" | "airlift" | "paradrop"; x: number; y: number };
+	| ({ action: "attack" | "priority_target" | "rebase" | "deploy" | "airlift" | "paradrop" } & Position);
 
 // Moves a unit to a tile by the game's own path, over as many turns as it
 // takes. An ok result means the game took the request, not that the unit has
 // arrived.
-export function moveUnit(client: TunerClient, playerID: number, unitID: number, x: number, y: number): Promise<ActionResult> {
-	return sendAction(client, `SentientSystems_MoveUnit(${playerID}, ${unitID}, ${x}, ${y})`);
+export function moveUnit(client: TunerClient, playerID: number, unitID: number, position: Position): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_MoveUnit(${playerID}, ${unitID}, ${position.x}, ${position.y})`);
 }
 
 // Gives a unit an order, such as a stance, an upgrade, a job on its tile, a

@@ -24,7 +24,7 @@ describe("unit actions", () => {
 	test("moveUnit asks the core mod to move the player's unit to the tile", async () => {
 		answer("SentientSystems_MoveUnit(0, 196608, 11, 10)", FAILED);
 
-		expect(await moveUnit(client, 0, 196608, 11, 10)).toEqual({ ok: false, reason: "The unit has no moves left." });
+		expect(await moveUnit(client, 0, 196608, { x: 11, y: 10 })).toEqual({ ok: false, reason: "The unit has no moves left." });
 		expect(game.commands[0]?.lua).toBe("SentientSystems_Stash(SentientSystems_MoveUnit(0, 196608, 11, 10))");
 	});
 
