@@ -4,7 +4,7 @@ Status: confirmed. Buying a unit with gold and faith, a building with gold, and 
 
 The game calls that the purchase actions wrap, with the Lua state they run in and the reasons their checks give. The items and tiles a city can buy are in [choices/purchases.md](../choices/purchases.md).
 
-The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md). The other actions are in the [actions index](README.md).
+The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other actions are in the [actions index](README.md).
 
 ## Questions
 

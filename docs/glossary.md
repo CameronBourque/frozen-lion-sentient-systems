@@ -4,7 +4,7 @@ The one name for each thing in this project, and what it means. Use these names 
 
 | Term | Meaning | Details |
 | --- | --- | --- |
-| Action API | The core mod's Lua functions that wrap the game's request functions. A failed action returns a reason | [design/core/mod/actions.md](design/core/mod/actions.md) |
+| Action API | The core mod's Lua functions that wrap the game's request functions. A failed action returns a reason | [design/core/mod/actions/README.md](design/core/mod/actions/README.md) |
 | Advisors mod | The feature mod that gives a human player read-only advisors, one per victory condition | [advisors.md](design/advisors.md) |
 | Agent | An LLM that plays Civ VI as a full player in an **Agent** slot. It is not the native AI | [knowledge-files.md](design/knowledge-files.md#file-layout) |
 | **Agent** slot | A player slot that an agent plays. The setup screen shows it as **Agent**. Which engine slot type holds it is open | [slot-type.md](design/agents/slot-type.md) |

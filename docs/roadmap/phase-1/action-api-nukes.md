@@ -23,5 +23,5 @@ The state shows the fallout the strike leaves with its turns left, and the clear
 ## Record
 
 - Each request function, its Lua state, its result, and the setup that gave the player a device, in a findings file of its own in [findings/actions/](../../findings/actions/README.md), with a row in its index. A device can be spawned with `UnitManager.InitUnit` in the tuner.
-- The stockpile and the fallout, in [design/core/mod/state.md](../../design/core/mod/state.md), and the strike, the clear action, and their reasons, in [design/core/mod/actions.md](../../design/core/mod/actions.md).
+- The stockpile and the fallout, in [design/core/mod/state.md](../../design/core/mod/state.md), and the strike, the clear action, and their reasons, in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md).
 - The rows of the action, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md), and of the state sections, in its `## Parts of a state section` table.

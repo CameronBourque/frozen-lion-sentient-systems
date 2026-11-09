@@ -4,7 +4,7 @@ Status: open. Activating a great person, a great engineer's production included,
 
 The game calls the great person orders wrap, with the Lua state each runs in and the reasons their checks give. The great people on offer are in [choices/great-people.md](../choices/great-people.md).
 
-The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md). The other unit actions are in the [actions index](README.md).
+The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other unit actions are in the [actions index](README.md).
 
 ## Questions
 

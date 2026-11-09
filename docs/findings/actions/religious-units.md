@@ -4,7 +4,7 @@ Status: confirmed. Founding a religion, spreading it, removing a heresy, healing
 
 The game calls the religious unit orders wrap, with the Lua state each runs in and the reasons their checks give. The religion itself, its name and beliefs, is chosen in the religion blocker's action, which a later step adds.
 
-The core mod's result format is in [design/core/mod/actions.md](../../design/core/mod/actions.md). The other unit actions are in the [actions index](README.md).
+The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other unit actions are in the [actions index](README.md).
 
 ## Questions
 
