@@ -35,13 +35,13 @@ end
 -- then travels.
 function SentientSystems_TradeRoute(playerID, unitID, ownerID, cityID)
 	return SentientSystems_RunAction("TradeRoute", function()
-		local unit = UnitManager.GetUnit(playerID, unitID)
+		local unit, failure = SentientSystems_FindUnit(playerID, unitID)
 
-		if unit == nil then
-			return "Player " .. playerID .. " has no unit " .. unitID .. "."
+		if failure ~= nil then
+			return failure
 		end
 
-		local failure = GetStartFailure(Players[playerID], unit)
+		failure = GetStartFailure(Players[playerID], unit)
 
 		if failure ~= nil then
 			return failure

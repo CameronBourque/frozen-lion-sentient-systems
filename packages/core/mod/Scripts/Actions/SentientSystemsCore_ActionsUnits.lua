@@ -20,8 +20,10 @@ end
 -- for a move gives no reasons and passes any target, so each case is checked
 -- here, with the path the game's cursor draws.
 local function GetMoveFailure(playerID, unit, x, y)
-	if not Map.IsPlot(x, y) then
-		return "The tile (" .. x .. ", " .. y .. ") is off the map."
+	local offMap = SentientSystems_GetOffMapFailure(x, y)
+
+	if offMap ~= nil then
+		return offMap
 	end
 
 	if x == unit:GetX() and y == unit:GetY() then
@@ -59,23 +61,21 @@ end
 -- the unit has arrived.
 function SentientSystems_MoveUnit(playerID, unitID, x, y)
 	return SentientSystems_RunAction("MoveUnit", function()
-		local unit = UnitManager.GetUnit(playerID, unitID)
-
-		if unit == nil then
-			return "Player " .. playerID .. " has no unit " .. unitID .. "."
-		end
-
-		local failure = GetMoveFailure(playerID, unit, x, y)
+		local unit, failure = SentientSystems_FindUnit(playerID, unitID)
 
 		if failure ~= nil then
 			return failure
 		end
 
-		local parameters = {
-			[UnitOperationTypes.PARAM_X] = x,
-			[UnitOperationTypes.PARAM_Y] = y,
-			[UnitOperationTypes.PARAM_MODIFIERS] = UnitOperationMoveModifiers.MOVE_IGNORE_UNEXPLORED_DESTINATION,
-		}
+		failure = GetMoveFailure(playerID, unit, x, y)
+
+		if failure ~= nil then
+			return failure
+		end
+
+		local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
+
+		parameters[UnitOperationTypes.PARAM_MODIFIERS] = UnitOperationMoveModifiers.MOVE_IGNORE_UNEXPLORED_DESTINATION
 
 		if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MOVE_TO, nil, parameters) then
 			return "The game won't start that move."
@@ -132,10 +132,10 @@ end
 -- build for build_road. x and y are for the actions that name a tile.
 function SentientSystems_UnitAction(playerID, unitID, action, x, y, type)
 	return SentientSystems_RunAction("UnitAction", function()
-		local unit = UnitManager.GetUnit(playerID, unitID)
+		local unit, failure = SentientSystems_FindUnit(playerID, unitID)
 
-		if unit == nil then
-			return "Player " .. playerID .. " has no unit " .. unitID .. "."
+		if failure ~= nil then
+			return failure
 		end
 
 		if ACTIONS[action] == nil then

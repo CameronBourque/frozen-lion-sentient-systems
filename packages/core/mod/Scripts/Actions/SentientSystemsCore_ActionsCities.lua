@@ -284,8 +284,10 @@ function SentientSystems_PurchaseTile(playerID, cityID, x, y)
 			return failure
 		end
 
-		if x == nil or y == nil or not Map.IsPlot(x, y) then
-			return "That tile is off the map."
+		failure = SentientSystems_GetOffMapFailure(x, y)
+
+		if failure ~= nil then
+			return failure
 		end
 
 		local plotIndex = FindPurchasableTile(city, x, y)
@@ -301,11 +303,9 @@ function SentientSystems_PurchaseTile(playerID, cityID, x, y)
 			return SentientSystems_LookupText(SENTIENTSYSTEMS_NEED_MORE_GOLD_KEY, cost - math.floor(gold))
 		end
 
-		local params = {
-			[CityCommandTypes.PARAM_PLOT_PURCHASE] = UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE),
-			[CityCommandTypes.PARAM_X] = x,
-			[CityCommandTypes.PARAM_Y] = y,
-		}
+		local params = SentientSystems_GetTileParams(CityCommandTypes, x, y)
+
+		params[CityCommandTypes.PARAM_PLOT_PURCHASE] = UI.GetInterfaceModeParameter(CityCommandTypes.PARAM_PLOT_PURCHASE)
 
 		if not CityManager.CanStartCommand(city, CityCommandTypes.PURCHASE, params) then
 			return "The game won't buy (" .. x .. ", " .. y .. ") for this city."
@@ -327,8 +327,10 @@ function SentientSystems_CityAttack(playerID, cityID, x, y)
 			return failure
 		end
 
-		if x == nil or y == nil or not Map.IsPlot(x, y) then
-			return "That tile is off the map."
+		failure = SentientSystems_GetOffMapFailure(x, y)
+
+		if failure ~= nil then
+			return failure
 		end
 
 		if not PlayersVisibility[playerID]:IsVisible(x, y) then
@@ -336,21 +338,22 @@ function SentientSystems_CityAttack(playerID, cityID, x, y)
 		end
 
 		local R = CityCommandResults
-		local parameters = { [UnitOperationTypes.PARAM_X] = x, [UnitOperationTypes.PARAM_Y] = y }
 		local tiles = SentientSystems_GetTargetTiles(CityManager.GetCommandTargets(city, CityCommandTypes.RANGE_ATTACK, {}), R.PLOTS, R.MODIFIERS, R.MODIFIER_IS_TARGET)
 
-		for _, tile in ipairs(tiles) do
-			if tile.x == x and tile.y == y then
-				if not CityManager.CanStartCommand(city, CityCommandTypes.RANGE_ATTACK, parameters) then
-					return "The game won't start that attack."
-				end
+		failure = SentientSystems_GetTargetFailure(tiles, x, y)
 
-				CityManager.RequestCommand(city, CityCommandTypes.RANGE_ATTACK, parameters)
-
-				return nil
-			end
+		if failure ~= nil then
+			return failure
 		end
 
-		return SentientSystems_GetNotTargetReason(tiles)
+		local parameters = SentientSystems_GetTileParams(UnitOperationTypes, x, y)
+
+		if not CityManager.CanStartCommand(city, CityCommandTypes.RANGE_ATTACK, parameters) then
+			return "The game won't start that attack."
+		end
+
+		CityManager.RequestCommand(city, CityCommandTypes.RANGE_ATTACK, parameters)
+
+		return nil
 	end)
 end

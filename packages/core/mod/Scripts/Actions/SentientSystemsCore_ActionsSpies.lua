@@ -7,10 +7,10 @@ SentientSystems_Include("SentientSystemsCore_ChoicesSpyMissions")
 -- only when it is ready to move and awake, as the chooser opens only then. See
 -- GoToProperInterfaceMode in EspionageChooser.lua.
 local function FindReadySpy(playerID, unitID)
-	local spy = UnitManager.GetUnit(playerID, unitID)
+	local spy, failure = SentientSystems_FindUnit(playerID, unitID)
 
-	if spy == nil then
-		return nil, "Player " .. playerID .. " has no unit " .. unitID .. "."
+	if failure ~= nil then
+		return nil, failure
 	end
 
 	if not GameInfo.Units[spy:GetUnitType()].Spy then
@@ -133,10 +133,7 @@ function SentientSystems_SpyMission(playerID, unitID, mission, district)
 
 		local target = FindDistrictByType(city, district)
 
-		UnitManager.RequestOperation(spy, UnitOperationTypes.SPY_COUNTERSPY, {
-			[UnitOperationTypes.PARAM_X] = target:GetX(),
-			[UnitOperationTypes.PARAM_Y] = target:GetY(),
-		})
+		UnitManager.RequestOperation(spy, UnitOperationTypes.SPY_COUNTERSPY, SentientSystems_GetTileParams(UnitOperationTypes, target:GetX(), target:GetY()))
 
 		return nil
 	end)
@@ -171,10 +168,7 @@ function SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)
 
 		for _, destination in ipairs(SentientSystems_GetSpyDestinations(Players[playerID], spy)) do
 			if destination.owner == ownerID and destination.id == cityID then
-				local params = {
-					[UnitOperationTypes.PARAM_X] = city:GetX(),
-					[UnitOperationTypes.PARAM_Y] = city:GetY(),
-				}
+				local params = SentientSystems_GetTileParams(UnitOperationTypes, city:GetX(), city:GetY())
 
 				if not UnitManager.CanStartOperation(spy, UnitOperationTypes.SPY_TRAVEL_NEW_CITY, Map.GetPlot(city:GetX(), city:GetY()), params) then
 					return "The game won't send the spy to " .. Locale.Lookup(city:GetName()) .. "."

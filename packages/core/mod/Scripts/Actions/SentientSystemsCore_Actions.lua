@@ -26,6 +26,36 @@ function SentientSystems_RunAction(name, action)
 	return SentientSystems_EncodeJson({ ok = false, reason = tostring(reason) })
 end
 
+-- Returns the player's unit by ID, or nil and the reason.
+function SentientSystems_FindUnit(playerID, unitID)
+	local unit = UnitManager.GetUnit(playerID, unitID)
+
+	if unit == nil then
+		return nil, "Player " .. tostring(playerID) .. " has no unit " .. tostring(unitID) .. "."
+	end
+
+	return unit, nil
+end
+
+-- Returns why x and y name no tile on the map, or nil when they name one.
+function SentientSystems_GetOffMapFailure(x, y)
+	if x == nil or y == nil then
+		return "That action needs a tile. Give x and y."
+	end
+
+	if not Map.IsPlot(x, y) then
+		return "The tile (" .. x .. ", " .. y .. ") is off the map."
+	end
+
+	return nil
+end
+
+-- Returns the parameters that name the tile at x and y to a request. types is
+-- the table of the request's kind, which holds its PARAM_X and PARAM_Y keys.
+function SentientSystems_GetTileParams(types, x, y)
+	return { [types.PARAM_X] = x, [types.PARAM_Y] = y }
+end
+
 -- Returns whether the list of tiles holds the tile at x and y.
 function SentientSystems_HasTile(tiles, x, y)
 	for _, tile in ipairs(tiles) do
