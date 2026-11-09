@@ -2,6 +2,7 @@
 // Scripts/State/SentientSystemsCore_StateCities.lua.
 
 import { z } from "zod";
+import { POSITION } from "../schemas.js";
 import { HEALTH } from "./units.js";
 
 // A city's defense, as its banner shows it. The rivals section uses it too.
@@ -35,8 +36,7 @@ const POWER_LINE = z.object({ name: z.string().describe("The game's text, such a
 export const CITY = z.object({
 	id: z.number(),
 	name: z.string().describe("In the game's language."),
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	population: z.number(),
 	amenities: z.object({
 		have: z.number(),
@@ -49,8 +49,7 @@ export const CITY = z.object({
 	defense: DEFENSE,
 	districts: z.array(z.object({
 		type: z.string().describe("Wonders sit in DISTRICT_WONDER."),
-		x: z.number(),
-		y: z.number(),
+		...POSITION.shape,
 		complete: z.boolean().describe("False for a district that is placed but not built yet."),
 		pillaged: z.boolean(),
 		buildings: z.array(z.object({ type: z.string(), pillaged: z.boolean() })).describe(
