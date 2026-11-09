@@ -1,5 +1,5 @@
 -- The result every action returns to the bridge, as JSON, and the helpers that
--- several actions share. See docs/design/core/mod/actions.md.
+-- several actions share. See docs/design/core/mod/actions/README.md.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
