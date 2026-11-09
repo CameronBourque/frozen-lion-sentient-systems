@@ -2,7 +2,7 @@
 // Scripts/State/SentientSystemsCore_StateCities.lua.
 
 import { z } from "zod";
-import { POSITION } from "../schemas.js";
+import { POSITION, YIELDS } from "../schemas.js";
 import { HEALTH } from "./units.js";
 
 // A city's defense, as its banner shows it. The rivals section uses it too.
@@ -91,12 +91,5 @@ export const CITY = z.object({
 		turnsLeft: z.number(),
 	}).optional().describe("Left out when the city produces nothing."),
 	religion: CITY_RELIGION,
-	yields: z.object({
-		food: z.number(),
-		production: z.number(),
-		gold: z.number(),
-		science: z.number(),
-		culture: z.number(),
-		faith: z.number(),
-	}).describe("Per turn, each rounded down to one decimal place, as the city panel shows them."),
+	yields: YIELDS.required().describe("Per turn, each rounded down to one decimal place, as the city panel shows them."),
 });
