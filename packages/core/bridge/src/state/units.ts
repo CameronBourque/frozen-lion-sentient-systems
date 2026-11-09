@@ -2,6 +2,7 @@
 // Scripts/State/SentientSystemsCore_StateUnits.lua.
 
 import { z } from "zod";
+import { POSITION } from "../schemas.js";
 
 // A unit's or a city garrison's health. The rivals section uses it too.
 export const HEALTH = z.object({
@@ -12,8 +13,7 @@ export const HEALTH = z.object({
 export const UNIT = z.object({
 	id: z.number(),
 	type: z.string().describe("Such as UNIT_SCOUT."),
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	moves: z.object({ left: z.number(), max: z.number() }),
 	health: HEALTH,
 	activity: z.enum(["awake", "sleep", "skip", "sentry", "heal", "intercept", "operation"]).optional().describe(
