@@ -27,7 +27,7 @@ Make `docs/findings/state/reports/*` a folder with a `README.md` index and one f
 1. Add `docs/findings/state/reports/README.md` with the summary of the Reports screen and a row for each tab. Add `docs/findings/state/reports/yields.md` with the Yields tab's facts, its question, its method step, and its two results.
 
    Replace the Yields tab in `reports.md` with a link, and add the folder's row to the `docs/findings/state/` index.
-2. Add `docs/findings/state/reports/resources.md*` with the Resources tab, and replace that tab in `reports.md` with a link.
+2. Add `docs/findings/state/reports/resources.md` with the Resources tab, and replace that tab in `reports.md` with a link.
 3. Add `docs/findings/state/reports/city-status.md*` with the City Status tab. Point the links in `player.md` and `docs/roadmap/phase-1/done/state.md` at the new files, delete `reports.md` and its index row, and delete this file and its row.
 
 Each new finding has the status line, the sections, and the "Date checked" line of a finding, with the status and dates of the facts it takes.
