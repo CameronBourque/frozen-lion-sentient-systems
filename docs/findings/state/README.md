@@ -18,6 +18,7 @@ The game calls the state serializer uses, and what a player can know about each 
 | [continents.md](continents.md) | The calls the continents layer uses, as the Continent lens and the tooltip show it |
 | [diplomacy.md](diplomacy.md) | The calls the diplomacy status in the state uses, as the Intel Report shows them |
 | [player.md](player.md) | The calls the player section of the state uses, as the top bar shows them |
+| [reports/](reports/README.md) | The calls the state uses for the tabs of Reports, one finding for each tab |
 | [reports.md](reports.md) | The calls the state uses for the Yields, Resources, and City Status tabs of Reports |
 | [eras.md](eras.md) | The calls the era section of the state uses, as the Era Progress panel shows them |
 | [scoreboard.md](scoreboard.md) | The calls the scoreboard in the state uses, as the Score tab of World Rankings and the leader panel show them |

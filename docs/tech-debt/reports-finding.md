@@ -24,7 +24,7 @@ Make `docs/findings/state/reports/*` a folder with a `README.md` index and one f
 
 ## Tasks
 
-1. Add `docs/findings/state/reports/README.md*` with the summary of the Reports screen and a row for each tab. Add `docs/findings/state/reports/yields.md*` with the Yields tab's facts, its question, its method step, and its two results.
+1. Add `docs/findings/state/reports/README.md` with the summary of the Reports screen and a row for each tab. Add `docs/findings/state/reports/yields.md` with the Yields tab's facts, its question, its method step, and its two results.
 
    Replace the Yields tab in `reports.md` with a link, and add the folder's row to the `docs/findings/state/` index.
 2. Add `docs/findings/state/reports/resources.md*` with the Resources tab, and replace that tab in `reports.md` with a link.
