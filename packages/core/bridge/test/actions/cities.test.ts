@@ -18,7 +18,7 @@ describe("cityAttack", () => {
 
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":false,\"reason\":\"You can't see that tile.\"}"] } })[lua] ?? {};
 
-		expect(await cityAttack(client, 0, 262147, 38, 38)).toEqual({ ok: false, reason: "You can't see that tile." });
+		expect(await cityAttack(client, 0, 262147, { x: 38, y: 38 })).toEqual({ ok: false, reason: "You can't see that tile." });
 	});
 });
 
@@ -93,6 +93,6 @@ describe("purchaseTile", () => {
 
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
 
-		expect(await purchaseTile(client, 0, 65536, 19, 14)).toEqual({ ok: true });
+		expect(await purchaseTile(client, 0, 65536, { x: 19, y: 14 })).toEqual({ ok: true });
 	});
 });
