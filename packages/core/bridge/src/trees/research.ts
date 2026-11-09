@@ -3,6 +3,7 @@
 // screen's extra icons for envoys and governor titles.
 
 import { z } from "zod";
+import { BOOST } from "../schemas.js";
 import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 
@@ -23,7 +24,7 @@ const NODE = z.object({
 	prerequisites: z.array(z.string()).describe(
 		"By type, or by number such as ?1 for an unrevealed node, as the screen's lines link it.",
 	),
-	boost: z.object({ percent: z.number(), trigger: z.string(), triggered: z.boolean() }).optional().describe(
+	boost: BOOST.optional().describe(
 		"Left out for an unrevealed or researched node. Works as in ../choices/research.ts.",
 	),
 	unlocks: z.array(z.string()).optional().describe("Works as in ../choices/research.ts."),

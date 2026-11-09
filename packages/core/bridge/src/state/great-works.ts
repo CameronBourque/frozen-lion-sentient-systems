@@ -3,10 +3,9 @@
 // Scripts/State/SentientSystemsCore_StateGreatWorks.lua.
 
 import { z } from "zod";
+import { YIELD_AMOUNT } from "../schemas.js";
 
 const CITY = z.object({ id: z.number(), name: z.string().describe("In the game's language.") });
-
-const YIELD = z.object({ type: z.string().describe("A yield type, such as YIELD_CULTURE."), amount: z.number() });
 
 const WORK = z.object({
 	index: z.number().describe("The game's index of this work, which a move names."),
@@ -15,7 +14,7 @@ const WORK = z.object({
 	objectType: z.string().describe("The kind of work, such as GREATWORKOBJECT_SCULPTURE."),
 	era: z.string().optional().describe("The era of an artifact, or of any work that has one."),
 	tourism: z.number().describe("The tourism the work gives while it is in a building."),
-	yields: z.array(YIELD),
+	yields: z.array(YIELD_AMOUNT),
 	lockedTurns: z.number().describe(
 		"The turns before the work can be moved again. Art is locked for a time after it is created or moved, and other works are never locked.",
 	),
@@ -65,7 +64,7 @@ const BUILDING = z.object({
 	spaces: z.number().describe("The number of slots."),
 	works: z.number().describe("The number of slots with a work."),
 	theme: THEME.optional().describe("The building's theming bonus. Left out for a building with none, as the screen shows no label for it."),
-	yields: z.array(YIELD).describe("What the works in the building give, for each yield above 0."),
+	yields: z.array(YIELD_AMOUNT).describe("What the works in the building give, for each yield above 0."),
 	tourism: z.number().describe("The tourism of the works in the building, with the religious tourism."),
 });
 
@@ -74,7 +73,7 @@ export const GREAT_WORKS = z.object({
 	buildings: z.array(BUILDING).describe("Every building with great work slots."),
 	works: z.number().describe("The great works total of the screen."),
 	spaces: z.number().describe("The display spaces total of the screen."),
-	provides: z.array(YIELD).describe(
+	provides: z.array(YIELD_AMOUNT).describe(
 		"What the works provide in total, as the screen shows it. The tourism is a yield of type TOURISM.",
 	),
 });

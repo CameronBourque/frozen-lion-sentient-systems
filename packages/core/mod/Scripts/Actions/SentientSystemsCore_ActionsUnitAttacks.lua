@@ -10,7 +10,7 @@ function SentientSystems_GetTargetTiles(results, plots, modifiers, isTarget)
 		if results[modifiers][i] == isTarget then
 			local plot = Map.GetPlotByIndex(index)
 
-			tiles[#tiles + 1] = { x = plot:GetX(), y = plot:GetY() }
+			tiles[#tiles + 1] = SentientSystems_GetPosition(plot)
 		end
 	end
 
@@ -138,7 +138,7 @@ local function GetRaidTiles(unit)
 	for _, index in ipairs(results and results[UnitOperationResults.PLOTS] or {}) do
 		local plot = Map.GetPlotByIndex(index)
 
-		tiles[#tiles + 1] = { x = plot:GetX(), y = plot:GetY() }
+		tiles[#tiles + 1] = SentientSystems_GetPosition(plot)
 	end
 
 	return tiles

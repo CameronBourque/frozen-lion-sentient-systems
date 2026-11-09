@@ -2,6 +2,7 @@
 // Scripts/State/SentientSystemsCore_StateRivals.lua.
 
 import { z } from "zod";
+import { POSITION } from "../schemas.js";
 import { CITY_RELIGION, DEFENSE } from "./cities.js";
 import { HEALTH } from "./units.js";
 
@@ -10,8 +11,7 @@ export const RIVAL_CITY = z.object({
 	owner: z.number().describe("A player ID."),
 	id: z.number(),
 	name: z.string(),
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	population: z.number(),
 	capital: z.boolean(),
 	defense: DEFENSE,
@@ -23,8 +23,7 @@ export const RIVAL_UNIT = z.object({
 	owner: z.number().describe("A player ID."),
 	id: z.number(),
 	type: z.string(),
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	health: HEALTH,
 	religiousStrength: z.number().optional().describe("The strength that decides a religious attack. Left out for a unit that isn't religious."),
 	religion: z.string().optional().describe(

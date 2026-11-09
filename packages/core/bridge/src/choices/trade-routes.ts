@@ -3,11 +3,10 @@
 // language.
 
 import { z } from "zod";
-import { CITY_REF } from "../schemas.js";
+import { CITY_REF, YIELD_AMOUNT } from "../schemas.js";
 
 export const ROUTE_END = z.object({
-	yields: z.array(z.object({
-		type: z.string().describe("Such as YIELD_GOLD."),
+	yields: z.array(YIELD_AMOUNT.extend({
 		amount: z.number().describe("Rounded to one decimal, as the chooser shows it."),
 	})).describe("What this end of the route receives. Yields of zero are left out."),
 	pressure: z.object({

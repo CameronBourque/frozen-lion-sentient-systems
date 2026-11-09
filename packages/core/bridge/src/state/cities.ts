@@ -2,6 +2,7 @@
 // Scripts/State/SentientSystemsCore_StateCities.lua.
 
 import { z } from "zod";
+import { POSITION, YIELDS } from "../schemas.js";
 import { HEALTH } from "./units.js";
 
 // A city's defense, as its banner shows it. The rivals section uses it too.
@@ -35,8 +36,7 @@ const POWER_LINE = z.object({ name: z.string().describe("The game's text, such a
 export const CITY = z.object({
 	id: z.number(),
 	name: z.string().describe("In the game's language."),
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	population: z.number(),
 	amenities: z.object({
 		have: z.number(),
@@ -49,8 +49,7 @@ export const CITY = z.object({
 	defense: DEFENSE,
 	districts: z.array(z.object({
 		type: z.string().describe("Wonders sit in DISTRICT_WONDER."),
-		x: z.number(),
-		y: z.number(),
+		...POSITION.shape,
 		complete: z.boolean().describe("False for a district that is placed but not built yet."),
 		pillaged: z.boolean(),
 		buildings: z.array(z.object({ type: z.string(), pillaged: z.boolean() })).describe(
@@ -92,12 +91,5 @@ export const CITY = z.object({
 		turnsLeft: z.number(),
 	}).optional().describe("Left out when the city produces nothing."),
 	religion: CITY_RELIGION,
-	yields: z.object({
-		food: z.number(),
-		production: z.number(),
-		gold: z.number(),
-		science: z.number(),
-		culture: z.number(),
-		faith: z.number(),
-	}).describe("Per turn, each rounded down to one decimal place, as the city panel shows them."),
+	yields: YIELDS.required().describe("Per turn, each rounded down to one decimal place, as the city panel shows them."),
 });

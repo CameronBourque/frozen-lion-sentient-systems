@@ -45,3 +45,18 @@ describe("SentientSystems_FindCity", function()
 		assert.same({ nil, "Player nil has no city nil." }, { env.SentientSystems_FindCity(nil, nil) })
 	end)
 end)
+
+describe("SentientSystems_GetPosition", function()
+	it("returns the plot's x and y", function()
+		local plot = {
+			GetX = function()
+				return 12
+			end,
+			GetY = function()
+				return 30
+			end,
+		}
+
+		assert.same({ x = 12, y = 30 }, env.SentientSystems_GetPosition(plot))
+	end)
+end)

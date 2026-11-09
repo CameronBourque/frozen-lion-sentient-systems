@@ -152,7 +152,9 @@ local function GetTilePurchases(city)
 	for _, plotIndex in ipairs(SentientSystems_GetPurchasablePlots(city)) do
 		local plot = Map.GetPlotByIndex(plotIndex)
 		local cost = cityGold:GetPlotPurchaseCost(plotIndex)
-		local tile = { x = plot:GetX(), y = plot:GetY(), cost = cost }
+		local tile = SentientSystems_GetPosition(plot)
+
+		tile.cost = cost
 
 		if cost > gold then
 			tile.blocked = { SentientSystems_LookupText(SENTIENTSYSTEMS_NEED_MORE_GOLD_KEY, cost - math.floor(gold)) }

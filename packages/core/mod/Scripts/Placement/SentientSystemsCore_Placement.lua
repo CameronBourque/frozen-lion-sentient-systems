@@ -11,7 +11,7 @@ SentientSystems_Include("SentientSystemsCore_Lookups")
 -- as the placement view shows it.
 local function Tile(city, plotIndex, districtIndex)
 	local plot = Map.GetPlotByIndex(plotIndex)
-	local tile = { x = plot:GetX(), y = plot:GetY() }
+	local tile = SentientSystems_GetPosition(plot)
 
 	if districtIndex ~= nil then
 		local adjacency = {}
