@@ -12,7 +12,7 @@ None of these `x` and `y` fields has its own description.
 
 It is also a loose pair in function signatures: `moveUnit` in `actions/units.ts`, and `cityAttack` and `purchaseTile` in `actions/cities.ts`. `setProduction` takes it as an inline `{ x: number; y: number }`.
 
-The `UnitAction` type in `actions/units.ts` repeats the pair in its union. Only the bridge tests call these functions.
+The `UnitOrder` type in `actions/units.ts` repeats the pair in its union. Only the bridge tests call these functions.
 
 **References.** A city named by `owner` and `id` is `CITY_ID` in `src/schemas.ts`, and `CITY_REF` adds its name. Every schema uses them. A unit is named by its ID alone, because the player only acts on their own units.
 
@@ -47,7 +47,7 @@ The Lua keeps separate `x` and `y` arguments, because the game's API and the Fir
 7. **Captured city choices.** Spread it into the schema in `choices/captured-cities.ts`. Commit: `refactor(core): use the position schema in the captured city choices`.
 8. **Purchase choices.** Extend `TILE_PURCHASE` in `choices/purchases.ts` with `POSITION.shape`. Commit: `refactor(core): use the position schema in the purchase choices`.
 9. **Placement.** Spread it into the schema in `placement/placement.ts`. Commit: `refactor(core): use the position schema in the placement`.
-10. **Unit actions.** Make `moveUnit(client, playerID, unitID, position)` and the `UnitAction` union take a `Position`, and update their tests. Commit: `refactor(core): pass a position to the unit actions`.
+10. **Unit actions.** Make `moveUnit(client, playerID, unitID, position)` and the `UnitOrder` union take a `Position`, and update their tests. Commit: `refactor(core): pass a position to the unit actions`.
 11. **City actions.** Make `purchaseTile` and `cityAttack` take a `Position`, and make `setProduction` take `tile?: Position`. Update their tests. Commit: `refactor(core): pass a position to the city actions`.
 12. **Lua position helper.** Add `SentientSystems_GetPosition(plot)`, which returns `{ x, y }`, to `SentientSystemsCore_Common.lua`, and use it in the five places that build the table by hand. Commit: `refactor(core): share one Lua position helper`.
 13. **Nested object list.** List every inline nested object in `packages/core/bridge/src/`, including the objects written over several lines. Mark the ones that get a name by the rule in `## Proposal`, and add a task here for each file that changes. Commit: `docs: list the nested objects to name`.
