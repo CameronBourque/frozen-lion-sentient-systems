@@ -5,29 +5,34 @@ import type { Position } from "../schemas.js";
 import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
 
-// Replaces what a city is producing, or adds the item to the end of its
-// queue with append. The item is the type of an option of the production
-// choice, such as UNIT_WARRIOR. A district or a wonder also takes the tile
-// from the placement call. An ok result means the game took the order.
-export function setProduction(
-	client: TunerClient,
-	playerID: number,
-	cityID: number,
-	item: string,
-	options: { tile?: Position; append?: boolean } = {},
-): Promise<ActionResult> {
-	const { tile, append } = options;
+// Sends the core mod's production call for the item, with the tile of a
+// district or a wonder, and append to add it to the end of the queue.
+function sendProduction(client: TunerClient, playerID: number, cityID: number, item: string, tile: Position | undefined, append: boolean): Promise<ActionResult> {
 	const args: (number | string)[] = [playerID, cityID, JSON.stringify(item)];
 
-	if (tile !== undefined || append === true) {
+	if (tile !== undefined || append) {
 		args.push(tile?.x ?? "nil", tile?.y ?? "nil");
 	}
 
-	if (append === true) {
+	if (append) {
 		args.push("true");
 	}
 
 	return sendAction(client, `SentientSystems_SetProduction(${args.join(", ")})`);
+}
+
+// Replaces what a city is producing with the item, the type of an option of
+// the production choice, such as UNIT_WARRIOR. A district or a wonder also
+// takes the tile from the placement call. An ok result means the game took the
+// order.
+export function setProduction(client: TunerClient, playerID: number, cityID: number, item: string, tile?: Position): Promise<ActionResult> {
+	return sendProduction(client, playerID, cityID, item, tile, false);
+}
+
+// Adds the item to the end of a city's production queue, as setProduction
+// takes it.
+export function queueProduction(client: TunerClient, playerID: number, cityID: number, item: string, tile?: Position): Promise<ActionResult> {
+	return sendProduction(client, playerID, cityID, item, tile, true);
 }
 
 // Buys a unit or a building in a city. The item is the type of an option of the

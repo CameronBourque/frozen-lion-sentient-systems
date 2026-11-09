@@ -1,7 +1,7 @@
 // Tests for cities.ts, against the fake game.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { cityAttack, purchase, purchaseTile, setProduction } from "../../src/actions/cities.js";
+import { cityAttack, purchase, purchaseTile, queueProduction, setProduction } from "../../src/actions/cities.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -22,7 +22,7 @@ describe("cityAttack", () => {
 	});
 });
 
-describe("setProduction", () => {
+describe("setProduction and queueProduction", () => {
 	let game: FakeGame;
 	let client: TunerClient;
 
@@ -43,23 +43,23 @@ describe("setProduction", () => {
 
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
 
-		expect(await setProduction(client, 0, 65536, "DISTRICT_CAMPUS", { tile: { x: 21, y: 20 } })).toEqual({ ok: true });
+		expect(await setProduction(client, 0, 65536, "DISTRICT_CAMPUS", { x: 21, y: 20 })).toEqual({ ok: true });
 	});
 
-	test("passes append to add the item to the queue, with no tile", async () => {
+	test("queues the item with append, and no tile", async () => {
 		const stash = "SentientSystems_Stash(SentientSystems_SetProduction(0, 65536, \"UNIT_BUILDER\", nil, nil, true))";
 
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
 
-		expect(await setProduction(client, 0, 65536, "UNIT_BUILDER", { append: true })).toEqual({ ok: true });
+		expect(await queueProduction(client, 0, 65536, "UNIT_BUILDER")).toEqual({ ok: true });
 	});
 
-	test("passes append after the tile of a district", async () => {
+	test("queues a district with its tile, then append", async () => {
 		const stash = "SentientSystems_Stash(SentientSystems_SetProduction(0, 65536, \"DISTRICT_CAMPUS\", 21, 20, true))";
 
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
 
-		expect(await setProduction(client, 0, 65536, "DISTRICT_CAMPUS", { tile: { x: 21, y: 20 }, append: true })).toEqual({ ok: true });
+		expect(await queueProduction(client, 0, 65536, "DISTRICT_CAMPUS", { x: 21, y: 20 })).toEqual({ ok: true });
 	});
 });
 
