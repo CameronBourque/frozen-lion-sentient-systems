@@ -72,11 +72,7 @@ local function MoveUnit(playerID, unitID, x, y)
 
 	parameters[UnitOperationTypes.PARAM_MODIFIERS] = UnitOperationMoveModifiers.MOVE_IGNORE_UNEXPLORED_DESTINATION
 
-	if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MOVE_TO, nil, parameters) then
-		return "The game won't start that move."
-	end
-
-	UnitManager.RequestOperation(unit, UnitOperationTypes.MOVE_TO, parameters)
+	return SentientSystems_RequestUnitOperation(unit, UnitOperationTypes.MOVE_TO, parameters, "The game won't start that move.")
 end
 
 -- Moves the unit to x, y by the game's own path, over as many turns as it

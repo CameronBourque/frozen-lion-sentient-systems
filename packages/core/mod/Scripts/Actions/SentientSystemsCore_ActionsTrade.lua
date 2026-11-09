@@ -29,6 +29,15 @@ local function GetStartFailure(player, unit)
 	return nil
 end
 
+-- Returns whether the game has a path for a route from the trader's city to the
+-- city of the owner and the ID.
+local function HasRoutePath(unit, ownerID, cityID)
+	local origin = Cities.GetCityInPlot(unit:GetX(), unit:GetY())
+	local path = Game.GetTradeManager():GetTradeRoutePath(origin:GetOwner(), origin:GetID(), ownerID, cityID)
+
+	return path ~= nil and #path > 0
+end
+
 local function TradeRoute(playerID, unitID, ownerID, cityID)
 	local unit, failure = SentientSystems_FindUnit(playerID, unitID)
 
@@ -42,26 +51,23 @@ local function TradeRoute(playerID, unitID, ownerID, cityID)
 		return failure
 	end
 
-	local city, failure = SentientSystems_FindCity(ownerID, cityID)
+	local city
+
+	city, failure = SentientSystems_FindCity(ownerID, cityID)
 
 	if failure ~= nil then
 		return failure
 	end
 
-	local params = SentientSystems_GetRouteParams(city, unit)
-
-	local origin = Cities.GetCityInPlot(unit:GetX(), unit:GetY())
-	local path = Game.GetTradeManager():GetTradeRoutePath(origin:GetOwner(), origin:GetID(), ownerID, cityID)
-
-	-- The game's check gives no reasons, so every case it refuses is one
+	-- The game's checks give no reasons, so every case they refuse is one
 	-- answer: the choice lists the cities that pass.
-	if not UnitManager.CanStartOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, nil, params) or path == nil or #path == 0 then
-		return "The trader can't reach " .. Locale.Lookup(city:GetName()) .. ". Pick a city from its destinations in the trade route choices."
+	local refusal = "The trader can't reach " .. Locale.Lookup(city:GetName()) .. ". Pick a city from its destinations in the trade route choices."
+
+	if not HasRoutePath(unit, ownerID, cityID) then
+		return refusal
 	end
 
-	UnitManager.RequestOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, params)
-
-	return nil
+	return SentientSystems_RequestUnitOperation(unit, UnitOperationTypes.MAKE_TRADE_ROUTE, SentientSystems_GetRouteParams(city, unit), refusal)
 end
 
 -- Starts a trade route from the trader's city to the city of the choice, and

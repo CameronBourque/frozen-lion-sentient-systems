@@ -72,6 +72,18 @@ function SentientSystems_GetTileParams(types, x, y)
 	return { [types.PARAM_X] = x, [types.PARAM_Y] = y }
 end
 
+-- Requests the unit operation when the game allows it, or returns the refusal.
+-- plot is the target tile that a few operations check, and nil for the rest.
+function SentientSystems_RequestUnitOperation(unit, operation, params, refusal, plot)
+	if not UnitManager.CanStartOperation(unit, operation, plot, params) then
+		return refusal
+	end
+
+	UnitManager.RequestOperation(unit, operation, params)
+
+	return nil
+end
+
 -- Returns whether the list of tiles holds the tile at x and y.
 function SentientSystems_HasTile(tiles, x, y)
 	for _, tile in ipairs(tiles) do
