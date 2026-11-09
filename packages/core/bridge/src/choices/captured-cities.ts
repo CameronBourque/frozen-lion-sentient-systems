@@ -3,13 +3,13 @@
 // screen offers it.
 
 import { z } from "zod";
+import { POSITION } from "../schemas.js";
 
 export const CAPTURED_CITIES_CHOICE = z.array(z.object({
 	kind: z.enum(["captured", "disloyal"]),
 	city: z.number(),
 	name: z.string(),
-	x: z.number(),
-	y: z.number(),
+	...POSITION.shape,
 	population: z.number(),
 	districts: z.number().describe("Those toward the population limit."),
 	options: z.array(z.object({
