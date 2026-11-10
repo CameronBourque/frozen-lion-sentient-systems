@@ -42,3 +42,13 @@ It added the production, purchase, and tile purchase actions. Production takes a
 - The reasons are under **Action API** in [design/core/mod/actions/README.md](../../../design/core/mod/actions/README.md), and the build list is in [design/decision-support/standing-orders.md](../../../design/decision-support/standing-orders.md#orders).
 - The calls and the queue test are in [actions/production.md](../../../findings/actions/production.md) and [actions/purchases.md](../../../findings/actions/purchases.md).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
+
+## Action API: research and policies
+
+Pull request: feat(core): add the research, civic, policy, and government actions.
+
+It added the tech and civic actions with their queues, and the actions that set the policies in every slot, pay the policy unlock, and change the government. Each action checks the screen's rules first, because the game takes illegal requests.
+
+- The reasons are in [design/core/mod/actions/research.md](../../../design/core/mod/actions/research.md) and [design/core/mod/actions/government.md](../../../design/core/mod/actions/government.md).
+- The calls and the checks the game doesn't make are in [actions/research.md](../../../findings/actions/research.md) and [actions/policies.md](../../../findings/actions/policies.md).
+- The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
