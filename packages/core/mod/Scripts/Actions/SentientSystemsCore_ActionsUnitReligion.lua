@@ -1,4 +1,5 @@
--- The religious unit orders: found, spread, remove heresy, heal, and condemn.
+-- The religious unit orders: found, spread, remove heresy, heal, evangelize,
+-- launch an inquisition, and condemn.
 -- The units file loads this file. The calls are in docs/findings/actions/.
 
 -- Returns an order's check for a kind of unit that has charges: the units that
@@ -46,6 +47,21 @@ end)
 
 SentientSystems_AddUnitAction("heal_followers", function(_, unit)
 	return DoReligiousOperation(unit, "heal_followers", "UNITOPERATION_RELIGIOUS_HEAL", HasCharges("ReligiousHealCharges"), "It needs a wounded religious unit on its tile or next to it, itself included.")
+end)
+
+-- An Apostle uses itself up to earn its religion one more belief, which the
+-- player then picks in the belief action.
+SentientSystems_AddUnitAction("evangelize_belief", function(_, unit)
+	return DoReligiousOperation(unit, "evangelize_belief", "UNITOPERATION_EVANGELIZE_BELIEF", function(row)
+		return row.EvangelizeBelief
+	end)
+end)
+
+-- An Apostle uses itself up to let its player buy Inquisitors.
+SentientSystems_AddUnitAction("launch_inquisition", function(_, unit)
+	return DoReligiousOperation(unit, "launch_inquisition", "UNITOPERATION_LAUNCH_INQUISITION", function(row)
+		return row.LaunchInquisition
+	end)
 end)
 
 -- Condemning acts on a religious unit on the unit's own tile, so the loose

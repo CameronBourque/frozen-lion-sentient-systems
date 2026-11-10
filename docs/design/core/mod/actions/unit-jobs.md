@@ -29,9 +29,9 @@ The game gives the reasons, such as the tile the person must stand on. See [grea
 
 ## Religious units
 
-`found_religion`, `spread_religion`, `remove_heresy`, `heal_followers`, and `condemn_heretic` are unit orders with no parameters, in `SentientSystemsCore_ActionsUnitReligion.lua`.
+`found_religion`, `spread_religion`, `remove_heresy`, `heal_followers`, `evangelize_belief`, `launch_inquisition`, and `condemn_heretic` are unit orders with no parameters, in `SentientSystemsCore_ActionsUnitReligion.lua`.
 
-A prophet founds a religion on its Holy Site, and the religion's name and beliefs are chosen in the religion blocker's action.
+A prophet founds a religion on its Holy Site, and the religion's name and beliefs are chosen in the found religion action. An Apostle's `evangelize_belief` earns one more belief, which the belief action picks.
 
 The game's reasons come back, such as the district a prophet must stand on. See [religious-units.md](../../../../findings/actions/religious-units.md).
 

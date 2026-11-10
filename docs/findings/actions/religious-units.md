@@ -1,6 +1,6 @@
 # Religious unit actions
 
-Status: confirmed. Founding a religion, spreading it, removing a heresy, healing, and condemning a heretic are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
+Status: confirmed. Founding a religion, spreading it, removing a heresy, healing, evangelizing a belief, launching an inquisition, and condemning a heretic are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
 
 The game calls the religious unit orders wrap, with the Lua state each runs in and the reasons their checks give. The religion itself, its name and beliefs, is chosen in the found religion action, in [religion.md](religion.md#religion).
 
@@ -24,6 +24,8 @@ None open.
 - **Heal.** `UNITOPERATION_RELIGIOUS_HEAL`, for a row with `ReligiousHealCharges` above zero, which is the Guru.
 
   It heals the religious units on the Guru's tile and the tiles next to it, itself included. A wounded Knight on the tile didn't count, and a wounded Apostle did. Religious units can't stack, so a wounded Guru heals itself, since it is the one religious unit on its tile.
+- **Evangelize a belief.** `UNITOPERATION_EVANGELIZE_BELIEF`, for a row with `EvangelizeBelief`, the Apostle. It uses up the Apostle, and `GetNumBeliefsEarned()` goes up by 1. The player then picks the belief, as in [religion.md](religion.md).
+- **Launch an inquisition.** `UNITOPERATION_LAUNCH_INQUISITION`, for a row with `LaunchInquisition`, the Apostle. It uses up the Apostle, and the city's faith purchases then list the Inquisitor.
 - **Condemn.** `UNITCOMMAND_CONDEMN_HERETIC` is open to any unit that shares a tile with a religious unit of another religion, owned by a player at war with it, so the action doesn't limit it by kind. The game gives its reasons, and the text has three.
 
   A World Congress effect lets a player condemn the units of a religion whatever the war state, as the player reports. It is hard to get active, so it was not tested, and the war reason may not apply under it.
@@ -35,7 +37,7 @@ None open.
 
 ## Method
 
-1. Send the files' code to `SentientSystemsCore_UI` as in [choices/production.md](../choices/production.md#method), step 4, and call `SentientSystems_UnitAction(playerID, unitID, "found_religion")`, `"spread_religion"`, `"heal_followers"`, or `"condemn_heretic"`.
+1. Send the files' code to `SentientSystemsCore_UI` as in [choices/production.md](../choices/production.md#method), step 4, and call `SentientSystems_UnitAction(playerID, unitID, "found_religion")`, `"spread_religion"`, `"heal_followers"`, `"evangelize_belief"`, `"launch_inquisition"`, or `"condemn_heretic"`.
 2. To get a unit with the religion, buy it with faith in `SentientSystemsCore_UI`: `CityManager.RequestCommand(city, CityCommandTypes.PURCHASE, params)`.
 
    `PARAM_UNIT_TYPE` is the unit's hash, `PARAM_MILITARY_FORMATION_TYPE` the standard formation, and `PARAM_YIELD_TYPE` faith. `CityManager.CanStartCommand` with the same parameters says whether the city may.
@@ -61,6 +63,14 @@ A single-player game on turn 403, on Windows, in `SentientSystemsCore_UI`:
 | The followers of Shinto in the 12 cities within 8 tiles of the Guru, before and after | Samarobriva, a city of the player's 6 tiles away, went from 8 followers and 1071.5 pressure to 7 and 946.5. The other 11, including Thăng Long 2 tiles away, didn't change |
 | A Knight on the tile of a Missionary of player 1, who wasn't at war with the player, for `condemn_heretic` | The game's reason: "A Religious unit in this tile belongs to a player you are not at war with." |
 | A Knight with no religious unit on its tile | "It needs a religious unit of another religion, owned by a player at war with you, on its tile." |
-| An Apostle, for the inquisition and Evangelize Belief | Both checks were `true`. The actions are not part of this step |
+| An Apostle, for the inquisition and Evangelize Belief | Both checks were `true` |
 
-Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06.
+Rome's save on turn 15, with Way of the Lion founded and 2 Apostles bought with faith that turn:
+
+| Check | Result |
+| --- | --- |
+| An Apostle bought this turn, with no moves, for `evangelize_belief` | "The unit can't evangelize a belief now." Both checks were `false` |
+| The other Apostle on the Holy Site, its moves restored from `GameCore_Tuner` with `UnitManager.RestoreMovement`, for `evangelize_belief` | `{"ok":true}`. The Apostle was gone, and `GetNumBeliefsEarned()` went from 2 to 3 |
+| An Apostle made by `InitUnit`, given the religion with `SetReligionType`, for `launch_inquisition` | `{"ok":true}`. The Apostle was gone, and the faith purchases listed the Inquisitor for 70 faith |
+
+Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06 and 2026-11-09.

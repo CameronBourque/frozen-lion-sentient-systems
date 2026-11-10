@@ -8,6 +8,7 @@ local PROPHET = { id = 3801115, type = "UNIT_GREAT_PROPHET", x = 20, y = 20, mov
 local MISSIONARY = { id = 3801116, type = "UNIT_MISSIONARY", x = 20, y = 20, moves = 3 }
 local INQUISITOR = { id = 3801119, type = "UNIT_INQUISITOR", x = 20, y = 20, moves = 3 }
 local GURU = { id = 3801117, type = "UNIT_GURU", x = 20, y = 20, moves = 3 }
+local APOSTLE = { id = 3801118, type = "UNIT_APOSTLE", x = 20, y = 20, moves = 4 }
 
 -- Returns an environment with the actions loaded into a fake game that has
 -- player 0 with the unit.
@@ -25,6 +26,8 @@ local ORDERS = {
 	{ action = "spread_religion", unit = MISSIONARY, operation = "UNITOPERATION_SPREAD_RELIGION", verb = "spread a religion", other = PROPHET, need = "It spreads from a city, and needs a religion and a charge left." },
 	{ action = "remove_heresy", unit = INQUISITOR, operation = "UNITOPERATION_REMOVE_HERESY", verb = "remove a heresy", other = MISSIONARY, need = "It removes other religions from a city that follows your religion, and needs a charge left." },
 	{ action = "heal_followers", unit = GURU, operation = "UNITOPERATION_RELIGIOUS_HEAL", verb = "heal followers", other = MISSIONARY, need = "It needs a wounded religious unit on its tile or next to it, itself included." },
+	{ action = "evangelize_belief", unit = APOSTLE, operation = "UNITOPERATION_EVANGELIZE_BELIEF", verb = "evangelize a belief", other = MISSIONARY, need = "The unit can't evangelize a belief now." },
+	{ action = "launch_inquisition", unit = APOSTLE, operation = "UNITOPERATION_LAUNCH_INQUISITION", verb = "launch an inquisition", other = MISSIONARY, need = "The unit can't launch an inquisition now." },
 }
 
 for _, order in ipairs(ORDERS) do
@@ -52,8 +55,6 @@ for _, order in ipairs(ORDERS) do
 end
 
 describe("condemn_heretic", function()
-	local APOSTLE = { id = 3801118, type = "UNIT_APOSTLE", x = 20, y = 20, moves = 3 }
-
 	it("requests the command the game allows", function()
 		local env = Load(With(APOSTLE, { canNow = { "condemn_heretic" } }))
 
