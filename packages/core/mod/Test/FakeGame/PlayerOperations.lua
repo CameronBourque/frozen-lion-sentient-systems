@@ -1,5 +1,5 @@
 -- Player requests. Fakes PlayerOperations and UI.RequestPlayerOperation, which
--- the research and policy actions send.
+-- the research, policy, and religion actions send.
 
 return function(env)
 	env.PlayerOperations = {
@@ -11,6 +11,8 @@ return function(env)
 		VALUE_EXCLUSIVE = 16,
 		VALUE_APPEND = 17,
 		UNLOCK_POLICIES = 18,
+		FOUND_PANTHEON = 19,
+		PARAM_BELIEF_TYPE = 20,
 	}
 	env.UI = env.UI or {}
 

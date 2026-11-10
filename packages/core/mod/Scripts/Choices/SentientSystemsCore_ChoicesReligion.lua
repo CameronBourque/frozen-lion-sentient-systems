@@ -2,6 +2,8 @@
 -- them. Follows PantheonChooser.lua and ReligionScreen.lua.
 -- Shape: bridge/src/choices/religion.ts.
 
+SentientSystems_Include("SentientSystemsCore_Religion")
+
 -- Returns the pantheon choice. Returns nil unless the player can found a
 -- pantheon now, as the launch bar opens the chooser only then. See Realize and
 -- CanSelectBelief in PantheonChooser.lua, and LaunchBar.lua.
@@ -16,10 +18,7 @@ function SentientSystems_GetPantheonChoices(player)
 	local beliefs = {}
 
 	for row in GameInfo.Beliefs() do
-		if row.BeliefClassType == "BELIEF_CLASS_PANTHEON"
-			and not gameReligion:IsInSomePantheon(row.Index)
-			and not gameReligion:IsInSomeReligion(row.Index)
-		then
+		if row.BeliefClassType == "BELIEF_CLASS_PANTHEON" and not SentientSystems_IsBeliefTaken(gameReligion, row.Index) then
 			beliefs[#beliefs + 1] = { type = row.BeliefType, description = SentientSystems_LookupText(row.Description) }
 		end
 	end
@@ -65,8 +64,7 @@ local function GetBeliefOptions(religionType)
 
 	for row in GameInfo.Beliefs() do
 		if row.BeliefClassType ~= "BELIEF_CLASS_PANTHEON"
-			and not gameReligion:IsInSomePantheon(row.Index)
-			and not gameReligion:IsInSomeReligion(row.Index)
+			and not SentientSystems_IsBeliefTaken(gameReligion, row.Index)
 			and not gameReligion:IsTooManyForReligion(row.Index, religionType)
 		then
 			rows[#rows + 1] = row

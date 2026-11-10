@@ -15,6 +15,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [cities.md](cities.md) | Production, purchases, trade routes, and spy missions |
 | [research.md](research.md) | The tech and the civic in research, and their queues |
 | [government.md](government.md) | The policies in a government's slots, the paid unlock, and a change of government |
+| [religion.md](religion.md) | The pantheon |
 
 ### Results
 

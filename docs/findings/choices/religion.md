@@ -24,7 +24,7 @@ None open.
 - **Beliefs.** `Realize`, lines 23 to 44, lists each row of `GameInfo.Beliefs()` that `CanSelectBelief`, lines 63 to 72, allows: its `BeliefClassType` is `BELIEF_CLASS_PANTHEON`, and `Game.GetReligion():IsInSomePantheon(index)` and `IsInSomeReligion(index)` are both `false`.
 
   Each card shows the belief's `Name` and `Description`. On turn 19 of a later save, `IsInSomePantheon` was `true` for Desert Folklore, Egypt's pantheon, and for Religious Settlements, the player's. Confirmed in files and on Windows on 2026-10-26.
-- **Founding.** `ConfirmPantheon`, lines 120 to 131, sends `PlayerOperations.FOUND_PANTHEON` with the belief's hash in `PARAM_BELIEF_TYPE`. Confirmed in files.
+- **Founding.** The request the chooser sends is in [actions/religion.md](../actions/religion.md#pantheon).
 
 ### Religion screen
 
