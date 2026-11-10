@@ -1,6 +1,6 @@
 # Religion actions
 
-Status: confirmed. Founding a pantheon, and founding a religion with a custom name and its beliefs, are confirmed in a running game with Gathering Storm.
+Status: confirmed. Founding a pantheon, founding a religion with a custom name and its beliefs, and adding a belief after an Apostle evangelizes, are confirmed in a running game with Gathering Storm.
 
 The game calls that the pantheon and religion actions wrap, with the Lua state they run in and what the game checks. The beliefs and religions the player can pick are in [choices/religion.md](../choices/religion.md).
 
@@ -43,6 +43,15 @@ What the game takes and does:
 - 1.5 seconds after the requests, `GetReligionTypeCreated()` returned the religion's index, `Game.GetReligion():GetName(index)` returned the custom name, and the religion held both beliefs. Confirmed on Windows on 2026-11-09.
 - After the prophet's `UNITOPERATION_FOUND_RELIGION`, `GetNumBeliefsEarned()` went from 0 to 2. `HasReligiousFoundingUnit()` stayed `true` on that turn, before and after the religion was founded. Confirmed on Windows on 2026-11-09.
 
+### Add a belief
+
+Once the player has a religion, `ConfirmReligionBeliefs` sends only the `ADD_BELIEF` requests, one for each belief picked, with the same parameters as above.
+
+The screen offers this once `GetNumBeliefsEarned()` is more than the beliefs the religion has, as after an Apostle's Evangelize Belief. Confirmed in files.
+
+- For a founded religion, `IsTooManyForReligion(index, religionType)` is `true` for a belief of a class the religion has. See [choices/religion.md](../choices/religion.md). Confirmed on Windows on 2026-11-10.
+- 1.5 seconds after the request, the religion held the belief, and the beliefs earned less those the religion has went from 1 to 0. Confirmed on Windows on 2026-11-10.
+
 ## Method
 
 1. To get the pantheon blocker, follow [choices/religion.md](../choices/religion.md#method), step 2.
@@ -53,6 +62,7 @@ What the game takes and does:
 
    In `GameCore_Tuner`, send `UnitManager.PlaceUnit(unit, x, y)` to put it on a Holy Site, then `UnitManager.RestoreMovement(unit)`.
 6. Activate the prophet with `unitAction` and `found_religion`. Then call `foundReligion` from the bridge, wait 1.5 seconds, and read `Game.GetReligion():GetReligions()`.
+7. To add a belief, use an Apostle's `evangelize_belief`, as in [religious-units.md](religious-units.md#method). Then call `addBelief` from the bridge, wait 1.5 seconds, and read the religion's beliefs as in step 6.
 
 ## Results
 
@@ -83,4 +93,16 @@ The same save on turn 15, with a Great Prophet from faith patronage and `CAPABIL
 
 After the religion, the state's `founded` showed `RELIGION_CUSTOM_1`, Way of the Lion, both beliefs, and Rome as the holy city.
 
-Date checked: 2026-11-09.
+The same save on turn 15, with Way of the Lion holding Feed the World and Gurdwara, and 3 beliefs earned after one Apostle evangelized:
+
+| Call | Result |
+| --- | --- |
+| `addBelief(BELIEF_NOPE)` | `BELIEF_NOPE isn't a belief. ...` |
+| `addBelief(BELIEF_GOD_OF_THE_SEA)` | `BELIEF_GOD_OF_THE_SEA is a pantheon belief. ...` |
+| `addBelief(BELIEF_CHORAL_MUSIC)` | `Your religion can't take another BELIEF_CLASS_FOLLOWER belief.` |
+| `addBelief(BELIEF_TITHE)` | `{"ok":true}`. The religion held Tithe, with no picks left |
+| `addBelief(BELIEF_JUST_WAR)`, after that | `Your religion has no belief to pick. An Apostle's evangelize_belief order earns one.` |
+| `addBelief(BELIEF_PILGRIMAGE)`, after a second Apostle evangelized | `Your religion can't take another BELIEF_CLASS_FOUNDER belief.` |
+| `addBelief(BELIEF_JUST_WAR)` | `{"ok":true}`. The religion held 4 beliefs, one of each class |
+
+Date checked: 2026-11-09 and 2026-11-10.

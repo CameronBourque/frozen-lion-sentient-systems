@@ -241,3 +241,53 @@ describe("SentientSystems_FoundReligion", function()
 		end
 	end)
 end)
+
+-- Player 0 founded Buddhism with two beliefs, and an Apostle earned a third.
+local BELIEVER = With(FOUNDER, { beliefsEarned = 3, religion = { type = "RELIGION_BUDDHISM", beliefs = { "BELIEF_FEED_THE_WORLD", "BELIEF_GURDWARA" } } })
+
+describe("SentientSystems_AddBelief", function()
+	it("sends the religion screen's request for the belief", function()
+		local env = LoadReligion(BELIEVER)
+		local P = env.PlayerOperations
+		local hash = env.GameInfo.Beliefs.BELIEF_TITHE.Hash
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_AddBelief(0, "BELIEF_TITHE"))
+		assert.same({
+			{ player = 0, operation = P.ADD_BELIEF, parameters = { [P.PARAM_BELIEF_TYPE] = hash, [P.PARAM_INSERT_MODE] = P.VALUE_EXCLUSIVE } },
+		}, env.requests)
+	end)
+
+	it("fails for a player who can't add a belief now", function()
+		local cases = {
+			{ FOUNDER, "You have no religion. Found one with the found religion action first." },
+			{ With(BELIEVER, { beliefsEarned = 2 }), "Your religion has no belief to pick. An Apostle's evangelize_belief order earns one." },
+		}
+
+		for _, case in ipairs(cases) do
+			local env = LoadReligion(case[1])
+
+			assert.equal(Failed(case[2]), env.SentientSystems_AddBelief(0, "BELIEF_TITHE"))
+			assert.same({}, env.requests)
+		end
+	end)
+
+	it("fails for a belief the religion can't take", function()
+		local cases = {
+			{ "BELIEF_NOPE", "BELIEF_NOPE isn't a belief. Use a type from the religion choice." },
+			{ "BELIEF_RELIGIOUS_SETTLEMENTS", "BELIEF_RELIGIOUS_SETTLEMENTS is a pantheon belief. Use a type from the religion choice." },
+			{ "BELIEF_PILGRIMAGE", "Your religion can't take another BELIEF_CLASS_FOUNDER belief." },
+			{ "BELIEF_JUST_WAR", "Another player has BELIEF_JUST_WAR already. Use a type from the religion choice." },
+		}
+
+		for _, case in ipairs(cases) do
+			local env = LoadReligion(BELIEVER)
+
+			assert.equal(Failed(case[2]), env.SentientSystems_AddBelief(0, case[1]))
+			assert.same({}, env.requests)
+		end
+	end)
+
+	it("fails for an ID with no player", function()
+		assert.equal(Failed("AddBelief failed: no player 3"), LoadReligion().SentientSystems_AddBelief(3, "BELIEF_TITHE"))
+	end)
+end)

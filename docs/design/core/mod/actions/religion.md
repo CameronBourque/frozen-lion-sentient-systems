@@ -1,6 +1,6 @@
 # Religion actions
 
-How the core mod runs the actions that found a pantheon and a religion. Part of the [action API](README.md).
+How the core mod runs the actions that found a pantheon and a religion, and add a belief. Part of the [action API](README.md).
 
 ## Pantheon
 
@@ -32,6 +32,14 @@ Last, they name a count of beliefs that isn't the `picks`. Then, for each belief
 
 On the bridge, `foundReligion` in `src/actions/religion.ts` takes the beliefs as a list and the name last, and leaves the name out when it isn't given.
 
+## Add a belief
+
+`SentientSystems_AddBelief(playerID, belief)` in the same file adds one belief to the player's founded religion, with one `ADD_BELIEF`. The belief is a `type` from the `beliefs` of the `religion` choice, which lists beliefs once the religion has a pick left.
+
+Its reasons, in order, name a player with no religion, and a religion with no pick left, which points at the Apostle's `evangelize_belief`. Then they name a type that is no belief, a pantheon belief, a class the religion has, and a belief another player has, the same checks as founding.
+
+On the bridge, `addBelief` in `src/actions/religion.ts` sends the call.
+
 ## Decisions
 
 | Decision | Reason |
@@ -41,3 +49,4 @@ On the bridge, `foundReligion` in `src/actions/religion.ts` takes the beliefs as
 | The belief check that no player has the belief, and the count of picks, live in `SentientSystemsCore_Religion.lua` | The religion choices and the religion actions both load them, so the choice and the actions can't disagree |
 | Founding takes the religion and its starting beliefs in one call | The screen sends them on one click. A religion founded with no beliefs was never seen in a game, so the action doesn't risk one |
 | The action checks the screen's rules for the beliefs: the count, a follower first, and one of each class | The game's check takes a belief of any class in any order, and the agent can name any belief, where the screen lists only legal ones |
+| Adding a belief takes one belief per call, though the screen waits for every pick | An Apostle earns one belief at a time, so one pick is the usual case, and the game took a single belief on its own |

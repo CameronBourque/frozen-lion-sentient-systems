@@ -1,5 +1,5 @@
--- The pantheon and religion actions. SentientSystemsCore_Actions.lua loads
--- this file. The calls are in docs/findings/actions/religion.md.
+-- The pantheon, religion, and belief actions. SentientSystemsCore_Actions.lua
+-- loads this file. The calls are in docs/findings/actions/religion.md.
 
 SentientSystems_Include("SentientSystemsCore_Religion")
 
@@ -205,6 +205,14 @@ local function FindFoundingBeliefs(player, beliefs)
 	return rows, nil
 end
 
+-- Sends the request the religion screen's confirm sends for each belief. See
+-- ConfirmReligionBeliefs in ReligionScreen.lua.
+local function RequestBelief(playerID, row)
+	local P = PlayerOperations
+
+	UI.RequestPlayerOperation(playerID, P.ADD_BELIEF, { [P.PARAM_BELIEF_TYPE] = row.Hash, [P.PARAM_INSERT_MODE] = P.VALUE_EXCLUSIVE })
+end
+
 -- Sends the requests the religion screen's confirm sends: the religion, then
 -- each belief. See ConfirmReligionBeliefs in ReligionScreen.lua.
 local function RequestReligion(playerID, row, name, beliefRows)
@@ -218,7 +226,7 @@ local function RequestReligion(playerID, row, name, beliefRows)
 	UI.RequestPlayerOperation(playerID, P.FOUND_RELIGION, parameters)
 
 	for _, belief in ipairs(beliefRows) do
-		UI.RequestPlayerOperation(playerID, P.ADD_BELIEF, { [P.PARAM_BELIEF_TYPE] = belief.Hash, [P.PARAM_INSERT_MODE] = P.VALUE_EXCLUSIVE })
+		RequestBelief(playerID, belief)
 	end
 end
 
@@ -255,6 +263,48 @@ local function FoundReligion(playerID, typeName, beliefs, name)
 	return nil
 end
 
+-- Returns why the player can't add a belief to their religion now, or nil. The
+-- religion screen offers a belief once the player has a religion and more
+-- beliefs earned than it has. See ViewMyReligion in ReligionScreen.lua.
+local function GetAddBeliefFailure(player)
+	if player:GetReligion():GetReligionTypeCreated() < 0 then
+		return "You have no religion. Found one with the found religion action first."
+	end
+
+	if SentientSystems_GetBeliefPicks(player) <= 0 then
+		return "Your religion has no belief to pick. An Apostle's evangelize_belief order earns one."
+	end
+
+	return nil
+end
+
+local function AddBelief(playerID, typeName)
+	local player = SentientSystems_GetPlayer(playerID)
+	local failure = GetAddBeliefFailure(player)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local row
+
+	row, failure = FindBeliefRow(typeName, "religion")
+
+	if failure ~= nil then
+		return failure
+	end
+
+	failure = GetReligionBeliefFailure(row, player:GetReligion():GetReligionTypeCreated())
+
+	if failure ~= nil then
+		return failure
+	end
+
+	RequestBelief(playerID, row)
+
+	return nil
+end
+
 -- Founds the player's pantheon with the belief and returns the result as JSON.
 -- The belief is a type from the pantheon choice, such as
 -- BELIEF_RELIGIOUS_SETTLEMENTS.
@@ -268,4 +318,10 @@ end
 -- belief first. The name is for a religion whose customName is true.
 function SentientSystems_FoundReligion(playerID, religion, beliefs, name)
 	return SentientSystems_RunAction("FoundReligion", FoundReligion, playerID, religion, beliefs, name)
+end
+
+-- Adds the belief to the player's founded religion and returns the result as
+-- JSON. The belief is a type from the religion choice, such as BELIEF_TITHE.
+function SentientSystems_AddBelief(playerID, belief)
+	return SentientSystems_RunAction("AddBelief", AddBelief, playerID, belief)
 end

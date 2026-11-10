@@ -24,7 +24,7 @@ None open.
 - **Heal.** `UNITOPERATION_RELIGIOUS_HEAL`, for a row with `ReligiousHealCharges` above zero, which is the Guru.
 
   It heals the religious units on the Guru's tile and the tiles next to it, itself included. A wounded Knight on the tile didn't count, and a wounded Apostle did. Religious units can't stack, so a wounded Guru heals itself, since it is the one religious unit on its tile.
-- **Evangelize a belief.** `UNITOPERATION_EVANGELIZE_BELIEF`, for a row with `EvangelizeBelief`, the Apostle. It uses up the Apostle, and `GetNumBeliefsEarned()` goes up by 1. The player then picks the belief, as in [religion.md](religion.md).
+- **Evangelize a belief.** `UNITOPERATION_EVANGELIZE_BELIEF`, for a row with `EvangelizeBelief`, the Apostle. It uses up the Apostle, and `GetNumBeliefsEarned()` goes up by 1. The player then picks the belief, as in [religion.md](religion.md#add-a-belief).
 - **Launch an inquisition.** `UNITOPERATION_LAUNCH_INQUISITION`, for a row with `LaunchInquisition`, the Apostle. It uses up the Apostle, and the city's faith purchases then list the Inquisitor.
 - **Condemn.** `UNITCOMMAND_CONDEMN_HERETIC` is open to any unit that shares a tile with a religious unit of another religion, owned by a player at war with it, so the action doesn't limit it by kind. The game gives its reasons, and the text has three.
 

@@ -1,4 +1,4 @@
-// The pantheon and religion actions, which run the calls in
+// The pantheon, religion, and belief actions, which run the calls in
 // Scripts/Actions/SentientSystemsCore_ActionsReligion.lua.
 
 import type { TunerClient } from "../tuner/client.js";
@@ -22,4 +22,10 @@ export function foundReligion(client: TunerClient, playerID: number, religion: s
 	}
 
 	return sendAction(client, `SentientSystems_FoundReligion(${args.join(", ")})`);
+}
+
+// Adds a belief from the religion choice, such as BELIEF_TITHE, to the player's
+// founded religion. An ok result means the game took the request.
+export function addBelief(client: TunerClient, playerID: number, belief: string): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_AddBelief(${playerID}, ${JSON.stringify(belief)})`);
 }
