@@ -1,7 +1,7 @@
 // Tests for religion.ts, against the fake game.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { foundPantheon } from "../../src/actions/religion.js";
+import { foundPantheon, foundReligion } from "../../src/actions/religion.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -28,5 +28,27 @@ describe("foundPantheon", () => {
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify({ ok: false, reason })] } })[lua] ?? {};
 
 		expect(await foundPantheon(client, 0, "BELIEF_DESERT_FOLKLORE")).toEqual({ ok: false, reason });
+	});
+});
+
+describe("foundReligion", () => {
+	let game: FakeGame;
+	let client: TunerClient;
+
+	beforeEach(async () => {
+		({ game, client } = await startGame());
+	});
+
+	test("asks the core mod to found the religion with its beliefs, and a name when given", async () => {
+		const ok = { output: ["{\"ok\":true}"] };
+
+		game.onCommand = (_stateIndex, lua) => ({
+			"SentientSystems_Stash(SentientSystems_FoundReligion(0, \"RELIGION_BUDDHISM\", {\"BELIEF_FEED_THE_WORLD\", \"BELIEF_GURDWARA\"}))": { output: ["1"] },
+			"SentientSystems_Stash(SentientSystems_FoundReligion(0, \"RELIGION_CUSTOM_1\", {\"BELIEF_FEED_THE_WORLD\", \"BELIEF_GURDWARA\"}, \"Way of the Lion\"))": { output: ["1"] },
+			"SentientSystems_PrintPiece(1)": ok,
+		})[lua] ?? {};
+
+		expect(await foundReligion(client, 0, "RELIGION_BUDDHISM", ["BELIEF_FEED_THE_WORLD", "BELIEF_GURDWARA"])).toEqual({ ok: true });
+		expect(await foundReligion(client, 0, "RELIGION_CUSTOM_1", ["BELIEF_FEED_THE_WORLD", "BELIEF_GURDWARA"], "Way of the Lion")).toEqual({ ok: true });
 	});
 });

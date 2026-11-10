@@ -2,7 +2,7 @@
 
 Status: confirmed. Founding a religion, spreading it, removing a heresy, healing, and condemning a heretic are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
 
-The game calls the religious unit orders wrap, with the Lua state each runs in and the reasons their checks give. The religion itself, its name and beliefs, is chosen in the religion blocker's action, which a later step adds.
+The game calls the religious unit orders wrap, with the Lua state each runs in and the reasons their checks give. The religion itself, its name and beliefs, is chosen in the found religion action, in [religion.md](religion.md#religion).
 
 The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other unit actions are in the [actions index](README.md).
 
@@ -18,7 +18,7 @@ None open.
 
 - **Found a religion.** `UNITOPERATION_FOUND_RELIGION`, for a unit whose `GameInfo.Units` row has `FoundReligion`, which is the Great Prophet. The real check's reason says where: "Must be on your Holy Site district or Stonehenge wonder."
 
-  The request uses up the prophet. The player then names the religion and picks its beliefs on the religion screen, whose confirmation is `UI.RequestPlayerOperation(player, PlayerOperations.FOUND_RELIGION, parameters)` in `ReligionScreen.lua`. Confirmed in files.
+  The request uses up the prophet. The player then names the religion and picks its beliefs on the religion screen. Confirmed in files.
 - **Spread.** `UNITOPERATION_SPREAD_RELIGION`, for a row with `SpreadCharges` above zero: the Missionary, the Apostle, and the Inquisitor. The loose check fails with the tile, so the kind of unit comes from the row.
 - **Remove heresy.** `UNITOPERATION_REMOVE_HERESY`, for a row with `RequiresInquisition`, the Inquisitor. It uses the spread icon, and in a city of the player's religion the Inquisitor's spread check is `false` while this one is `true`.
 - **Heal.** `UNITOPERATION_RELIGIOUS_HEAL`, for a row with `ReligiousHealCharges` above zero, which is the Guru.

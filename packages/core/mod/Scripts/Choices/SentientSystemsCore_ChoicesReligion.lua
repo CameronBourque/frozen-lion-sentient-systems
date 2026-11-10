@@ -26,18 +26,6 @@ function SentientSystems_GetPantheonChoices(player)
 	return { beliefs = beliefs }
 end
 
--- Returns the beliefs the founder of a religion has added to it, or none before
--- they found one.
-local function CountBeliefs(playerID)
-	for _, entry in ipairs(Game.GetReligion():GetReligions()) do
-		if entry.Founder == playerID then
-			return #entry.Beliefs
-		end
-	end
-
-	return 0
-end
-
 -- Returns the religions that no player has founded, in the game's order. See
 -- ChooseReligion in ReligionScreen.lua.
 local function GetReligionOptions()
@@ -97,7 +85,7 @@ end
 -- in ReligionScreen.lua, and OnBeliefSelected.
 function SentientSystems_GetReligionChoices(player)
 	local religion = player:GetReligion()
-	local picks = religion:GetNumBeliefsEarned() - CountBeliefs(player:GetID())
+	local picks = SentientSystems_GetBeliefPicks(player)
 	local religionType = religion:GetReligionTypeCreated()
 
 	if religion:GetPantheon() < 0 or picks <= 0 then

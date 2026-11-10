@@ -24,6 +24,8 @@ return function(env, world, ctx)
 
 		local row = env.GameInfo.Religions[indexes[religion.type]]
 
+		row.Hash = ctx.NextHash(5000000, religion.type)
+		row.Name = religion.name or "LOC_" .. religion.type .. "_NAME"
 		row.Pantheon = religion.pantheon == true
 		row.RequiresCustomName = religion.customName == true
 		row.founded = religion.founded

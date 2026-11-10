@@ -42,7 +42,7 @@ None open.
 
   A row with `RequiresCustomName` asks for a name when `GameCapabilities.HasCapability("CAPABILITY_RENAME")` is `true`.
 
-  Founding sends `PlayerOperations.FOUND_RELIGION` with the religion's hash, and the name in `PARAM_RELIGION_CUSTOM_NAME`, then `PlayerOperations.ADD_BELIEF` for each belief. Confirmed in files and on Windows on 2026-10-26.
+  The requests that found it are in [actions/religion.md](../actions/religion.md#religion). Confirmed in files and on Windows on 2026-10-26.
 - **Beliefs to pick.** `PopulateAvailableBeliefs`, lines 446 to 486, offers each belief that isn't a pantheon belief and that `IsInSomePantheon` and `IsInSomeReligion` are `false` for.
 
   `IsTooManyForReligion(index, religionType)` must be `false` too, with the player's religion type, -1 before founding.

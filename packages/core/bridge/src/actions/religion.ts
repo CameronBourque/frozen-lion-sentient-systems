@@ -9,3 +9,17 @@ import { type ActionResult, sendAction } from "./actions.js";
 export function foundPantheon(client: TunerClient, playerID: number, belief: string): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_FoundPantheon(${playerID}, ${JSON.stringify(belief)})`);
 }
+
+// Founds the player's religion, a type from the religion choice such as
+// RELIGION_BUDDHISM, with the beliefs it offers, a follower belief first. The
+// name is for a religion whose customName is true. An ok result means the game
+// took the requests.
+export function foundReligion(client: TunerClient, playerID: number, religion: string, beliefs: string[], name?: string): Promise<ActionResult> {
+	const args = [String(playerID), JSON.stringify(religion), `{${beliefs.map((belief) => JSON.stringify(belief)).join(", ")}}`];
+
+	if (name !== undefined) {
+		args.push(JSON.stringify(name));
+	}
+
+	return sendAction(client, `SentientSystems_FoundReligion(${args.join(", ")})`);
+}
