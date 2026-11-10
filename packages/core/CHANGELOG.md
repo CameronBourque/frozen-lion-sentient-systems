@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.14.0...core-v0.15.0) (2026-11-10)
+
+
+### Features
+
+* **core:** add the research, civic, policy, and government actions ([#79](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/79)) ([e4dec27](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/e4dec2711bdbfaa3cedf10bf9fc62346b9912c1a))
+
 ## [0.14.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.13.0...core-v0.14.0) (2026-11-08)
 
 
