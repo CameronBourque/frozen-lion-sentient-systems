@@ -1,0 +1,15 @@
+// The policy actions, which run the calls in
+// Scripts/Actions/SentientSystemsCore_ActionsPolicies.lua.
+
+import type { TunerClient } from "../tuner/client.js";
+import { type ActionResult, sendAction } from "./actions.js";
+
+// Sets the policy in every slot of the player's government. slots lists each
+// slot by its number in the government choice, from 0, with a policy type such
+// as POLICY_DISCIPLINE, or null to leave it empty. An ok result means the game
+// took the change.
+export function setPolicies(client: TunerClient, playerID: number, slots: (string | null)[]): Promise<ActionResult> {
+	const entries = slots.map((policy, slot) => `[${slot}] = ${policy === null ? "false" : JSON.stringify(policy)}`);
+
+	return sendAction(client, `SentientSystems_SetPolicies(${playerID}, {${entries.join(", ")}})`);
+}

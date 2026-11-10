@@ -1,0 +1,145 @@
+-- The policy actions. SentientSystemsCore_Actions.lua loads this file. The
+-- calls are in docs/findings/actions/policies.md.
+
+SentientSystems_Include("SentientSystemsCore_Government")
+
+-- Returns the row of the screen that a slot type or a policy's slot type goes
+-- in. A great person slot or policy goes in the wildcard row. See
+-- IsSlotTypeLegalInRow in GovernmentScreen.lua.
+local function GetPolicyRow(slotType)
+	return slotType == "SLOT_GREAT_PERSON" and "SLOT_WILDCARD" or slotType
+end
+
+-- Returns why the slots don't list each of the player's count slots, from 0,
+-- once, with a policy type or false, or nil when they do.
+local function GetSlotListFailure(slots, count)
+	local reason = "Give a policy, or none, for each of your " .. count .. " slots, 0 to " .. (count - 1) .. ", as the government choice lists them."
+
+	if type(slots) ~= "table" then
+		return reason
+	end
+
+	for slot in pairs(slots) do
+		if type(slot) ~= "number" or slot % 1 ~= 0 or slot < 0 or slot >= count then
+			return reason
+		end
+	end
+
+	for slot = 0, count - 1 do
+		if slots[slot] == nil then
+			return reason
+		end
+	end
+
+	return nil
+end
+
+-- Returns the row of the policy for the slot, or nil for an empty slot, or nil
+-- and why the slot can't hold it. A policy can stay in a slot or move to
+-- another, so one in a slot counts as one the player can slot. seen holds the
+-- policies of the slots before it.
+local function FindSlotPolicy(culture, slot, typeName, seen)
+	if typeName == false then
+		return nil, nil
+	end
+
+	local row = type(typeName) == "string" and GameInfo.Policies[typeName] or nil
+
+	if row == nil then
+		return nil, tostring(typeName) .. " isn't a policy. Use the type of a policy from the policies choice, or of one in a slot."
+	end
+
+	if not culture:IsPolicyActive(row.Hash) and not SentientSystems_IsPolicyAvailable(culture, row.Hash) then
+		return nil, typeName .. " isn't one of the policies you can slot. Use a policy from the policies choice, or one in a slot."
+	end
+
+	if seen[typeName] then
+		return nil, typeName .. " is in more than one slot."
+	end
+
+	local slotType = GameInfo.GovernmentSlots[culture:GetSlotType(slot)].GovernmentSlotType
+	local slotRow = GetPolicyRow(slotType)
+
+	if slotRow ~= "SLOT_WILDCARD" and slotRow ~= GetPolicyRow(row.GovernmentSlotType) then
+		return nil, "Slot " .. slot .. " is a " .. slotType .. " slot, which can't hold " .. typeName .. ", a " .. row.GovernmentSlotType .. " policy."
+	end
+
+	seen[typeName] = true
+
+	return row, nil
+end
+
+-- Returns the hash of the policy for each slot, by slot, and whether any slot
+-- changes, or nil and why a slot can't hold its policy.
+local function GetSlotHashes(culture, slots, count)
+	local hashes, changed, seen = {}, false, {}
+
+	for slot = 0, count - 1 do
+		local row, failure = FindSlotPolicy(culture, slot, slots[slot], seen)
+
+		if failure ~= nil then
+			return nil, false, failure
+		end
+
+		hashes[slot] = row and row.Hash
+		changed = changed or (row and row.Index or -1) ~= culture:GetSlotPolicy(slot)
+	end
+
+	return hashes, changed, nil
+end
+
+-- Sends the screen's request: clear every slot, then add each slot's policy.
+-- The screen clears first so that a policy can move between slots. See
+-- OnConfirmPolicies in GovernmentScreen.lua.
+local function RequestPolicies(culture, hashes, count)
+	local clearList = {}
+
+	for slot = 0, count - 1 do
+		clearList[#clearList + 1] = slot
+	end
+
+	culture:RequestPolicyChanges(clearList, hashes)
+end
+
+local function SetPolicies(playerID, slots)
+	local culture = SentientSystems_GetPlayer(playerID):GetCulture()
+	local failure = SentientSystems_GetPolicyChangeFailure(playerID, culture)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local count = culture:GetNumPolicySlots()
+
+	failure = GetSlotListFailure(slots, count)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local hashes, changed
+
+	hashes, changed, failure = GetSlotHashes(culture, slots, count)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	-- A request marks the turn's change as made, so none goes out for nothing.
+	if not changed then
+		return "Your slots hold those policies already."
+	end
+
+	RequestPolicies(culture, hashes, count)
+
+	return nil
+end
+
+-- Sets the policy in every slot of the player's government, and returns the
+-- result as JSON. slots holds a policy type, or false for an empty slot, for
+-- each slot by its number in the government choice, from 0. The game takes a
+-- policy in the wrong slot type, or a change at any time, so the action checks
+-- every slot first, as the screen does.
+function SentientSystems_SetPolicies(playerID, slots)
+	return SentientSystems_RunAction("SetPolicies", SetPolicies, playerID, slots)
+end

@@ -2,6 +2,8 @@
 -- Follows GovernmentScreen.lua and its replacements in DLC/Expansion1 and 2.
 -- Shape: bridge/src/choices/government.ts.
 
+SentientSystems_Include("SentientSystemsCore_Government")
+
 -- Returns the player's government and its policy slots. See
 -- PopulateLivePlayerData in GovernmentScreen.lua.
 function SentientSystems_GetGovernmentChoices(player)
@@ -26,17 +28,6 @@ function SentientSystems_GetGovernmentChoices(player)
 	}
 end
 
--- Returns whether the policy catalog shows a policy, active or not. See
--- IsPolicyAvailable in GovernmentScreen.lua, and its replacement in
--- GovernmentScreen_Expansion2.lua.
-local function IsPolicyAvailable(culture, hash)
-	if SentientSystems_HasExpansion2() then
-		return not culture:IsPolicyBanned(hash) and culture:CanPolicyBeSlotted(hash) and not culture:IsPolicyObsolete(hash)
-	end
-
-	return culture:IsPolicyUnlocked(hash) and not culture:IsPolicyObsolete(hash)
-end
-
 -- Returns the policies the catalog shows, by slot type, each list in type
 -- order, as the catalog sorts them, or nil for none. A slotted policy is left
 -- out, as the catalog leaves it out. See RealizePolicyCatalog in
@@ -46,7 +37,7 @@ local function GetPolicyOptions(culture)
 	local options = {}
 
 	for row in GameInfo.Policies() do
-		if IsPolicyAvailable(culture, row.Hash) and not culture:IsPolicyActive(row.Hash) then
+		if SentientSystems_IsPolicyAvailable(culture, row.Hash) and not culture:IsPolicyActive(row.Hash) then
 			local list = options[row.GovernmentSlotType] or {}
 			local option = { type = row.PolicyType, description = SentientSystems_LookupText(row.Description) }
 
@@ -97,14 +88,12 @@ local function GetUnlock(player, culture, hidden)
 end
 
 -- Returns the policy choice. The policies tab hides the unlock button after a
--- policy change this turn. See IsAbleToChangePolicies in GovernmentScreen.lua.
+-- policy change this turn.
 function SentientSystems_GetPolicyChoices(player)
 	local culture = player:GetCulture()
 
 	return {
-		canChange = (culture:CivicCompletedThisTurn() or culture:GetNumPolicySlotsOpen() > 0)
-			and Game.IsAllowStrategicCommands(player:GetID())
-			and not culture:PolicyChangeMade(),
+		canChange = SentientSystems_GetPolicyChangeFailure(player:GetID(), culture) == nil,
 		unlock = GetUnlock(player, culture, culture:PolicyChangeMade()),
 		options = GetPolicyOptions(culture),
 	}
