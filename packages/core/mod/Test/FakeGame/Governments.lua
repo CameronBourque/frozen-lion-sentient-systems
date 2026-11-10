@@ -198,6 +198,14 @@ return function(env, world, ctx)
 				env.requests[#env.requests + 1] = { player = player:GetID(), clear = clearList, add = addList }
 			end
 
+			-- Each government change goes in env.requests. refuseChange makes
+			-- the game refuse it.
+			culture.RequestChangeGovernment = function(_, hash)
+				env.requests[#env.requests + 1] = { player = player:GetID(), government = hash }
+
+				return governmentData.refuseChange ~= true
+			end
+
 			culture.IsPolicyActive = function(_, hash)
 				for _, slot in ipairs(governmentData.slots or {}) do
 					if slot.policy ~= nil and hashes[slot.policy] == hash then

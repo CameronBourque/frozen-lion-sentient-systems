@@ -17,5 +17,5 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [production.md](production.md) | The game call that sets a city's production, how the panel replaces or queues an item, and the reasons its checks give |
 | [purchases.md](purchases.md) | The game calls that buy a unit, a building, or a tile, and the reasons their checks give |
 | [research.md](research.md) | The game calls that set and queue the tech and the civic in research, and the checks the game doesn't make |
-| [policies.md](policies.md) | The game calls that set the policies in every slot and pay the unlock, and the checks the game doesn't make |
+| [policies.md](policies.md) | The game calls that set the policies in every slot, pay the unlock, and change the government, and the checks the game doesn't make |
 | [end-turn.md](end-turn.md) | The game call that ends the turn, and how the end-turn blockers interact with it |

@@ -156,6 +156,12 @@ describe("SentientSystems_UnlockPolicies", function()
 		assert.same({}, env.requests)
 	end)
 
+	it("pays after a policy change this turn while the governments choice shows the unlock", function()
+		local env = Load(With(LOCKED, { changeMade = true, unlocked = { "GOVERNMENT_AUTOCRACY" } }), { gold = 50 }, { governments = { { type = "GOVERNMENT_AUTOCRACY" } } })
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnlockPolicies(0))
+	end)
+
 	it("fails while the World Congress is in session", function()
 		local env = Load(LOCKED, { gold = 50 }, { expansion2 = true, congressInSession = true })
 
@@ -164,7 +170,64 @@ describe("SentientSystems_UnlockPolicies", function()
 
 	it("fails with no unlock, after a change this turn, and on another's turn", function()
 		assert.equal(Failed("There's no unlock to pay for now."), Load(GOVERNMENT, { gold = 50 }).SentientSystems_UnlockPolicies(0))
-		assert.equal(Failed("You changed policies this turn already."), Load(With(LOCKED, { changeMade = true }), { gold = 50 }).SentientSystems_UnlockPolicies(0))
+		assert.equal(
+			Failed("You changed policies this turn already, and the governments choice has no unlock."),
+			Load(With(LOCKED, { changeMade = true }), { gold = 50 }).SentientSystems_UnlockPolicies(0)
+		)
 		assert.equal(Failed("You can't pay the unlock while it isn't your turn."), Load(LOCKED, { gold = 50, noStrategicCommands = true }).SentientSystems_UnlockPolicies(0))
+	end)
+end)
+
+describe("SentientSystems_SetGovernment", function()
+	-- Chiefdom, with Autocracy unlocked and Oligarchy locked, on a turn with a
+	-- civic completed and an unlock for 50.
+	local CHIEFDOM = With(GOVERNMENT, { canChangeAtAll = true, unlocked = { "GOVERNMENT_AUTOCRACY" }, unlockCost = 50 })
+
+	-- Returns an environment with Oligarchy in the ruleset, and the player's
+	-- government.
+	local function LoadGovernment(government, player)
+		return Load(government or CHIEFDOM, player, { governments = { { type = "GOVERNMENT_AUTOCRACY" }, { type = "GOVERNMENT_OLIGARCHY", civic = "CIVIC_POLITICAL_PHILOSOPHY" } } })
+	end
+
+	it("sends the screen's request with the government's hash", function()
+		local env = LoadGovernment()
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY"))
+		assert.same({ { player = 0, government = env.GameInfo.Governments.GOVERNMENT_AUTOCRACY.Hash } }, env.requests)
+	end)
+
+	it("fails for a government that is locked, current, or no government, and sends nothing", function()
+		local env = LoadGovernment()
+
+		assert.equal(Failed("GOVERNMENT_OLIGARCHY isn't unlocked yet. The governments choice gives the civic it needs."), env.SentientSystems_SetGovernment(0, "GOVERNMENT_OLIGARCHY"))
+		assert.equal(Failed("GOVERNMENT_CHIEFDOM is your government already."), env.SentientSystems_SetGovernment(0, "GOVERNMENT_CHIEFDOM"))
+		assert.equal(Failed("GOVERNMENT_NOPE isn't a government. Use a type from the governments choice."), env.SentientSystems_SetGovernment(0, "GOVERNMENT_NOPE"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails when the game refuses the change", function()
+		assert.equal(Failed("The game refused the change to GOVERNMENT_AUTOCRACY."), LoadGovernment(With(CHIEFDOM, { refuseChange = true })).SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY"))
+	end)
+
+	it("fails when the screen allows no change, and points at the unlock when the governments choice shows one", function()
+		local noCivic = With(NO_CIVIC, { canChangeAtAll = true, unlocked = { "GOVERNMENT_AUTOCRACY" } })
+
+		assert.equal(Failed("You can change governments only on a turn you complete a civic."), LoadGovernment(noCivic).SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY"))
+		assert.equal(
+			Failed("You can change governments only on a turn you complete a civic. The governments choice's unlock pays for a change now."),
+			LoadGovernment(With(noCivic, { unlockCost = 50 })).SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY")
+		)
+		assert.equal(Failed("You changed governments this turn already."), LoadGovernment(With(CHIEFDOM, { governmentChangeMade = true })).SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY"))
+		assert.equal(Failed("You can't change governments yet."), LoadGovernment(With(CHIEFDOM, { canChangeAtAll = false })).SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY"))
+		assert.equal(
+			Failed("You can't change governments while it isn't your turn."),
+			LoadGovernment(nil, { noStrategicCommands = true }).SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY")
+		)
+	end)
+
+	it("allows a change with no government, as before the first one", function()
+		local env = LoadGovernment({ canChangeAtAll = true, unlocked = { "GOVERNMENT_AUTOCRACY" } })
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_SetGovernment(0, "GOVERNMENT_AUTOCRACY"))
 	end)
 end)

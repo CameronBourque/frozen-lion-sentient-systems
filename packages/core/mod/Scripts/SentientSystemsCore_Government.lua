@@ -39,6 +39,54 @@ function SentientSystems_GetPolicyChangeFailure(playerID, culture)
 	return reason
 end
 
+-- Returns whether the View Governments tab hides the unlock: after a change of
+-- government this turn, with no government, or with one government unlocked.
+-- See RealizeGovernmentsPage in GovernmentScreen.lua.
+function SentientSystems_IsGovernmentUnlockHidden(culture)
+	if culture:GovernmentChangeMade() or culture:GetCurrentGovernment() == -1 then
+		return true
+	end
+
+	local unlocked = 0
+
+	for row in GameInfo.Governments() do
+		if culture:IsGovernmentUnlocked(row.Hash) then
+			unlocked = unlocked + 1
+		end
+	end
+
+	return unlocked <= 1
+end
+
+-- Returns why the screen lets the player change no government now, or nil
+-- when it does. The game's own check is in the screen alone, so the choice and
+-- the action follow it. See IsAbleToChangeGovernment in GovernmentScreen.lua.
+function SentientSystems_GetGovernmentChangeFailure(playerID, culture)
+	if not Game.IsAllowStrategicCommands(playerID) then
+		return "You can't change governments while it isn't your turn."
+	end
+
+	if not culture:CanChangeGovernmentAtAll() then
+		return "You can't change governments yet."
+	end
+
+	if culture:GovernmentChangeMade() then
+		return "You changed governments this turn already."
+	end
+
+	if culture:GetCurrentGovernment() == -1 or culture:CivicCompletedThisTurn() then
+		return nil
+	end
+
+	local reason = "You can change governments only on a turn you complete a civic."
+
+	if culture:GetCostToUnlockPolicies() > 0 and not SentientSystems_IsGovernmentUnlockHidden(culture) then
+		reason = reason .. " The governments choice's unlock pays for a change now."
+	end
+
+	return reason
+end
+
 -- Returns the button to pay to change policies and governments, as the screen
 -- shows it, or nil when hidden is true or the cost is 0. blocked lists the
 -- screen's text when the player can't afford it, and is empty while the World

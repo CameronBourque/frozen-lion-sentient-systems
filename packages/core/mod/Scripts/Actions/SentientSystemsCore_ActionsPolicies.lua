@@ -145,8 +145,8 @@ function SentientSystems_SetPolicies(playerID, slots)
 end
 
 -- Returns why the player can't pay the unlock, or nil when they can. The
--- action follows the policies tab, which hides the unlock after a change this
--- turn.
+-- action takes the unlock when the policies tab or the View Governments tab
+-- shows it. The policies tab hides it after a policy change this turn.
 local function GetUnlockFailure(playerID)
 	if not Game.IsAllowStrategicCommands(playerID) then
 		return "You can't pay the unlock while it isn't your turn."
@@ -154,12 +154,13 @@ local function GetUnlockFailure(playerID)
 
 	local player = SentientSystems_GetPlayer(playerID)
 	local culture = player:GetCulture()
+	local governmentsHidden = SentientSystems_IsGovernmentUnlockHidden(culture)
 
-	if culture:PolicyChangeMade() then
-		return "You changed policies this turn already."
+	if culture:PolicyChangeMade() and governmentsHidden and culture:GetCostToUnlockPolicies() > 0 then
+		return "You changed policies this turn already, and the governments choice has no unlock."
 	end
 
-	local unlock = SentientSystems_GetUnlock(player, culture, false)
+	local unlock = SentientSystems_GetUnlock(player, culture, culture:PolicyChangeMade() and governmentsHidden)
 
 	if unlock == nil then
 		return "There's no unlock to pay for now."
@@ -192,9 +193,62 @@ local function UnlockPolicies(playerID)
 	return nil
 end
 
--- Pays the gold or faith that lets the player change policies on a turn with
--- no civic completed, as the unlock button does, and returns the result as
--- JSON. The policies choice's unlock gives the cost.
+-- Pays the gold or faith that lets the player change policies and the
+-- government on a turn with no civic completed, as the unlock buttons do, and
+-- returns the result as JSON. The policies and governments choices' unlock
+-- gives the cost.
 function SentientSystems_UnlockPolicies(playerID)
 	return SentientSystems_RunAction("UnlockPolicies", UnlockPolicies, playerID)
+end
+
+-- Returns the row of the government to change to, or nil and why the player
+-- can't change to it.
+local function FindGovernment(culture, typeName)
+	local row = type(typeName) == "string" and GameInfo.Governments[typeName] or nil
+
+	if row == nil then
+		return nil, tostring(typeName) .. " isn't a government. Use a type from the governments choice."
+	end
+
+	if row.Index == culture:GetCurrentGovernment() then
+		return nil, typeName .. " is your government already."
+	end
+
+	if not culture:IsGovernmentUnlocked(row.Hash) then
+		return nil, typeName .. " isn't unlocked yet. The governments choice gives the civic it needs."
+	end
+
+	return row, nil
+end
+
+-- Sends the screen's request once the player confirms the change. See
+-- OnGovernmentSelected in GovernmentScreen.lua, and OnAcceptGovernmentChange.
+local function SetGovernment(playerID, typeName)
+	local culture = SentientSystems_GetPlayer(playerID):GetCulture()
+	local failure = SentientSystems_GetGovernmentChangeFailure(playerID, culture)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local row
+
+	row, failure = FindGovernment(culture, typeName)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	if not culture:RequestChangeGovernment(row.Hash) then
+		return "The game refused the change to " .. typeName .. "."
+	end
+
+	return nil
+end
+
+-- Changes the player's government, as the View Governments tab does, and
+-- returns the result as JSON. government is a type from the governments
+-- choice. A government with anarchy turns starts after them.
+function SentientSystems_SetGovernment(playerID, government)
+	return SentientSystems_RunAction("SetGovernment", SetGovernment, playerID, government)
 end

@@ -168,28 +168,20 @@ local function GetGovernmentOption(culture, row, currentIndex)
 	return option
 end
 
--- Returns the government options. The tab shows the unlock button only with a
--- government in place and another unlocked. See IsAbleToChangeGovernment in
--- GovernmentScreen.lua.
+-- Returns the government options, with the screen's rules for a change and for
+-- the unlock from SentientSystemsCore_Government.lua.
 function SentientSystems_GetGovernmentOptions(player)
 	local culture = player:GetCulture()
 	local currentIndex = culture:GetCurrentGovernment()
-	local options, unlocked = {}, 0
+	local options = {}
 
 	for row in GameInfo.Governments() do
 		options[#options + 1] = GetGovernmentOption(culture, row, currentIndex)
-
-		if culture:IsGovernmentUnlocked(row.Hash) then
-			unlocked = unlocked + 1
-		end
 	end
 
 	return {
-		canChange = culture:CanChangeGovernmentAtAll()
-			and not culture:GovernmentChangeMade()
-			and Game.IsAllowStrategicCommands(player:GetID())
-			and (currentIndex == -1 or culture:CivicCompletedThisTurn()),
-		unlock = SentientSystems_GetUnlock(player, culture, culture:GovernmentChangeMade() or unlocked <= 1 or currentIndex == -1),
+		canChange = SentientSystems_GetGovernmentChangeFailure(player:GetID(), culture) == nil,
+		unlock = SentientSystems_GetUnlock(player, culture, SentientSystems_IsGovernmentUnlockHidden(culture)),
 		options = options,
 	}
 end

@@ -14,7 +14,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [unit-jobs.md](unit-jobs.md) | Builder jobs, adding production, great people, and religious units |
 | [cities.md](cities.md) | Production, purchases, trade routes, and spy missions |
 | [research.md](research.md) | The tech and the civic in research, and their queues |
-| [government.md](government.md) | The policies in a government's slots, and the paid unlock |
+| [government.md](government.md) | The policies in a government's slots, the paid unlock, and a change of government |
 
 ### Results
 

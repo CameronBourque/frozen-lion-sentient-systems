@@ -44,8 +44,8 @@ An action is one Lua function that the bridge calls to run a request function of
 | Fake game feature | `mod/Test/FakeGame/<Name>.lua`, and its `FakeGame.Register` line in `mod/Test/FakeGame.lua` |
 | Player request fake | `env.UI.RequestPlayerOperation` and `env.PlayerOperations` in `mod/Test/FakeGame/PlayerOperations.lua`, which put each request in `env.requests` |
 | Research kinds | `SENTIENTSYSTEMS_RESEARCH_KINDS` in `mod/Scripts/SentientSystemsCore_Research.lua`, which the research choices, trees, and actions share |
-| Government rules | `SentientSystems_GetPolicyChangeFailure`, `SentientSystems_IsPolicyAvailable`, and `SentientSystems_GetUnlock` in `mod/Scripts/SentientSystemsCore_Government.lua`, which the government choices and the policy actions share |
-| Policy request fake | `RequestPolicyChanges` on the culture in `mod/Test/FakeGame/Governments.lua`, which puts each change in `env.requests` |
+| Government rules | The change rules, the policy check, and the unlock in `mod/Scripts/SentientSystemsCore_Government.lua`, which the government choices and the policy and government actions share |
+| Policy request fake | `RequestPolicyChanges` and `RequestChangeGovernment` on the culture in `mod/Test/FakeGame/Governments.lua`, which put each change in `env.requests` |
 
 ## Parts of a choice
 

@@ -1,7 +1,7 @@
 // Tests for policies.ts, against the fake game.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { setPolicies, unlockPolicies } from "../../src/actions/policies.js";
+import { setGovernment, setPolicies, unlockPolicies } from "../../src/actions/policies.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -39,5 +39,16 @@ describe("unlockPolicies", () => {
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
 
 		expect(await unlockPolicies(client, 0)).toEqual({ ok: true });
+	});
+});
+
+describe("setGovernment", () => {
+	test("sends the government's type", async () => {
+		const { game, client } = await startGame();
+		const stash = "SentientSystems_Stash(SentientSystems_SetGovernment(0, \"GOVERNMENT_AUTOCRACY\"))";
+
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
+
+		expect(await setGovernment(client, 0, "GOVERNMENT_AUTOCRACY")).toEqual({ ok: true });
 	});
 });

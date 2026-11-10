@@ -20,3 +20,10 @@ export function setPolicies(client: TunerClient, playerID: number, slots: (strin
 export function unlockPolicies(client: TunerClient, playerID: number): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_UnlockPolicies(${playerID})`);
 }
+
+// Changes the player's government to a type from the governments choice, such
+// as GOVERNMENT_AUTOCRACY. An ok result means the game took the change. A
+// government with anarchy turns starts after them.
+export function setGovernment(client: TunerClient, playerID: number, government: string): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_SetGovernment(${playerID}, ${JSON.stringify(government)})`);
+}
