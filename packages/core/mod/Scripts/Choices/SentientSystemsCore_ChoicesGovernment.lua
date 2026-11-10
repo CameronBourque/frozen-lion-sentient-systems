@@ -61,32 +61,6 @@ local function GetPolicyOptions(culture)
 	return next(options) ~= nil and options or nil
 end
 
--- Returns the button to pay to change policies and governments, as the screen
--- shows it, or nil when hidden is true or the cost is 0. blocked lists the
--- screen's text when the player can't afford it, and is empty while the World
--- Congress is in session. See RealizeActivePoliciesRows in
--- GovernmentScreen.lua, RealizeGovernmentsPage, and IsReadOnly in
--- GovernmentScreen_Expansion2.lua.
-local function GetUnlock(player, culture, hidden)
-	local cost = culture:GetCostToUnlockPolicies()
-
-	if hidden or cost == 0 then
-		return nil
-	end
-
-	local byFaith = GlobalParameters.GOVERNMENT_UNLOCK_WITH_FAITH ~= 0
-	local unlock = { cost = cost, yield = byFaith and "YIELD_FAITH" or "YIELD_GOLD" }
-	local balance = byFaith and player:GetReligion():GetFaithBalance() or player:GetTreasury():GetGoldBalance()
-
-	if balance < cost then
-		unlock.blocked = { SentientSystems_LookupText(byFaith and "LOC_GOVT_NEED_FAITH" or "LOC_GOVT_NEED_GOLD", cost) }
-	elseif SentientSystems_HasExpansion2() and Game.GetWorldCongress():IsInSession() then
-		unlock.blocked = {}
-	end
-
-	return unlock
-end
-
 -- Returns the policy choice. The policies tab hides the unlock button after a
 -- policy change this turn.
 function SentientSystems_GetPolicyChoices(player)
@@ -94,7 +68,7 @@ function SentientSystems_GetPolicyChoices(player)
 
 	return {
 		canChange = SentientSystems_GetPolicyChangeFailure(player:GetID(), culture) == nil,
-		unlock = GetUnlock(player, culture, culture:PolicyChangeMade()),
+		unlock = SentientSystems_GetUnlock(player, culture, culture:PolicyChangeMade()),
 		options = GetPolicyOptions(culture),
 	}
 end
@@ -215,7 +189,7 @@ function SentientSystems_GetGovernmentOptions(player)
 			and not culture:GovernmentChangeMade()
 			and Game.IsAllowStrategicCommands(player:GetID())
 			and (currentIndex == -1 or culture:CivicCompletedThisTurn()),
-		unlock = GetUnlock(player, culture, culture:GovernmentChangeMade() or unlocked <= 1 or currentIndex == -1),
+		unlock = SentientSystems_GetUnlock(player, culture, culture:GovernmentChangeMade() or unlocked <= 1 or currentIndex == -1),
 		options = options,
 	}
 end

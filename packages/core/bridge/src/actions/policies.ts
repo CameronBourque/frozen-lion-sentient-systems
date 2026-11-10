@@ -13,3 +13,10 @@ export function setPolicies(client: TunerClient, playerID: number, slots: (strin
 
 	return sendAction(client, `SentientSystems_SetPolicies(${playerID}, {${entries.join(", ")}})`);
 }
+
+// Pays the cost of the policies choice's unlock, which lets the player change
+// policies on a turn with no civic completed. An ok result means the game took
+// the request.
+export function unlockPolicies(client: TunerClient, playerID: number): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_UnlockPolicies(${playerID})`);
+}

@@ -143,3 +143,58 @@ end
 function SentientSystems_SetPolicies(playerID, slots)
 	return SentientSystems_RunAction("SetPolicies", SetPolicies, playerID, slots)
 end
+
+-- Returns why the player can't pay the unlock, or nil when they can. The
+-- action follows the policies tab, which hides the unlock after a change this
+-- turn.
+local function GetUnlockFailure(playerID)
+	if not Game.IsAllowStrategicCommands(playerID) then
+		return "You can't pay the unlock while it isn't your turn."
+	end
+
+	local player = SentientSystems_GetPlayer(playerID)
+	local culture = player:GetCulture()
+
+	if culture:PolicyChangeMade() then
+		return "You changed policies this turn already."
+	end
+
+	local unlock = SentientSystems_GetUnlock(player, culture, false)
+
+	if unlock == nil then
+		return "There's no unlock to pay for now."
+	end
+
+	if unlock.blocked == nil then
+		return nil
+	end
+
+	if #unlock.blocked == 0 then
+		return "You can't pay the unlock while the World Congress is in session."
+	end
+
+	local yield = unlock.yield == "YIELD_FAITH" and "faith" or "gold"
+
+	return "You can't afford the unlock's " .. unlock.cost .. " " .. yield .. "."
+end
+
+-- Sends the unlock button's request. See OnUnlockPolicies in
+-- GovernmentScreen.lua.
+local function UnlockPolicies(playerID)
+	local failure = GetUnlockFailure(playerID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	UI.RequestPlayerOperation(playerID, PlayerOperations.UNLOCK_POLICIES, {})
+
+	return nil
+end
+
+-- Pays the gold or faith that lets the player change policies on a turn with
+-- no civic completed, as the unlock button does, and returns the result as
+-- JSON. The policies choice's unlock gives the cost.
+function SentientSystems_UnlockPolicies(playerID)
+	return SentientSystems_RunAction("UnlockPolicies", UnlockPolicies, playerID)
+end

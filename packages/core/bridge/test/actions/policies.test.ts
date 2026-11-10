@@ -1,7 +1,7 @@
 // Tests for policies.ts, against the fake game.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { setPolicies } from "../../src/actions/policies.js";
+import { setPolicies, unlockPolicies } from "../../src/actions/policies.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -28,5 +28,16 @@ describe("setPolicies", () => {
 		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify({ ok: false, reason })] } })[lua] ?? {};
 
 		expect(await setPolicies(client, 0, [])).toEqual({ ok: false, reason });
+	});
+});
+
+describe("unlockPolicies", () => {
+	test("sends the player's unlock", async () => {
+		const { game, client } = await startGame();
+		const stash = "SentientSystems_Stash(SentientSystems_UnlockPolicies(0))";
+
+		game.onCommand = (_stateIndex, lua) => ({ [stash]: { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] } })[lua] ?? {};
+
+		expect(await unlockPolicies(client, 0)).toEqual({ ok: true });
 	});
 });

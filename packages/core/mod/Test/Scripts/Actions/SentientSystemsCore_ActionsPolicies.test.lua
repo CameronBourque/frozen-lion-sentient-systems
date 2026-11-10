@@ -26,11 +26,13 @@ local NO_CIVIC = {
 local GOVERNMENT = With(NO_CIVIC, { civicThisTurn = "CIVIC_CODE_OF_LAWS" })
 
 -- Returns an environment with the actions loaded into a fake game that has
--- player 0 with the government, and the other fields of the player.
-local function Load(government, player)
+-- player 0 with the government, and the other fields of the player and the
+-- world.
+local function Load(government, player, world)
 	local env = Game.new()
+	local players = { [0] = With({ government = government or GOVERNMENT, policies = POLICIES }, player or {}) }
 
-	FakeGame.Install(env, { players = { [0] = With({ government = government or GOVERNMENT, policies = POLICIES }, player or {}) } })
+	FakeGame.Install(env, With({ players = players }, world or {}))
 	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
 
 	return env
@@ -132,5 +134,37 @@ describe("SentientSystems_SetPolicies", function()
 		local env = Load(With(NO_CIVIC, { slotsOpen = 1 }))
 
 		assert.equal("{\"ok\":true}", env.SentientSystems_SetPolicies(0, { [0] = "POLICY_SURVEY", [1] = "POLICY_GOD_KING", [2] = false }))
+	end)
+end)
+
+describe("SentientSystems_UnlockPolicies", function()
+	-- No civic this turn, with the unlock for 50.
+	local LOCKED = With(NO_CIVIC, { unlockCost = 50 })
+
+	it("sends the unlock button's request", function()
+		local env = Load(LOCKED, { gold = 50 })
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnlockPolicies(0))
+		assert.same({ { player = 0, operation = env.PlayerOperations.UNLOCK_POLICIES, parameters = {} } }, env.requests)
+	end)
+
+	it("fails for an unlock the player can't afford, and sends nothing", function()
+		local env = Load(LOCKED, { gold = 49 })
+
+		assert.equal(Failed("You can't afford the unlock's 50 gold."), env.SentientSystems_UnlockPolicies(0))
+		assert.equal(Failed("You can't afford the unlock's 50 faith."), Load(LOCKED, { gold = 50, faith = 49 }, { unlockWithFaith = true }).SentientSystems_UnlockPolicies(0))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails while the World Congress is in session", function()
+		local env = Load(LOCKED, { gold = 50 }, { expansion2 = true, congressInSession = true })
+
+		assert.equal(Failed("You can't pay the unlock while the World Congress is in session."), env.SentientSystems_UnlockPolicies(0))
+	end)
+
+	it("fails with no unlock, after a change this turn, and on another's turn", function()
+		assert.equal(Failed("There's no unlock to pay for now."), Load(GOVERNMENT, { gold = 50 }).SentientSystems_UnlockPolicies(0))
+		assert.equal(Failed("You changed policies this turn already."), Load(With(LOCKED, { changeMade = true }), { gold = 50 }).SentientSystems_UnlockPolicies(0))
+		assert.equal(Failed("You can't pay the unlock while it isn't your turn."), Load(LOCKED, { gold = 50, noStrategicCommands = true }).SentientSystems_UnlockPolicies(0))
 	end)
 end)

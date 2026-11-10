@@ -1,6 +1,6 @@
 # Policy actions
 
-How the core mod runs the action that sets the policies in a government's slots. Part of the [action API](README.md).
+How the core mod runs the actions that set the policies in a government's slots and pay the unlock. Part of the [action API](README.md).
 
 ## Policies
 
@@ -20,6 +20,16 @@ Then the reasons name a list that doesn't give every slot once, a type that is n
 
 On the bridge, `setPolicies` in `src/actions/policies.ts` takes a list by slot number, with `null` for an empty slot.
 
+## Unlock
+
+`SentientSystems_UnlockPolicies(playerID)` in the same file pays the cost of the `policies` choice's `unlock`, as the unlock button does. It lets the player change policies on a turn with no civic completed.
+
+`SentientSystems_GetUnlock` in `Scripts/SentientSystemsCore_Government.lua` builds the choice's `unlock`, and the action reads its checks from it. So the action takes the unlock exactly when the choice shows it as open.
+
+Its reasons, in order, name a turn that isn't the player's, a policy change made this turn already, no unlock to pay for, a World Congress in session, and a cost the player can't afford.
+
+On the bridge, `unlockPolicies` in `src/actions/policies.ts` takes only the player.
+
 ## Decisions
 
 | Decision | Reason |
@@ -29,3 +39,5 @@ On the bridge, `setPolicies` in `src/actions/policies.ts` takes a list by slot n
 | The action follows the screen's rule for when a change is allowed | The game takes a change at any time, which a player can't make |
 | A set that matches the slots is refused | A request marks the turn's change as made, so the agent would lose its change for nothing |
 | The choice's `canChange` and the action share one function that returns the reason | The two can't disagree, and the reason comes with the check |
+| The unlock action follows the policies tab, which hides the unlock after a policy change this turn | The government tab's own rule comes with the government action |
+| The unlock action and the choice's `unlock` share one function | The action pays only an unlock the choice shows as open |

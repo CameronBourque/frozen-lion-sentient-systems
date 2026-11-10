@@ -15,6 +15,7 @@ return function(env, world, ctx)
 		PARAM_INSERT_MODE = 15,
 		VALUE_EXCLUSIVE = 16,
 		VALUE_APPEND = 17,
+		UNLOCK_POLICIES = 18,
 	}
 	env.UI = env.UI or {}
 

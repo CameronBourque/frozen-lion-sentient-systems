@@ -1,6 +1,6 @@
 # Policy actions
 
-Status: confirmed. Setting the policies in every slot, and what the game takes and refuses, are confirmed in a running game with Gathering Storm.
+Status: confirmed. Setting the policies in every slot, paying the unlock, and what the game takes and refuses, are confirmed in a running game with Gathering Storm.
 
 The game calls that the policy actions wrap, with the Lua state they run in and what the game checks. The slots and the policies the player can slot are in [choices/government.md](../choices/government.md).
 
@@ -8,7 +8,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. Does `CanSlotPolicy` let a wildcard slot take a policy of any type, as the screen does? The test government had no wildcard slot, so the action follows the screen's rule.
+1. Does `CanSlotPolicy` let a wildcard slot take a policy of any type, as the screen does? The test government had no wildcard slot, so the action follows the screen's rule. The government task checks it under a government with a wildcard slot.
 
 ## What we know now
 
@@ -22,6 +22,14 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
   No expansion replaces the rule. Only `DLC/BlackDeathScenario` does. Confirmed in files.
 - Gathering Storm's `IsReadOnly` only disables the unlock button while the World Congress is in session. The slots stay open to change. Confirmed in files.
+
+### Paying the unlock
+
+`OnUnlockPolicies` in `GovernmentScreen.lua` sends `UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.UNLOCK_POLICIES, {})`. `OnUnlockGovernments` sends the same request, so one payment opens both tabs. Confirmed in files.
+
+- The policies tab hides the button after a policy change this turn, or when `GetCostToUnlockPolicies()` is 0. It disables it when the player can't afford it, and in Gathering Storm while the World Congress is in session. See [choices/government.md](../choices/government.md#what-we-know-now).
+- The action runs in `SentientSystemsCore_UI`, and follows the policies tab.
+- After the request, the gold balance dropped by the cost, `GetCostToUnlockPolicies()` returned 0, and `CivicCompletedThisTurn()` returned `true`, so the policies choice's `canChange` became `true`. Confirmed on Windows on 2026-11-09.
 
 ### The game's checks
 
@@ -37,7 +45,8 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 1. Send the file's code to `SentientSystemsCore_UI` as in [choices/production.md](../choices/production.md#method), step 4. Send `Scripts/SentientSystemsCore_Government.lua` first, then the government choices and the policy actions files.
 2. Call `setPolicies` from the bridge. Wait 1.5 seconds, then read each slot's `GetSlotPolicy(i)` and `PolicyChangeMade()`.
 3. To allow a change on a turn with no civic completed, pay the unlock with `UI.RequestPlayerOperation(0, PlayerOperations.UNLOCK_POLICIES, {})`. It spends the gold.
-4. To see what the game takes, call `RequestPolicyChanges` with a policy in a slot of another type, or after a change this turn.
+4. To give the player gold for the unlock, in `GameCore_Tuner`, send `Players[0]:GetTreasury():ChangeGoldBalance(100)`.
+5. To see what the game takes, call `RequestPolicyChanges` with a policy in a slot of another type, or after a change this turn.
 
 ## Results
 
@@ -51,5 +60,9 @@ A single-player game with Gathering Storm, on Rome's save, in `SentientSystemsCo
 | `setPolicies(["POLICY_SURVEY", "POLICY_ILKUM"])`, the policies in the slots | `Your slots hold those policies already.` |
 | `setPolicies(["POLICY_DISCIPLINE"])` | The reason that names the 2 slots |
 | `setPolicies(["POLICY_DISCIPLINE", "POLICY_GOD_KING"])` | `{"ok":true}`. The slots held Discipline and God King, and `canChange` became `false` |
+| `unlockPolicies(0)` on turn 17, after the change | `You changed policies this turn already.` |
+| `unlockPolicies(0)` on turn 18, with 46 gold and a cost of 90 | `You can't afford the unlock's 90 gold.` |
+| `unlockPolicies(0)`, after 100 gold was added | `{"ok":true}`. The gold went from 146 to 56, the cost to 0, and `canChange` became `true` |
+| `unlockPolicies(0)` again | `There's no unlock to pay for now.` |
 
 Date checked: 2026-11-09.
