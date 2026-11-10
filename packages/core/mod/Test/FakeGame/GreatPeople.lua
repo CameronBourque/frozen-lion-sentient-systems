@@ -6,8 +6,7 @@ return function(env, world, ctx)
 	local AddRow, indexes, YIELD_TYPES = ctx.AddRow, ctx.indexes, ctx.YIELD_TYPES
 
 	env.GameInfo.GreatPersonClasses = {}
-	env.GameInfo.GreatPersonIndividuals = {}
-
+	env.GameInfo.GreatPersonIndividuals = ctx.TypedRows({}, "GreatPersonIndividualType")
 
 	-- Each great person on offer gets rows for its class, era, and individual.
 	for _, person in ipairs(world.greatPeople or {}) do

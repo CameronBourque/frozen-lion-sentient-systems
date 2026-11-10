@@ -1,5 +1,5 @@
-// Schemas that several sections of the state, the choices, and the placement
-// share.
+// Schemas and types that several sections of the state, the choices, the
+// placement, and the actions share.
 
 import { z } from "zod";
 
@@ -14,6 +14,10 @@ export const CITY_REF = CITY_ID.extend({ name: z.string().describe("In the game'
 export const POSITION = z.object({ x: z.number(), y: z.number() });
 
 export type Position = z.infer<typeof POSITION>;
+
+// A yield the player spends to buy a unit, a building, or a great person, by
+// its key in the purchases choice and the great people state.
+export type PurchaseYield = "gold" | "faith";
 
 // A tech's or a civic's boost, as the research choice and the tree show it.
 export const BOOST = z.object({

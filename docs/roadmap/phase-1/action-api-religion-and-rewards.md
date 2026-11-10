@@ -5,7 +5,7 @@ Add the actions for the pantheon, great person, religion, governor, and envoy bl
 ## Tasks
 
 1. **Pantheon.** Add an action that founds a pantheon with one belief. Read the call from `PantheonChooser.lua`, as [findings/choices/religion.md](../../findings/choices/religion.md#pantheon) describes. Add the typed function to `packages/core/bridge/src/actions/religion.ts`. Commit: `feat(core): add the pantheon action`.
-2. **Great people.** Add an action that claims a great person. Read the call from `GreatPeoplePopup.lua`. Claim a Great Prophet to set up the next task. Commit: `feat(core): add the great person action`.
+2. **Great people.** Add actions that recruit, pass, and patronize a great person. Read the calls from `GreatPeoplePopup.lua`. Claim a Great Prophet to set up the next task. Commit: `feat(core): add the great person actions`.
 3. **Found a religion.** Add an action that founds a religion with its name and its two starting beliefs, as `ReligionScreen.lua` sends them. Check that the first belief is a follower belief and the second is from another class. Commit: `feat(core): add the found religion action`.
 4. **Add a belief.** Add an action that adds one belief to a founded religion, after an Apostle evangelizes. Check that the religion has a belief pick left and has no belief of that class. Commit: `feat(core): add the belief action`.
 5. **Governors.** Add actions for appointing a governor, taking an opportunity, promoting, and assigning an idle governor. Read the calls from `GovernorPanel.lua`. Commit: `feat(core): add the governor actions`.

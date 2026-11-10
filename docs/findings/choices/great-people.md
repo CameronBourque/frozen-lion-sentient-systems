@@ -29,12 +29,12 @@ Confirmed in files.
   Sun Tzu and Themistocles had `PassiveNameText` "Passive Effect", and the other 7 an empty one. Confirmed in files and on Windows on 2026-10-26.
 - **Recruit and pass.** `AddRecruit`, lines 265 to 287, shows **Recruit** when `CanRecruitPerson(playerID, individual)` is `true` and **Pass** when `CanRejectPerson` is, each with its capability, `CAPABILITY_GREAT_PEOPLE_CAN_RECRUIT` and `CAPABILITY_GREAT_PEOPLE_CAN_REJECT`.
 
-  `GetRejectCost` is the points passing costs, 6 for a 30-point great person. Recruiting sends `PlayerOperations.RECRUIT_GREAT_PERSON`, and passing `REJECT_GREAT_PERSON`, each with the individual in `PARAM_GREAT_PERSON_INDIVIDUAL_TYPE`.
+  `GetRejectCost` is the points passing costs, 6 for a 30-point great person. The requests are in [actions/great-people-screen.md](../actions/great-people-screen.md#requests).
 
   With 42 scientist points from the tuner, the player could recruit Aryabhata or pass, and `ENDTURN_BLOCKING_CLAIM_GREAT_PERSON` was among the blockers. Confirmed in files and on Windows on 2026-10-26.
 - **Patronage.** Lines 241 to 262 show a gold and a faith button, each with `CAPABILITY_GREAT_PEOPLE_RECRUIT_WITH_GOLD` or `_FAITH`, while the player can neither recruit nor pass the great person and `GetPatronizeCost(playerID, individual, YieldTypes.GOLD)` is below 1,000,000.
 
-  `CanPatronizePerson` turns the button on, and `IsReadOnly` turns it off. Patronizing sends `PlayerOperations.PATRONIZE_GREAT_PERSON` with the yield in `PARAM_YIELD_TYPE`.
+  `CanPatronizePerson` turns the button on, and `IsReadOnly` turns it off.
 
   Sun Tzu cost 650 gold or 450 faith, and the button for gold turned on once the player had 722 gold. Confirmed in files and on Windows on 2026-10-26.
 - **Can't earn.** `GetEarnConditionsText` gives the reason the player can't earn a great person, which the screen shows as **Cannot Recruit**, and an empty text otherwise.
