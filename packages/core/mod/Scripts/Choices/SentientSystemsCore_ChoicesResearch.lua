@@ -3,75 +3,9 @@
 -- Shape: bridge/src/choices/research.ts.
 
 SentientSystems_Include("SentientSystemsCore_Text")
+SentientSystems_Include("SentientSystemsCore_Research")
 
--- The game's calls for techs and for civics. Each reads from the player's
--- store: GetTechs for techs, and GetCulture for civics.
-local KINDS = {
-	tech = {
-		rows = function()
-			return GameInfo.Technologies()
-		end,
-		typeColumn = "TechnologyType",
-		store = function(player)
-			return player:GetTechs()
-		end,
-		current = function(store)
-			return store:GetResearchingTech()
-		end,
-		canProgress = function(store, index)
-			return store:CanResearch(index)
-		end,
-		cost = function(store, index)
-			return store:GetResearchCost(index)
-		end,
-		progress = function(store, index)
-			return store:GetResearchProgress(index)
-		end,
-		turns = function(store, index)
-			return store:GetTurnsToResearch(index)
-		end,
-		recommendations = function(strategicAI)
-			return strategicAI:GetTechRecommendations()
-		end,
-		hashField = "TechHash",
-		-- The game's function from TechAndCivicUnlockables.lua, read when it is
-		-- called, as the file may load later.
-		unlocksFunction = function()
-			return GetUnlockablesForTech
-		end,
-	},
-	civic = {
-		rows = function()
-			return GameInfo.Civics()
-		end,
-		typeColumn = "CivicType",
-		store = function(player)
-			return player:GetCulture()
-		end,
-		current = function(store)
-			return store:GetProgressingCivic()
-		end,
-		canProgress = function(store, index)
-			return store:CanProgress(index)
-		end,
-		cost = function(store, index)
-			return store:GetCultureCost(index)
-		end,
-		progress = function(store, index)
-			return store:GetCulturalProgress(index)
-		end,
-		turns = function(store, index)
-			return store:GetTurnsToProgressCivic(index)
-		end,
-		recommendations = function(strategicAI)
-			return strategicAI:GetCivicsRecommendations()
-		end,
-		hashField = "CivicHash",
-		unlocksFunction = function()
-			return GetUnlockablesForCivic
-		end,
-	},
-}
+local KINDS = SENTIENTSYSTEMS_RESEARCH_KINDS
 
 -- Returns the boost of a tech or civic, with its percent of the cost, the text
 -- of its trigger, and whether it has been triggered, or nil for one with no
@@ -135,6 +69,19 @@ local function UnlocksReader(kind, playerID)
 	end
 end
 
+-- Returns the position of each index in the queue, from 1 for the one in
+-- research, as the chooser and the tree screen number them. See GetData in
+-- ResearchChooser.lua and RealizePathMarkers in TechTree.lua.
+local function QueuePositions(kind, store)
+	local positions = {}
+
+	for position, index in pairs(kind.queue(store) or {}) do
+		positions[index] = position
+	end
+
+	return positions
+end
+
 -- Returns a reader of the player's techs or civics, by kind, "tech" or "civic".
 -- reader.store is the player's store, reader.current the index of the one in
 -- research, or -1, and reader.Option(row) returns a row's option, as the
@@ -144,6 +91,7 @@ function SentientSystems_GetResearchReader(kindName, player)
 	local store = kind.store(player)
 	local recommended = Recommended(kind, player)
 	local unlocksOf = UnlocksReader(kind, player:GetID())
+	local queued = QueuePositions(kind, store)
 	local reader = { kind = kind, store = store, current = kind.current(store) }
 
 	function reader.Option(row)
@@ -173,21 +121,29 @@ function SentientSystems_GetResearchReader(kindName, player)
 			option.recommended = true
 		end
 
+		option.queue = queued[row.Index]
+
 		return option
 	end
 
 	return reader
 end
 
+-- Returns whether the chooser lists the row: the one in research, or one the
+-- player can research now. See GetData in ResearchChooser.lua, and in
+-- CivicsChooser.lua.
+local function IsResearchOption(reader, index)
+	return index == reader.current or reader.kind.canProgress(reader.store, index)
+end
+
 -- Returns a list of the techs or civics the player can research now, and the
--- one in research, in the game's order. See GetData in ResearchChooser.lua, and
--- in CivicsChooser.lua.
+-- one in research, in the game's order.
 local function GetResearchChoices(kindName, player)
 	local reader = SentientSystems_GetResearchReader(kindName, player)
 	local options = {}
 
 	for row in reader.kind.rows() do
-		if row.Index == reader.current or reader.kind.canProgress(reader.store, row.Index) then
+		if IsResearchOption(reader, row.Index) then
 			local option = reader.Option(row)
 
 			if row.Index == reader.current then

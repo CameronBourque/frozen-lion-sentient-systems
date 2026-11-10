@@ -2,6 +2,8 @@
 -- Follows GovernmentScreen.lua and its replacements in DLC/Expansion1 and 2.
 -- Shape: bridge/src/choices/government.ts.
 
+SentientSystems_Include("SentientSystemsCore_Government")
+
 -- Returns the player's government and its policy slots. See
 -- PopulateLivePlayerData in GovernmentScreen.lua.
 function SentientSystems_GetGovernmentChoices(player)
@@ -26,17 +28,6 @@ function SentientSystems_GetGovernmentChoices(player)
 	}
 end
 
--- Returns whether the policy catalog shows a policy, active or not. See
--- IsPolicyAvailable in GovernmentScreen.lua, and its replacement in
--- GovernmentScreen_Expansion2.lua.
-local function IsPolicyAvailable(culture, hash)
-	if SentientSystems_HasExpansion2() then
-		return not culture:IsPolicyBanned(hash) and culture:CanPolicyBeSlotted(hash) and not culture:IsPolicyObsolete(hash)
-	end
-
-	return culture:IsPolicyUnlocked(hash) and not culture:IsPolicyObsolete(hash)
-end
-
 -- Returns the policies the catalog shows, by slot type, each list in type
 -- order, as the catalog sorts them, or nil for none. A slotted policy is left
 -- out, as the catalog leaves it out. See RealizePolicyCatalog in
@@ -46,7 +37,7 @@ local function GetPolicyOptions(culture)
 	local options = {}
 
 	for row in GameInfo.Policies() do
-		if IsPolicyAvailable(culture, row.Hash) and not culture:IsPolicyActive(row.Hash) then
+		if SentientSystems_IsPolicyAvailable(culture, row.Hash) and not culture:IsPolicyActive(row.Hash) then
 			local list = options[row.GovernmentSlotType] or {}
 			local option = { type = row.PolicyType, description = SentientSystems_LookupText(row.Description) }
 
@@ -70,42 +61,14 @@ local function GetPolicyOptions(culture)
 	return next(options) ~= nil and options or nil
 end
 
--- Returns the button to pay to change policies and governments, as the screen
--- shows it, or nil when hidden is true or the cost is 0. blocked lists the
--- screen's text when the player can't afford it, and is empty while the World
--- Congress is in session. See RealizeActivePoliciesRows in
--- GovernmentScreen.lua, RealizeGovernmentsPage, and IsReadOnly in
--- GovernmentScreen_Expansion2.lua.
-local function GetUnlock(player, culture, hidden)
-	local cost = culture:GetCostToUnlockPolicies()
-
-	if hidden or cost == 0 then
-		return nil
-	end
-
-	local byFaith = GlobalParameters.GOVERNMENT_UNLOCK_WITH_FAITH ~= 0
-	local unlock = { cost = cost, yield = byFaith and "YIELD_FAITH" or "YIELD_GOLD" }
-	local balance = byFaith and player:GetReligion():GetFaithBalance() or player:GetTreasury():GetGoldBalance()
-
-	if balance < cost then
-		unlock.blocked = { SentientSystems_LookupText(byFaith and "LOC_GOVT_NEED_FAITH" or "LOC_GOVT_NEED_GOLD", cost) }
-	elseif SentientSystems_HasExpansion2() and Game.GetWorldCongress():IsInSession() then
-		unlock.blocked = {}
-	end
-
-	return unlock
-end
-
 -- Returns the policy choice. The policies tab hides the unlock button after a
--- policy change this turn. See IsAbleToChangePolicies in GovernmentScreen.lua.
+-- policy change this turn.
 function SentientSystems_GetPolicyChoices(player)
 	local culture = player:GetCulture()
 
 	return {
-		canChange = (culture:CivicCompletedThisTurn() or culture:GetNumPolicySlotsOpen() > 0)
-			and Game.IsAllowStrategicCommands(player:GetID())
-			and not culture:PolicyChangeMade(),
-		unlock = GetUnlock(player, culture, culture:PolicyChangeMade()),
+		canChange = SentientSystems_GetPolicyChangeFailure(player:GetID(), culture) == nil,
+		unlock = SentientSystems_GetUnlock(player, culture, culture:PolicyChangeMade()),
 		options = GetPolicyOptions(culture),
 	}
 end
@@ -205,28 +168,20 @@ local function GetGovernmentOption(culture, row, currentIndex)
 	return option
 end
 
--- Returns the government options. The tab shows the unlock button only with a
--- government in place and another unlocked. See IsAbleToChangeGovernment in
--- GovernmentScreen.lua.
+-- Returns the government options, with the screen's rules for a change and for
+-- the unlock from SentientSystemsCore_Government.lua.
 function SentientSystems_GetGovernmentOptions(player)
 	local culture = player:GetCulture()
 	local currentIndex = culture:GetCurrentGovernment()
-	local options, unlocked = {}, 0
+	local options = {}
 
 	for row in GameInfo.Governments() do
 		options[#options + 1] = GetGovernmentOption(culture, row, currentIndex)
-
-		if culture:IsGovernmentUnlocked(row.Hash) then
-			unlocked = unlocked + 1
-		end
 	end
 
 	return {
-		canChange = culture:CanChangeGovernmentAtAll()
-			and not culture:GovernmentChangeMade()
-			and Game.IsAllowStrategicCommands(player:GetID())
-			and (currentIndex == -1 or culture:CivicCompletedThisTurn()),
-		unlock = GetUnlock(player, culture, culture:GovernmentChangeMade() or unlocked <= 1 or currentIndex == -1),
+		canChange = SentientSystems_GetGovernmentChangeFailure(player:GetID(), culture) == nil,
+		unlock = SentientSystems_GetUnlock(player, culture, SentientSystems_IsGovernmentUnlockHidden(culture)),
 		options = options,
 	}
 end

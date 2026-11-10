@@ -5,16 +5,17 @@
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Json")
 SentientSystems_Include("SentientSystemsCore_Lookups")
+SentientSystems_Include("SentientSystemsCore_Research")
 SentientSystems_Include("SentientSystemsCore_ChoicesResearch")
 
--- Returns the number of rows that the player has, and the latest era of those
--- rows, or nil when the player has none. has(store, index) checks a row in the
--- player's store.
-local function Researched(rows, store, has)
+-- Returns the number of techs or civics that the player has, by kind, and the
+-- latest era of those, or nil when the player has none.
+local function Researched(kind, player)
+	local store = kind.store(player)
 	local count, highest = 0, nil
 
-	for row in rows() do
-		if has(store, row.Index) then
+	for row in kind.rows() do
+		if kind.has(store, row.Index) then
 			count = count + 1
 
 			if highest == nil or GameInfo.Eras[row.EraType].ChronologyIndex > GameInfo.Eras[highest].ChronologyIndex then
@@ -28,10 +29,7 @@ end
 
 -- The game's calls for the tech tree and the civic tree. Each screen lists the
 -- nodes from UITree, with the prerequisites the running game has. See
--- PopulateItemData in TechTree.lua, and in CivicsTree.lua. Without the Tech and
--- Civic Shuffle mode, a store may have no IsTechRevealed or IsCivicRevealed,
--- and every node is revealed. See GetCurrentData in TechTree.lua, and in
--- CivicsTree.lua.
+-- PopulateItemData in TechTree.lua, and in CivicsTree.lua.
 local TREES = {
 	tech = {
 		nodes = function()
@@ -40,18 +38,6 @@ local TREES = {
 		-- The field of a node that holds its type.
 		name = "Name",
 		prerequisites = "PrereqTechTypes",
-		row = function(name)
-			return GameInfo.Technologies[name]
-		end,
-		has = function(store, index)
-			return store:HasTech(index)
-		end,
-		revealed = function(store, index)
-			return store.IsTechRevealed == nil or store:IsTechRevealed(index)
-		end,
-		researched = function(player, has)
-			return Researched(GameInfo.Technologies, player:GetTechs(), has)
-		end,
 	},
 	civic = {
 		nodes = function()
@@ -61,25 +47,13 @@ local TREES = {
 		-- See PopulateItemData in CivicsTree.lua.
 		name = "CivicName",
 		prerequisites = "PrereqCivicTypes",
-		row = function(name)
-			return GameInfo.Civics[name]
-		end,
-		has = function(store, index)
-			return store:HasCivic(index)
-		end,
-		revealed = function(store, index)
-			return store.IsCivicRevealed == nil or store:IsCivicRevealed(index)
-		end,
-		researched = function(player, has)
-			return Researched(GameInfo.Civics, player:GetCulture(), has)
-		end,
 	},
 }
 
 -- Returns a node's status, as the tree screen colors it: researched, current,
 -- ready, or blocked. See GetCurrentData in TechTree.lua, and in CivicsTree.lua.
-local function Status(tree, reader, row)
-	if tree.has(reader.store, row.Index) then
+local function Status(reader, row)
+	if reader.kind.has(reader.store, row.Index) then
 		return "researched"
 	elseif row.Index == reader.current then
 		return "current"
@@ -99,7 +73,7 @@ local function NodeNames(tree, reader, nodes)
 	local hidden = 0
 
 	for _, node in ipairs(nodes) do
-		if tree.revealed(reader.store, tree.row(node[tree.name]).Index) then
+		if reader.kind.revealed(reader.store, reader.kind.row(node[tree.name]).Index) then
 			names[node[tree.name]] = node[tree.name]
 		else
 			hidden = hidden + 1
@@ -116,8 +90,8 @@ end
 -- shows no name, cost, boost, or unlocks. The node in research shows the turns
 -- from GetTurnsLeft. See PopulateNode in TechTree.lua, and in CivicsTree.lua.
 local function Node(tree, reader, node, names)
-	local row = tree.row(node[tree.name])
-	local status = Status(tree, reader, row)
+	local row = reader.kind.row(node[tree.name])
+	local status = Status(reader, row)
 	local entry
 
 	if names[node[tree.name]] == node[tree.name] then
@@ -160,7 +134,7 @@ end
 -- timeline at the bottom of the screen marks it. The era is left out for a
 -- player who has researched nothing. See GetCurrentData in TechTree.lua, and in
 -- CivicsTree.lua.
-local function PlayerProgress(tree, player)
+local function PlayerProgress(kind, player)
 	local players = {}
 	local diplomacy = player:GetDiplomacy()
 
@@ -168,7 +142,7 @@ local function PlayerProgress(tree, player)
 		local id = other:GetID()
 
 		if id == player:GetID() or diplomacy:HasMet(id) then
-			local researched, era = tree.researched(other, tree.has)
+			local researched, era = Researched(kind, other)
 
 			players[#players + 1] = { player = id, researched = researched, era = era }
 		end
@@ -190,7 +164,7 @@ local function GetTree(kindName, playerID)
 		entries[i] = Node(tree, reader, node, names)
 	end
 
-	return SentientSystems_EncodeJson({ nodes = entries, players = PlayerProgress(tree, player) })
+	return SentientSystems_EncodeJson({ nodes = entries, players = PlayerProgress(reader.kind, player) })
 end
 
 -- Returns the tech tree of the player with ID playerID as JSON. Raises an error

@@ -1,5 +1,5 @@
--- Techs and civics. Fakes a player's research, boosts, and tech tree, and its
--- science. FakeGame/TopBar.lua holds its culture.
+-- Techs and civics. Fakes a player's research, boosts, tech tree, and science.
+-- FakeGame/TopBar.lua holds its culture.
 
 return function(env, world, ctx)
 	local AddRow, indexes, hashes = ctx.AddRow, ctx.indexes, ctx.hashes
@@ -87,6 +87,31 @@ return function(env, world, ctx)
 			civicsByIndex[indexes[civic.type]] = civic
 		end
 
+		-- Returns the indexes of the types in a list, or nil for no list.
+		local function Indexes(types)
+			if types == nil then
+				return nil
+			end
+
+			local list = {}
+
+			for i, typeName in ipairs(types) do
+				list[i] = indexes[typeName]
+			end
+
+			return list
+		end
+
+		-- Returns the path to the option with the hash: its own path of types,
+		-- or the option alone, and nil for a researched one.
+		local function Path(optionsByIndex, hash)
+			for index, option in pairs(optionsByIndex) do
+				if hashes[option.type] == hash then
+					return not option.researched and Indexes(option.path or { option.type }) or nil
+				end
+			end
+		end
+
 		player.GetTechs = function()
 			return {
 				GetScienceYield = function()
@@ -121,6 +146,12 @@ return function(env, world, ctx)
 				end,
 				GetTurnsLeft = function()
 					return techData.turnsLeft or -1
+				end,
+				GetResearchPath = function(_, hash)
+					return Path(techsByIndex, hash)
+				end,
+				GetResearchQueue = function()
+					return Indexes(techData.queue or {})
 				end,
 			}
 		end
@@ -160,6 +191,14 @@ return function(env, world, ctx)
 
 			culture.GetTurnsLeft = function()
 				return civicData.turnsLeft or -1
+			end
+
+			culture.GetCivicPath = function(_, hash)
+				return Path(civicsByIndex, hash)
+			end
+
+			culture.GetCivicQueue = function()
+				return Indexes(civicData.queue or {})
 			end
 
 			culture.HasBoostBeenTriggered = function(_, index)

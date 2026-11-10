@@ -1,6 +1,6 @@
--- Governments and policies. Fakes a player's government, slots, and policies,
--- and the ruleset's governments. Registered after Research, whose Civics table
--- holds the civic completed this turn.
+-- Governments and policies. Fakes a player's government, slots, policies, and
+-- policy changes, and the ruleset's governments. Registered after Research,
+-- whose Civics table holds the civic completed this turn.
 
 return function(env, world, ctx)
 	local AddRow, indexes, hashes = ctx.AddRow, ctx.indexes, ctx.hashes
@@ -191,6 +191,19 @@ return function(env, world, ctx)
 				local policy = policiesByHash[hash]
 
 				return policy ~= nil and policy.locked ~= true and policy.unslottable ~= true
+			end
+
+			-- Each policy change goes in env.requests.
+			culture.RequestPolicyChanges = function(_, clearList, addList)
+				env.requests[#env.requests + 1] = { player = player:GetID(), clear = clearList, add = addList }
+			end
+
+			-- Each government change goes in env.requests. refuseChange makes
+			-- the game refuse it.
+			culture.RequestChangeGovernment = function(_, hash)
+				env.requests[#env.requests + 1] = { player = player:GetID(), government = hash }
+
+				return governmentData.refuseChange ~= true
 			end
 
 			culture.IsPolicyActive = function(_, hash)

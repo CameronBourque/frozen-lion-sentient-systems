@@ -7,11 +7,11 @@ return function(env, world, ctx)
 	local CITY_OPERATION_TYPES, CITY_OPERATION_RESULTS = env.CityOperationTypes, env.CityOperationResults
 	local CITY_COMMAND_TYPES, CITY_COMMAND_RESULTS = env.CityCommandTypes, env.CityCommandResults
 
-	env.UI = {
-		GetInterfaceModeParameter = function(parameter)
-			return parameter
-		end,
-	}
+	env.UI = env.UI or {}
+
+	env.UI.GetInterfaceModeParameter = function(parameter)
+		return parameter
+	end
 
 	-- Each placement tile gets a plot, with the adjacency bonuses and the
 	-- districts and wonders that CanHaveDistrict and CanHaveWonder allow on it
