@@ -1,5 +1,5 @@
--- Techs and civics. Fakes a player's research, boosts, tech tree, science, and
--- research requests. FakeGame/TopBar.lua holds its culture.
+-- Techs and civics. Fakes a player's research, boosts, tech tree, and science.
+-- FakeGame/TopBar.lua holds its culture.
 
 return function(env, world, ctx)
 	local AddRow, indexes, hashes = ctx.AddRow, ctx.indexes, ctx.hashes
@@ -7,22 +7,6 @@ return function(env, world, ctx)
 	env.GameInfo.Technologies = ctx.TypedRows({}, "TechnologyType")
 	env.GameInfo.Civics = ctx.TypedRows({}, "CivicType")
 	env.GameInfo.Boosts = ctx.TypedRows({}, "TechnologyType")
-	env.PlayerOperations = {
-		RESEARCH = 11,
-		PROGRESS_CIVIC = 12,
-		PARAM_TECH_TYPE = 13,
-		PARAM_CIVIC_TYPE = 14,
-		PARAM_INSERT_MODE = 15,
-		VALUE_EXCLUSIVE = 16,
-		VALUE_APPEND = 17,
-		UNLOCK_POLICIES = 18,
-	}
-	env.UI = env.UI or {}
-
-	-- Each player operation goes in env.requests.
-	env.UI.RequestPlayerOperation = function(playerID, operation, parameters)
-		env.requests[#env.requests + 1] = { player = playerID, operation = operation, parameters = parameters }
-	end
 
 	-- Each tech and civic gets a row, a hash, and a boost row when it has a
 	-- boost. The game's GetUnlockablesForTech and GetUnlockablesForCivic return

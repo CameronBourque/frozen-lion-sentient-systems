@@ -42,7 +42,7 @@ An action is one Lua function that the bridge calls to run a request function of
 | Test | `bridge/test/actions/<area>.test.ts`, with a fake client |
 | Recorded call | The action's name in `RECORDED` in `mod/Test/Game.lua`, in `calls` in `scripts/clean-lua-fixtures/src/index.mjs`, and in `CALLS` in `bridge/test/contract.test.ts`, which checks its JSON against `ACTION_RESULT` |
 | Fake game feature | `mod/Test/FakeGame/<Name>.lua`, and its `FakeGame.Register` line in `mod/Test/FakeGame.lua` |
-| Player request fake | `env.UI.RequestPlayerOperation` and `env.PlayerOperations` in `mod/Test/FakeGame/Research.lua`, which put each request in `env.requests` |
+| Player request fake | `env.UI.RequestPlayerOperation` and `env.PlayerOperations` in `mod/Test/FakeGame/PlayerOperations.lua`, which put each request in `env.requests` |
 | Research kinds | `SENTIENTSYSTEMS_RESEARCH_KINDS` in `mod/Scripts/SentientSystemsCore_Research.lua`, which the research choices, trees, and actions share |
 | Government rules | `SentientSystems_GetPolicyChangeFailure`, `SentientSystems_IsPolicyAvailable`, and `SentientSystems_GetUnlock` in `mod/Scripts/SentientSystemsCore_Government.lua`, which the government choices and the policy actions share |
 | Policy request fake | `RequestPolicyChanges` on the culture in `mod/Test/FakeGame/Governments.lua`, which puts each change in `env.requests` |
