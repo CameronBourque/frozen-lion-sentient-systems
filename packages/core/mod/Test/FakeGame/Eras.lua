@@ -16,8 +16,11 @@ return function(env, world, ctx)
 	-- The era and each player's active dedications get rows, with the text keys
 	-- of the game's moments.
 	if world.era then
+		local chronology = (env.GameInfo.Eras[world.era.type] or {}).ChronologyIndex
+
 		ctx.AddRow("Eras", "EraType", world.era.type)
 		env.GameInfo.Eras[indexes[world.era.type]].Name = "LOC_" .. world.era.type .. "_NAME"
+		env.GameInfo.Eras[indexes[world.era.type]].ChronologyIndex = chronology
 	end
 
 	for _, data in pairs(world.players or {}) do

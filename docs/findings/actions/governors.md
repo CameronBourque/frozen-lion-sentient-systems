@@ -45,6 +45,16 @@ So each action checks the panel's rules itself, with the calls in [choices/gover
 
 Confirmed on Windows on 2026-11-10.
 
+### Secret Societies
+
+Joining a society is the same `APPOINT_GOVERNOR` request. After it, the society was in `GetGovernorList()` with its first promotion. Confirmed on Windows on 2026-11-10.
+
+A society's later promotions wait for an era. Their rows in `GameInfo.GovernorPromotionConditions` have `EarliestGameEra`: for the Owls of Minerva, `ERA_MEDIEVAL`, `ERA_INDUSTRIAL`, and `ERA_ATOMIC`. Confirmed on Windows on 2026-11-10.
+
+`CanPromoteGovernor(hash)` was `false` for the Owls in the Ancient era with a title left, as `CanEarnPromotion` was `false` for each promotion. So `false` doesn't mean the player has no title, and the action counts `GetGovernorPoints()` less `GetGovernorPointsSpent()` itself.
+
+The era's place comes from the `ChronologyIndex` of the `GameInfo.Eras` rows, 1 for the Ancient era and 3 for the Medieval. Confirmed on Windows on 2026-11-10.
+
 ## Method
 
 1. Send `Scripts/SentientSystemsCore_Governors.lua`, then `Scripts/Actions/SentientSystemsCore_ActionsGovernors.lua`, to `SentientSystemsCore_UI`, as in [choices/production.md](../choices/production.md#method), step 4.
@@ -75,5 +85,17 @@ A single-player game with Gathering Storm, on Rome's save with 11 cities and 2 o
 | `assignGovernor(GOVERNOR_THE_MERCHANT, 0, 458758)` | `{"ok":true}`. Reyna moved from Ostia to Arpinum, not yet established |
 | `SentientSystems_AppointGovernor(0, "GOVERNOR_THE_AMBASSADOR")`, after a title from the tuner | `{"ok":true}`. Amani had no city, and her list held the 8 city-states met, none turned off |
 | `SentientSystems_AssignGovernor(0, "GOVERNOR_THE_AMBASSADOR", 27, 65536)`, Valletta | `{"ok":true}`. Valletta left her list |
+
+A save with Secret Societies on, on turn 1 in the Ancient era, with the Owls of Minerva discovered and 1 title:
+
+| Call | Result |
+| --- | --- |
+| `SentientSystems_AppointGovernor(0, "GOVERNOR_HERMETIC_ORDER")`, not discovered | `You can't appoint GOVERNOR_HERMETIC_ORDER. ...` |
+| `SentientSystems_AppointGovernor(0, "GOVERNOR_OWLS_OF_MINERVA")` | `{"ok":true}`. The Owls were joined with their first promotion, and the title spent |
+| `SentientSystems_AssignGovernor(0, "GOVERNOR_OWLS_OF_MINERVA", 0, 65536)` | `GOVERNOR_OWLS_OF_MINERVA can't be assigned to a city.` |
+| `SentientSystems_PromoteGovernor(0, "GOVERNOR_OWLS_OF_MINERVA", "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2")`, after a title from the tuner | Before the fix, `You have no governor title to spend ...`. After it, `... can't earn GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2 before ERA_MEDIEVAL.` |
+| The same with `GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1` | `GOVERNOR_OWLS_OF_MINERVA has GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1 already.` |
+
+A society's promotion after the era wasn't tried, as the tuner has no call that changes the era.
 
 Date checked: game files on 2026-11-10. Running game on Windows on 2026-11-10.

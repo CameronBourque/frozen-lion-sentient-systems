@@ -31,8 +31,10 @@ return function(env, world, ctx)
 				promotionRow.Column = promotion.column or 0
 				promotionRow.BaseAbility = promotion.base == true
 
-				if promotion.hiddenWithoutPrereqs then
-					table.insert(env.GameInfo.GovernorPromotionConditions, { GovernorPromotionType = promotion.type, HiddenWithoutPrereqs = true })
+				if promotion.hiddenWithoutPrereqs or promotion.era then
+					local condition = { GovernorPromotionType = promotion.type, HiddenWithoutPrereqs = promotion.hiddenWithoutPrereqs == true, EarliestGameEra = promotion.era }
+
+					table.insert(env.GameInfo.GovernorPromotionConditions, condition)
 				end
 				promotionRow.Hash = 4000000 + promotionRow.Index
 				table.insert(env.GameInfo.GovernorPromotionSets, { GovernorType = governor.type, GovernorPromotion = promotion.type })

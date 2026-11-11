@@ -28,8 +28,11 @@ local REYNA = {
 -- the one the game turns off.
 local AMANI = { type = "GOVERNOR_THE_AMBASSADOR", city = { owner = 0, id = 65536 }, cityStates = true }
 
--- Player 0 has Reyna and Amani, and can appoint Victor but never Ibrahim.
+-- Player 0 has Reyna and Amani, 2 titles left, and can appoint Victor but never
+-- Ibrahim.
 local GOVERNORS = {
+	points = 10,
+	spent = 8,
 	appointed = { REYNA, AMANI },
 	candidates = { { type = "GOVERNOR_THE_DEFENDER" }, { type = "GOVERNOR_IBRAHIM", canEver = false } },
 	cannotAssignTo = { ["13:65536"] = { "LOC_AT_WAR" } },
@@ -160,7 +163,6 @@ describe("SentientSystems_PromoteGovernor", function()
 	end)
 
 	it("fails for a promotion the panel wouldn't give", function()
-		local blocked = { type = REYNA.type, city = REYNA.city, promotions = REYNA.promotions }
 		local cases = {
 			{ GOVERNORS, "GOVERNOR_THE_DEFENDER", "GOVERNOR_PROMOTION_MERCHANT_HARBORMASTER", "You haven't appointed GOVERNOR_THE_DEFENDER. Appoint them first." },
 			{
@@ -176,7 +178,7 @@ describe("SentientSystems_PromoteGovernor", function()
 				"GOVERNOR_THE_MERCHANT has GOVERNOR_PROMOTION_MERCHANT_LAND_ACQUISITION already.",
 			},
 			{
-				GovernorsWith({ appointed = { blocked } }),
+				GovernorsWith({ spent = 10 }),
 				"GOVERNOR_THE_MERCHANT",
 				"GOVERNOR_PROMOTION_MERCHANT_HARBORMASTER",
 				"You have no governor title to spend on GOVERNOR_THE_MERCHANT. The governors choice lists promotions once you do.",
@@ -195,6 +197,37 @@ describe("SentientSystems_PromoteGovernor", function()
 			assert.equal(Failed(case[4]), env.SentientSystems_PromoteGovernor(0, case[2], case[3]))
 			assert.same({}, env.requests)
 		end
+	end)
+end)
+
+describe("SentientSystems_PromoteGovernor for a Secret Society", function()
+	-- The Owls of Minerva, joined, whose second promotion waits for the
+	-- Medieval era. The game can't promote them while none can be earned.
+	local OWLS = {
+		type = "GOVERNOR_OWLS_OF_MINERVA",
+		promotions = {
+			{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_1", has = true },
+			{ type = "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2", era = "ERA_MEDIEVAL", hiddenWithoutPrereqs = true },
+		},
+	}
+
+	it("names the era a promotion waits for, though a title is left", function()
+		local env = Load(GovernorsWith({ appointed = { OWLS } }), { era = { type = "ERA_ANCIENT" } })
+
+		assert.equal(
+			Failed("GOVERNOR_OWLS_OF_MINERVA can't earn GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2 before ERA_MEDIEVAL."),
+			env.SentientSystems_PromoteGovernor(0, "GOVERNOR_OWLS_OF_MINERVA", "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2")
+		)
+		assert.same({}, env.requests)
+	end)
+
+	it("names no era once the game is in it", function()
+		local env = Load(GovernorsWith({ appointed = { OWLS } }), { era = { type = "ERA_MEDIEVAL" } })
+
+		assert.equal(
+			Failed("GOVERNOR_OWLS_OF_MINERVA can't earn GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2 yet. Use a type from the governors choice."),
+			env.SentientSystems_PromoteGovernor(0, "GOVERNOR_OWLS_OF_MINERVA", "GOVERNOR_PROMOTION_OWLS_OF_MINERVA_2")
+		)
 	end)
 end)
 

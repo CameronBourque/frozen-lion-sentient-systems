@@ -82,22 +82,51 @@ local function FindPromotion(definition, typeName)
 	return nil, tostring(typeName) .. " isn't a promotion of " .. definition.GovernorType .. ". Use a type from the governors choice."
 end
 
--- Returns why the governor can't earn the promotion now, or nil. See Refresh in
--- GovernorPanel.lua, and CreatePromotionTree in GovernorDetailsPanel.lua.
-local function GetPromoteFailure(governors, governor, definition, promotion)
-	if governor:HasPromotion(promotion.Hash) then
-		return definition.GovernorType .. " has " .. promotion.GovernorPromotionType .. " already."
-	end
+-- Returns the era a promotion waits for, from its row in
+-- GameInfo.GovernorPromotionConditions, or nil when the game is in that era or
+-- later. A Secret Society's later promotions wait for an era.
+local function GetEraWait(promotion)
+	local current = Game.GetEras():GetCurrentEra()
 
-	if not governors:CanPromoteGovernor(definition.Hash) then
-		return "You have no governor title to spend on " .. definition.GovernorType .. ". The governors choice lists promotions once you do."
-	end
+	for row in GameInfo.GovernorPromotionConditions() do
+		local needed = row.EarliestGameEra and GameInfo.Eras[row.EarliestGameEra]
 
-	if not SentientSystems_IsPromotionEarnable(governors, governor, definition, promotion) then
-		return definition.GovernorType .. " can't earn " .. promotion.GovernorPromotionType .. " yet. Use a type from the governors choice."
+		if row.GovernorPromotionType == promotion.GovernorPromotionType and needed and current ~= nil then
+			if GameInfo.Eras[current].ChronologyIndex < needed.ChronologyIndex then
+				return row.EarliestGameEra
+			end
+		end
 	end
 
 	return nil
+end
+
+-- Returns why the governor can't earn the promotion now, or nil. The game's
+-- CanPromoteGovernor is false both without a title and while no promotion can
+-- be earned, so the action counts the titles itself. See Refresh in
+-- GovernorPanel.lua, and CreatePromotionTree in GovernorDetailsPanel.lua.
+local function GetPromoteFailure(governors, governor, definition, promotion)
+	local typeName, promotionType = definition.GovernorType, promotion.GovernorPromotionType
+
+	if governor:HasPromotion(promotion.Hash) then
+		return typeName .. " has " .. promotionType .. " already."
+	end
+
+	if governors:GetGovernorPoints() - governors:GetGovernorPointsSpent() <= 0 then
+		return "You have no governor title to spend on " .. typeName .. ". The governors choice lists promotions once you do."
+	end
+
+	if governors:CanPromoteGovernor(definition.Hash) and SentientSystems_IsPromotionEarnable(governors, governor, definition, promotion) then
+		return nil
+	end
+
+	local era = GetEraWait(promotion)
+
+	if era ~= nil then
+		return typeName .. " can't earn " .. promotionType .. " before " .. era .. "."
+	end
+
+	return typeName .. " can't earn " .. promotionType .. " yet. Use a type from the governors choice."
 end
 
 local function PromoteGovernor(playerID, typeName, promotionType)
