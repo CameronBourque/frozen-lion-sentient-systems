@@ -1,6 +1,8 @@
 # City fate action
 
-Status: open. Keeping a disloyal city and razing a captured one are confirmed in a running game with Gathering Storm, with the files sent through the tuner. Refusing a disloyal city, keeping a captured one, and liberating are confirmed only in files.
+Status: open. Keeping a disloyal city, razing a captured one, and liberating a captured one to its founder are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
+
+Refusing a disloyal city, keeping a captured one, and liberating to the previous owner are confirmed only in files.
 
 The game call that the city fate action wraps, with the Lua state it runs in and what the game checks. The options each screen offers are in [choices/city-fate.md](../choices/city-fate.md).
 
@@ -8,7 +10,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. Does the game liberate a captured city with `LIBERATE_FOUNDER` or `LIBERATE_PREVIOUS_OWNER` when the raze screen offers it? This needs a save where a capture offers liberation.
+1. When does the raze screen offer `LIBERATE_PREVIOUS_OWNER`? After each capture, `GetOwnerBeforeOccupation()` read the capturing player, so the option didn't show.
 
 ## What we know now
 
@@ -24,8 +26,15 @@ The request runs in `SentientSystemsCore_UI`. Within 2 seconds:
 
 - **Keep a disloyal city.** The city was the player's, `ENDTURN_BLOCKING_CONSIDER_DISLOYAL_CITY` was gone, and the choice was empty.
 - **Raze a captured city of population 1.** The city was gone at once, `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` was gone, and the choice was empty.
+- **Liberate a captured city to its founder.** The founder owned the city, `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` was gone, and the choice was empty. A founder with no city left came back into the game.
 
 Confirmed on Windows on 2026-11-11.
+
+### Previous owner
+
+Right after a capture, `GetOwnerBeforeOccupation()` returned the capturing player, 0, for a city taken from a major player and for one taken from the Free Cities. The city's owner before the capture was in `GetJustConqueredFrom()`.
+
+The raze screen offers `LIBERATE_PREVIOUS_OWNER` only when the player can liberate to `GetOwnerBeforeOccupation()` and it isn't `GetJustConqueredFrom()`, so neither capture offered it. Confirmed on Windows on 2026-11-11.
 
 ## Method
 
@@ -54,6 +63,24 @@ Valletta, the only city of the city-state, captured by a Giant Death Robot as ci
 | `decideCity` with `LIBERATE_FOUNDER` | `LIBERATE_FOUNDER isn't an option for Valletta. Use one of KEEP, RAZE.` |
 | `decideCity` with `RAZE` | `{"ok":true}`. The blocker cleared, and the city was gone |
 
-The save was only a test save. The player is at war with Valletta's city-state, which no longer has a city, and has a Giant Death Robot next to where it stood.
+A later save, at war with the owners of Hong Kong and Brussels, each taken by a Giant Death Robot.
+
+Hong Kong, city 917517, taken from player 10, who had taken it from its founder, the city-state Hong Kong, player 24. It offered `LIBERATE_FOUNDER` to player 24, `KEEP`, and a blocked `RAZE`:
+
+| Call | Result |
+| --- | --- |
+| `decideCity` with `RAZE` | `You cannot raze a major civilization's original capital or a city that you or an ally founded or owned at the start of this war.` |
+| `decideCity` with `LIBERATE_PREVIOUS_OWNER` | `LIBERATE_PREVIOUS_OWNER isn't an option for Hong Kong. Use one of LIBERATE_FOUNDER, KEEP, RAZE.` |
+| `decideCity` with `LIBERATE_FOUNDER` | `{"ok":true}`. The blocker cleared, and player 24 owned Hong Kong |
+
+The reason for `LIBERATE_PREVIOUS_OWNER` listed the blocked `RAZE`. The action now leaves blocked options out of that list.
+
+Brussels, city 983053, taken from the Free Cities, player 62. Its founder, the city-state Brussels, player 18, had no city and wasn't alive. It offered `LIBERATE_FOUNDER` to player 18, `KEEP` with no grievances, and `RAZE`:
+
+| Call | Result |
+| --- | --- |
+| `decideCity` with `LIBERATE_FOUNDER` | `{"ok":true}`. The blocker cleared, and player 18 was alive with Brussels as its one city |
+
+The saves were only test saves. In the first, the player is at war with Valletta's city-state, which no longer has a city, and has a Giant Death Robot next to where it stood.
 
 Date checked: game files on 2026-10-26. Running game on Windows on 2026-11-11.

@@ -10,7 +10,7 @@ Both screens send one `DESTROY` city command with the directive, so the action d
 
 The game takes a liberation the raze screen hides, so the action checks the choice's options first. See [city-fate.md](../../../../findings/actions/city-fate.md).
 
-Its reasons, in order, name no city waiting for a decision, a city that isn't one of the waiting ones, and a directive that isn't one of the city's options. A raze option the screen turns off gives the screen's own reason.
+Its reasons, in order, name no city waiting for a decision, a city that isn't one of the waiting ones, and a directive that isn't one of the city's options. A raze option the screen turns off gives the screen's own reason, and the list of options in a reason leaves it out.
 
 On the bridge, `decideCity` in `src/actions/city-fate.ts` sends the call.
 

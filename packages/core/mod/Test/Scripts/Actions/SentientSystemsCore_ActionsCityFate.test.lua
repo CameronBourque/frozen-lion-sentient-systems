@@ -78,6 +78,7 @@ describe("SentientSystems_DecideCity", function()
 		local env = Load({ captured = Helpers.With(CAPTURED, { canRaze = false }) })
 
 		assert.equal(Failed("LOC_RAZE_CITY_RAZE_DISABLED_EXPLANATION"), env.SentientSystems_DecideCity(0, 131073, "RAZE"))
+		assert.equal(Failed("REJECT isn't an option for Caguana. Use one of KEEP."), env.SentientSystems_DecideCity(0, 131073, "REJECT"))
 		assert.same({}, env.requests)
 	end)
 

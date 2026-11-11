@@ -28,12 +28,15 @@ end
 local function GetDirectiveFailure(fate, directive)
 	local types = {}
 
-	for i, option in ipairs(fate.options) do
+	for _, option in ipairs(fate.options) do
 		if option.type == directive then
 			return option.blocked and option.blocked[1] or nil
 		end
 
-		types[i] = option.type
+		-- A blocked option would fail too, so the reason doesn't suggest it.
+		if not option.blocked then
+			types[#types + 1] = option.type
+		end
 	end
 
 	local name = Locale.Lookup(fate.city:GetName())
