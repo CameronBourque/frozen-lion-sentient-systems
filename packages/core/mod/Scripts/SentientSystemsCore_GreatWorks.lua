@@ -144,17 +144,6 @@ function SentientSystems_GetAllGreatWorkSlots(player)
 	return all
 end
 
--- Returns whether the list holds the value.
-local function Contains(list, value)
-	for _, item in ipairs(list) do
-		if item == value then
-			return true
-		end
-	end
-
-	return false
-end
-
 -- Returns why the work can't be picked up, or nil. See CanMoveWorkAtAll.
 local function GetPickUpFailure(work)
 	if work.movable then
@@ -195,7 +184,7 @@ function SentientSystems_GetGreatWorkMoveFailure(source, destination, request)
 		return failure
 	end
 
-	if not Contains(destination.accepts, work.objectType) then
+	if not SentientSystems_Contains(destination.accepts, work.objectType) then
 		return "That slot takes " .. table.concat(destination.accepts, ", ") .. ", and " .. work.name .. " is " .. work.objectType .. "."
 	end
 
@@ -203,7 +192,7 @@ function SentientSystems_GetGreatWorkMoveFailure(source, destination, request)
 		return work.objectType == ARTIFACT_TYPE and "An artifact can't move to an empty slot. It swaps with another artifact in a full museum." or nil
 	end
 
-	if not Contains(source.accepts, other.objectType) then
+	if not SentientSystems_Contains(source.accepts, other.objectType) then
 		return "That slot holds " .. other.name .. ", which can't swap into a slot that takes " .. table.concat(source.accepts, ", ") .. "."
 	end
 

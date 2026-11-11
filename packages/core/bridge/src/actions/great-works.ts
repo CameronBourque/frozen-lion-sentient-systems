@@ -1,5 +1,6 @@
-// The great work move action, which runs the call in
-// Scripts/Actions/SentientSystemsCore_ActionsGreatWorks.lua.
+// The great work move and artifact actions, which run the calls in
+// Scripts/Actions/SentientSystemsCore_ActionsGreatWorks.lua and
+// Scripts/Actions/SentientSystemsCore_ActionsArtifacts.lua.
 
 import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
@@ -18,4 +19,10 @@ export interface GreatWorkSlot {
 // took the request.
 export function moveGreatWork(client: TunerClient, playerID: number, workIndex: number, to: GreatWorkSlot): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_MoveGreatWork(${playerID}, ${workIndex}, ${to.city}, ${JSON.stringify(to.building)}, ${to.slot})`);
+}
+
+// Chooses whose artifact the digging archaeologist uncovers, a player from the
+// options of the artifacts choice. An ok result means the game took it.
+export function chooseArtifact(client: TunerClient, playerID: number, artifactPlayer: number): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_ChooseArtifact(${playerID}, ${artifactPlayer})`);
 }

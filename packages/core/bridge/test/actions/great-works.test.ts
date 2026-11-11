@@ -1,7 +1,7 @@
 // Tests for great-works.ts, against the fake game.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { moveGreatWork } from "../../src/actions/great-works.js";
+import { chooseArtifact, moveGreatWork } from "../../src/actions/great-works.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -20,5 +20,18 @@ describe("moveGreatWork", () => {
 		})[lua] ?? {};
 
 		expect(await moveGreatWork(client, 0, 1203, { city: 2, building: "BUILDING_MUSEUM_ART", slot: 1 })).toEqual({ ok: true });
+	});
+});
+
+describe("chooseArtifact", () => {
+	test("asks the core mod to choose the player's artifact", async () => {
+		const { game, client } = await startGame();
+
+		game.onCommand = (_stateIndex, lua) => ({
+			"SentientSystems_Stash(SentientSystems_ChooseArtifact(0, 62))": { output: ["1"] },
+			"SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] },
+		})[lua] ?? {};
+
+		expect(await chooseArtifact(client, 0, 62)).toEqual({ ok: true });
 	});
 });

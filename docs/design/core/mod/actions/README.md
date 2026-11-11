@@ -19,7 +19,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [great-people.md](great-people.md) | Recruiting, passing, and patronizing a great person |
 | [governors.md](governors.md) | Appointing, promoting, and assigning a governor |
 | [envoys.md](envoys.md) | Sending envoys to a city-state |
-| [great-works.md](great-works.md) | Moving a great work between slots |
+| [great-works.md](great-works.md) | Moving a great work between slots, and choosing an artifact |
 
 ### Results
 

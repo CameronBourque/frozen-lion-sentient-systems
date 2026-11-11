@@ -2,56 +2,44 @@
 -- as the artifact screen offers it. Follows OnOpen in ChooseArtifact.lua.
 -- Shape: bridge/src/choices/artifacts.ts.
 
--- The explanation for each type of site, and whether it offers both players. A
--- tribal village, a barbarian camp, and a heroic relic come from one player.
-local SITES = {
-	[0] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_NO_TYPE", choice = true },
-	[1] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_GOODY_HUT" },
-	[2] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_BARBARIAN_CAMP" },
-	[3] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_BATTLE_FOUGHT", choice = true },
-	[4] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_SHIP_SUNK", choice = true },
-	[5] = { key = "LOC_CHOOSE_ARTIFACT_EXPLANATION_HEROIC_RELIC" },
-}
+SentientSystems_Include("SentientSystemsCore_Artifacts")
 
 local function Option(playerID)
 	return { player = playerID, name = Locale.Lookup(PlayerConfigurations[playerID]:GetPlayerName()) }
 end
 
 -- Returns the artifact choice: the next digging archaeologist's artifact.
--- Returns nil with no archaeologist digging, or no artifact. The screen opens
--- only from the blocker's notification, so this reads the artifact only while
--- the blocker is up, as the spy choice must. See OnOpen in ChooseArtifact.lua.
+-- Returns nil with no archaeologist digging, or no artifact.
 function SentientSystems_GetArtifactChoices(player)
-	if not SentientSystems_HasBlocker(player:GetID(), "ENDTURN_BLOCKING_ARTIFACT") then
+	local pending = SentientSystems_GetNextArtifact(player)
+
+	if pending == nil then
 		return nil
 	end
 
-	local archaeologist = player:GetUnits():GetNextExtractingArchaeologist()
-	local artifact = archaeologist and Game.GetArtifactByIndex(archaeologist:GetArchaeology():GetArtifactIndex())
-
-	if artifact == nil then
-		return nil
-	end
-
-	local site = SITES[artifact.Type] or SITES[0]
-	local acting, target = artifact.ActingPlayerID, artifact.TargetPlayerID
-	local actingName = Locale.Lookup(PlayerConfigurations[acting]:GetPlayerName())
+	local archaeologist, artifact = pending.archaeologist, pending.artifact
 	local name = Locale.Lookup(archaeologist:GetName())
-	local entry = {
+	local actingName = Locale.Lookup(PlayerConfigurations[artifact.ActingPlayerID]:GetPlayerName())
+	local options = {}
+
+	for i, playerID in ipairs(pending.players) do
+		options[i] = Option(playerID)
+	end
+
+	local description
+	if #options == 2 then
+		description = SentientSystems_LookupText(pending.key, name, actingName, options[2].name)
+	else
+		description = SentientSystems_LookupText(pending.key, name, actingName)
+	end
+
+	return { {
 		archaeologist = archaeologist:GetID(),
 		name = name,
 		x = archaeologist:GetX(),
 		y = archaeologist:GetY(),
 		era = GameInfo.Eras[artifact.ActingPlayerEra].EraType,
-	}
-
-	if site.choice then
-		entry.description = SentientSystems_LookupText(site.key, name, actingName, Locale.Lookup(PlayerConfigurations[target]:GetPlayerName()))
-		entry.options = { Option(acting), Option(target) }
-	else
-		entry.description = SentientSystems_LookupText(site.key, name, actingName)
-		entry.options = { Option(acting) }
-	end
-
-	return { entry }
+		description = description,
+		options = options,
+	} }
 end
