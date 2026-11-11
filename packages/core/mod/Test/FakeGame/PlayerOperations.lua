@@ -1,6 +1,6 @@
 -- Player requests. Fakes PlayerOperations and UI.RequestPlayerOperation, which
--- the research, policy, religion, great person, governor, and envoy actions
--- send.
+-- the research, policy, religion, great person, governor, envoy, and great work
+-- actions send.
 
 return function(env)
 	env.PlayerOperations = {
@@ -31,6 +31,12 @@ return function(env)
 		PARAM_PLAYER_ONE = 35,
 		PARAM_CITY_DEST = 36,
 		GIVE_INFLUENCE_TOKEN = 37,
+		MOVE_GREAT_WORK = 38,
+		PARAM_CITY_SRC = 39,
+		PARAM_BUILDING_SRC = 40,
+		PARAM_BUILDING_DEST = 41,
+		PARAM_GREAT_WORK_INDEX = 42,
+		PARAM_SLOT = 43,
 	}
 	env.UI = env.UI or {}
 

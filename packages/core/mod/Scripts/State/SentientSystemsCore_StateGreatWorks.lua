@@ -1,63 +1,8 @@
--- The great works section, as the Great Works screen shows it. Follows
--- GreatWorksOverview.lua and its Expansion 2 replacement. Shape:
--- bridge/src/state/great-works.ts.
+-- The great works section, as the Great Works screen shows it. Shape:
+-- bridge/src/state/great-works.ts. The slots and moves are in
+-- SentientSystemsCore_GreatWorks.lua, which the great work actions share.
 
--- Returns the yields a great work row gives, then its tourism, as a list.
-local function GetWorkYields(row)
-	local yields = {}
-
-	for change in GameInfo.GreatWork_YieldChanges() do
-		if change.GreatWorkType == row.GreatWorkType then
-			yields[#yields + 1] = { type = change.YieldType, amount = change.YieldChange }
-		end
-	end
-
-	return yields
-end
-
-local ART_TYPES = {
-	GREATWORKOBJECT_SCULPTURE = true,
-	GREATWORKOBJECT_LANDSCAPE = true,
-	GREATWORKOBJECT_PORTRAIT = true,
-	GREATWORKOBJECT_RELIGIOUS = true,
-}
-
--- The turns an art work stays where it was put when the game sets no time.
-local DEFAULT_LOCK_TURNS = 10
-
--- Returns the turns before the work can be moved again. Only art is locked,
--- from the turn it was created or moved in. See CanMoveWorkAtAll.
-local function GetLockedTurns(buildings, work, objectType)
-	if not ART_TYPES[objectType] then
-		return 0
-	end
-
-	local lock = GlobalParameters.GREATWORK_ART_LOCK_TIME or DEFAULT_LOCK_TURNS
-
-	return math.max(0, buildings:GetTurnFromIndex(work) + lock - Game.GetCurrentGameTurn())
-end
-
--- Returns the great work in a slot, or nil for an empty one.
-local function GetWork(buildings, index, slot)
-	local work = buildings:GetGreatWorkInSlot(index, slot)
-
-	if work == -1 then
-		return nil
-	end
-
-	local row = GameInfo.GreatWorks[buildings:GetGreatWorkTypeFromIndex(work)]
-
-	return {
-		index = work,
-		type = row.GreatWorkType,
-		name = Locale.Lookup(row.Name),
-		objectType = row.GreatWorkObjectType,
-		era = row.EraType,
-		tourism = row.Tourism,
-		yields = GetWorkYields(row),
-		lockedTurns = GetLockedTurns(buildings, work, row.GreatWorkObjectType),
-	}
-end
+SentientSystems_Include("SentientSystemsCore_GreatWorks")
 
 -- Returns the great works in a building, in slot order, as the screen's
 -- GetGreatWorksInBuilding does.
@@ -151,20 +96,6 @@ local function FitsTheme(buildings, index, rules, work, first)
 		and (not rules.uniqueCivilizations or HasNoDuplicatePlayer(buildings, index))
 end
 
--- Returns the object types a kind of slot takes, as the empty slot's tooltip
--- lists them.
-local function GetAccepts(kind)
-	local types = {}
-
-	for row in GameInfo.GreatWork_ValidSubTypes() do
-		if row.GreatWorkSlotType == kind then
-			types[#types + 1] = row.GreatWorkObjectType
-		end
-	end
-
-	return types
-end
-
 -- Returns the localized text of the theming bonus, or nil when the building
 -- has none. See GetThemeDescription.
 local function GetThemeBonus(culture, building)
@@ -199,36 +130,19 @@ local function GetBuildingYields(buildings, index)
 	return yields, tourism
 end
 
--- Returns whether the screen lets a work be dragged: not locked, and an
--- artifact only when its museum is full. See CanMoveWorkAtAll.
-local function CanMove(work, museumFull)
-	return work.lockedTurns == 0 and (work.objectType ~= "GREATWORKOBJECT_ARTIFACT" or museumFull)
-end
-
 -- Returns one building with great work slots as an entry for how far its theme
 -- has come and what its works give, and the list of its slots.
 local function GetBuilding(city, building, culture)
 	local buildings = city:GetBuildings()
 	local index = building.Index
-	local cityRef = { id = city:GetID(), name = Locale.Lookup(city:GetName()) }
 	local bonus = GetThemeBonus(culture, building)
 	local rules = GetThemeRules(building)
-	local slots, count, themed = {}, 0, 0
+	local slots = SentientSystems_GetGreatWorkSlots(city, building)
+	local count, themed = 0, 0
 	local first
 
-	for slot = 0, buildings:GetNumGreatWorkSlots(index) - 1 do
-		local kind = GameInfo.GreatWorkSlotTypes[buildings:GetGreatWorkSlotType(index, slot)].GreatWorkSlotType
-		local work = GetWork(buildings, index, slot)
-
-		slots[#slots + 1] = {
-			city = cityRef,
-			building = building.BuildingType,
-			slot = slot,
-			kind = kind,
-			accepts = GetAccepts(kind),
-			work = work,
-		}
-		first = first or work
+	for _, entry in ipairs(slots) do
+		first = first or entry.work
 	end
 
 	for _, entry in ipairs(slots) do
@@ -239,12 +153,6 @@ local function GetBuilding(city, building, culture)
 				entry.themed = FitsTheme(buildings, index, rules, entry.work, first)
 				themed = themed + (entry.themed and 1 or 0)
 			end
-		end
-	end
-
-	for _, entry in ipairs(slots) do
-		if entry.work ~= nil then
-			entry.work.movable = CanMove(entry.work, count == #slots)
 		end
 	end
 
@@ -261,7 +169,7 @@ local function GetBuilding(city, building, culture)
 	end
 
 	return {
-		city = cityRef,
+		city = slots[1].city,
 		type = building.BuildingType,
 		name = Locale.Lookup(building.Name),
 		spaces = #slots,
@@ -292,23 +200,19 @@ function SentientSystems_GetGreatWorkState(player)
 	local buildings, slots, works, spaces = {}, {}, 0, 0
 	local totals, order = {}, {}
 
-	for _, city in player:GetCities():Members() do
-		for building in GameInfo.Buildings() do
-			if city:GetBuildings():HasBuilding(building.Index) and city:GetBuildings():GetNumGreatWorkSlots(building.Index) > 0 then
-				local entry, entrySlots = GetBuilding(city, building, culture)
+	for _, found in ipairs(SentientSystems_GetGreatWorkBuildings(player)) do
+		local entry, entrySlots = GetBuilding(found.city, found.building, culture)
 
-				buildings[#buildings + 1] = entry
-				works = works + entry.works
-				spaces = spaces + entry.spaces
+		buildings[#buildings + 1] = entry
+		works = works + entry.works
+		spaces = spaces + entry.spaces
 
-				for _, slot in ipairs(entrySlots) do
-					slots[#slots + 1] = slot
-				end
-
-				AddTotals(totals, order, entry.yields)
-				AddTotals(totals, order, { { type = "TOURISM", amount = entry.tourism } })
-			end
+		for _, slot in ipairs(entrySlots) do
+			slots[#slots + 1] = slot
 		end
+
+		AddTotals(totals, order, entry.yields)
+		AddTotals(totals, order, { { type = "TOURISM", amount = entry.tourism } })
 	end
 
 	table.sort(order)
@@ -324,88 +228,35 @@ function SentientSystems_GetGreatWorkState(player)
 	return { slots = slots, buildings = buildings, works = works, spaces = spaces, provides = provides }
 end
 
--- Returns the slots of every building of the player's cities, each with its
--- city, building row, and index, as UpdateGreatWorks walks them, and whether
--- its museum is full. Each slot is filled as GetBuilding fills it.
-local function GetAllSlots(player)
-	local all = {}
-
-	for _, city in player:GetCities():Members() do
-		for building in GameInfo.Buildings() do
-			if city:GetBuildings():HasBuilding(building.Index) and city:GetBuildings():GetNumGreatWorkSlots(building.Index) > 0 then
-				local _, slots = GetBuilding(city, building, player:GetCulture())
-				local full = true
-
-				for _, slot in ipairs(slots) do
-					full = full and slot.work ~= nil
-				end
-
-				for _, slot in ipairs(slots) do
-					slot.full = full
-					all[#all + 1] = slot
-				end
-			end
-		end
-	end
-
-	return all
-end
-
--- Returns whether the list holds the value.
-local function Contains(list, value)
-	for _, item in ipairs(list) do
-		if item == value then
-			return true
-		end
-	end
-
-	return false
-end
-
--- Returns whether the work in the source slot can go into the destination slot,
--- as CanMoveGreatWork works it out. An artifact never goes to an empty slot,
--- and a swap needs the other work to fit the source slot and be free to move.
-local function CanGoTo(source, destination)
-	if not Contains(destination.accepts, source.work.objectType) then
-		return false
-	end
-
-	if destination.work == nil then
-		return source.work.objectType ~= "GREATWORKOBJECT_ARTIFACT"
-	end
-
-	return Contains(source.accepts, destination.work.objectType) and CanMove(destination.work, destination.full)
-end
-
 -- Returns where the great work with the game's index can move, as the screen
 -- lights up the slots when the work is picked up, or nil when the player has no
 -- such work. Moves is empty when the work can't be moved at all. A move into a
 -- filled slot swaps the two works. See OnClickGreatWork.
 function SentientSystems_GetGreatWorkMoves(player, workIndex)
-	local slots = GetAllSlots(player)
+	local slots = SentientSystems_GetAllGreatWorkSlots(player)
 
-	for _, source in ipairs(slots) do
-		if source.work ~= nil and source.work.index == workIndex then
-			local moves = {}
+	local source = SentientSystems_FindGreatWork(slots, workIndex)
 
-			for _, destination in ipairs(slots) do
-				if CanMove(source.work, source.full) and destination ~= source and CanGoTo(source, destination) then
-					moves[#moves + 1] = {
-						city = destination.city,
-						building = destination.building,
-						slot = destination.slot,
-						swap = destination.work and { index = destination.work.index, name = destination.work.name } or nil,
-					}
-				end
-			end
+	if source == nil then
+		return nil
+	end
 
-			return {
-				work = { index = workIndex, name = source.work.name },
-				from = { city = source.city, building = source.building, slot = source.slot },
-				moves = moves,
+	local moves = {}
+
+	for _, destination in ipairs(slots) do
+		if SentientSystems_GetGreatWorkMoveFailure(source, destination) == nil then
+			moves[#moves + 1] = {
+				city = destination.city,
+				building = destination.building,
+				slot = destination.slot,
+				swap = destination.work and { index = destination.work.index, name = destination.work.name } or nil,
 			}
 		end
 	end
 
-	return nil
+	return {
+		work = { index = workIndex, name = source.work.name },
+		from = { city = source.city, building = source.building, slot = source.slot },
+		moves = moves,
+	}
 end
