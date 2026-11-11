@@ -48,6 +48,7 @@
 			<File>Scripts/Actions/SentientSystemsCore_ActionsReligion.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsGreatPeople.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsGovernors.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_ActionsEnvoys.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -130,6 +131,7 @@
 		<File>Scripts/Actions/SentientSystemsCore_ActionsReligion.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsGreatPeople.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsGovernors.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_ActionsEnvoys.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>

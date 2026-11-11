@@ -18,6 +18,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [religion.md](religion.md) | The pantheon, founding a religion with its beliefs, and adding a belief |
 | [great-people.md](great-people.md) | Recruiting, passing, and patronizing a great person |
 | [governors.md](governors.md) | Appointing, promoting, and assigning a governor |
+| [envoys.md](envoys.md) | Sending envoys to a city-state |
 
 ### Results
 

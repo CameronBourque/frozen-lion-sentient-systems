@@ -38,7 +38,7 @@ Rise and Fall and Gathering Storm replace it with `CityStates_Expansion1.lua` an
 
   It was `true` for each met city-state, and `false` for one at war with the player, an unmet one, and the Free Cities.
 
-  `OnConfirmPlacement`, lines 748 to 772, sends `PlayerOperations.GIVE_INFLUENCE_TOKEN` once for each envoy, with the city-state's ID in `PARAM_PLAYER_ONE`. Confirmed in files and on Windows on 2026-10-26.
+  The request the screen sends is in [actions/envoys.md](../actions/envoys.md#request). Confirmed in files and on Windows on 2026-10-26.
 - **Blocker.** `Close`, lines 441 to 457, calls the player's `SetGivingTokensConsidered(true)`, and `IsGivingTokensConsidered()` then stays `true` with tokens left.
 
   `ENDTURN_BLOCKING_GIVE_INFLUENCE_TOKEN` was among the blockers while it was `false`, and was gone once it was `true`, with 4 tokens left. Confirmed in files and on Windows on 2026-10-26.
