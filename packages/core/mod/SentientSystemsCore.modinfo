@@ -54,6 +54,7 @@
 			<File>Scripts/Actions/SentientSystemsCore_ActionsEnvoys.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsGreatWorks.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsArtifacts.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_ActionsCityFate.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -142,6 +143,7 @@
 		<File>Scripts/Actions/SentientSystemsCore_ActionsEnvoys.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsGreatWorks.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsArtifacts.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_ActionsCityFate.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>

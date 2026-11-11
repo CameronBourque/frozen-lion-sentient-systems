@@ -20,6 +20,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [governors.md](governors.md) | Appointing, promoting, and assigning a governor |
 | [envoys.md](envoys.md) | Sending envoys to a city-state |
 | [great-works.md](great-works.md) | Moving a great work between slots, and choosing an artifact |
+| [city-fate.md](city-fate.md) | Keeping, razing, liberating, or refusing a captured or rebelled city |
 
 ### Results
 

@@ -19,6 +19,7 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [purchases.md](purchases.md) | The game calls that buy a unit, a building, or a tile, and the reasons their checks give |
 | [envoys.md](envoys.md) | The game call that sends envoys to a city-state, and the checks the game doesn't make |
 | [great-works.md](great-works.md) | The game calls that move a great work and choose an artifact, and the checks the game doesn't make |
+| [city-fate.md](city-fate.md) | The game call that keeps, razes, liberates, or refuses a captured or rebelled city, and the checks the game doesn't make |
 | [governors.md](governors.md) | The game calls that appoint, promote, and assign a governor, and the checks the game doesn't make |
 | [religion.md](religion.md) | The game calls that found a pantheon and a religion and add a belief, and the checks the game doesn't make |
 | [research.md](research.md) | The game calls that set and queue the tech and the civic in research, and the checks the game doesn't make |
