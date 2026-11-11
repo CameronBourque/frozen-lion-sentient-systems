@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.15.0...core-v0.16.0) (2026-11-11)
+
+
+### Features
+
+* **core:** add the religion, governor, great person and envoy actions ([#81](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/81)) ([edfe3ab](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/edfe3ab87de89a976fab87d981d836eea6f5cd6b))
+
 ## [0.15.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.14.0...core-v0.15.0) (2026-11-10)
 
 
