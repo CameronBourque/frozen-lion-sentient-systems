@@ -1,6 +1,6 @@
 # City, trade, and spy actions
 
-How the core mod runs the actions on a city's production and purchases, trade routes, and spy missions. Part of the [action API](../README.md).
+How the core mod runs the actions on a city's production and purchases, trade routes, and spy missions and escapes. Part of the [action API](../README.md).
 
 ## Production
 
@@ -47,6 +47,18 @@ A mission is the type from the spy missions choice, and a counterspy mission als
 Their reasons name a spy that isn't ready, a spy in no city, the missions the spy can start when it names another, and a city that isn't a destination.
 
 The game's own reasons come back for a mission it lists as disabled. See [spies.md](../../../../findings/actions/spies.md).
+
+### Escape route
+
+`SentientSystems_ChooseEscapeRoute(playerID, route)`, in the same file, chooses how the escaping spy leaves its city. The route is the `type` of one of the spy's `routes` in the spies choice, such as `DISTRICT_HARBOR`.
+
+The escape screen sends one `SET_ESCAPE_ROUTE` request with the route's district and no spy, so the action does too, and takes no spy. The game offers one escaping spy at a time.
+
+Its reasons name no spy escaping, a district that isn't a route, with the open routes, and a route the screen turns off, with the screen's text.
+
+The choice and the action read the spy and its routes from `SentientSystems_GetNextEscape` in `Scripts/SentientSystemsCore_Espionage.lua`. The dragnet priority opens the same screen, so the same action answers it.
+
+On the bridge, `chooseEscapeRoute` in `src/actions/spies.ts` sends the call.
 
 ## Decisions
 

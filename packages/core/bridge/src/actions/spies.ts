@@ -20,3 +20,10 @@ export function spyMission(client: TunerClient, playerID: number, unitID: number
 export function spyTravel(client: TunerClient, playerID: number, unitID: number, ownerID: number, cityID: number): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_SpyTravel(${playerID}, ${unitID}, ${ownerID}, ${cityID})`);
 }
+
+// Chooses the escaping spy's route, the type of one of its routes in the spies
+// choice, such as DISTRICT_HARBOR. An ok result means the game took the route,
+// not that the spy got away.
+export function chooseEscapeRoute(client: TunerClient, playerID: number, route: string): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_ChooseEscapeRoute(${playerID}, ${JSON.stringify(route)})`);
+}

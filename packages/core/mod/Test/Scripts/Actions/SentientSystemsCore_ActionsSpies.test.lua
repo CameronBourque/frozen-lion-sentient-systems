@@ -170,3 +170,68 @@ describe("SentientSystems_SpyTravel", function()
 		assert.equal(Failed("The game won't send the spy to LOC_CITY_STATE."), Load(Spy(10, 10)).SentientSystems_SpyTravel(0, 700, 5, 1))
 	end)
 end)
+
+describe("SentientSystems_ChooseEscapeRoute", function()
+	local ESCAPING = { id = 2555922, name = "LOC_CITIZEN_ROME_FEMALE_3", loot = "LOC_ESPIONAGE_LOOT_NONE", pursuer = "", x = 84, y = 34 }
+	local ISTANBUL = { id = 65536, name = "LOC_CITY_NAME_ISTANBUL", x = 84, y = 34, population = 5, districts = { { type = "DISTRICT_HARBOR", x = 85, y = 34 } } }
+	local NO_SPY = "You have no spy escaping. The spies choice lists one when a spy is caught."
+
+	-- Returns an environment where player 0's spy escapes from Istanbul, which
+	-- has a harbor, with the blockers given, the escape route blocker when
+	-- missing.
+	local function LoadEscape(spy, blockers)
+		return Load(nil, {
+			[0] = { escapingSpy = spy, blockers = blockers or { "ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE" } },
+			[4] = { cities = { ISTANBUL } },
+		})
+	end
+
+	-- Returns the request the escape screen sends for the district.
+	local function Request(env, district)
+		local P = env.PlayerOperations
+
+		return { { player = 0, operation = P.SET_ESCAPE_ROUTE, parameters = { [P.PARAM_DISTRICT_TYPE] = env.GameInfo.Districts[district].Index } } }
+	end
+
+	it("sends the escape screen's request for an open route", function()
+		for _, district in ipairs({ "DISTRICT_HARBOR", "DISTRICT_CITY_CENTER" }) do
+			local env = LoadEscape(ESCAPING)
+
+			assert.equal("{\"ok\":true}", env.SentientSystems_ChooseEscapeRoute(0, district))
+			assert.same(Request(env, district), env.requests)
+		end
+	end)
+
+	it("sends the request for a dragnet priority too, which opens the same screen", function()
+		local env = LoadEscape(ESCAPING, { "ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY" })
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_ChooseEscapeRoute(0, "DISTRICT_HARBOR"))
+		assert.same(Request(env, "DISTRICT_HARBOR"), env.requests)
+	end)
+
+	it("fails for a route the city has no district for, with the screen's reason", function()
+		local env = LoadEscape(ESCAPING)
+
+		assert.equal(Failed("LOC_ESPIONAGE_ESCAPE_NO_DISTRICT(LOC_DISTRICT_AERODROME_NAME)"), env.SentientSystems_ChooseEscapeRoute(0, "DISTRICT_AERODROME"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for a district that isn't a route", function()
+		local env = LoadEscape(ESCAPING)
+
+		assert.equal(
+			Failed("DISTRICT_CAMPUS isn't an escape route. Use one of DISTRICT_HARBOR, DISTRICT_CITY_CENTER."),
+			env.SentientSystems_ChooseEscapeRoute(0, "DISTRICT_CAMPUS")
+		)
+		assert.same({}, env.requests)
+	end)
+
+	it("fails with no spy escaping, or without a spy blocker", function()
+		assert.equal(Failed(NO_SPY), LoadEscape(nil).SentientSystems_ChooseEscapeRoute(0, "DISTRICT_HARBOR"))
+		assert.equal(Failed(NO_SPY), LoadEscape(ESCAPING, {}).SentientSystems_ChooseEscapeRoute(0, "DISTRICT_HARBOR"))
+	end)
+
+	it("fails for an ID with no player", function()
+		assert.equal(Failed("ChooseEscapeRoute failed: no player 3"), LoadEscape(ESCAPING).SentientSystems_ChooseEscapeRoute(3, "DISTRICT_HARBOR"))
+	end)
+end)

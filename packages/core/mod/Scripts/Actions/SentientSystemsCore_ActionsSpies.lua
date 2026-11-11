@@ -1,7 +1,9 @@
--- The spy actions: a mission, and a trip to another city. Uses the lists of the
--- spy missions choice. The calls are in docs/findings/actions/spies.md.
+-- The spy actions: a mission, a trip to another city, and an escape route.
+-- Uses the lists of the spy missions choice and the escape screen's routes. The
+-- calls are in docs/findings/actions/spies.md.
 
 SentientSystems_Include("SentientSystemsCore_ChoicesSpyMissions")
+SentientSystems_Include("SentientSystemsCore_Espionage")
 
 -- Returns the player's spy, or the reason it can't act. A spy takes orders
 -- only when it is ready to move and awake, as the chooser opens only then. See
@@ -216,4 +218,48 @@ end
 -- out, not that it has arrived.
 function SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)
 	return SentientSystems_RunAction("SpyTravel", SpyTravel, playerID, unitID, ownerID, cityID)
+end
+
+-- Returns why the escaping spy can't take the route, or nil. This follows the
+-- escape screen's buttons, which turn off a route the city has no district for.
+local function GetEscapeRouteFailure(escape, route)
+	if escape == nil then
+		return "You have no spy escaping. The spies choice lists one when a spy is caught."
+	end
+
+	local open = {}
+
+	for _, option in ipairs(escape.routes) do
+		if option.type == route then
+			return option.blocked and option.blocked[1] or nil
+		end
+
+		if not option.blocked then
+			open[#open + 1] = option.type
+		end
+	end
+
+	return tostring(route) .. " isn't an escape route. Use one of " .. table.concat(open, ", ") .. "."
+end
+
+local function ChooseEscapeRoute(playerID, route)
+	local escape = SentientSystems_GetNextEscape(SentientSystems_GetPlayer(playerID))
+	local failure = GetEscapeRouteFailure(escape, route)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	-- Each button of the escape screen sends its district. See OnButton1.
+	local params = { [PlayerOperations.PARAM_DISTRICT_TYPE] = GameInfo.Districts[route].Index }
+
+	UI.RequestPlayerOperation(playerID, PlayerOperations.SET_ESCAPE_ROUTE, params)
+
+	return nil
+end
+
+-- Chooses the escaping spy's route, the type of one of its routes in the spies
+-- choice, and returns the result as JSON.
+function SentientSystems_ChooseEscapeRoute(playerID, route)
+	return SentientSystems_RunAction("ChooseEscapeRoute", ChooseEscapeRoute, playerID, route)
 end

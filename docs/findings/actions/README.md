@@ -12,7 +12,7 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [attacks.md](attacks.md) | The game calls the ranged, air, melee, city, and priority target attacks use, and the war check |
 | [great-people.md](great-people.md) | The game calls that activate a great person and harvest a wonder, and the reasons their checks give |
 | [great-people-screen.md](great-people-screen.md) | The game calls that recruit, pass, and patronize a great person, and the checks the game doesn't make |
-| [spies.md](spies.md) | The game calls that start a spy mission or a trip, and the reasons their checks give |
+| [spies.md](spies.md) | The game calls that start a spy mission or a trip and choose an escape route, and the reasons their checks give |
 | [religious-units.md](religious-units.md) | The game calls that found a religion, spread it, heal followers, evangelize a belief, launch an inquisition, and condemn a heretic, and the reasons their checks give |
 | [trade.md](trade.md) | The game calls that start a trade route and plunder one, and the reasons their checks give |
 | [production.md](production.md) | The game call that sets a city's production, how the panel replaces or queues an item, and the reasons its checks give |
