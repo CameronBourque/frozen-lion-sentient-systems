@@ -16,7 +16,7 @@ local function Captured(extra)
 	return city
 end
 
--- Returns the captured city choice JSON for player 0, whose data is given, or
+-- Returns the city fate choice JSON for player 0, whose data is given, or
 -- nil when it is left out, in a world with player 1 as given and the world
 -- fields in extra.
 local function ChoicesWith(player, other, extra)
@@ -30,15 +30,15 @@ local function ChoicesWith(player, other, extra)
 	FakeGame.Install(env, world)
 	Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
-	return env.SentientSystems_GetChoices(0):match("\"capturedCities\":(%b[])")
+	return env.SentientSystems_GetChoices(0):match("\"cityFates\":(%b[])")
 end
 
--- Returns the options JSON of the first city in a captured city choice.
+-- Returns the options JSON of the first city in a city fate choice.
 local function Options(json)
 	return json:match("\"options\":(%b[])")
 end
 
-describe("SentientSystems_GetCapturedCityChoices", function()
+describe("SentientSystems_GetCityFateChoices", function()
 	it("gives the captured city with keep and raze, each with the warmonger level its tooltip names", function()
 		assert.equal(
 			"[{\"city\":131073,\"districts\":2,\"kind\":\"captured\",\"name\":\"Caguana\",\"options\":["

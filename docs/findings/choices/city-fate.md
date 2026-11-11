@@ -1,10 +1,10 @@
-# Game captured cities
+# Game city fate
 
-Status: open. The `capturedCities` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons and tooltips.
+Status: open. The `cityFates` key of `SentientSystems_GetChoices`, what the player can do with a city they captured, is confirmed in a running game with Gathering Storm, with the file sent through the tuner, and matches the raze screen's buttons and tooltips.
 
 Its rebelled city, from Rise and Fall's disloyal city screen, is confirmed in the same game and matches that screen.
 
-The calls the captured city choice uses, as the raze and disloyal city screens show them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
+The calls the city fate choice uses, as the raze and disloyal city screens show them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
 ## Questions
 
@@ -65,9 +65,9 @@ A single-player game with Gathering Storm, on turn 3 of the save with 18 city-st
 
 - **The choices after a GDR took Caguana, its only city.** `[{"city":131073,"districts":0,"kind":"captured","name":"Caguana","options":[KEEP,RAZE],"population":1,"x":47,"y":40}]`, each option with its final-city tooltip naming 100 grievances.
 
-  `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` with `"choice":"capturedCities"`. The raze screen showed **Keep City** and **Raze City**, population 1, and 0 districts, and each button's tooltip read the same as its description.
+  `ENDTURN_BLOCKING_CONSIDER_RAZE_CITY` with `"choice":"cityFates"`. The raze screen showed **Keep City** and **Raze City**, population 1, and 0 districts, and each button's tooltip read the same as its description.
 - **The choices through the bridge's readers.** Parsed, with the same values.
-- **The choices on turn 24 of another save, after Stockholm rebelled to join the player.** The choice below, each option with its fixed tooltip, and `ENDTURN_BLOCKING_CONSIDER_DISLOYAL_CITY` with `"choice":"capturedCities"`:
+- **The choices on turn 24 of another save, after Stockholm rebelled to join the player.** The choice below, each option with its fixed tooltip, and `ENDTURN_BLOCKING_CONSIDER_DISLOYAL_CITY` with `"choice":"cityFates"`:
 
   ```json
   [{"city":589832,"districts":0,"kind":"disloyal","name":"Stockholm","options":[KEEP,REJECT],"population":1,"x":47,"y":27}]

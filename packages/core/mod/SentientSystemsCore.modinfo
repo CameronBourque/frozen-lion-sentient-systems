@@ -28,6 +28,7 @@
 			<File>Scripts/SentientSystemsCore_GreatPeople.lua</File>
 			<File>Scripts/SentientSystemsCore_Artifacts.lua</File>
 			<File>Scripts/SentientSystemsCore_GreatWorks.lua</File>
+			<File>Scripts/SentientSystemsCore_CityFate.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
@@ -61,7 +62,7 @@
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua</File>
-			<File>Scripts/Choices/SentientSystemsCore_ChoicesCapturedCities.lua</File>
+			<File>Scripts/Choices/SentientSystemsCore_ChoicesCityFate.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesSpies.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesTradeRoutes.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesSpyMissions.lua</File>
@@ -115,6 +116,7 @@
 		<File>Scripts/SentientSystemsCore_GreatPeople.lua</File>
 		<File>Scripts/SentientSystemsCore_Artifacts.lua</File>
 		<File>Scripts/SentientSystemsCore_GreatWorks.lua</File>
+		<File>Scripts/SentientSystemsCore_CityFate.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
@@ -148,7 +150,7 @@
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesReligion.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesEnvoys.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesGreatPeople.lua</File>
-		<File>Scripts/Choices/SentientSystemsCore_ChoicesCapturedCities.lua</File>
+		<File>Scripts/Choices/SentientSystemsCore_ChoicesCityFate.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesSpies.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesTradeRoutes.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesSpyMissions.lua</File>

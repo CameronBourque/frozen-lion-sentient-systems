@@ -80,7 +80,7 @@ The turn 24 save has 19 major players, 10 of them known to the player. The turn 
 | `purchases` | 14,700 (21%) | 17,994 (15%) |
 | `governments` | 4,673 (7%) | 4,360 (4%) |
 | `policies` | 3,536 (5%) | 11,360 (9%) |
-| `techs`, `civics`, `governors`, `government`, `capturedCities`, and `envoys` | 4,331 | 5,561 |
+| `techs`, `civics`, `governors`, `government`, `cityFates`, and `envoys` | 4,331 | 5,561 |
 | Tech tree | 21,118 | 21,189 |
 | Civic tree | 19,017 | 16,658 |
 

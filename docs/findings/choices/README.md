@@ -12,7 +12,7 @@ The game calls the choices use to list each choice's legal options, as the game'
 | [government.md](government.md) | The calls the government and policy choices use, as the government screen shows them |
 | [religion.md](religion.md) | The calls the religion choices use, as the religion screens show them |
 | [great-people.md](great-people.md) | The calls the great person choice and the great people in the state use, as the Great People screen shows them |
-| [captured-cities.md](captured-cities.md) | The calls the captured city choice uses, as the raze and disloyal city screens show them |
+| [city-fate.md](city-fate.md) | The calls the city fate choice uses, as the raze and disloyal city screens show them |
 | [spies.md](spies.md) | The calls the spy choice uses, as the escape screen shows it |
 | [spy-missions.md](spy-missions.md) | The calls the spy missions choice uses, as the espionage chooser lists a ready spy's destinations and missions |
 | [trade-routes.md](trade-routes.md) | The calls the trade route choice uses, as the route chooser lists a trader's destinations and their yields |

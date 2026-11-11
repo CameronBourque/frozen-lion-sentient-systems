@@ -1,11 +1,11 @@
-// The schema for the captured city choice: what to do with a captured city,
-// as the raze screen offers it, or a rebelled one, as the disloyal city
-// screen offers it.
+// The schema for the city fate choice: what to do with a captured city, as
+// the raze screen offers it, or a rebelled one, as the disloyal city screen
+// offers it.
 
 import { z } from "zod";
 import { POSITION } from "../schemas.js";
 
-export const CAPTURED_CITIES_CHOICE = z.array(z.object({
+export const CITY_FATE_CHOICE = z.array(z.object({
 	kind: z.enum(["captured", "disloyal"]),
 	city: z.number(),
 	name: z.string(),

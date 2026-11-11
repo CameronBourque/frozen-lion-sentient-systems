@@ -6,7 +6,7 @@ import { z } from "zod";
 import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
 import { ARTIFACTS_CHOICE } from "./artifacts.js";
-import { CAPTURED_CITIES_CHOICE } from "./captured-cities.js";
+import { CITY_FATE_CHOICE } from "./city-fate.js";
 import { DEDICATIONS_CHOICE } from "./dedications.js";
 import { EMERGENCIES_CHOICE } from "./emergencies.js";
 import { ENVOY_CHOICE } from "./envoys.js";
@@ -40,7 +40,7 @@ export const CHOICES = z.object({
 	religion: RELIGION_CHOICE,
 	envoys: ENVOY_CHOICE,
 	greatPeople: GREAT_PEOPLE_CHOICE,
-	capturedCities: CAPTURED_CITIES_CHOICE,
+	cityFates: CITY_FATE_CHOICE,
 	spies: SPIES_CHOICE,
 	tradeRoutes: TRADE_ROUTES_CHOICE,
 	spyMissions: SPY_MISSIONS_CHOICE,
