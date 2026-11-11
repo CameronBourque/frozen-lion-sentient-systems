@@ -46,6 +46,8 @@ An action is one Lua function that the bridge calls to run a request function of
 | Research kinds | `SENTIENTSYSTEMS_RESEARCH_KINDS` in `mod/Scripts/SentientSystemsCore_Research.lua`, which the research choices, trees, and actions share |
 | Government rules | The change rules, the policy check, and the unlock in `mod/Scripts/SentientSystemsCore_Government.lua`, which the government choices and the policy and government actions share |
 | Religion rules | `SentientSystems_IsBeliefTaken` and `SentientSystems_GetBeliefPicks` in `mod/Scripts/SentientSystemsCore_Religion.lua`, which the religion choices and actions share |
+| Great work rules | The slots, the lock, and the move rules in `mod/Scripts/SentientSystemsCore_GreatWorks.lua`, which the great works state and actions share |
+| Artifact rules | `SentientSystems_GetNextArtifact` in `mod/Scripts/SentientSystemsCore_Artifacts.lua`, which the artifact choice and action share |
 | Governor rules | The panel's checks and the assignment chooser's cities in `mod/Scripts/SentientSystemsCore_Governors.lua`, which the governor choices and actions share |
 | Great people rules | `SENTIENTSYSTEMS_PATRONAGE` and `SentientSystems_GetPatronage` in `mod/Scripts/SentientSystemsCore_GreatPeople.lua`, which the great people state and actions share |
 | Policy request fake | `RequestPolicyChanges` and `RequestChangeGovernment` on the culture in `mod/Test/FakeGame/Governments.lua`, which put each change in `env.requests` |

@@ -57,6 +57,17 @@ function SentientSystems_HasBlocker(playerID, ...)
 	return false
 end
 
+-- Returns whether the list holds the value.
+function SentientSystems_Contains(list, value)
+	for _, item in ipairs(list) do
+		if item == value then
+			return true
+		end
+	end
+
+	return false
+end
+
 -- Escapes text for one tagged line: each backslash as \\, each newline as \n,
 -- and each percent sign as \p, because the game's log prints text as a printf
 -- format, where a raw % prints garbage or crashes the game. See

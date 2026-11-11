@@ -64,3 +64,15 @@ It also added the Apostle's evangelize and inquisition orders, the governor acti
 - The reasons are in [design/core/mod/actions/religion.md](../../../design/core/mod/actions/religion.md), [great-people.md](../../../design/core/mod/actions/great-people.md), [governors.md](../../../design/core/mod/actions/governors.md), and [envoys.md](../../../design/core/mod/actions/envoys.md).
 - The calls and the checks the game doesn't make are in [actions/religion.md](../../../findings/actions/religion.md), [actions/great-people-screen.md](../../../findings/actions/great-people-screen.md), [actions/religious-units.md](../../../findings/actions/religious-units.md), [actions/governors.md](../../../findings/actions/governors.md), and [actions/envoys.md](../../../findings/actions/envoys.md).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
+
+## Action API: great works
+
+Pull request: feat(core): add the great work and artifact actions.
+
+It added the action that moves a great work to another slot, or swaps it with the work there, and the action that chooses whose artifact an archaeologist uncovers. Each action checks the screen's rules first, because the game takes illegal requests.
+
+The great works state and the move action share their slot rules, and the artifact choice and action share the artifact the archaeologist digs.
+
+- The reasons are in [design/core/mod/actions/great-works.md](../../../design/core/mod/actions/great-works.md).
+- The calls and the checks the game doesn't make are in [actions/great-works.md](../../../findings/actions/great-works.md).
+- The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
