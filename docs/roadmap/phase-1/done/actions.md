@@ -52,3 +52,15 @@ It added the tech and civic actions with their queues, and the actions that set 
 - The reasons are in [design/core/mod/actions/research.md](../../../design/core/mod/actions/research.md) and [design/core/mod/actions/government.md](../../../design/core/mod/actions/government.md).
 - The calls and the checks the game doesn't make are in [actions/research.md](../../../findings/actions/research.md) and [actions/policies.md](../../../findings/actions/policies.md).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
+
+## Action API: religion and rewards
+
+Pull request: feat(core): add the religion, governor, and reward actions.
+
+It added the actions that found a pantheon, recruit, pass, and patronize a great person, found a religion with its beliefs, and add a belief.
+
+It also added the Apostle's evangelize and inquisition orders, the governor actions that appoint, promote, and assign, and the envoy action. Each action checks the screen's rules first, because the game takes illegal requests.
+
+- The reasons are in [design/core/mod/actions/religion.md](../../../design/core/mod/actions/religion.md), [great-people.md](../../../design/core/mod/actions/great-people.md), [governors.md](../../../design/core/mod/actions/governors.md), and [envoys.md](../../../design/core/mod/actions/envoys.md).
+- The calls and the checks the game doesn't make are in [actions/religion.md](../../../findings/actions/religion.md), [actions/great-people-screen.md](../../../findings/actions/great-people-screen.md), [actions/religious-units.md](../../../findings/actions/religious-units.md), [actions/governors.md](../../../findings/actions/governors.md), and [actions/envoys.md](../../../findings/actions/envoys.md).
+- The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).

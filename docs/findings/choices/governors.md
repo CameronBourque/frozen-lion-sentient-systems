@@ -22,12 +22,12 @@ The panel's files, and the calls for the titles and the appointed governors, are
 
   It shows the card's `GetTurnsToEstablish(hash)` and the row's `IdentityPressure`, and turns **Appoint** on when `CanAppoint()` is `true` and the screen isn't read-only.
 
-  Appointing sends `PlayerOperations.APPOINT_GOVERNOR` with the governor's index in `PARAM_GOVERNOR_TYPE`. With 1 title, Victor, Amani, Moksha, and Liang could be appointed, and Ibrahim never could.
+  The requests are in [actions/governors.md](../actions/governors.md#requests). With 1 title, Victor, Amani, Moksha, and Liang could be appointed, and Ibrahim never could.
 
   After Amani was appointed, `CanAppoint()` was `false` and the choice had no `appoint`. `GovernorDetailsPanel.lua`, lines 48 to 148, shows each candidate's `Description`. Confirmed in files and on Windows on 2026-10-27.
 - **Promoting.** `CreatePromotionTree`, lines 150 to 230, lists each promotion of the governor's `GovernorPromotionSets()`, and turns a button on when `CanEarnPromotion(governorHash, promotionHash)` is `true` and the governor doesn't have it, and the screen isn't read-only.
 
-  The panel shows **Promote** for a governor for whom `CanPromoteGovernor(hash)` is `true`. Promoting sends `PROMOTE_GOVERNOR` with `PARAM_GOVERNOR_TYPE` and `PARAM_GOVERNOR_PROMOTION_TYPE`, the promotion's index.
+  The panel shows **Promote** for a governor for whom `CanPromoteGovernor(hash)` is `true`.
 
   With 1 title, Pingala could earn Curator and Space Initiative, Magnus Industrialist and Black Marketeer, and Reyna Harbormaster and Forestry Management.
 
@@ -38,7 +38,7 @@ The panel's files, and the calls for the titles and the appointed governors, are
 
   A city-state's city or a capital is turned off, with the reasons, when `CanAssignGovernor(hash, city, true)` returns `false` and a table with the reasons in `PlayerOperationResults.FAILURE_REASONS`.
 
-  The player's own cities are never turned off. Assigning sends `ASSIGN_GOVERNOR` with `PARAM_GOVERNOR_TYPE`, `PARAM_PLAYER_ONE`, the city's owner, and `PARAM_CITY_DEST`, its ID. A neutralized governor's **Assign** button is off.
+  The player's own cities are never turned off. A neutralized governor's **Assign** button is off.
 
   Pingala got the 8 cities but Rome, and Amani, with no city, the 9 cities and the cities of the 8 city-states met, with none turned off. Confirmed in files and on Windows on 2026-10-27.
 - **Read-only.** With Gathering Storm, `IsReadOnly` is `true` while the World Congress is in session, and every button is off. Confirmed in files.
@@ -47,7 +47,7 @@ The panel's files, and the calls for the titles and the appointed governors, are
 ## Method
 
 1. To read a choice that the `.modinfo` doesn't load yet, send the code as in [choices/production.md](production.md#method), step 4.
-2. To appoint a governor without the panel, send `UI.RequestPlayerOperation(0, PlayerOperations.APPOINT_GOVERNOR, params)` in `SentientSystemsCore_UI`, with the governor's index in `params[PlayerOperations.PARAM_GOVERNOR_TYPE]`. It spends the title.
+2. To appoint a governor without the panel, use the appoint action, as in [actions/governors.md](../actions/governors.md#method). It spends the title.
 
 ## Results
 

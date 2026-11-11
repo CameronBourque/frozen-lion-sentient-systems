@@ -2,6 +2,8 @@
 -- them. Follows PantheonChooser.lua and ReligionScreen.lua.
 -- Shape: bridge/src/choices/religion.ts.
 
+SentientSystems_Include("SentientSystemsCore_Religion")
+
 -- Returns the pantheon choice. Returns nil unless the player can found a
 -- pantheon now, as the launch bar opens the chooser only then. See Realize and
 -- CanSelectBelief in PantheonChooser.lua, and LaunchBar.lua.
@@ -16,27 +18,12 @@ function SentientSystems_GetPantheonChoices(player)
 	local beliefs = {}
 
 	for row in GameInfo.Beliefs() do
-		if row.BeliefClassType == "BELIEF_CLASS_PANTHEON"
-			and not gameReligion:IsInSomePantheon(row.Index)
-			and not gameReligion:IsInSomeReligion(row.Index)
-		then
+		if row.BeliefClassType == "BELIEF_CLASS_PANTHEON" and not SentientSystems_IsBeliefTaken(gameReligion, row.Index) then
 			beliefs[#beliefs + 1] = { type = row.BeliefType, description = SentientSystems_LookupText(row.Description) }
 		end
 	end
 
 	return { beliefs = beliefs }
-end
-
--- Returns the beliefs the founder of a religion has added to it, or none before
--- they found one.
-local function CountBeliefs(playerID)
-	for _, entry in ipairs(Game.GetReligion():GetReligions()) do
-		if entry.Founder == playerID then
-			return #entry.Beliefs
-		end
-	end
-
-	return 0
 end
 
 -- Returns the religions that no player has founded, in the game's order. See
@@ -65,8 +52,7 @@ local function GetBeliefOptions(religionType)
 
 	for row in GameInfo.Beliefs() do
 		if row.BeliefClassType ~= "BELIEF_CLASS_PANTHEON"
-			and not gameReligion:IsInSomePantheon(row.Index)
-			and not gameReligion:IsInSomeReligion(row.Index)
+			and not SentientSystems_IsBeliefTaken(gameReligion, row.Index)
 			and not gameReligion:IsTooManyForReligion(row.Index, religionType)
 		then
 			rows[#rows + 1] = row
@@ -99,7 +85,7 @@ end
 -- in ReligionScreen.lua, and OnBeliefSelected.
 function SentientSystems_GetReligionChoices(player)
 	local religion = player:GetReligion()
-	local picks = religion:GetNumBeliefsEarned() - CountBeliefs(player:GetID())
+	local picks = SentientSystems_GetBeliefPicks(player)
 	local religionType = religion:GetReligionTypeCreated()
 
 	if religion:GetPantheon() < 0 or picks <= 0 then

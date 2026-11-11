@@ -1,6 +1,6 @@
--- The governor rules that the state, the choice, and the tree share: which
--- governors are Secret Societies, their promotions, and which ones the panel
--- hides. Follows GovernorSupport.lua.
+-- The governor rules that the state, the choice, the tree, and the actions
+-- share: Secret Societies, promotions, what the panel hides, and what its
+-- buttons allow. Follows GovernorSupport.lua and GovernorPanel.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Text")
@@ -90,4 +90,98 @@ function SentientSystems_GetPromotionTexts(promotion, governor)
 	local description = Locale.Lookup(HIDDEN_DESCRIPTION_KEY)
 
 	return name ~= HIDDEN_NAME_KEY and name or "?", description ~= HIDDEN_DESCRIPTION_KEY and SentientSystems_CleanText(description) or "?", true
+end
+
+-- Returns why the Governors panel is closed to the player, or nil: a game
+-- without Rise and Fall, or Gathering Storm's World Congress in session, which
+-- turns every button off. See Refresh in GovernorPanel.lua, and IsReadOnly.
+function SentientSystems_GetGovernorsClosedReason(player)
+	if player.GetGovernors == nil then
+		return "This game has no governors. They come with Rise and Fall."
+	end
+
+	if SentientSystems_HasExpansion2() and Game.GetWorldCongress():IsInSession() then
+		return "The World Congress is in session. Act on governors after it ends."
+	end
+
+	return nil
+end
+
+-- Returns whether the panel shows an Appoint button for a governor the player
+-- hasn't appointed. It turns the button off without a title to spend. See
+-- Refresh in GovernorPanel.lua.
+function SentientSystems_IsAppointable(governors, definition)
+	return not governors:HasGovernor(definition.Hash) and governors:CanEverAppointGovernor(definition.Hash)
+end
+
+-- Returns whether an appointed governor can earn a promotion now. See
+-- CreatePromotionTree in GovernorDetailsPanel.lua.
+function SentientSystems_IsPromotionEarnable(governors, governor, definition, promotion)
+	return not governor:HasPromotion(promotion.Hash) and governors:CanEarnPromotion(definition.Hash, promotion.Hash)
+end
+
+-- Returns whether the panel turns a governor's Assign button on: not for a
+-- Secret Society, nor for a neutralized governor. See Refresh in
+-- GovernorPanel.lua.
+function SentientSystems_IsAssignable(governor, definition)
+	return not SentientSystems_IsCannotAssign(definition) and governor:GetNeutralizedTurns() == 0
+end
+
+-- Returns the game's reasons a governor can't be assigned to a city, as text,
+-- or nil when they can. The chooser checks the cities of city-states and the
+-- capitals of other players this way, and shows the reasons with the city
+-- turned off. See RefreshBottomPanel in GovernorAssignmentChooser.lua.
+local function GetBlockedReasons(governors, definition, city)
+	local allowed, results = governors:CanAssignGovernor(definition.Hash, city, true)
+
+	if allowed then
+		return nil
+	end
+
+	return SentientSystems_GetFailureReasons(results, PlayerOperationResults.FAILURE_REASONS)
+end
+
+-- Returns the places a governor can go, in the chooser's order, each a table
+-- of the city and the reasons it is turned off, or nil. These are each of the
+-- player's cities but the one the governor is in, then for an Ambassador the
+-- cities of the city-states the player has met, then for a governor that can
+-- govern abroad the capitals of the players they have met. See
+-- RefreshBottomPanel in GovernorAssignmentChooser.lua, and AddCityInstance.
+function SentientSystems_GetAssignTargets(player, governors, governor, definition)
+	local current = governor:GetAssignedCity()
+	local targets = {}
+
+	local function Add(city, reasons)
+		if current == nil or current:GetOwner() ~= city:GetOwner() or current:GetID() ~= city:GetID() then
+			targets[#targets + 1] = { city = city, reasons = reasons }
+		end
+	end
+
+	for _, city in player:GetCities():Members() do
+		Add(city)
+	end
+
+	if governor:IsGovernCityState() then
+		for _, cityState in ipairs(PlayerManager.GetAliveMinors()) do
+			local influence = cityState:GetInfluence()
+
+			if influence ~= nil and influence:CanReceiveInfluence() and player:GetDiplomacy():HasMet(cityState:GetID()) then
+				for _, city in cityState:GetCities():Members() do
+					Add(city, GetBlockedReasons(governors, definition, city))
+				end
+			end
+		end
+	end
+
+	if governor:CanAssignToMajorCiv() then
+		for _, major in ipairs(PlayerManager.GetAliveMajors()) do
+			local capital = player:GetDiplomacy():HasMet(major:GetID()) and major:GetCities():GetCapitalCity()
+
+			if capital then
+				Add(capital, GetBlockedReasons(governors, definition, capital))
+			end
+		end
+	end
+
+	return targets
 end

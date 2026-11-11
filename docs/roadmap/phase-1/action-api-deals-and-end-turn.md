@@ -19,12 +19,17 @@ Add the actions that answer a deal, declare war, and end the turn. Part of [phas
 4. **Cinematic popups.** With the wonder built popup open, send a request and the end turn call, and record whether the `CINEMATIC` interface mode stops them. Then make the core mod skip the cinematic popups for an agent player, so no one has to press **Close**.
 
    Start with `WonderBuiltPopup.lua`, then check the other popups that set the mode. See [ending the turn](../../findings/actions/end-turn.md#questions). Commit: `feat(core): skip the cinematic popups for agent players`.
+5. **Secret Society popup.** With the joined popup open, send a request and the end turn call, and record whether the popup stops them. Then make the core mod close the popup for an agent player, so no one has to press **Continue**.
+
+   `DLC/Ethiopia/UI/Additions/SecretSocietyPopup.lua` queues it for the local player only, from the joined and discovered notifications. It sets no interface mode and isn't an end-turn blocker.
+
+   Test it in a save with Secret Societies on. Commit: `feat(core): close the secret society popup for agent players`.
 
 ## Done when
 
 In a running game, each action works once from the bridge. `endTurn` without `force` returns the blocker as its reason while one is left, `respondToDeal` returns a reason when no deal is waiting, and `declareWar` returns a reason for a player already at war.
 
-With an agent as the local player, a wonder that the player completes shows no popup and doesn't hold up the next request.
+With an agent as the local player, a wonder that the player completes shows no popup and doesn't hold up the next request. Neither does a Secret Society the player joins.
 
 ## Record
 

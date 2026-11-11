@@ -2,42 +2,7 @@
 -- PopulateData and AddRecruit in GreatPeoplePopup.lua.
 -- Shape: bridge/src/state/great-people.ts.
 
--- The screen hides a patronage cost at or above this, which the game gives a
--- great person the player can't earn.
-local MAX_PATRONAGE_COST = 1000000
-
--- The patronage yields, each with the capability the screen checks for its
--- button.
-local PATRONAGE = {
-	{ key = "gold", yield = "GOLD", capability = "CAPABILITY_GREAT_PEOPLE_RECRUIT_WITH_GOLD" },
-	{ key = "faith", yield = "FAITH", capability = "CAPABILITY_GREAT_PEOPLE_RECRUIT_WITH_FAITH" },
-}
-
--- Returns the patronage costs of a great person, gold and faith. The screen
--- shows a button only while the player can neither recruit nor pass the person,
--- and turns it off while Gathering Storm's World Congress is in session.
--- Returns nil when it shows neither. See AddRecruit in GreatPeoplePopup.lua,
--- and IsReadOnly in GreatPeoplePopup_Expansion2.lua.
-local function GetPatronage(greatPeople, playerID, individual)
-	if greatPeople:CanRecruitPerson(playerID, individual) or greatPeople:CanRejectPerson(playerID, individual) then
-		return nil
-	end
-
-	local readOnly = SentientSystems_HasExpansion2() and Game.GetWorldCongress():IsInSession()
-	local patronage
-
-	for _, entry in ipairs(PATRONAGE) do
-		local yield = YieldTypes[entry.yield]
-		local cost = greatPeople:GetPatronizeCost(playerID, individual, yield)
-
-		if GameCapabilities.HasCapability(entry.capability) and cost < MAX_PATRONAGE_COST then
-			patronage = patronage or {}
-			patronage[entry.key] = { cost = cost, can = greatPeople:CanPatronizePerson(playerID, individual, yield) and not readOnly }
-		end
-	end
-
-	return patronage
-end
+SentientSystems_Include("SentientSystemsCore_GreatPeople")
 
 -- Returns each major player's progress toward a class of great person. The most
 -- points come first, then the lowest ID. See PopulateData in
@@ -86,7 +51,7 @@ local function GetGreatPerson(player, greatPeople, entry)
 		name = Locale.Lookup(individual.Name),
 		era = GameInfo.Eras[entry.Era].EraType,
 		cost = entry.Cost,
-		patronage = GetPatronage(greatPeople, playerID, entry.Individual),
+		patronage = SentientSystems_GetPatronage(greatPeople, playerID, entry.Individual),
 		cantEarn = SentientSystems_CleanText(cantEarn),
 		progress = GetProgress(player, entry.Class),
 	}

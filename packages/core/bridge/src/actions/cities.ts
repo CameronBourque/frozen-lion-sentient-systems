@@ -1,7 +1,7 @@
 // The city actions, which run the calls in
 // Scripts/Actions/SentientSystemsCore_ActionsCities.lua.
 
-import type { Position } from "../schemas.js";
+import type { Position, PurchaseYield } from "../schemas.js";
 import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
 
@@ -38,7 +38,7 @@ export function queueProduction(client: TunerClient, playerID: number, cityID: n
 // Buys a unit or a building in a city. The item is the type of an option of the
 // purchases choice, such as UNIT_BUILDER, and the yield is the key it is listed
 // under. An ok result means the game took the order.
-export function purchase(client: TunerClient, playerID: number, cityID: number, item: string, yieldKey: "gold" | "faith"): Promise<ActionResult> {
+export function purchase(client: TunerClient, playerID: number, cityID: number, item: string, yieldKey: PurchaseYield): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_Purchase(${playerID}, ${cityID}, ${JSON.stringify(item)}, ${JSON.stringify(yieldKey)})`);
 }
 

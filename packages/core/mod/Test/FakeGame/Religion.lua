@@ -7,12 +7,12 @@ return function(env, world, ctx)
 	env.GameInfo.Beliefs = ctx.TypedRows({}, "BeliefType")
 	env.GameInfo.Religions = ctx.TypedRows({}, "ReligionType")
 
-
 	for _, belief in ipairs(world.beliefs or {}) do
 		AddRow("Beliefs", "BeliefType", belief.type)
 
 		local row = env.GameInfo.Beliefs[indexes[belief.type]]
 
+		row.Hash = ctx.NextHash(5000000, belief.type)
 		row.BeliefClassType = belief.class or "BELIEF_CLASS_PANTHEON"
 		row.Description = belief.description
 		row.taken = belief.taken
@@ -24,6 +24,8 @@ return function(env, world, ctx)
 
 		local row = env.GameInfo.Religions[indexes[religion.type]]
 
+		row.Hash = ctx.NextHash(5000000, religion.type)
+		row.Name = religion.name or "LOC_" .. religion.type .. "_NAME"
 		row.Pantheon = religion.pantheon == true
 		row.RequiresCustomName = religion.customName == true
 		row.founded = religion.founded
