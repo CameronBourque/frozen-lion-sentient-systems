@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.16.0...core-v0.17.0) (2026-11-11)
+
+
+### Features
+
+* **core:** add the great work and artifact actions ([#83](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/83)) ([1c25896](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/1c25896276b865edf91031d6d6a0621dbccdbc9e))
+
 ## [0.16.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.15.0...core-v0.16.0) (2026-11-11)
 
 
