@@ -24,12 +24,17 @@ Add the actions that answer a deal, declare war, and end the turn. Part of [phas
    `DLC/Ethiopia/UI/Additions/SecretSocietyPopup.lua` queues it for the local player only, from the joined and discovered notifications. It sets no interface mode and isn't an end-turn blocker.
 
    Test it in a save with Secret Societies on. Commit: `feat(core): close the secret society popup for agent players`.
+6. **Artifact popup.** After the player chooses an artifact, a popup shows the great work it became. With it open, send a request and the end turn call, and record whether the popup stops them. Then make the core mod close the popup for an agent player, so no one has to press **Close**.
+
+   Start with `GreatWorkShowcase.lua`, and check whether it sets the `CINEMATIC` interface mode or is an end-turn blocker. See [great-works.md](../../findings/actions/great-works.md#artifact-request).
+
+   Test it in a save with an archaeologist digging, as for the artifact action. Commit: `feat(core): close the artifact popup for agent players`.
 
 ## Done when
 
 In a running game, each action works once from the bridge. `endTurn` without `force` returns the blocker as its reason while one is left, `respondToDeal` returns a reason when no deal is waiting, and `declareWar` returns a reason for a player already at war.
 
-With an agent as the local player, a wonder that the player completes shows no popup and doesn't hold up the next request. Neither does a Secret Society the player joins.
+With an agent as the local player, a wonder that the player completes shows no popup and doesn't hold up the next request. Neither does a Secret Society the player joins, or an artifact the player chooses.
 
 ## Record
 
