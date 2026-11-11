@@ -10,7 +10,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. When does the raze screen offer `LIBERATE_PREVIOUS_OWNER`? After each capture, `GetOwnerBeforeOccupation()` read the capturing player, so the option didn't show.
+1. When does the raze screen offer `LIBERATE_PREVIOUS_OWNER`? Its button is **Liberate to Pre-War Owner**, but after each capture, `GetOwnerBeforeOccupation()` read the capturing player, so the option didn't show. A city that flipped to the Free Cities by loyalty didn't offer it either.
 
 ## What we know now
 
@@ -32,9 +32,13 @@ Confirmed on Windows on 2026-11-11.
 
 ### Previous owner
 
-Right after a capture, `GetOwnerBeforeOccupation()` returned the capturing player, 0, for a city taken from a major player and for one taken from the Free Cities. The city's owner before the capture was in `GetJustConqueredFrom()`.
+Right after a capture, `GetOwnerBeforeOccupation()` returned the capturing player, 0. It did so for a city taken from a major player, for one taken from the Free Cities, and for one that had flipped to the Free Cities from a major player by loyalty the turn before.
 
-The raze screen offers `LIBERATE_PREVIOUS_OWNER` only when the player can liberate to `GetOwnerBeforeOccupation()` and it isn't `GetJustConqueredFrom()`, so neither capture offered it. Confirmed on Windows on 2026-11-11.
+The city's owner before the capture was in `GetJustConqueredFrom()`.
+
+The raze screen offers `LIBERATE_PREVIOUS_OWNER` only when the player can liberate to `GetOwnerBeforeOccupation()` and it isn't `GetJustConqueredFrom()`, so no capture offered it.
+
+Its button label, `LOC_RAZE_CITY_LIBERATE_PREWAR_OWNER_BUTTON_LABEL`, reads **Liberate to Pre-War Owner**. Confirmed in files and on Windows on 2026-11-11.
 
 ## Method
 
@@ -80,6 +84,14 @@ Brussels, city 983053, taken from the Free Cities, player 62. Its founder, the c
 | Call | Result |
 | --- | --- |
 | `decideCity` with `LIBERATE_FOUNDER` | `{"ok":true}`. The blocker cleared, and player 18 was alive with Brussels as its one city |
+
+A third save, where Mekele, founded by player 8, flipped from player 10 to the Free Cities when `ChangeLoyalty` in `GameCore_Tuner` left it at 1.7 loyalty.
+
+Taken by a Giant Death Robot the next turn as city 1048591, it offered `LIBERATE_FOUNDER` to player 8, `KEEP`, and `RAZE`, with `GetOwnerBeforeOccupation()` 0:
+
+| Call | Result |
+| --- | --- |
+| `decideCity` with `LIBERATE_PREVIOUS_OWNER` | `LIBERATE_PREVIOUS_OWNER isn't an option for Mekele. Use one of LIBERATE_FOUNDER, KEEP, RAZE.` |
 
 The saves were only test saves. In the first, the player is at war with Valletta's city-state, which no longer has a city, and has a Giant Death Robot next to where it stood.
 
