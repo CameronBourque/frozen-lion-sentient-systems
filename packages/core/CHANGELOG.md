@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.19.0...core-v0.20.0) (2026-11-12)
+
+
+### Features
+
+* **core:** add the deal and end turn actions ([#91](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/91)) ([a9037e0](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/a9037e0b48ee337bc3e4bbd34519ccdf9bc1c1ae))
+
 ## [0.19.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.18.0...core-v0.19.0) (2026-11-12)
 
 
