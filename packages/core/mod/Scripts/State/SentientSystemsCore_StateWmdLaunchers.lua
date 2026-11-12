@@ -1,42 +1,14 @@
 -- The WMD launchers section: the units and missile silos that can launch each
 -- device the player has now. Shape: bridge/src/state/wmd-launchers.ts.
 
--- Returns how many of each device the player has, by type, leaving out a
--- device at 0, or nil when the player has none, as the top bar hides a count
--- at 0. See OnWMDUpdate in TopPanel.lua. The player section uses it too.
-function SentientSystems_GetWmdStockpile(player)
-	local wmds = player:GetWMDs()
-	local stockpile = nil
-
-	for row in GameInfo.WMDs() do
-		local count = wmds:GetWeaponCount(row.Index)
-
-		if count > 0 then
-			stockpile = stockpile or {}
-			stockpile[row.WeaponType] = count
-		end
-	end
-
-	return stockpile
-end
-
--- Returns whether the unit can launch the device now. The unit panel shows no
--- operations for a unit with no moves left, though CanStartOperation still
--- allows the strike, and asks CanStartOperation for each device. See
--- GetUnitActionsTable in UnitPanel.lua.
-local function CanUnitLaunch(unit, parameters)
-	return SentientSystems_IsUnitOnMap(unit)
-		and unit:GetMovesRemaining() > 0
-		and UnitManager.CanStartOperation(unit, UnitOperationTypes.WMD_STRIKE, nil, parameters)
-end
+SentientSystems_Include("SentientSystemsCore_Wmds")
 
 -- Returns the IDs of the units that can launch the device now.
 local function GetReadyUnits(player, wmd)
-	local parameters = { [UnitOperationTypes.PARAM_WMD_TYPE] = wmd.Index }
 	local ready = {}
 
 	for _, unit in player:GetUnits():Members() do
-		if CanUnitLaunch(unit, parameters) then
+		if SentientSystems_IsUnitOnMap(unit) and SentientSystems_CanUnitLaunch(unit, wmd) then
 			ready[#ready + 1] = unit:GetID()
 		end
 	end
@@ -44,31 +16,15 @@ local function GetReadyUnits(player, wmd)
 	return ready
 end
 
--- Returns whether the silo on the plot can launch the device now. A silo fires
--- through its city, and its banner counts it ready when the city has targets
--- for it. See UpdateWMDBanner in CityBannerManager.lua.
-local function IsSiloReady(city, plot, wmd)
-	local parameters = {
-		[CityCommandTypes.PARAM_WMD_TYPE] = wmd.Index,
-		[CityCommandTypes.PARAM_X0] = plot:GetX(),
-		[CityCommandTypes.PARAM_Y0] = plot:GetY(),
-	}
-	local results = CityManager.GetCommandTargets(city, CityCommandTypes.WMD_STRIKE, parameters)
-
-	return results ~= nil and results[CityCommandResults.PLOTS] ~= nil
-end
-
--- Returns the player's missile silos, each with its plot and city. A silo is
--- an improvement with weapon slots, as the banner finds it.
+-- Returns the player's missile silos, each with its plot and city.
 local function GetSilos(player)
 	local silos = {}
 
 	for _, city in player:GetCities():Members() do
 		for _, plotID in ipairs(Map.GetCityPlots():GetPurchasedPlots(city)) do
 			local plot = Map.GetPlotByIndex(plotID)
-			local improvement = GameInfo.Improvements[plot:GetImprovementType()]
 
-			if improvement ~= nil and improvement.WeaponSlots > 0 then
+			if SentientSystems_IsSilo(plot) then
 				silos[#silos + 1] = { plot = plot, city = city }
 			end
 		end
@@ -82,8 +38,8 @@ local function GetReadySilos(silos, wmd)
 	local ready = {}
 
 	for _, silo in ipairs(silos) do
-		if IsSiloReady(silo.city, silo.plot, wmd) then
-			ready[#ready + 1] = { x = silo.plot:GetX(), y = silo.plot:GetY() }
+		if SentientSystems_GetSiloTargets(silo.city, silo.plot, wmd) ~= nil then
+			ready[#ready + 1] = SentientSystems_GetPosition(silo.plot)
 		end
 	end
 

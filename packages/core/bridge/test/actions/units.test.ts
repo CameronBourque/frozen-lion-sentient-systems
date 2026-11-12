@@ -52,6 +52,12 @@ describe("unit actions", () => {
 		expect(await unitAction(client, 0, 4456460, { action: "attack", x: 38, y: 38 })).toEqual({ ok: true });
 	});
 
+	test("unitAction passes the tile and the device of a strike", async () => {
+		answer("SentientSystems_UnitAction(0, 9371649, \"wmd_strike\", 50, 30, \"WMD_THERMONUCLEAR_DEVICE\")", "{\"ok\":true}");
+
+		expect(await unitAction(client, 0, 9371649, { action: "wmd_strike", x: 50, y: 30, device: "WMD_THERMONUCLEAR_DEVICE" })).toEqual({ ok: true });
+	});
+
 	test("unitAction passes an improvement as text", async () => {
 		answer("SentientSystems_UnitAction(0, 9437197, \"improve\", nil, nil, \"IMPROVEMENT_FARM\")", "{\"ok\":true}");
 
