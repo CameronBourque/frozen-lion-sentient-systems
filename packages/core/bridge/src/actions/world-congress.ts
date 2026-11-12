@@ -40,7 +40,7 @@ export function voteInCongress(client: TunerClient, playerID: number, votes: Con
 
 // A proposal from the available ones of the worldCongress choice, named by its
 // type and target.
-export interface CongressProposal {
+export interface AvailableProposal {
 	type: string;
 	target: number;
 }
@@ -48,7 +48,7 @@ export interface CongressProposal {
 // Calls a Special Session for the proposals and marks the congress as looked
 // at. An empty list only marks it. An ok result means the game took the
 // proposals, not that a session will meet.
-export function proposeInCongress(client: TunerClient, playerID: number, proposals: CongressProposal[]): Promise<ActionResult> {
+export function proposeInCongress(client: TunerClient, playerID: number, proposals: AvailableProposal[]): Promise<ActionResult> {
 	const entries = proposals.map((proposal) => `{ type = ${JSON.stringify(proposal.type)}, target = ${proposal.target} }`);
 
 	return sendAction(client, `SentientSystems_ProposeInCongress(${playerID}, {${entries.join(", ")}})`);

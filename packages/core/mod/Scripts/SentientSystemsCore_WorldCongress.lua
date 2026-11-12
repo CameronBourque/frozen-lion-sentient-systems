@@ -112,7 +112,7 @@ end
 
 -- Returns the proposals on the floor to vote for or against. See
 -- PopulateProposalStack.
-local function GetProposals(data)
+local function GetFloorProposals(data)
 	local proposals = {}
 
 	for _, entry in ipairs(GetProposalEntries(data.Proposals)) do
@@ -151,7 +151,7 @@ function SentientSystems_GetCongressSession(player)
 
 	return {
 		resolutions = GetResolutions(congress:GetResolutions(playerID), playerID),
-		proposals = GetProposals(congress:GetProposals(playerID)),
+		proposals = GetFloorProposals(congress:GetProposals(playerID)),
 		voteCosts = voteCosts,
 	}
 end

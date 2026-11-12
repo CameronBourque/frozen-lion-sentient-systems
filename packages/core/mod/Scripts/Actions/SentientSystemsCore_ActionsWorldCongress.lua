@@ -214,7 +214,7 @@ end
 
 -- Returns why a proposal can't be made, or nil. The screen lets the player
 -- tick only a proposal it lists and hasn't turned off. See OnToggleProposal.
-local function GetProposalFailure(available, proposal, seen)
+local function GetAvailableProposalFailure(available, proposal, seen)
 	if type(proposal) ~= "table" then
 		return "Each proposal is a table with a type and a target."
 	end
@@ -242,7 +242,7 @@ end
 -- Returns why the proposals can't be made, or nil: a proposal that fails, or
 -- a total cost above the player's Favor, which the screen checks as the
 -- player ticks each one. See OnToggleProposal.
-local function GetProposalsFailure(available, proposals, favor)
+local function GetAvailableProposalsFailure(available, proposals, favor)
 	if type(proposals) ~= "table" then
 		return "The proposals are a list of tables, each with a type and a target."
 	end
@@ -250,7 +250,7 @@ local function GetProposalsFailure(available, proposals, favor)
 	local seen, cost = {}, 0
 
 	for _, proposal in ipairs(proposals) do
-		local failure = GetProposalFailure(available, proposal, seen)
+		local failure = GetAvailableProposalFailure(available, proposal, seen)
 
 		if failure ~= nil then
 			return failure
@@ -274,7 +274,7 @@ local function ProposeInCongress(playerID, proposals)
 	end
 
 	local available = SentientSystems_GetCongressAvailable(player)
-	local failure = GetProposalsFailure(available, proposals, player:GetFavor())
+	local failure = GetAvailableProposalsFailure(available, proposals, player:GetFavor())
 
 	if failure ~= nil then
 		return failure

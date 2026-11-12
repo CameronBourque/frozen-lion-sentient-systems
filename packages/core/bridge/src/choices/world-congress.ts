@@ -18,7 +18,7 @@ const RESOLUTION = z.object({
 	disfavored: z.array(z.number()).describe("The player IDs the game says oppose it."),
 });
 
-const PROPOSAL = z.object({
+const FLOOR_PROPOSAL = z.object({
 	type: z.string().describe("Such as WC_EMERGENCY_BACKSTAB."),
 	name: z.string(),
 	description: z.string().optional(),
@@ -62,7 +62,7 @@ export const WORLD_CONGRESS_CHOICE = z.object({
 		"In a session: the Favor for 1, 2, and so on up to the most votes, in total.",
 	),
 	resolutions: z.array(RESOLUTION).optional().describe("In a session: each with its outcomes in options."),
-	proposals: z.array(PROPOSAL).optional().describe("In a session: the ones on the floor."),
+	proposals: z.array(FLOOR_PROPOSAL).optional().describe("In a session: the ones on the floor."),
 	available: z.array(AVAILABLE_PROPOSAL).optional().describe(
 		"Out of a session: the proposals the player could call a Special Session for. Left out with none.",
 	),
