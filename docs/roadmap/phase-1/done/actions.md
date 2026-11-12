@@ -106,3 +106,17 @@ The launchers state and the strike actions share their rules in one file. A Roma
 - The state is in [design/core/mod/state.md](../../../design/core/mod/state.md), and the reasons are in [design/core/mod/actions/units.md](../../../design/core/mod/actions/units.md#wmd-strikes) and [unit-jobs.md](../../../design/core/mod/actions/unit-jobs.md#builder-jobs).
 - The calls are in [state/wmds.md](../../../findings/state/wmds.md), [state/fallout.md](../../../findings/state/fallout.md), [actions/wmd-strikes.md](../../../findings/actions/wmd-strikes.md), and [actions/builder-jobs.md](../../../findings/actions/builder-jobs.md#clear-fallout).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
+
+## Action API: deals and end turn
+
+Pull request: feat(core): add the deal and end turn actions.
+
+It added `endTurn`, which returns the blockers and the units that need orders as its reason unless forced, and sends one request at most in a turn. It added `respondToDeal`, `declareWar`, and `proposePeace`, which close the diplomacy session they use, so the AI turns go on.
+
+The bridge's `proposePeace` waits for the AI's answer. A plain peace keeps the cities the player occupies. The great work type in the proposals state now comes from the item's type ID.
+
+The leader screen that a war or a peace leaves open moved to [popups for agent players](../agent-popups.md), and the sessions an AI opens with no deal to [diplomacy sessions](../diplomacy-sessions.md).
+
+- The reasons are in [design/core/mod/actions/turn.md](../../../design/core/mod/actions/turn.md) and [deals.md](../../../design/core/mod/actions/deals.md).
+- The calls are in [actions/end-turn.md](../../../findings/actions/end-turn.md), [actions/diplomacy.md](../../../findings/actions/diplomacy.md), and [actions/war-and-peace.md](../../../findings/actions/war-and-peace.md).
+- The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).

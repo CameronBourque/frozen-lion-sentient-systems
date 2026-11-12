@@ -2,7 +2,7 @@
 
 Make the core mod close or skip the popups and screens that wait for a click, so an agent player is never held up by a screen it can't see. Part of [phase 1](README.md).
 
-Each task first records whether its popup stops a request and the end turn call, which needs the end turn action from [deals and end turn](action-api-deals-and-end-turn.md).
+Each task first records whether its popup stops a request and the end turn call, with `endTurn` from `src/actions/turn.ts`. With `force`, it ends the turn while a blocker is left. See [design/core/mod/actions/turn.md](../../design/core/mod/actions/turn.md).
 
 ## Tasks
 
