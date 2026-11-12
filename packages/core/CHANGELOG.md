@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.17.0...core-v0.18.0) (2026-11-12)
+
+
+### Features
+
+* **core:** add the city fate, espionage, congress, and dedication actions ([#85](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/85)) ([80d509a](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/80d509a9454f800cd56116f834471b070243b1ec))
+
 ## [0.17.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.16.0...core-v0.17.0) (2026-11-11)
 
 
