@@ -29,12 +29,19 @@ Add the actions that answer a deal, declare war, and end the turn. Part of [phas
    Start with `GreatWorkShowcase.lua`, and check whether it sets the `CINEMATIC` interface mode or is an end-turn blocker. See [great-works.md](../../findings/actions/great-works.md#artifact-request).
 
    Test it in a save with an archaeologist digging, as for the artifact action. Commit: `feat(core): close the artifact popup for agent players`.
+7. **World Congress popups.** When a session starts, the congress screen opens with **Continue**, then shows the voting screen. It stays open after `voteInCongress` has voted and submitted. After a session, the results screen opens, and an emergency that passed shows its own popup.
+
+   Record whether each one stops a request and the end turn call, and whether **Submit** on the voting screen after the action votes a second time. Then make the core mod close them for an agent player.
+
+   Start with `WorldCongressPopup.lua`, `WorldCongressIntro.lua`, `WorldCongressBetweenTurns.lua`, and `WorldCrisisPopup.lua`, and the `WORLD_CONGRESS_RESULTS` and `EMERGENCY_DECLARED` notifications. See [world-congress.md](../../findings/actions/world-congress.md#popups).
+
+   Test it in a save at a session, as for the vote action. Commit: `feat(core): close the World Congress popups for agent players`.
 
 ## Done when
 
 In a running game, each action works once from the bridge. `endTurn` without `force` returns the blocker as its reason while one is left, `respondToDeal` returns a reason when no deal is waiting, and `declareWar` returns a reason for a player already at war.
 
-With an agent as the local player, a wonder that the player completes shows no popup and doesn't hold up the next request. Neither does a Secret Society the player joins, or an artifact the player chooses.
+With an agent as the local player, a wonder that the player completes shows no popup and doesn't hold up the next request. Neither does a Secret Society the player joins, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts.
 
 ## Record
 
