@@ -22,6 +22,7 @@ SentientSystems_Include("SentientSystemsCore_StateGreatWorks")
 SentientSystems_Include("SentientSystemsCore_StateGovernors")
 SentientSystems_Include("SentientSystemsCore_StatePlayer")
 SentientSystems_Include("SentientSystemsCore_StateTrade")
+SentientSystems_Include("SentientSystemsCore_StateWmdLaunchers")
 SentientSystems_Include("SentientSystemsCore_StateProposals")
 SentientSystems_Include("SentientSystemsCore_StateScoreboard")
 SentientSystems_Include("SentientSystemsCore_StateVictories")
@@ -51,6 +52,7 @@ function SentientSystems_GetState(playerID)
 		governors = SentientSystems_GetGovernorState(player),
 		player = SentientSystems_GetPlayerState(player),
 		trade = SentientSystems_GetTradeState(player),
+		wmdLaunchers = SentientSystems_GetWmdLauncherState(player),
 		proposals = SentientSystems_GetProposalState(player),
 		scoreboard = SentientSystems_GetScoreboardState(player),
 		victories = SentientSystems_GetVictoryState(player),

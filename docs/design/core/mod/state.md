@@ -17,7 +17,8 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 
   A city's power is its status, the usable and required power, and what gives it power and needs it, with Gathering Storm. A city's religion is its majority, the pressure it exerts, the religion it will convert to and when, and the followers and pressure of each religion present.
 - **The Next Turn button.** What blocks the end of the turn.
-- **The top bar.** The gold and faith balances, the science, culture, faith, gold, and tourism per turn, the trade route capacity, and, with Gathering Storm, diplomatic favor.
+- **The top bar.** The gold and faith balances, the science, culture, faith, gold, and tourism per turn, the trade route capacity, the nuclear and thermonuclear devices, and, with Gathering Storm, diplomatic favor.
+- **The unit panel and the missile silo banner.** For each device the player has, the units and silos that can launch it now.
 - **The Yields tab of Reports.** Income by source, building and unit upkeep, deal payments, and net income per turn.
 - **The Resources tab of Reports.** Strategic and luxury resources, and, with Gathering Storm, strategic stockpiles.
 - **The Gossip tab of Reports.** What the player has heard about met players.
@@ -64,4 +65,5 @@ The shape of each section is in the schemas in [packages/core/bridge/src/state/]
 | Where a great work can move is a function of one work, not a state section | Every movable work lists the slots it fits or swaps with, 191 in one game and about 26 KB once the art unlocks, more than the section itself. One work is under 2 KB, and the move action can check a request with it |
 | City religion is part of the cities and rivals sections | It comes to about 310 bytes a city, so 11 cities add about 3.4 KB. A rival city on a revealed tile has it too, as its banner shows it, at about 230 bytes, which is 11 KB for 47 cities |
 | The scoreboard lists unmet players as places only | World Rankings shows how many players there are, their order, and whether an unmet one leads, but not who they are |
+| WMD launchers are their own section, grouped by device | It answers what can launch a device now, with no field on every unit and tile. 100 launchers take 2 KB grouped, or 8.5 KB as one entry each. With no devices it is left out, and skips the checks |
 | Each state section has its own file in `Scripts/State/` | The state grows with every section, and one file would pass 1,000 lines. A file per section keeps each one and its tests small. `include` finds a file by name in any folder, so the folder only groups the files |

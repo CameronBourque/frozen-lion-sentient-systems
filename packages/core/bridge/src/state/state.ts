@@ -23,6 +23,7 @@ import { TILE } from "./tiles.js";
 import { TRADE } from "./trade.js";
 import { UNIT } from "./units.js";
 import { VICTORIES } from "./victories.js";
+import { WMD_LAUNCHERS } from "./wmd-launchers.js";
 
 // Not strict, so a field from a newer core mod is dropped instead of failing
 // the whole state.
@@ -48,6 +49,7 @@ export const STATE = z.object({
 	governors: GOVERNORS,
 	player: PLAYER,
 	trade: TRADE,
+	wmdLaunchers: WMD_LAUNCHERS.optional().describe("Left out while the player has no devices, or nothing can launch one."),
 	scoreboard: SCOREBOARD,
 	victories: VICTORIES,
 });
