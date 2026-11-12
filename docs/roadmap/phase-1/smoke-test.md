@@ -4,7 +4,9 @@ Run one agent through the smoke test preset to find the bugs that stop a game be
 
 ## Tasks
 
-1. **Run.** Start the preset with `npm run preset -- smoke`, with `logLevel: debug`. Let the agent play to turn 100 with no manual help. If it gets there, let it keep playing until it stops or the game ends. Commit nothing yet.
+1. **Run.** Start the preset with `npm run preset -- smoke`, with `logLevel: debug` and the default [spending limits](stopping.md).
+
+   If the run limit stops the bridge, check the cost per turn in the log, raise the limit, and start the bridge again. Let the agent play to turn 100 with no manual help. If it gets there, let it keep playing until it stops or the game ends. Commit nothing yet.
 2. **Fix.** For each turn that hits a limit, logs an `ERROR`, or needs a click, fix the cause in its own `fix:` PR. Run the preset again after each fix. Commit: `fix(core): <the bug>`, one per bug.
 3. **Results.** Record the run that passes, with the turns played and why it stopped, the actions per turn, the time per turn, and the cost. Commit: `docs: record the smoke test`.
 
@@ -16,3 +18,4 @@ The agent plays the smoke test preset to turn 100 or later with no manual help, 
 
 - The run's numbers, in a new finding, `docs/findings/agent-runs.md*`. Add it to the [findings index](../../findings/README.md).
 - Any new limit defaults, in [turn-loop.md](../../design/agents/turn-loop.md).
+- The spending limit defaults from the measured cost per turn, in [settings.md](../../design/core/settings.md).

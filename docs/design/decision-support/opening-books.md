@@ -87,7 +87,7 @@ We write the first openings by hand. Each opening is a file in the `openings/` f
 
 Decision records log the opening the agent picked, each branch it took, and the turn and reason it left the book.
 
-The [game review](game-review.md#metrics-line) metrics at the end of the book, such as the number of cities and the score against the native AI on that turn, show which openings work on which starts. Those results tune the weights and the branches.
+The [metrics lines](../evaluation.md#metrics-line) at the end of the book, such as the number of cities and the score against the native AI on that turn, show which openings work on which starts. Those results tune the weights and the branches.
 
 ## Open questions
 

@@ -5,7 +5,7 @@ Run an agent's turn when its turn signal arrives: resolve the end-turn blockers,
 ## Tasks
 
 1. **Loop.** Add `src/agents/loop.ts`. On `AGENT_TURN` for a configured agent, it reads the state, builds the prompt, and passes the model's tool calls to the MCP server until the model calls `end_turn`. Test it with a mock model and a fake client. Commit: `feat(core): add the agent loop`.
-2. **Limits.** Add the three limits from [failure handling](../../design/agents/turn-loop.md#failure-handling), with defaults in the config file: retries per action, actions per turn, and time per turn. When the loop hits a limit, it logs a warning and ends the turn. Commit: `feat(core): add turn limits`.
+2. **Limits.** Add the three limits from [failure handling](../../design/agents/turn-loop.md#failure-handling), with defaults in `limits` in the config file: retries per action, actions per turn, and time per turn. When the loop hits a limit, it logs a warning and ends the turn. Commit: `feat(core): add turn limits`.
 3. **Blockers.** When the model calls `end_turn` with a blocker left, the tool result names the blocker, and the model gets another try.
 
    When the loop hits a limit, it ends the turn with `force`, which skips any blockers left, and logs each skipped blocker as a warning. Commit: `feat(core): force the end turn at the turn limit`.

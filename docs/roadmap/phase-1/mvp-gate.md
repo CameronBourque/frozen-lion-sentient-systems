@@ -5,10 +5,12 @@ Pass the gate: one agent plays a full single-player game on the MVP gate preset 
 ## Tasks
 
 1. **Measure the state.** Log the state size in bytes and in tokens on each turn, with each section's share. Open this commit as its own PR. Commit: `feat(core): log the state size per turn`.
-2. **Run.** Start the preset with `npm run preset -- mvp-gate`, and let the agent play until the game ends in a victory or a loss. Autosave is on every turn, so a crash can resume from the last save. A resume needs no help beyond loading that save. Commit nothing yet.
+2. **Run.** Start the preset with `npm run preset -- mvp-gate`, and let the agent play until the game ends in a victory or a loss.
+
+   Set `limits.costPerRun` from the smoke test's cost per turn, so a broken turn can't spend the whole budget. Autosave is on every turn, so a crash can resume from the last save. A resume needs no help beyond loading that save. Commit nothing yet.
 3. **Fix.** For each turn that hits a limit or logs an `ERROR`, fix the cause in its own `fix:` PR. Rerun from the autosave before the bug. Commit: `fix(core): <the bug>`, one per bug.
 4. **Trim.** If the state makes turns slow or costly, trim the largest sections, and move facts that `lookup` can give out of the state. See [state size](../../design/testing.md#state-size). Open each trim as its own PR. Commit: `feat(core): trim the state`.
-5. **Results.** Record the game: the turns played, how it ended, the state size per era, the time per turn, the tokens and cost per turn, and the total cost. Commit: `docs: record the MVP gate results`.
+5. **Results.** Record the game: the turns played, how it ended, the state size per era, the time per turn, the tokens and cost per turn, the total cost, and the agent's rank per era from the [metrics lines](metrics-line.md). Commit: `docs: record the MVP gate results`.
 
 ## Done when
 

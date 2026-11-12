@@ -46,10 +46,12 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 26 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
 | 27 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
 | 28 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 29 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 30 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 31 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
-| 32 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
+| 29 | [Stopping and spending limits](stopping.md) | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | |
+| 30 | [Metrics line](metrics-line.md) | One line of numbers for each player after each agent turn, for the baseline | `feat(core): add the metrics line` | |
+| 31 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
+| 32 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
+| 33 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
+| 34 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
 
 The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the action API and lookup steps.
 

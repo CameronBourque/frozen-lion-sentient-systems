@@ -22,13 +22,15 @@ Expose the state, the action API, and the lookup as MCP tools. Every action tool
 
    A failed action returns its reason as the tool result, not as an MCP error. Commit: `feat(core): add the action tools`.
 6. **`reason` field.** Make `reason` a required string on every action tool, and log it at the decisions level with the call. Test that a call without it fails. Commit: `feat(core): require a reason on every action`.
-7. **Remove the gate script.** Delete `packages/core/bridge/scripts/gate.ts` and the `gate` script in the bridge's `package.json`. Commit: `chore(core): remove the phase 0 gate script`.
+7. **Claude Code.** Add `.mcp.json` at the repo root, which starts the stdio server from `npm run mcp`. Live tests in Claude Code then call the same tools as the agent loop, in place of probe scripts. Commit: `chore(core): connect Claude Code to the MCP server`.
+8. **Remove the gate script.** Delete `packages/core/bridge/scripts/gate.ts` and the `gate` script in the bridge's `package.json`. Commit: `chore(core): remove the phase 0 gate script`.
 
 ## Done when
 
-The bridge executable, built with `npm run build:exe`, lists cities, moves a unit, and ends the turn through the MCP Inspector, with a `reason` on each action.
+The bridge executable, built with `npm run build:exe`, lists cities, moves a unit, and ends the turn through the MCP Inspector, with a `reason` on each action. Claude Code does the same through `.mcp.json`.
 
 ## Record
 
 - The MCP server and the transport, in [bridge.md](../../design/core/bridge.md), with a `## Decisions` row for the in-memory transport.
+- How live tests reach the tools through `.mcp.json`, in [testing.md](../../design/testing.md).
 - Remove the `gate.ts` mention from this phase's README.
