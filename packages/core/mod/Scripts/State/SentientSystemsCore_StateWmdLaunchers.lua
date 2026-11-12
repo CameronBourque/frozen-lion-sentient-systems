@@ -20,14 +20,23 @@ function SentientSystems_GetWmdStockpile(player)
 	return stockpile
 end
 
--- Returns the IDs of the units that can launch the device now. The unit panel
--- asks CanStartOperation for each device. See UnitPanel.lua.
+-- Returns whether the unit can launch the device now. The unit panel shows no
+-- operations for a unit with no moves left, though CanStartOperation still
+-- allows the strike, and asks CanStartOperation for each device. See
+-- GetUnitActionsTable in UnitPanel.lua.
+local function CanUnitLaunch(unit, parameters)
+	return SentientSystems_IsUnitOnMap(unit)
+		and unit:GetMovesRemaining() > 0
+		and UnitManager.CanStartOperation(unit, UnitOperationTypes.WMD_STRIKE, nil, parameters)
+end
+
+-- Returns the IDs of the units that can launch the device now.
 local function GetReadyUnits(player, wmd)
 	local parameters = { [UnitOperationTypes.PARAM_WMD_TYPE] = wmd.Index }
 	local ready = {}
 
 	for _, unit in player:GetUnits():Members() do
-		if SentientSystems_IsUnitOnMap(unit) and UnitManager.CanStartOperation(unit, UnitOperationTypes.WMD_STRIKE, nil, parameters) then
+		if CanUnitLaunch(unit, parameters) then
 			ready[#ready + 1] = unit:GetID()
 		end
 	end

@@ -6,7 +6,7 @@ The calls the nuclear stockpile and the launchers in the state use, as the top b
 
 ## Questions
 
-1. Can a unit with no moves left launch a strike? `CanStartOperation` says it can, and the unit panel enables the button. The strike action will test the request.
+None open.
 
 ## What we know now
 
@@ -18,9 +18,11 @@ It shows `Players[id]:GetWMDs():GetWeaponCount(row.Index)` for `WMD_NUCLEAR_DEVI
 
 ### Units
 
-`UnitPanel.lua` asks `UnitManager.CanStartOperation(unit, UnitOperationTypes.WMD_STRIKE, nil, true)` once. It then asks once for each row of `GameInfo.WMDs()`, with the row's index in `UnitOperationTypes.PARAM_WMD_TYPE`.
+`GetUnitActionsTable` in `UnitPanel.lua` lists a unit's operations only while `GetMovesRemaining()` is above 0, so a unit with no moves left gets no strike button. `CanStartOperation` doesn't check moves, and returns `true` for that unit. Confirmed in files and on Windows on 2026-11-11.
 
-Each device gets its own button, disabled when its check fails, with the failure reasons in the tooltip. The panel makes no other check, such as moves left. Confirmed in files.
+With moves left, the panel asks `UnitManager.CanStartOperation(unit, UnitOperationTypes.WMD_STRIKE, nil, true)` once. It then asks once for each row of `GameInfo.WMDs()`, with the row's index in `UnitOperationTypes.PARAM_WMD_TYPE`.
+
+Each device gets its own button, disabled when its check fails, with the failure reasons in the tooltip. Confirmed in files.
 
 `UnitManager.GetOperationTargets` with the same parameters lists the tiles in range, 312 to 714 tiles for the bombers and the submarine in the save below. The state doesn't hold them.
 
@@ -50,6 +52,8 @@ A single-player game with Gathering Storm, player 0 with 3 nuclear and 4 thermon
 | `CanStartOperation` for two jet bombers, a bomber, and a nuclear submarine | `true` for both devices on each |
 | `GetCommandTargets` for the silo at (44, 30), through city 589832 | 462 tiles for the nuclear device and 701 for the thermonuclear one |
 | The state | `wmds` with both counts, and both devices in `wmdLaunchers` with the four units and the silo, 195 bytes |
-| `CanStartOperation` for a jet bomber after `FinishMoves` | `true`, with 0 moves left, and the bomber stayed in `wmdLaunchers` |
+| `CanStartOperation` for a jet bomber on a carrier at (46, 33) after `FinishMoves` | `true`, with 0 moves and 1 attack left |
+| The unit panel for that bomber | Only a button to cancel its activity, and no buttons once it was cancelled |
+| The state, once it checks moves | The three other units and the silo, without that bomber |
 
 Date checked: game files on 2026-11-11. Running game on Windows on 2026-11-11.

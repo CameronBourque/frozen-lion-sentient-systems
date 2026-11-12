@@ -15,7 +15,7 @@ Add the nuclear and thermonuclear strike, the stockpile that feeds it, and the f
 
    A silo uses `CityCommandTypes.WMD_STRIKE` with the silo as `PARAM_X0` and `PARAM_Y0`, and its targets from `CityManager.GetCommandTargets`. Both take the war check from `CombatManager.IsAttackChangeWarState`.
 
-   Answer question 1 of [findings/state/wmds.md](../../findings/state/wmds.md#questions), whether a unit with no moves left can launch. Commit: `feat(core): add the nuclear strike action`.
+   Refuse a unit with no moves left, as the unit panel hides its strike although `CanStartOperation` allows it. See [findings/state/wmds.md](../../findings/state/wmds.md#units). Commit: `feat(core): add the nuclear strike action`.
 3. **Fallout.** Add the turns of fallout left to each tile that has it, and an action that clears it. Read the turns from `Game.GetFalloutManager():GetFalloutTurnsRemaining(plotIndex)`, as `PlotToolTip.lua` does.
 
    The strike of task 2 leaves the fallout to test with.

@@ -69,6 +69,13 @@ describe("SentientSystems_GetWmdLauncherState", function()
 		)
 	end)
 
+	it("skips a unit with no moves left, as the unit panel shows it no strike", function()
+		assert.equal(
+			"{\"WMD_NUCLEAR_DEVICE\":{\"units\":[16056482]}}",
+			LaunchersWith({ wmds = { [NUKE] = 1 }, units = { With(BOMBER, { moves = 0 }), SUBMARINE } })
+		)
+	end)
+
 	it("skips a silo that can't launch and a unit that isn't on the map", function()
 		local units = { With(BOMBER, { x = -9999, y = -9999 }) }
 
