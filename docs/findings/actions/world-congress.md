@@ -9,7 +9,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 ## Questions
 
 1. Does the game check a vote's Favor itself, or only the screen?
-2. Why did 10 votes on one resolution and 5 on another take 220 Favor at once, the cost of the 10 alone, when the screen adds up 220 and 60?
+2. Why does the game take only the costliest item's Favor at the submit, when the screen adds up every item's cost? Is the rest taken when the session ends?
 
 ## What we know now
 
@@ -43,6 +43,10 @@ The player votes for one option of each resolution: voting for one clears the vo
 `MaxVotes` follows the player's Favor at the time: the most votes whose cost the Favor covers. It was 23 at 1,032 Favor, 4 at 32, and 55 at 6,032, after `GetDiplomacy():ChangeFavor` in `GameCore_Tuner`. Confirmed on Windows on 2026-11-11.
 
 So one item can't cost more than the player has, and the action's cost reason only comes up for votes on several items.
+
+Right after the submit, the Favor went down by the cost of the costliest item, not the sum. With 10 votes on one resolution and 5 on the other, in either order, it went down by 220, the cost of 10. Confirmed on Windows on 2026-11-11.
+
+The action checks the sum, as the screen does, so it refuses no votes the game would take for less.
 
 The screen's tooltip says that some of the Favor spent on resolutions comes back when the congress doesn't agree with the player's choice. Confirmed in files and on Windows on 2026-11-11.
 
@@ -99,6 +103,8 @@ The voting screen was then closed with **X** and the turn ended. On turn 86, the
 The Favor was 318: 115, 3 a turn, and 200 back for the two choices the congress didn't agree with.
 
 In a first run of the same save, the screen's **Submit** after the action left player 0 with 1 vote on each, as the screen had them, and 118 Favor.
+
+In a third run, with 5 votes on Patronage first and 10 on Trade Policy, the Favor also went from 335 to 115.
 
 The saves were only test saves. In the first, the player's Favor was changed by -1,000 and +6,000 before the vote.
 
