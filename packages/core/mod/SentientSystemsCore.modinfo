@@ -30,6 +30,7 @@
 			<File>Scripts/SentientSystemsCore_GreatWorks.lua</File>
 			<File>Scripts/SentientSystemsCore_CityFate.lua</File>
 			<File>Scripts/SentientSystemsCore_Espionage.lua</File>
+			<File>Scripts/SentientSystemsCore_WorldCongress.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
@@ -120,6 +121,7 @@
 		<File>Scripts/SentientSystemsCore_GreatWorks.lua</File>
 		<File>Scripts/SentientSystemsCore_CityFate.lua</File>
 		<File>Scripts/SentientSystemsCore_Espionage.lua</File>
+		<File>Scripts/SentientSystemsCore_WorldCongress.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
