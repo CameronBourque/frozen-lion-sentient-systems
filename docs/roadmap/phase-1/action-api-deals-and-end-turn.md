@@ -31,7 +31,7 @@ Add the actions that answer a deal, declare war, and end the turn. Part of [phas
    Test it in a save with an archaeologist digging, as for the artifact action. Commit: `feat(core): close the artifact popup for agent players`.
 7. **World Congress popups.** When a session starts, the congress screen opens with **Continue**, then shows the voting screen. It stays open after `voteInCongress` has voted and submitted. After a session, the results screen opens, and an emergency that passed shows its own popup.
 
-   Record whether each one stops a request and the end turn call, and whether **Submit** on the voting screen after the action votes a second time. Then make the core mod close them for an agent player.
+   Record whether each one stops a request and the end turn call. **Submit** on the voting screen after the action replaces the action's votes and keeps the Favor it spent, so close it before a player can press it. Then make the core mod close them for an agent player.
 
    Start with `WorldCongressPopup.lua`, `WorldCongressIntro.lua`, `WorldCongressBetweenTurns.lua`, and `WorldCrisisPopup.lua`, and the `WORLD_CONGRESS_RESULTS` and `EMERGENCY_DECLARED` notifications. See [world-congress.md](../../findings/actions/world-congress.md#popups).
 

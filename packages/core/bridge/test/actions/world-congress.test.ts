@@ -19,4 +19,16 @@ describe("voteInCongress", () => {
 
 		expect(await voteInCongress(client, 0, votes)).toEqual({ ok: true });
 	});
+
+	test("passes a resolution vote with its option", async () => {
+		const { game, client } = await startGame();
+		const lua = "SentientSystems_VoteInCongress(0, {{ type = \"WC_RES_PATRONAGE\", target = 5, votes = 2, option = \"A\" }})";
+
+		game.onCommand = (_stateIndex, command) => ({
+			[`SentientSystems_Stash(${lua})`]: { output: ["1"] },
+			"SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] },
+		})[command] ?? {};
+
+		expect(await voteInCongress(client, 0, [{ type: "WC_RES_PATRONAGE", option: "A", target: 5, votes: 2 }])).toEqual({ ok: true });
+	});
 });
