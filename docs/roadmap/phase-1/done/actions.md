@@ -76,3 +76,19 @@ The great works state and the move action share their slot rules, and the artifa
 - The reasons are in [design/core/mod/actions/great-works.md](../../../design/core/mod/actions/great-works.md).
 - The calls and the checks the game doesn't make are in [actions/great-works.md](../../../findings/actions/great-works.md).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
+
+## Action API: other blockers
+
+Pull request: feat(core): add the city fate, espionage, congress, and dedication actions.
+
+It added the action that keeps, razes, liberates, or refuses a captured or rebelled city, the action that chooses a spy's escape route, the World Congress actions that vote in a session and make a proposal, and the action that makes an era's dedications.
+
+Each action checks the screen's rules first, because the game takes requests the screen wouldn't send.
+
+Each choice and its action share their rules in one file: the city fate options, the escape routes, the session and the available proposals, and the waiting dedication. The captured cities choice became the city fate choice, `cityFates`.
+
+The action that joins or rejects an emergency moved to [phase 3](../../phase-3/README.md): with Gathering Storm, every emergency starts through the World Congress. The popups that a session and its results leave open moved to [popups for agent players](../agent-popups.md).
+
+- The reasons are in [design/core/mod/actions/city-fate.md](../../../design/core/mod/actions/city-fate.md), [cities.md](../../../design/core/mod/actions/cities.md#escape-route), [world-congress.md](../../../design/core/mod/actions/world-congress.md), and [dedications.md](../../../design/core/mod/actions/dedications.md).
+- The calls and the checks the game doesn't make are in [actions/city-fate.md](../../../findings/actions/city-fate.md), [actions/spies.md](../../../findings/actions/spies.md#escape-route), [actions/world-congress.md](../../../findings/actions/world-congress.md), and [actions/dedications.md](../../../findings/actions/dedications.md).
+- The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
