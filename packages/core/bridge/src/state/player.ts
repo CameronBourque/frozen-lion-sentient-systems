@@ -28,4 +28,7 @@ export const PLAYER = z.object({
 	favor: BALANCE.optional().describe(
 		"Diplomatic favor. Left out without Gathering Storm.",
 	),
+	wmds: z.record(z.string(), z.number()).optional().describe(
+		"How many of each device the player has, by type, such as WMD_NUCLEAR_DEVICE, as the top bar shows them. A device at 0 is left out, and so is this field when the player has none.",
+	),
 });

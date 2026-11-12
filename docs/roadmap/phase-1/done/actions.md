@@ -92,3 +92,17 @@ The action that joins or rejects an emergency moved to [phase 3](../../phase-3/R
 - The reasons are in [design/core/mod/actions/city-fate.md](../../../design/core/mod/actions/city-fate.md), [cities.md](../../../design/core/mod/actions/cities.md#escape-route), [world-congress.md](../../../design/core/mod/actions/world-congress.md), and [dedications.md](../../../design/core/mod/actions/dedications.md).
 - The calls and the checks the game doesn't make are in [actions/city-fate.md](../../../findings/actions/city-fate.md), [actions/spies.md](../../../findings/actions/spies.md#escape-route), [actions/world-congress.md](../../../findings/actions/world-congress.md), and [actions/dedications.md](../../../findings/actions/dedications.md).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
+
+## Action API: nuclear strikes
+
+Pull request: feat(core): add the nuclear actions.
+
+It added the nuclear and thermonuclear stockpile to the player section, a `wmdLaunchers` section with the units and missile silos that can launch each device now, and the turns of fallout left on each tile.
+
+It added the `wmd_strike` unit order, `SentientSystems_SiloStrike` for a silo, and the `clear_fallout` builder job. A strike follows the unit panel, so a unit with no moves left can't launch, though the game's check allows it. A strike that would start a war is refused.
+
+The launchers state and the strike actions share their rules in one file. A Roman Legion counts as a builder, as the game treats it, so it clears fallout and does the other builder jobs.
+
+- The state is in [design/core/mod/state.md](../../../design/core/mod/state.md), and the reasons are in [design/core/mod/actions/units.md](../../../design/core/mod/actions/units.md#wmd-strikes) and [unit-jobs.md](../../../design/core/mod/actions/unit-jobs.md#builder-jobs).
+- The calls are in [state/wmds.md](../../../findings/state/wmds.md), [state/fallout.md](../../../findings/state/fallout.md), [actions/wmd-strikes.md](../../../findings/actions/wmd-strikes.md), and [actions/builder-jobs.md](../../../findings/actions/builder-jobs.md#clear-fallout).
+- The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).

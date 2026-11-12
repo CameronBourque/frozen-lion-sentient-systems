@@ -130,6 +130,7 @@ end)
 describe("improve", function()
 	local BUILDER = With(UNIT, {
 		type = "UNIT_BUILDER",
+		rowCharges = 3,
 		charges = 3,
 		canEver = { "improve" },
 		improvements = { "IMPROVEMENT_FARM", "IMPROVEMENT_MINE", "IMPROVEMENT_QUARRY" },
@@ -157,7 +158,7 @@ describe("improve", function()
 	end)
 
 	it("fails for a unit that could never build one", function()
-		assert.equal(Failed("This kind of unit can't build improvements."), Load(With(BUILDER, { type = "UNIT_SETTLER", canBuild = {} })).SentientSystems_UnitAction(0, UNIT.id, "improve", nil, nil, "IMPROVEMENT_FARM"))
+		assert.equal(Failed("This kind of unit can't build improvements."), Load(With(BUILDER, { type = "UNIT_SETTLER", rowCharges = 0, canBuild = {} })).SentientSystems_UnitAction(0, UNIT.id, "improve", nil, nil, "IMPROVEMENT_FARM"))
 	end)
 
 	it("says why when the unit can build none here", function()

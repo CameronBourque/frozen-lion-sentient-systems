@@ -10,6 +10,7 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [formations.md](formations.md) | The game calls that form corps, armies, and formations, and the units each lists |
 | [air-moves.md](air-moves.md) | The game calls rebase, deploy, airlift, and paradrop use, and the tiles each lists |
 | [attacks.md](attacks.md) | The game calls the ranged, air, melee, city, and priority target attacks use, and the war check |
+| [wmd-strikes.md](wmd-strikes.md) | The game calls that launch a nuclear or thermonuclear device from a unit or a missile silo, and the war check |
 | [great-people.md](great-people.md) | The game calls that activate a great person and harvest a wonder, and the reasons their checks give |
 | [great-people-screen.md](great-people-screen.md) | The game calls that recruit, pass, and patronize a great person, and the checks the game doesn't make |
 | [spies.md](spies.md) | The game calls that start a spy mission or a trip and choose an escape route, and the reasons their checks give |

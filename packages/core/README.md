@@ -50,6 +50,7 @@ An action is one Lua function that the bridge calls to run a request function of
 | Artifact rules | `SentientSystems_GetNextArtifact` in `mod/Scripts/SentientSystemsCore_Artifacts.lua`, which the artifact choice and action share |
 | City fate rules | `SentientSystems_GetCityFates` in `mod/Scripts/SentientSystemsCore_CityFate.lua`, which the city fate choice and action share |
 | Escape rules | `SentientSystems_GetNextEscape` in `mod/Scripts/SentientSystemsCore_Espionage.lua`, which the spy choice and the escape route action share |
+| WMD rules | The stockpile, whether a unit can launch, and a silo's targets in `mod/Scripts/SentientSystemsCore_Wmds.lua`, which the WMD launchers state and the strike actions share |
 | World Congress rules | `SentientSystems_GetCongressSession` and `SentientSystems_GetCongressAvailable` in `mod/Scripts/SentientSystemsCore_WorldCongress.lua`, which the World Congress choice and actions share |
 | Dedication rules | `SentientSystems_GetPendingDedication` in `mod/Scripts/SentientSystemsCore_Eras.lua`, which the dedication choice and action share |
 | City command fake | `env.CityManager.RequestCommand` in `mod/Test/FakeGame/Attacks.lua`, which puts each command in `env.requests` |

@@ -35,6 +35,9 @@ export const TILE = z.object({
 	continent: z.number().optional().describe(
 		"The index of the tile's continent, which the continents section names. Left out for a tile with none, such as water.",
 	),
+	fallout: z.number().optional().describe(
+		"The turns of nuclear fallout left on the tile, as the tooltip shows them. A unit that ends its turn there takes damage, and the tile can't be worked. Left out with none.",
+	),
 	visible: z.boolean().describe(
 		"False for a tile under fog, which reads as it is now, as the game's tooltip shows it.",
 	),

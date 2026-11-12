@@ -87,6 +87,7 @@ end
 -- plot index order. The tooltip shows the same values, in PlotToolTip.lua.
 function SentientSystems_GetTileStates(playerID)
 	local visibility = PlayersVisibility[playerID]
+	local fallout = Game.GetFalloutManager()
 	local resources = Players[playerID]:GetResources()
 	local culture = Players[playerID]:GetCulture()
 	local tiles = {}
@@ -98,6 +99,7 @@ function SentientSystems_GetTileStates(playerID)
 			local route = TypeAt(GameInfo.Routes, plot:GetRouteType(), "RouteType")
 			local owner = plot:GetOwner()
 			local tourism = owner == playerID and GetTourism(culture, index) or {}
+			local falloutTurns = fallout:GetFalloutTurnsRemaining(index)
 
 			tiles[#tiles + 1] = {
 				x = plot:GetX(),
@@ -113,6 +115,7 @@ function SentientSystems_GetTileStates(playerID)
 				routePillaged = route and TrueOrNil(plot:IsRoutePillaged()),
 				appeal = GetAppeal(plot),
 				continent = GetContinent(plot),
+				fallout = falloutTurns > 0 and falloutTurns or nil,
 				visible = visibility:IsVisible(index),
 				tourism = tourism.tourism,
 				tourists = tourism.tourists ~= 0 and tourism.tourists or nil,

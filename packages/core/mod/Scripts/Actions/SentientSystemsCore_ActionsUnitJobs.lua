@@ -207,6 +207,23 @@ local function GetRepairHint(unit)
 	return SentientSystems_GetOperationReasons(unit, GameInfo.UnitOperations[GetRepairOperation(unit)].Hash)
 end
 
+-- Returns why the unit can't clear the fallout on its tile, or nil. Clearing
+-- takes a build charge. See the Nuclear Contamination concept in the
+-- Civilopedia.
+local function GetClearFalloutHint(unit)
+	local reason = GetUnitHint(unit, true)
+
+	if reason ~= nil then
+		return reason
+	end
+
+	if Game.GetFalloutManager():GetFalloutTurnsRemaining(GetPlot(unit):GetIndex()) <= 0 then
+		return "There is no fallout on the tile."
+	end
+
+	return SentientSystems_GetOperationReasons(unit, GameInfo.UnitOperations["UNITOPERATION_CLEAR_CONTAMINATION"].Hash)
+end
+
 SentientSystems_AddUnitAction("build_road", function(_, unit, _, _, type)
 	local operation = GameInfo.UnitOperations["UNITOPERATION_BUILD_ROUTE"]
 
@@ -250,5 +267,12 @@ SentientSystems_AddUnitAction("remove_improvement", function(_, unit)
 	return SentientSystems_DoOperation(unit, "remove_improvement", "UNITOPERATION_REMOVE_IMPROVEMENT", {
 		kind = SentientSystems_IsBuilder,
 		hint = GetRemoveImprovementHint,
+	})
+end)
+
+SentientSystems_AddUnitAction("clear_fallout", function(_, unit)
+	return SentientSystems_DoOperation(unit, "clear_fallout", "UNITOPERATION_CLEAR_CONTAMINATION", {
+		kind = SentientSystems_IsBuilder,
+		hint = GetClearFalloutHint,
 	})
 end)

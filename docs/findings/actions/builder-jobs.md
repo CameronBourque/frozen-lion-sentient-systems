@@ -33,6 +33,17 @@ The other unit actions are in the [actions index](README.md).
 - **Repair.** `REPAIR` repairs a pillaged improvement, and `REPAIR_ROUTE` repairs a pillaged route. Each failed on a tile that had only the other kind. It is the only job that gave a failure reason, "cannot be repaired while a drought is in progress", for two pillaged improvements.
 - **Remove improvement.** It removed two different improvements with no dialog.
 
+### Clear fallout
+
+`UNITOPERATION_CLEAR_CONTAMINATION` is a plain unit operation in the `SPECIFIC` category of `UnitOperations.xml`, requested like the other jobs. The Civilopedia's Nuclear Contamination concept says it takes a build charge. Confirmed in files.
+
+On Windows on 2026-11-11, a Builder, a Military Engineer, and a Roman Legion each cleared a tile in an enemy's territory, and the tile had no fallout at once:
+
+- The Builder and the Engineer used a charge and all their moves. The Legion used its one charge and kept its moves.
+- A unit with no build charges in its row, such as a jet bomber, can't clear fallout.
+
+The game treats the Legion, a combat unit with `BuildCharges="1"`, as a builder for the other jobs too. A Legion removed a jungle on the player's tile, using its charge and its moves.
+
 ### Add production
 
 The game has four unit commands that add production to the item a city is building at the cost of a build charge: `UNITCOMMAND_BUILDING_PRODUCTION`, `DISTRICT_PRODUCTION`, `WONDER_PRODUCTION`, and `PROJECT_PRODUCTION`.
@@ -71,8 +82,15 @@ The bridge ran these steps in a single-player game.
   Each gave a reason for one illegal case: a road on a railroad, a remove feature with no feature, a harvest on a farm, a repair of an unpillaged tile, and a repair in a drought.
 
   Run in `SentientSystemsCore_UI` on 2026-11-05.
+- **`SentientSystems_UnitAction` for `clear_fallout`, through the bridge.** A Builder, a Military Engineer, and a Legion each cleared their tile.
+
+  `UnitManager.InitUnit` in `GameCore_Tuner` made them on tiles a strike left fallout on.
+
+  The other cases gave reasons: `This kind of unit can't clear fallout.` for a jet bomber, and `The unit has no moves left.` for the Builder again.
+
+  `The unit has no build charges left.` came back for the Legion again, and `There is no fallout on the tile.` on a clean tile. Run in `SentientSystemsCore_UI` on 2026-11-11.
 - **`SentientSystems_UnitAction` for `add_production` by two military engineers and a builder.** An engineer in a city building a Flood Barrier added 20% of its cost, and one on the tile of an Aqueduct added 52 of 180, each for a charge.
 
   Each other case gave a reason: a builder, an engineer in a city building something else, an engineer off the tile of a district, an engineer outside a city, and a Great Engineer. Run in `SentientSystemsCore_UI` on 2026-11-05.
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-05.
+Date checked: game files on 2026-10-16, 2026-10-23, and 2026-11-11. Running game on Windows on 2026-11-05 and 2026-11-11.

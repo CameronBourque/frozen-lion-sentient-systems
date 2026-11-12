@@ -73,6 +73,7 @@ function SentientSystems_GetPlayerState(player)
 		income = SentientSystems_GetIncomeState(player),
 		resources = SentientSystems_GetResourcesState(player),
 		era = SentientSystems_GetEraState(player),
+		wmds = SentientSystems_GetWmdStockpile(player),
 	}
 
 	if capacity > 0 then

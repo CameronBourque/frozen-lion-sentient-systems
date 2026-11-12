@@ -1,6 +1,6 @@
 # Unit actions
 
-How the core mod runs the unit orders that act on the unit or its tile: moves, stances, attacks, upgrades, formations, and air and transport moves. Part of the [action API](../README.md).
+How the core mod runs the unit orders that act on the unit or its tile: moves, stances, attacks, WMD strikes, upgrades, formations, and air and transport moves. Part of the [action API](../README.md).
 
 ## Moves
 
@@ -27,6 +27,16 @@ A ship's attack on a land tile it can raid is a coastal raid, and a refusal list
 `priority_target` takes `x` and `y`, and is in the attacks file. A priority target hits the support or civilian unit that a military unit escorts, and the game marks the tiles that have one.
 
 `SentientSystems_CityAttack(playerID, cityID, x, y)` in `Scripts/Actions/SentientSystemsCore_ActionsCities.lua` orders a city's shot.
+
+## WMD strikes
+
+`wmd_strike` (with `x`, `y`, and the device in `type`) launches a nuclear or thermonuclear device from a unit.
+
+`SentientSystems_SiloStrike(playerID, siloX, siloY, x, y, type)` launches one from the player's missile silo, through the city that owns the silo's tile. Both are in `Scripts/Actions/SentientSystemsCore_ActionsWmds.lua`.
+
+Each checks the device and the stockpile, the launcher, the tile, the range, and the war check, in that order. The game lists hundreds of tiles in range, so a refusal gives how many tiles the launcher can hit and how far, not the list.
+
+A unit with no moves left can't launch, though the game's check allows it, because the unit panel shows it no strike. The [WMD launchers state](../state.md) lists what can launch each device now, and `Scripts/SentientSystemsCore_Wmds.lua` holds the rules that the state and the actions share.
 
 ## Orders on the unit's tile
 
@@ -63,5 +73,7 @@ The game gives no other reasons, so the core mod says when the unit is of the wr
 | Decision | Reason |
 | --- | --- |
 | An attack that would start a war returns a reason, and a separate action declares war | The UI asks for confirmation in a dialog that has no call to answer, and a surprise war is a decision on its own |
+| A WMD strike follows the unit panel, not only the game's check | `CanStartOperation` allows a strike from a unit with no moves left, which a human can't order. The agent plays by the same rules as a human |
+| A silo strike is its own function, not a unit order | A silo is an improvement that fires through its city's command, with no unit ID to pass |
 | A move never attacks or declares war | The UI turns one click into a move, an attack, or a war confirmation. An agent needs each as its own deliberate action, so a move that would attack or start a war returns a reason instead |
 | The core mod gives its own reason where the game gives none, such as for a stance, an upgrade, or a formation | A refusal with no reason leaves the agent to repeat the mistake |

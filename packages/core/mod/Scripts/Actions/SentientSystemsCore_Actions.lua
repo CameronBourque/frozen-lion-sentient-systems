@@ -110,6 +110,7 @@ function SentientSystems_ListTiles(tiles)
 end
 
 SentientSystems_Include("SentientSystemsCore_ActionsUnits")
+SentientSystems_Include("SentientSystemsCore_ActionsWmds")
 SentientSystems_Include("SentientSystemsCore_ActionsCities")
 SentientSystems_Include("SentientSystemsCore_ActionsTrade")
 SentientSystems_Include("SentientSystemsCore_ActionsSpies")
