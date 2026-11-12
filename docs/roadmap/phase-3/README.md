@@ -18,7 +18,7 @@ This phase makes agents distinct and better. It adds personalities, all sweat le
 - Each city's next border expansion in the state
 - Trade routes in the state, and an action that sends a trader
 - Gossip, spies, and climate and disasters in the state
-- Diplomacy actions beyond answering a proposed deal
+- Diplomacy actions beyond answering a proposed deal, declaring war, and proposing peace, such as proposing other deals and sending gifts
 - Messaging panel and `send_message`
 - Narrator panel in the game UI
 - Run the test matrix

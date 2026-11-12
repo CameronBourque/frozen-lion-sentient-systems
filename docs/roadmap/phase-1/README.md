@@ -24,31 +24,32 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 4 | Load signal | How the bridge tells a load has finished | `feat(core): add the load signal` | Done. See [setup.md](done/setup.md#load-signal) |
 | 5 | State: map, cities, and units | The serializer for one player, filtered by visibility | `feat(core): add the state serializer` | Done. See [state.md](done/state.md#state-map-cities-and-units) |
 | 6 | State: choices, blockers, and scoreboard | End-turn blockers, legal options and purchases, placement tiles, the tech and civic trees, the player's overview, diplomacy status, and victory progress | `feat(core): add blockers, choices, trees, and the scoreboard` | Done. See [state.md](done/state.md#state-choices-blockers-and-scoreboard) |
-| 7 | Action API: units | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | Done. See [actions.md](done/actions.md#action-api-units) |
-| 8 | Action API: unit jobs | Builder jobs, upgrades, formations, air movement, priority target, and adding production | `feat(core): add the unit job actions` | Done. See [actions.md](done/actions.md#action-api-unit-jobs) |
-| 9 | Action API: special units | Trade routes, great people, religious units, spy missions, pillaging roads, and coastal raids, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | Done. See [actions.md](done/actions.md#action-api-special-units) |
+| 7 | Action API: units | The action result format, and move, stance, found city, improve, pillage, and attack, with failure reasons | `feat(core): add the unit actions` | Done. See [unit-actions.md](done/unit-actions.md#action-api-units) |
+| 8 | Action API: unit jobs | Builder jobs, upgrades, formations, air movement, priority target, and adding production | `feat(core): add the unit job actions` | Done. See [unit-actions.md](done/unit-actions.md#action-api-unit-jobs) |
+| 9 | Action API: special units | Trade routes, great people, religious units, spy missions, pillaging roads, and coastal raids, with the choices they need | `feat(core): add the trade route, great person, religious unit, and spy actions` | Done. See [unit-actions.md](done/unit-actions.md#action-api-special-units) |
 | 10 | State: trade routes and espionage | The player's trade routes, and every spy, as the Trade Overview and Espionage screens show them | `feat(core): add the trade route and espionage state` | Done. See [state.md](done/state.md#state-trade-routes-and-espionage) |
 | 11 | State: unit and city details | What a unit is doing, its charges, religion, and great person fields, and a city's religion and power | `feat(core): add the unit and city details to the state` | Done. See [state.md](done/state.md#state-unit-and-city-details) |
 | 12 | State: great works and map layers | Every great work slot with its city and work, where a work can move, and the tourism, appeal, and continent of each tile | `feat(core): add the great work and map layer state` | Done. See [state.md](done/state.md#state-great-works-and-map-layers) |
-| 13 | Action API: cities | Production, districts and wonders, purchases, tile purchases, and the production queue | `feat(core): add the city actions` | Done. See [actions.md](done/actions.md#action-api-cities) |
-| 14 | Action API: research and policies | Techs and civics with their queues, policies, the paid policy unlock, and a change of government | `feat(core): add the research, civic, policy, and government actions` | Done. See [actions.md](done/actions.md#action-api-research-and-policies) |
-| 15 | Action API: religion and rewards | The pantheon, great person, religion, governor, and envoy blockers | `feat(core): add the religion, governor, and reward actions` | Done. See [actions.md](done/actions.md#action-api-religion-and-rewards) |
-| 16 | Action API: great works | Moving a great work between slots, and choosing an artifact | `feat(core): add the great work and artifact actions` | Done. See [actions.md](done/actions.md#action-api-great-works) |
-| 17 | Action API: other blockers | Captured and disloyal cities, espionage, the World Congress, and era dedications | `feat(core): add the city fate, espionage, congress, and dedication actions` | Done. See [actions.md](done/actions.md#action-api-other-blockers) |
-| 18 | Action API: nuclear strikes | The nuclear and thermonuclear stockpile, the launchers, the strike from a unit or a silo, and fallout and its clearing | `feat(core): add the nuclear actions` | Done. See [actions.md](done/actions.md#action-api-nuclear-strikes) |
-| 19 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
-| 20 | [Popups for agent players](agent-popups.md) | Skip or close the wonder, natural disaster, Secret Society, artifact, and World Congress popups for an agent player | `feat(core): close the popups for agent players` | |
-| 21 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
-| 22 | [MCP server](mcp-server.md) | State, on-demand state, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
-| 23 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
-| 24 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
-| 25 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
-| 26 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
-| 27 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 28 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 29 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 30 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
-| 31 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
+| 13 | Action API: cities | Production, districts and wonders, purchases, tile purchases, and the production queue | `feat(core): add the city actions` | Done. See [empire-actions.md](done/empire-actions.md#action-api-cities) |
+| 14 | Action API: research and policies | Techs and civics with their queues, policies, the paid policy unlock, and a change of government | `feat(core): add the research, civic, policy, and government actions` | Done. See [empire-actions.md](done/empire-actions.md#action-api-research-and-policies) |
+| 15 | Action API: religion and rewards | The pantheon, great person, religion, governor, and envoy blockers | `feat(core): add the religion, governor, and reward actions` | Done. See [empire-actions.md](done/empire-actions.md#action-api-religion-and-rewards) |
+| 16 | Action API: great works | Moving a great work between slots, and choosing an artifact | `feat(core): add the great work and artifact actions` | Done. See [empire-actions.md](done/empire-actions.md#action-api-great-works) |
+| 17 | Action API: other blockers | Captured and disloyal cities, espionage, the World Congress, and era dedications | `feat(core): add the city fate, espionage, congress, and dedication actions` | Done. See [turn-actions.md](done/turn-actions.md#action-api-other-blockers) |
+| 18 | Action API: nuclear strikes | The nuclear and thermonuclear stockpile, the launchers, the strike from a unit or a silo, and fallout and its clearing | `feat(core): add the nuclear actions` | Done. See [unit-actions.md](done/unit-actions.md#action-api-nuclear-strikes) |
+| 19 | Action API: deals and end turn | End turn with the blocker as the reason, deal responses, declaring war, and proposing peace | `feat(core): add the deal and end turn actions` | Done. See [turn-actions.md](done/turn-actions.md#action-api-deals-and-end-turn) |
+| 20 | [Diplomacy sessions](diplomacy-sessions.md) | The sessions an AI opens with no deal, such as a comment or a request for a promise, in the state, with an action that answers one | `feat(core): add the diplomacy session state and action` | |
+| 21 | [Popups for agent players](agent-popups.md) | Skip or close the wonder, natural disaster, Secret Society, artifact, and World Congress popups for an agent player | `feat(core): close the popups for agent players` | |
+| 22 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
+| 23 | [MCP server](mcp-server.md) | State, on-demand state, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
+| 24 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
+| 25 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
+| 26 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
+| 27 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
+| 28 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
+| 29 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
+| 30 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
+| 31 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
+| 32 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
 
 The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the action API and lookup steps.
 

@@ -67,6 +67,9 @@ The screen copies it to the outgoing working deal, for the player to change. Con
 - **Cities.** A city item's value is the city's ID, and its sub type is 1 for a city ceded back after an occupation, and 2 here.
 
   The resources and great works that come with a city are locked items whose parent is the city's item. Bagacum came with 2 Niter, 1 Honey, and two great works. Confirmed on Windows on 2026-10-30.
+- **Great works.** A great work item's `GetValueType` is the work's index in the game, which `Game.GetGreatWorkDataFromIndex` reads, not its row in `GameInfo.GreatWorks`. Its sub type is 0.
+
+  `GetValueTypeID` is the work's type, which `PopulateDealGreatWorks` names the icon from. In Qin's deal, Chu Ci had index 4 and `GREATWORK_QU_YUAN_1`, and Metamorphoses had index 8 and `GREATWORK_OVID_1`. Confirmed on Windows on 2026-11-11.
 
 ### Relationships, agendas, and grievances
 
@@ -103,6 +106,7 @@ A single-player game with Gathering Storm, on turns 73 and 85, with 11 other pla
 | The section through the bridge's reader | `DIPLOMACY` parsed 11 players |
 | An alliance and a third-party war that the player proposed to Qin, read with the session check off | `ALLIANCE_MILITARY` from both sides and `THIRD_PARTY_WAR` against player 10, `FORMAL_WAR`, unacceptable, as the deal screen showed. The state leaves it out, as the player started the session |
 | The relationships, agendas, grievances, and others on a turn 26 save, through the bridge's reader | `DIPLOMACY` parsed 10 players, with each agenda and reason, and Gandhi's "pleased that you have been keeping the peace" at +5. The promise to Australia wasn't in the data |
+| Qin's proposal of Horses and Chu Ci for Metamorphoses, Open Borders, and gold, on turn 54 | `GREATWORK_QU_YUAN_1` and `GREATWORK_OVID_1`, with their names, as the deal screen showed. Before the fix, the row at each work's index named two other works |
 | A pending proposal from Kupe, with a city added | `PROPOSALS` parsed 1 proposal with 6 asks and 3 offers: the Horses, Bagacum with its 2 Niter, 1 Honey, and 2 great works, and from Kupe the Open Borders and the two gold items, as the deal screen showed |
 
-Date checked: game files and a running game on Windows on 2026-10-29 and 2026-10-30.
+Date checked: game files and a running game on Windows on 2026-10-29 and 2026-10-30, and the great work items on 2026-11-11.
