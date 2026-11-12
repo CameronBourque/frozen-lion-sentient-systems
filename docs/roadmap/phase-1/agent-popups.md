@@ -32,11 +32,11 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Test it in a save at a session, as for the vote action. Commit: `feat(core): close the World Congress popups for agent players`.
 
-6. **Leader screen.** A war that `declareWar` declares on a major civ leaves the leader screen open on the overview, and no timing of the session close closes it.
+6. **Leader screen.** A war that `declareWar` declares on a major civ, and a peace that `proposePeace` makes, leave the leader screen open on the overview, and no timing of the session close closes it.
 
    Find a way to keep the leader screen from opening for an agent player, or to close it cleanly, and check whether the open screen stops a request and the end turn call.
 
-   Start with `DiplomacyActionView.lua` and the question in [the leader screen](../../findings/actions/diplomacy.md#the-leader-screen). Avoid replacing `DiplomacyActionView.lua`, which Gathering Storm and other mods replace.
+   Start with `DiplomacyActionView.lua` and the question in [the leader screen](../../findings/actions/war-and-peace.md#the-leader-screen). Avoid replacing `DiplomacyActionView.lua`, which Gathering Storm and other mods replace.
 
    Test it with `declareWar` on a major civ, and with the sessions from [diplomacy sessions](diplomacy-sessions.md). Commit: `feat(core): close the leader screen for agent players`.
 
@@ -48,5 +48,5 @@ Neither does a Secret Society the player joins, an artifact the player chooses, 
 
 ## Record
 
-- What each popup does to a request and the end turn call, and how the core mod closes it, in [findings/actions/end-turn.md](../../findings/actions/end-turn.md). The leader screen, in [findings/actions/diplomacy.md](../../findings/actions/diplomacy.md).
+- What each popup does to a request and the end turn call, and how the core mod closes it, in [findings/actions/end-turn.md](../../findings/actions/end-turn.md). The leader screen, in [findings/actions/war-and-peace.md](../../findings/actions/war-and-peace.md).
 - How the core mod handles popups for an agent player, in [design/core/mod/README.md](../../design/core/mod/README.md).

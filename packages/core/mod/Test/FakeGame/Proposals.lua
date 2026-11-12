@@ -144,11 +144,46 @@ return function(env, world, ctx)
 		return deal
 	end
 
-	function env.DealManager.GetWorkingDeal(_, playerID, otherID)
+	-- The outgoing deal, which the peace action fills. Each item goes in
+	-- env.requests, with what the action sets on it.
+	local function OutgoingDeal()
+		local deal = {}
+
+		function deal.AddItemOfType(_, itemType, fromID)
+			local entry = { type = itemType, from = fromID }
+			local item = {}
+
+			env.requests[#env.requests + 1] = { item = entry }
+
+			function item.SetSubType(_, subType)
+				entry.sub = subType
+			end
+			function item.SetLocked(_, locked)
+				entry.locked = locked
+			end
+
+			return item
+		end
+		function deal.Validate()
+			env.requests[#env.requests + 1] = { validate = true }
+		end
+
+		return deal
+	end
+
+	function env.DealManager.GetWorkingDeal(direction, playerID, otherID)
+		if direction == env.DealDirection.OUTGOING then
+			return OutgoingDeal()
+		end
+
 		return Deal((world.players[playerID].proposals or {})[otherID] or {})
 	end
 
-	env.DealProposalAction = { ACCEPTED = 1, REJECTED = 2 }
+	function env.DealManager.ClearWorkingDeal(direction, playerID, otherID)
+		env.requests[#env.requests + 1] = { clear = { direction, playerID, otherID } }
+	end
+
+	env.DealProposalAction = { ACCEPTED = 1, REJECTED = 2, PROPOSED = 4 }
 
 	function env.DealManager.CopyIncomingToOutgoingWorkingDeal(playerID, otherID)
 		env.requests[#env.requests + 1] = { copy = { playerID, otherID } }

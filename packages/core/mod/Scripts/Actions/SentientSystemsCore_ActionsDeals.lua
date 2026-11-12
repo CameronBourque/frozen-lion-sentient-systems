@@ -55,40 +55,35 @@ function SentientSystems_RespondToDeal(playerID, otherPlayerID, accept)
 	return SentientSystems_RunAction("RespondToDeal", RespondToDeal, playerID, otherPlayerID, accept)
 end
 
--- Returns why the player can't declare a surprise war on the other player, or
--- nil. The game's check gives no reason for a player already at war. See
+-- Returns whether the player is a city-state, which the war popup and the
+-- city-state screen tell apart from a major civ by its level.
+local function IsCityState(playerID)
+	local level = PlayerConfigurations[playerID]:GetCivilizationLevelTypeID()
+
+	return level ~= CivilizationLevelTypes.CIVILIZATION_LEVEL_FULL_CIV
+end
+
+-- Returns the game's reasons that the leader screen's check gives for the
+-- action, or the fallback when the check fails with none, or nil. See
 -- DiplomacySupport_RemoveInvalidSelections in DiplomacyStatementSupport.lua.
-local function GetWarFailure(diplomacy, otherPlayerID)
-	if not diplomacy:HasMet(otherPlayerID) then
-		return "You haven't met player " .. otherPlayerID .. "."
-	end
-
-	if diplomacy:IsAtWarWith(otherPlayerID) then
-		return "You are already at war with player " .. otherPlayerID .. "."
-	end
-
-	local valid, results = diplomacy:IsDiplomaticActionValid("DIPLOACTION_DECLARE_SURPRISE_WAR", otherPlayerID, true)
+local function GetActionFailure(diplomacy, actionType, otherPlayerID, fallback)
+	local valid, results = diplomacy:IsDiplomaticActionValid(actionType, otherPlayerID, true)
 
 	if valid then
 		return nil
 	end
 
-	local reasons = {}
-
-	for i, reason in ipairs(results and results.FailureReasons or {}) do
-		reasons[i] = Locale.Lookup(reason)
-	end
-
-	if #reasons == 0 then
-		return "The game doesn't allow a war with player " .. otherPlayerID .. " now."
-	end
-
-	return table.concat(reasons, " ")
+	return SentientSystems_GetFailureReasons(results, "FailureReasons", " ") or fallback
 end
 
--- Returns why the player can't open a diplomacy session now, or nil. A new
--- session waits behind an open one, and closing it there cancels it.
-local function GetOpenSessionFailure(playerID)
+-- Returns why the player can't open a diplomacy session with the other player
+-- now, or nil. A new session waits behind an open one, and closing it there
+-- cancels it. A city-state's operation opens no session.
+local function GetOpenSessionFailure(playerID, otherPlayerID)
+	if IsCityState(otherPlayerID) then
+		return nil
+	end
+
 	for otherID = 0, 63 do
 		local sessionID = DiplomacyManager.FindOpenSessionID(playerID, otherID)
 
@@ -100,6 +95,29 @@ local function GetOpenSessionFailure(playerID)
 	return nil
 end
 
+-- Returns why the player can't declare a surprise war on the other player, or
+-- nil. The game's check gives no reason for a player already at war.
+local function GetWarFailure(diplomacy, otherPlayerID)
+	if not diplomacy:HasMet(otherPlayerID) then
+		return "You haven't met player " .. otherPlayerID .. "."
+	end
+
+	if diplomacy:IsAtWarWith(otherPlayerID) then
+		return "You are already at war with player " .. otherPlayerID .. "."
+	end
+
+	local fallback = "The game doesn't allow a war with player " .. otherPlayerID .. " now."
+
+	return GetActionFailure(diplomacy, "DIPLOACTION_DECLARE_SURPRISE_WAR", otherPlayerID, fallback)
+end
+
+-- Returns the parameters of a war or peace operation with a city-state.
+local function GetPlayerPairParams(playerID, otherPlayerID)
+	local P = PlayerOperations
+
+	return { [P.PARAM_PLAYER_ONE] = playerID, [P.PARAM_PLAYER_TWO] = otherPlayerID }
+end
+
 -- Declares a surprise war as the war popup does: a diplomacy session for a
 -- major civ, and a player operation for a city-state. See DeclareWar in
 -- DeclareWarPopup.lua. The war takes effect when the request is sent, so the
@@ -109,21 +127,17 @@ local function DeclareWar(playerID, otherPlayerID)
 
 	SentientSystems_GetPlayer(otherPlayerID)
 
-	local failure = GetWarFailure(player:GetDiplomacy(), otherPlayerID) or GetOpenSessionFailure(playerID)
+	local failure = GetWarFailure(player:GetDiplomacy(), otherPlayerID) or GetOpenSessionFailure(playerID, otherPlayerID)
 
 	if failure ~= nil then
 		return failure
 	end
 
-	local level = PlayerConfigurations[otherPlayerID]:GetCivilizationLevelTypeID()
-
-	if level == CivilizationLevelTypes.CIVILIZATION_LEVEL_FULL_CIV then
+	if IsCityState(otherPlayerID) then
+		UI.RequestPlayerOperation(playerID, PlayerOperations.DIPLOMACY_DECLARE_WAR, GetPlayerPairParams(playerID, otherPlayerID))
+	else
 		DiplomacyManager.RequestSession(playerID, otherPlayerID, "DECLARE_SURPRISE_WAR")
 		DiplomacyManager.CloseSession(DiplomacyManager.FindOpenSessionID(playerID, otherPlayerID))
-	else
-		local P = PlayerOperations
-
-		UI.RequestPlayerOperation(playerID, P.DIPLOMACY_DECLARE_WAR, { [P.PARAM_PLAYER_ONE] = playerID, [P.PARAM_PLAYER_TWO] = otherPlayerID })
 	end
 
 	return nil
@@ -132,4 +146,92 @@ end
 -- Declares a surprise war on the other player, and returns the result as JSON.
 function SentientSystems_DeclareWar(playerID, otherPlayerID)
 	return SentientSystems_RunAction("DeclareWar", DeclareWar, playerID, otherPlayerID)
+end
+
+-- Returns why the player can't propose peace to the other player, or nil. The
+-- city-state screen checks CanMakePeaceWith, and gives no reason from the game.
+local function GetPeaceFailure(diplomacy, otherPlayerID)
+	if not diplomacy:HasMet(otherPlayerID) then
+		return "You haven't met player " .. otherPlayerID .. "."
+	end
+
+	if not diplomacy:IsAtWarWith(otherPlayerID) then
+		return "You aren't at war with player " .. otherPlayerID .. "."
+	end
+
+	local fallback = "The game doesn't allow peace with player " .. otherPlayerID .. " now."
+
+	if not IsCityState(otherPlayerID) then
+		return GetActionFailure(diplomacy, "DIPLOACTION_MAKE_PEACE", otherPlayerID, fallback)
+	end
+
+	if not diplomacy:CanMakePeaceWith(otherPlayerID) then
+		return fallback .. " A city-state makes peace only some turns after the war began, and not while you are at war with its suzerain."
+	end
+
+	return nil
+end
+
+-- Sets the outgoing deal to peace alone, as the leader screen's Make Peace
+-- does. Validating the deal adds peace on the other side, and any city that
+-- the peace returns. See OnSelectInitialDiplomacyStatement in
+-- DiplomacyActionView.lua.
+local function SetPeaceDeal(playerID, otherPlayerID)
+	DealManager.ClearWorkingDeal(DealDirection.OUTGOING, playerID, otherPlayerID)
+
+	local deal = DealManager.GetWorkingDeal(DealDirection.OUTGOING, playerID, otherPlayerID)
+	local item = deal:AddItemOfType(DealItemTypes.AGREEMENTS, playerID)
+
+	item:SetSubType(DealAgreementTypes.MAKE_PEACE)
+	item:SetLocked(true)
+	deal:Validate()
+end
+
+-- Proposes peace as the leader screen does for a major civ, with the deal and
+-- the deal screen's Propose, and as the city-state screen does for a
+-- city-state. An AI answers after the call, so the result says only that the
+-- proposal went out. See ProposeWorkingDeal in DiplomacyDealView.lua and
+-- OnChangeWarPeaceStatus in CityStates.lua.
+local function ProposePeace(playerID, otherPlayerID)
+	local player = SentientSystems_GetPlayer(playerID)
+
+	SentientSystems_GetPlayer(otherPlayerID)
+
+	local failure = GetPeaceFailure(player:GetDiplomacy(), otherPlayerID) or GetOpenSessionFailure(playerID, otherPlayerID)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	if IsCityState(otherPlayerID) then
+		UI.RequestPlayerOperation(playerID, PlayerOperations.DIPLOMACY_MAKE_PEACE, GetPlayerPairParams(playerID, otherPlayerID))
+
+		return nil
+	end
+
+	SetPeaceDeal(playerID, otherPlayerID)
+	DiplomacyManager.RequestSession(playerID, otherPlayerID, "MAKE_DEAL")
+	DealManager.SendWorkingDeal(DealProposalAction.PROPOSED, playerID, otherPlayerID)
+	DiplomacyManager.CloseSession(DiplomacyManager.FindOpenSessionID(playerID, otherPlayerID))
+
+	return nil
+end
+
+-- Proposes peace to the other player, and returns the result as JSON.
+function SentientSystems_ProposePeace(playerID, otherPlayerID)
+	return SentientSystems_RunAction("ProposePeace", ProposePeace, playerID, otherPlayerID)
+end
+
+local function GetPeaceResult(playerID, otherPlayerID)
+	if SentientSystems_GetPlayer(playerID):GetDiplomacy():IsAtWarWith(otherPlayerID) then
+		return "Player " .. otherPlayerID .. " hasn't accepted peace. You are still at war."
+	end
+
+	return nil
+end
+
+-- Returns whether the war with the other player has ended, as an action
+-- result in JSON. The bridge reads it after a proposal of peace.
+function SentientSystems_GetPeaceResult(playerID, otherPlayerID)
+	return SentientSystems_RunAction("GetPeaceResult", GetPeaceResult, playerID, otherPlayerID)
 end

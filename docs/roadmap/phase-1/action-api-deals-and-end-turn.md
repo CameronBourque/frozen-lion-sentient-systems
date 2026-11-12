@@ -31,6 +31,6 @@ In a running game, each action works once from the bridge. `endTurn` without `fo
 
 ## Record
 
-- Each request function, its Lua state, and its result, in `findings/actions/end-turn.md` for the end turn, and in [findings/actions/diplomacy.md](../../findings/actions/diplomacy.md) for the deal, war, and peace actions.
+- Each request function, its Lua state, and its result, in `findings/actions/end-turn.md` for the end turn, in [findings/actions/diplomacy.md](../../findings/actions/diplomacy.md) for the deal action, and in [findings/actions/war-and-peace.md](../../findings/actions/war-and-peace.md) for the war and peace actions.
 - The reasons, in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md).
 - The rows of each action, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md).

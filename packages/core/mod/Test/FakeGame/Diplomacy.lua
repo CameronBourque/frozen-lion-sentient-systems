@@ -112,14 +112,24 @@ return function(env, world, ctx)
 				return Contains(data.atWar, otherID)
 			end
 
-			-- A war is valid with a player at peace, unless their entry
-			-- gives the failure reasons in noWar.
+			-- A war is valid with a player at peace, and peace with a player
+			-- at war, unless their entry gives the failure reasons in noWar
+			-- or noPeace.
+			local CHECKS = {
+				DIPLOACTION_DECLARE_SURPRISE_WAR = { field = "noWar", atWar = false },
+				DIPLOACTION_MAKE_PEACE = { field = "noPeace", atWar = true },
+			}
+
 			function diplomacy.IsDiplomaticActionValid(_, action, otherID)
-				local reasons = With(data, otherID).noWar
+				local check = assert(CHECKS[action], "no fake for " .. action)
+				local reasons = With(data, otherID)[check.field]
 
-				assert(action == "DIPLOACTION_DECLARE_SURPRISE_WAR", "no fake for " .. action)
+				return reasons == nil and Contains(data.atWar, otherID) == check.atWar, { FailureReasons = reasons }
+			end
 
-				return reasons == nil and not Contains(data.atWar, otherID), { FailureReasons = reasons }
+			-- The city-state screen's check, false when the entry has noPeace.
+			function diplomacy.CanMakePeaceWith(_, otherID)
+				return With(data, otherID).noPeace == nil
 			end
 
 			function diplomacy.GetVisibilityOn(_, otherID)

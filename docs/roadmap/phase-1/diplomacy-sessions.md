@@ -2,7 +2,9 @@
 
 Add the sessions that an AI opens with no deal to the state, and an action that answers one, so an agent player is never held up by a leader screen it can't see. Part of [phase 1](README.md).
 
-An AI opens these sessions to comment, such as on an agenda, and to ask for something, such as a promise, a delegation, or an embassy. The proposals section lists only the sessions that hold a deal, and `declareWar` refuses while any session is open. See [declaring war](../../findings/actions/diplomacy.md#declaring-war).
+An AI opens these sessions to comment, such as on an agenda, and to ask for something, such as a promise, a delegation, or an embassy. The proposals section lists only the sessions that hold a deal.
+
+The war and peace actions refuse a major civ while any session is open. See [declaring war](../../findings/actions/war-and-peace.md#declaring-war).
 
 ## Tasks
 

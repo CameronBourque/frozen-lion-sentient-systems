@@ -90,11 +90,12 @@ describe("SentientSystems_DeclareWar", function()
 		assert.same({ { session = { 0, 4, "DECLARE_SURPRISE_WAR" } }, { close = 1 } }, env.requests)
 	end)
 
-	it("fails while another diplomacy session is open", function()
+	it("fails while another diplomacy session is open, except for a city-state", function()
 		local env = LoadWar(nil, { [5] = OPEN_BORDERS })
 
 		assert.equal(Failed("A diplomacy session with player 5 is open. Answer it first."), env.SentientSystems_DeclareWar(0, 4))
 		assert.same({}, env.requests)
+		assert.equal("{\"ok\":true}", env.SentientSystems_DeclareWar(0, 12))
 	end)
 
 	it("sends the war popup's player operation for a city-state", function()
@@ -123,5 +124,92 @@ describe("SentientSystems_DeclareWar", function()
 
 	it("fails for an ID with no player", function()
 		assert.equal(Failed("DeclareWar failed: no player 7"), LoadWar().SentientSystems_DeclareWar(0, 7))
+	end)
+end)
+
+-- Returns an environment with the actions loaded, where player 0 has met
+-- players 4, 5, and the city-state 12, and is at war with 4 and 12. diplomacy
+-- is player 0's entry for each other player, and proposals the deals put to
+-- player 0.
+local function LoadPeace(diplomacy, proposals)
+	local env = Game.new()
+
+	FakeGame.Install(env, {
+		players = {
+			[0] = { met = { 4, 5, 12 }, atWar = { 4, 12 }, diplomacy = diplomacy, proposals = proposals },
+			[4] = {},
+			[5] = {},
+			[9] = {},
+			[12] = { minor = { name = "LOC_CIVILIZATION_HATTUSA_NAME", leader = "LEADER_MINOR_CIV_SCIENTIFIC" } },
+		},
+	})
+	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
+
+	return env
+end
+
+describe("SentientSystems_ProposePeace", function()
+	it("proposes the leader screen's peace deal to a major civ, then closes the session", function()
+		local env = LoadPeace()
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_ProposePeace(0, 4))
+		assert.same({
+			{ clear = { env.DealDirection.OUTGOING, 0, 4 } },
+			{ item = { type = env.DealItemTypes.AGREEMENTS, from = 0, sub = env.DealAgreementTypes.MAKE_PEACE, locked = true } },
+			{ validate = true },
+			{ session = { 0, 4, "MAKE_DEAL" } },
+			{ send = { env.DealProposalAction.PROPOSED, 0, 4 } },
+			{ close = 1 },
+		}, env.requests)
+	end)
+
+	it("sends the city-state screen's player operation for a city-state", function()
+		local env = LoadPeace()
+		local P = env.PlayerOperations
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_ProposePeace(0, 12))
+		assert.same({ { player = 0, operation = P.DIPLOMACY_MAKE_PEACE, parameters = { [P.PARAM_PLAYER_ONE] = 0, [P.PARAM_PLAYER_TWO] = 12 } } }, env.requests)
+	end)
+
+	it("fails for a player not met, or one at peace", function()
+		local env = LoadPeace()
+
+		assert.equal(Failed("You haven't met player 9."), env.SentientSystems_ProposePeace(0, 9))
+		assert.equal(Failed("You aren't at war with player 5."), env.SentientSystems_ProposePeace(0, 5))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails with the game's reasons, or its own for a city-state", function()
+		local env = LoadPeace({ [4] = { noPeace = { "LOC_A", "LOC_B" } }, [12] = { noPeace = {} } })
+
+		assert.equal(Failed("LOC_A LOC_B"), env.SentientSystems_ProposePeace(0, 4))
+		assert.equal(
+			Failed("The game doesn't allow peace with player 12 now. A city-state makes peace only some turns after the war began, and not while you are at war with its suzerain."),
+			env.SentientSystems_ProposePeace(0, 12)
+		)
+		assert.same({}, env.requests)
+	end)
+
+	it("fails with its own reason when the game's check gives none", function()
+		local env = LoadPeace({ [4] = { noPeace = {} } })
+
+		assert.equal(Failed("The game doesn't allow peace with player 4 now."), env.SentientSystems_ProposePeace(0, 4))
+	end)
+
+	it("fails while another diplomacy session is open, except for a city-state", function()
+		local env = LoadPeace(nil, { [5] = OPEN_BORDERS })
+
+		assert.equal(Failed("A diplomacy session with player 5 is open. Answer it first."), env.SentientSystems_ProposePeace(0, 4))
+		assert.same({}, env.requests)
+		assert.equal("{\"ok\":true}", env.SentientSystems_ProposePeace(0, 12))
+	end)
+end)
+
+describe("SentientSystems_GetPeaceResult", function()
+	it("is ok once the war has ended, and fails while it goes on", function()
+		local env = LoadPeace()
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_GetPeaceResult(0, 5))
+		assert.equal(Failed("Player 4 hasn't accepted peace. You are still at war."), env.SentientSystems_GetPeaceResult(0, 4))
 	end)
 end)
