@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.18.0...core-v0.19.0) (2026-11-12)
+
+
+### Features
+
+* **core:** add the nuclear actions ([#89](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/89)) ([2f4bafc](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/2f4bafc34e9e9995606716885a724ebd7792cba9))
+
 ## [0.18.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.17.0...core-v0.18.0) (2026-11-12)
 
 
