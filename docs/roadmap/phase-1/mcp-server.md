@@ -16,7 +16,9 @@ Expose the state, the action API, and the lookup as MCP tools. Every action tool
 
    Both lists are too large for the state, so they are functions of one city or one work. Write each tool's description for the model. Commit: `feat(core): add the on-demand state tools`.
 4. **City filter.** Give `get_choices` an optional city ID, and `SentientSystems_GetChoices` an optional `cityID` that leaves out the other cities' entries in each choice that has one for each city. Commit: `feat(core): filter the choices by city`.
-5. **Action tools.** Add one tool per kind of decision, as [turn-loop.md](../../design/agents/turn-loop.md#tools) describes: `move_unit`, `unit_action`, `set_production`, `purchase`, `purchase_tile`, `set_research`, `set_civic`, `set_policies`, one tool for each other blocker, `respond_to_deal`, and `end_turn`.
+5. **Action tools.** Add one tool per kind of decision, as [turn-loop.md](../../design/agents/turn-loop.md#tools) describes.
+
+   The tools are `move_unit`, `unit_action`, `set_production`, `purchase`, `purchase_tile`, `set_research`, `set_civic`, `set_policies`, one tool for each other blocker, `respond_to_deal`, `declare_war`, `propose_peace`, and `end_turn`.
 
    A failed action returns its reason as the tool result, not as an MCP error. Commit: `feat(core): add the action tools`.
 6. **`reason` field.** Make `reason` a required string on every action tool, and log it at the decisions level with the call. Test that a call without it fails. Commit: `feat(core): require a reason on every action`.
