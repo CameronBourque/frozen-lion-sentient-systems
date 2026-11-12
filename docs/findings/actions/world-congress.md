@@ -80,7 +80,7 @@ The voting screen stays open after the action submits. Voting there and pressing
 
 The congress screen opened with **Continue** and then showed the voting screen, though the action had voted. Closing it with **X** let the turn end, and kept the action's votes.
 
-After the session, the `WORLD_CONGRESS_RESULTS` and `EMERGENCY_DECLARED` notifications came up with popups. Closing them for an agent player is a task of [deals and end turn](../../roadmap/phase-1/action-api-deals-and-end-turn.md). Confirmed on Windows on 2026-11-11.
+After the session, the `WORLD_CONGRESS_RESULTS` and `EMERGENCY_DECLARED` notifications came up with popups. Closing them for an agent player is a task of [popups for agent players](../../roadmap/phase-1/agent-popups.md). Confirmed on Windows on 2026-11-11.
 
 ## Method
 
