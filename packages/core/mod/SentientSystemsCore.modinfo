@@ -62,6 +62,7 @@
 			<File>Scripts/Actions/SentientSystemsCore_ActionsDedications.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsWmds.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsTurn.lua</File>
+			<File>Scripts/Actions/SentientSystemsCore_ActionsDeals.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 			<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>
@@ -159,6 +160,7 @@
 		<File>Scripts/Actions/SentientSystemsCore_ActionsDedications.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsWmds.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsTurn.lua</File>
+		<File>Scripts/Actions/SentientSystemsCore_ActionsDeals.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_Choices.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesProduction.lua</File>
 		<File>Scripts/Choices/SentientSystemsCore_ChoicesPurchases.lua</File>

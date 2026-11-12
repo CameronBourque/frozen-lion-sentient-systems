@@ -101,20 +101,32 @@ local function GetItems(deal, playerID)
 	return asks, offers
 end
 
--- Returns the deals put to the player, one for each other player with an
--- open session that they started, in ID order.
+-- Returns the deal the other player has put to the player, and its session,
+-- or nil. A deal is put to the player when the other player started an open
+-- session and the incoming deal has items.
+function SentientSystems_GetProposedDeal(playerID, otherID)
+	local sessionID = DiplomacyManager.FindOpenSessionID(playerID, otherID)
+	local deal = DealManager.GetWorkingDeal(DealDirection.INCOMING, playerID, otherID)
+
+	if otherID ~= playerID and sessionID and sessionID ~= -1
+		and DiplomacyManager.GetSessionInfo(sessionID).FromPlayer == otherID
+		and deal ~= nil and deal:GetItemCount() > 0 then
+		return deal, sessionID
+	end
+
+	return nil
+end
+
+-- Returns the deals put to the player, one for each other player, in ID order.
 function SentientSystems_GetProposalState(player)
 	local playerID = player:GetID()
 	local list = {}
 
 	for _, other in ipairs(PlayerManager.GetAliveMajors()) do
 		local otherID = other:GetID()
-		local sessionID = DiplomacyManager.FindOpenSessionID(playerID, otherID)
-		local deal = DealManager.GetWorkingDeal(DealDirection.INCOMING, playerID, otherID)
+		local deal = SentientSystems_GetProposedDeal(playerID, otherID)
 
-		if otherID ~= playerID and sessionID and sessionID ~= -1
-			and DiplomacyManager.GetSessionInfo(sessionID).FromPlayer == otherID
-			and deal ~= nil and deal:GetItemCount() > 0 then
+		if deal ~= nil then
 			local asks, offers = GetItems(deal, playerID)
 
 			deal:Validate()

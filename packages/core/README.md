@@ -56,6 +56,8 @@ An action is one Lua function that the bridge calls to run a request function of
 | City command fake | `env.CityManager.RequestCommand` in `mod/Test/FakeGame/Attacks.lua`, which puts each command in `env.requests` |
 | Governor rules | The panel's checks and the assignment chooser's cities in `mod/Scripts/SentientSystemsCore_Governors.lua`, which the governor choices and actions share |
 | Great people rules | `SENTIENTSYSTEMS_PATRONAGE` and `SentientSystems_GetPatronage` in `mod/Scripts/SentientSystemsCore_GreatPeople.lua`, which the great people state and actions share |
+| Proposal rules | `SentientSystems_GetProposedDeal` in `mod/Scripts/State/SentientSystemsCore_StateProposals.lua`, which the proposals state and the deal action share |
+| Deal answer fake | `CopyIncomingToOutgoingWorkingDeal`, `SendWorkingDeal`, `AddResponse`, and `CloseSession` in `mod/Test/FakeGame/Proposals.lua`, which put each call in `env.requests` |
 | End turn fake | `env.UI.RequestAction` and `env.ActionTypes` in `mod/Test/FakeGame/EndTurn.lua`, which put each request in `env.requests` |
 | Policy request fake | `RequestPolicyChanges` and `RequestChangeGovernment` on the culture in `mod/Test/FakeGame/Governments.lua`, which put each change in `env.requests` |
 

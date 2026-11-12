@@ -1,5 +1,5 @@
--- Deals that other players put to a player. Fakes a player's proposals and the
--- items of each.
+-- Deals that other players put to a player. Fakes a player's proposals, the
+-- items of each, and the answers to them, which go in env.requests.
 
 local AGREEMENTS = {
 	ALLIANCE = 1764885355,
@@ -145,6 +145,16 @@ return function(env, world, ctx)
 		return Deal((world.players[playerID].proposals or {})[otherID] or {})
 	end
 
+	env.DealProposalAction = { ACCEPTED = 1, REJECTED = 2 }
+
+	function env.DealManager.CopyIncomingToOutgoingWorkingDeal(playerID, otherID)
+		env.requests[#env.requests + 1] = { copy = { playerID, otherID } }
+	end
+
+	function env.DealManager.SendWorkingDeal(action, playerID, otherID)
+		env.requests[#env.requests + 1] = { send = { action, playerID, otherID } }
+	end
+
 	local sessions = {}
 
 	env.DiplomacyManager = {
@@ -161,6 +171,12 @@ return function(env, world, ctx)
 		end,
 		GetSessionInfo = function(sessionID)
 			return sessions[sessionID]
+		end,
+		AddResponse = function(sessionID, playerID, response)
+			env.requests[#env.requests + 1] = { response = { sessionID, playerID, response } }
+		end,
+		CloseSession = function(sessionID)
+			env.requests[#env.requests + 1] = { close = sessionID }
 		end,
 	}
 end
