@@ -1,7 +1,7 @@
 // Tests for world-congress.ts, against the fake game.
 
 import { describe, expect, test } from "vitest";
-import { voteInCongress } from "../../src/actions/world-congress.js";
+import { proposeInCongress, voteInCongress } from "../../src/actions/world-congress.js";
 import { startGame } from "../tuner/fake-game.js";
 
 describe("voteInCongress", () => {
@@ -30,5 +30,19 @@ describe("voteInCongress", () => {
 		})[command] ?? {};
 
 		expect(await voteInCongress(client, 0, [{ type: "WC_RES_PATRONAGE", option: "A", target: 5, votes: 2 }])).toEqual({ ok: true });
+	});
+});
+
+describe("proposeInCongress", () => {
+	test("passes the proposals as a Lua list", async () => {
+		const { game, client } = await startGame();
+		const lua = "SentientSystems_ProposeInCongress(0, {{ type = \"WC_EMERGENCY_REQUEST_AID\", target = 0 }})";
+
+		game.onCommand = (_stateIndex, command) => ({
+			[`SentientSystems_Stash(${lua})`]: { output: ["1"] },
+			"SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] },
+		})[command] ?? {};
+
+		expect(await proposeInCongress(client, 0, [{ type: "WC_EMERGENCY_REQUEST_AID", target: 0 }])).toEqual({ ok: true });
 	});
 });

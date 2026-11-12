@@ -1,6 +1,6 @@
--- The World Congress actions on the congress screen: the votes of a session.
--- SentientSystemsCore_Actions.lua loads this file. The calls are in
--- docs/findings/actions/world-congress.md.
+-- The World Congress actions: a session's votes and a Special Session's
+-- proposals. SentientSystemsCore_Actions.lua loads this file. The calls are
+-- in docs/findings/actions/world-congress.md.
 
 SentientSystems_Include("SentientSystemsCore_WorldCongress")
 
@@ -19,10 +19,10 @@ local function FindResolution(session, type)
 	return nil
 end
 
--- Returns the proposal on the floor with the type and target, or nil.
-local function FindProposal(session, vote)
-	for _, proposal in ipairs(session.proposals) do
-		if proposal.type == vote.type and proposal.target == vote.target then
+-- Returns the proposal in the list with the type and target, or nil.
+local function FindProposal(proposals, type, target)
+	for _, proposal in ipairs(proposals) do
+		if proposal.type == type and proposal.target == target then
 			return proposal
 		end
 	end
@@ -30,11 +30,11 @@ local function FindProposal(session, vote)
 	return nil
 end
 
--- Returns the proposals on the floor, as a reason lists them.
-local function ListProposals(session)
+-- Returns the proposals in the list, as a reason lists them.
+local function ListProposals(proposals)
 	local names = {}
 
-	for i, proposal in ipairs(session.proposals) do
+	for i, proposal in ipairs(proposals) do
 		names[i] = NameProposal(proposal.type, proposal.target)
 	end
 
@@ -77,8 +77,8 @@ end
 local function GetProposalVoteFailure(session, vote)
 	local name = NameProposal(vote.type, vote.target)
 
-	if FindProposal(session, vote) == nil then
-		return name .. " isn't a resolution or a proposal on the floor. Use one of " .. ListProposals(session) .. "."
+	if FindProposal(session.proposals, vote.type, vote.target) == nil then
+		return name .. " isn't a resolution or a proposal on the floor. Use one of " .. ListProposals(session.proposals) .. "."
 	end
 
 	local failure = GetCountFailure(session, vote, name)
@@ -192,7 +192,7 @@ local function VoteInCongress(playerID, votes)
 
 	for _, vote in ipairs(votes) do
 		if FindResolution(session, vote.type) == nil then
-			RequestProposalVote(playerID, FindProposal(session, vote), vote)
+			RequestProposalVote(playerID, FindProposal(session.proposals, vote.type, vote.target), vote)
 		end
 	end
 
@@ -210,4 +210,96 @@ end
 -- against to oppose it.
 function SentientSystems_VoteInCongress(playerID, votes)
 	return SentientSystems_RunAction("VoteInCongress", VoteInCongress, playerID, votes)
+end
+
+-- Returns why a proposal can't be made, or nil. The screen lets the player
+-- tick only a proposal it lists and hasn't turned off. See OnToggleProposal.
+local function GetProposalFailure(available, proposal, seen)
+	if type(proposal) ~= "table" then
+		return "Each proposal is a table with a type and a target."
+	end
+
+	local name = NameProposal(proposal.type, proposal.target)
+	local entry = FindProposal(available, proposal.type, proposal.target)
+
+	if entry == nil then
+		return name .. " isn't a proposal you can make. Use one of " .. ListProposals(available) .. "."
+	end
+
+	if seen[name] then
+		return "You proposed " .. name .. " twice. Propose each once."
+	end
+
+	seen[name] = true
+
+	if entry.disabled then
+		return "You can't propose " .. name .. " now. The worldCongress choice lists it as disabled."
+	end
+
+	return nil
+end
+
+-- Returns why the proposals can't be made, or nil: a proposal that fails, or
+-- a total cost above the player's Favor, which the screen checks as the
+-- player ticks each one. See OnToggleProposal.
+local function GetProposalsFailure(available, proposals, favor)
+	if type(proposals) ~= "table" then
+		return "The proposals are a list of tables, each with a type and a target."
+	end
+
+	local seen, cost = {}, 0
+
+	for _, proposal in ipairs(proposals) do
+		local failure = GetProposalFailure(available, proposal, seen)
+
+		if failure ~= nil then
+			return failure
+		end
+
+		cost = cost + FindProposal(available, proposal.type, proposal.target).cost
+	end
+
+	if cost > favor then
+		return "These proposals cost " .. cost .. " Favor, and you have " .. favor .. "."
+	end
+
+	return nil
+end
+
+local function ProposeInCongress(playerID, proposals)
+	local player = SentientSystems_GetPlayer(playerID)
+
+	if Game.GetWorldCongress():IsInSession() then
+		return "The World Congress is in session. Make proposals once it ends."
+	end
+
+	local available = SentientSystems_GetCongressAvailable(player)
+	local failure = GetProposalsFailure(available, proposals, player:GetFavor())
+
+	if failure ~= nil then
+		return failure
+	end
+
+	local P = PlayerOperations
+
+	-- Each ticked proposal sends its target and type. See OnAccept.
+	for _, proposal in ipairs(proposals) do
+		UI.RequestPlayerOperation(playerID, P.WORLD_CONGRESS_DISCUSSION_SELECTION, {
+			[P.PARAM_OTHER_PLAYER] = proposal.target,
+			[P.PARAM_DISCUSSION_TYPE] = GameInfo.Discussions[proposal.type].Hash,
+		})
+	end
+
+	-- Closing the screen out of session tells the game the player has looked,
+	-- which clears its blocker. See ClosePopup.
+	UI.RequestPlayerOperation(playerID, P.WORLD_CONGRESS_LOOKED_AT_AVAILABLE, {})
+
+	return nil
+end
+
+-- Calls a Special Session for the proposals, each from the available ones of
+-- the worldCongress choice by its type and target, and marks the congress as
+-- looked at. An empty list only marks it. Returns the result as JSON.
+function SentientSystems_ProposeInCongress(playerID, proposals)
+	return SentientSystems_RunAction("ProposeInCongress", ProposeInCongress, playerID, proposals)
 end

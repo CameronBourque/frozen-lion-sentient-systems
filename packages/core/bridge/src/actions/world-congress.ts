@@ -37,3 +37,19 @@ function luaVote(vote: CongressVote): string {
 export function voteInCongress(client: TunerClient, playerID: number, votes: CongressVote[]): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_VoteInCongress(${playerID}, {${votes.map(luaVote).join(", ")}})`);
 }
+
+// A proposal from the available ones of the worldCongress choice, named by its
+// type and target.
+export interface CongressProposal {
+	type: string;
+	target: number;
+}
+
+// Calls a Special Session for the proposals and marks the congress as looked
+// at. An empty list only marks it. An ok result means the game took the
+// proposals, not that a session will meet.
+export function proposeInCongress(client: TunerClient, playerID: number, proposals: CongressProposal[]): Promise<ActionResult> {
+	const entries = proposals.map((proposal) => `{ type = ${JSON.stringify(proposal.type)}, target = ${proposal.target} }`);
+
+	return sendAction(client, `SentientSystems_ProposeInCongress(${playerID}, {${entries.join(", ")}})`);
+}

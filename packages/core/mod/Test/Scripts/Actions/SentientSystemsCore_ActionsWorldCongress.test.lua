@@ -201,3 +201,97 @@ describe("SentientSystems_VoteInCongress in a regular session", function()
 		)
 	end)
 end)
+
+describe("SentientSystems_ProposeInCongress", function()
+	local AID_REQUEST = { TypeName = "WC_EMERGENCY_REQUEST_AID", Type = -789239900, Name = "Aid Request", Description = "Help.", Target = 0, cost = 30 }
+	local BACKSTAB = { TypeName = "WC_EMERGENCY_BACKSTAB", Type = -1, Name = "Betrayal Emergency", Description = "Punish.", Target = 10, cost = 40 }
+
+	-- Returns an environment with the actions loaded, where player 0 has the
+	-- Favor given, out of session with the proposals given, both by default.
+	local function LoadAvailable(favor, available, inSession)
+		local env = Game.new()
+
+		FakeGame.Install(env, {
+			players = { [0] = { favor = favor or 100 } },
+			congress = { inSession = inSession == true, available = available or { AID_REQUEST, BACKSTAB } },
+		})
+		Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
+
+		return env
+	end
+
+	-- Returns the requests for the proposals, each a target and a hash, then
+	-- the request that marks the congress as looked at.
+	local function Requests(env, proposals)
+		local P = env.PlayerOperations
+		local requests = {}
+
+		for i, proposal in ipairs(proposals) do
+			requests[i] = {
+				player = 0,
+				operation = P.WORLD_CONGRESS_DISCUSSION_SELECTION,
+				parameters = { [P.PARAM_OTHER_PLAYER] = proposal[1], [P.PARAM_DISCUSSION_TYPE] = proposal[2] },
+			}
+		end
+
+		requests[#requests + 1] = { player = 0, operation = P.WORLD_CONGRESS_LOOKED_AT_AVAILABLE, parameters = {} }
+
+		return requests
+	end
+
+	it("sends each proposal's target and type, then marks the congress as looked at", function()
+		local env = LoadAvailable()
+		local proposals = { { type = "WC_EMERGENCY_REQUEST_AID", target = 0 }, { type = "WC_EMERGENCY_BACKSTAB", target = 10 } }
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_ProposeInCongress(0, proposals))
+		assert.same(Requests(env, { { 0, -789239900 }, { 10, -1 } }), env.requests)
+	end)
+
+	it("only marks the congress as looked at with no proposals", function()
+		local env = LoadAvailable()
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_ProposeInCongress(0, {}))
+		assert.same(Requests(env, {}), env.requests)
+	end)
+
+	it("fails for a proposal it can't make, a disabled one, or one made twice", function()
+		local disabled = { TypeName = "WC_EMERGENCY_BACKSTAB", Type = -1, Name = "Betrayal Emergency", Description = "Punish.", Target = 10, cost = 40, Disabled = true }
+		local env = LoadAvailable(100, { AID_REQUEST, disabled })
+
+		assert.equal(
+			Failed("WC_EMERGENCY_REQUEST_AID with target 4 isn't a proposal you can make. Use one of WC_EMERGENCY_BACKSTAB with target 10, WC_EMERGENCY_REQUEST_AID with target 0."),
+			env.SentientSystems_ProposeInCongress(0, { { type = "WC_EMERGENCY_REQUEST_AID", target = 4 } })
+		)
+		assert.equal(
+			Failed("You can't propose WC_EMERGENCY_BACKSTAB with target 10 now. The worldCongress choice lists it as disabled."),
+			env.SentientSystems_ProposeInCongress(0, { { type = "WC_EMERGENCY_BACKSTAB", target = 10 } })
+		)
+		assert.equal(
+			Failed("You proposed WC_EMERGENCY_REQUEST_AID with target 0 twice. Propose each once."),
+			env.SentientSystems_ProposeInCongress(0, { { type = "WC_EMERGENCY_REQUEST_AID", target = 0 }, { type = "WC_EMERGENCY_REQUEST_AID", target = 0 } })
+		)
+		assert.same({}, env.requests)
+	end)
+
+	it("fails when the proposals cost more Favor than the player has", function()
+		local env = LoadAvailable(69)
+
+		assert.equal(
+			Failed("These proposals cost 70 Favor, and you have 69."),
+			env.SentientSystems_ProposeInCongress(0, { { type = "WC_EMERGENCY_REQUEST_AID", target = 0 }, { type = "WC_EMERGENCY_BACKSTAB", target = 10 } })
+		)
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for proposals that aren't a list of tables, or in session", function()
+		local env = LoadAvailable()
+
+		assert.equal(Failed("The proposals are a list of tables, each with a type and a target."), env.SentientSystems_ProposeInCongress(0, "WC_EMERGENCY_REQUEST_AID"))
+		assert.equal(Failed("Each proposal is a table with a type and a target."), env.SentientSystems_ProposeInCongress(0, { "WC_EMERGENCY_REQUEST_AID" }))
+		assert.equal(Failed("The World Congress is in session. Make proposals once it ends."), LoadAvailable(100, nil, true).SentientSystems_ProposeInCongress(0, {}))
+	end)
+
+	it("fails for an ID with no player", function()
+		assert.equal(Failed("ProposeInCongress failed: no player 3"), LoadAvailable().SentientSystems_ProposeInCongress(3, {}))
+	end)
+end)

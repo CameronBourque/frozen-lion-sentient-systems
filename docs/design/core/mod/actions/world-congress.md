@@ -22,6 +22,16 @@ The last name a resolution with no vote, and votes whose total cost is more than
 
 On the bridge, `voteInCongress` in `src/actions/world-congress.ts` sends the call.
 
+## Make a proposal
+
+`SentientSystems_ProposeInCongress(playerID, proposals)`, in the same file, calls a Special Session. Each proposal names one of the `available` proposals of the `worldCongress` choice by its `type` and `target`.
+
+The screen sends one `WORLD_CONGRESS_DISCUSSION_SELECTION` for each ticked proposal, with its target and the hash of its type, and `WORLD_CONGRESS_LOOKED_AT_AVAILABLE` when it closes, so the action does too. An empty list only sends the second, which marks the congress as looked at.
+
+Its reasons, in order, name a congress in session, proposals that aren't a list, and a proposal that isn't a table. Then they name a proposal that isn't available, with those that are, one proposed twice, a disabled one, and proposals whose total cost is more than the player's Favor.
+
+On the bridge, `proposeInCongress` in `src/actions/world-congress.ts` sends the call.
+
 ## Shared rules
 
 The choice and the actions both read the session, so the rules are in `Scripts/SentientSystemsCore_WorldCongress.lua`.
@@ -43,4 +53,6 @@ On the bridge, `RESOLUTION_OPTION` in `src/schemas.ts` holds the same letters fo
 | A resolution's target is the index of one of its targets | Targets can be players, resources, or great person classes, and the index names any of them |
 | The action doesn't end the turn | Ending the turn is its own action, and the submit alone clears the blocker |
 | A vote names a proposal by its type and target | The agent copies both from the choice, and the action finds the sender the request needs |
+| A proposal takes the type, not its hash | The agent copies the type from the choice, and the action finds the hash in `GameInfo.Discussions` |
+| Proposing marks the congress as looked at | The screen does so when it closes, and an agent has no screen to close |
 | A vote takes a count and `against`, not a signed count | The agent says which side it is on in words, and the action turns it into the sign the request needs |

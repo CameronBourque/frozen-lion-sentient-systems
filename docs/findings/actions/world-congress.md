@@ -1,6 +1,6 @@
 # World Congress actions
 
-Status: open. Voting on a Special Session's proposal and on a regular session's resolutions is confirmed in a running game with Gathering Storm, with the files sent through the tuner. Making a proposal isn't added yet.
+Status: open. Voting on a Special Session's proposal and on a regular session's resolutions, and making a proposal, are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
 
 The game calls that the World Congress actions wrap, with the Lua state each runs in and what the game checks. What the player sees in a session is in [choices/world-congress.md](../choices/world-congress.md).
 
@@ -35,6 +35,20 @@ The player votes for one option of each resolution: voting for one clears the vo
 `CanMoveToNextPhase` won't let the player go on until every resolution has at least 1 vote with an option and a target, and every proposal has a vote, unless its voting blocker allows neither side. Confirmed in files.
 
 `GameInfo.VotingBlockers` has five rows. A target of a hostile emergency can't vote for it, a target of a friendly one can't vote against it, and a player who hasn't met the target or wasn't invited to the emergency can't vote at all. Confirmed on Windows on 2026-11-11.
+
+### Proposal
+
+Out of a session, `OnAccept` sends one `WORLD_CONGRESS_DISCUSSION_SELECTION` for each proposal the player ticked on the Available Proposals tab, after a confirmation. The parameters hold the target in `PARAM_OTHER_PLAYER` and the proposal's `Type` in `PARAM_DISCUSSION_TYPE`.
+
+`Type` is the hash of the proposal's row, `GameInfo.Discussions[TypeName].Hash`: -789239900 for `WC_EMERGENCY_REQUEST_AID`. Confirmed in files and on Windows on 2026-11-11.
+
+`OnToggleProposal` lets the player tick a proposal only while the Favor left covers its category's `FavorCost`. Closing the screen out of session sends `WORLD_CONGRESS_LOOKED_AT_AVAILABLE` with no parameters, which the game uses to clear the congress's blocker. See `ClosePopup`. Confirmed in files.
+
+Within 3 seconds of the request, the Favor was down by the cost and the proposal read `Disabled`, with a `ProposalBlockerType` that is a hash, not a row's index. The proposal didn't show in `GetProposals` until the session.
+
+The screen still offered the proposal until the turn ended, and the `WORLD_CONGRESS_EMERGENCY_CAN_BE_CALLED` and `SPECIAL_SESSION_CAN_BE_CALLED` notifications stayed up. The screen dismisses them through `LuaEvents.WorldCongressPopup_DismissSpecialSessionNotification`.
+
+The Special Session met on the next turn, with the proposal on the floor and the player as its sender. Confirmed on Windows on 2026-11-11.
 
 ### Favor
 
@@ -105,6 +119,16 @@ The Favor was 318: 115, 3 a turn, and 200 back for the two choices the congress 
 In a first run of the same save, the screen's **Submit** after the action left player 0 with 1 vote on each, as the screen had them, and 118 Favor.
 
 In a third run, with 5 votes on Patronage first and 10 on Trade Policy, the Favor also went from 335 to 115.
+
+Out of session on turn 88 of a third save, at 164 Favor, with the Aid Request for player 0 available at 30 Favor:
+
+| Call | Result |
+| --- | --- |
+| `proposeInCongress` with target 4 | `WC_EMERGENCY_REQUEST_AID with target 4 isn't a proposal you can make. Use one of WC_EMERGENCY_REQUEST_AID with target 0.` |
+| `proposeInCongress` with target 0 | `{"ok":true}`. The Favor went to 134, and the choice listed the proposal as disabled |
+| `proposeInCongress` with target 0 again | `You can't propose WC_EMERGENCY_REQUEST_AID with target 0 now. The worldCongress choice lists it as disabled.` |
+
+On turn 89, `ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION` was up for a Special Session with the Aid Request from player 0 for player 0 on the floor.
 
 The saves were only test saves. In the first, the player's Favor was changed by -1,000 and +6,000 before the vote.
 

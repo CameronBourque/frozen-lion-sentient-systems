@@ -5,6 +5,7 @@ return function(env, world, ctx)
 	local indexes = ctx.indexes
 
 	env.GameInfo.Resolutions = ctx.TypedRows({}, "ResolutionType")
+	env.GameInfo.Discussions = ctx.TypedRows({}, "DiscussionType")
 	ctx.AddBlockerType("ENDTURN_BLOCKING_WORLD_CONGRESS_LOOK", 1215684003)
 	ctx.AddBlockerType("ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION", 1215684004)
 
@@ -23,6 +24,13 @@ return function(env, world, ctx)
 			row.Effect2Description = "LOC_" .. resolution.type .. "_B"
 			row.Hash = row.Hash or resolution.hash
 		end
+	end
+
+	-- Each proposal the player could make gets a discussion row, with the hash
+	-- its proposal sends.
+	for _, proposal in ipairs(congress.available or {}) do
+		ctx.AddRow("Discussions", "DiscussionType", proposal.TypeName)
+		env.GameInfo.Discussions[indexes[proposal.TypeName]].Hash = proposal.Type
 	end
 
 	-- The World Congress, from world.congress. The calls that take a player's
