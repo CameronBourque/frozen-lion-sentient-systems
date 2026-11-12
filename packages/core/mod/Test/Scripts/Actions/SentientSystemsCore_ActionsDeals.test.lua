@@ -60,3 +60,68 @@ describe("SentientSystems_RespondToDeal", function()
 		assert.equal(Failed("RespondToDeal failed: no player 9"), Load({}).SentientSystems_RespondToDeal(0, 9, true))
 	end)
 end)
+
+-- Returns an environment with the actions loaded, where player 0 has met
+-- players 4, 5, and the city-state 12, and is at war with player 5. diplomacy
+-- is player 0's entry for each other player, and proposals the deals put to
+-- player 0.
+local function LoadWar(diplomacy, proposals)
+	local env = Game.new()
+
+	FakeGame.Install(env, {
+		players = {
+			[0] = { met = { 4, 5, 12 }, atWar = { 5 }, diplomacy = diplomacy, proposals = proposals },
+			[4] = {},
+			[5] = {},
+			[9] = {},
+			[12] = { minor = { name = "LOC_CIVILIZATION_HATTUSA_NAME", leader = "LEADER_MINOR_CIV_SCIENTIFIC" } },
+		},
+	})
+	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
+
+	return env
+end
+
+describe("SentientSystems_DeclareWar", function()
+	it("asks for the war popup's session for a major civ, then closes it", function()
+		local env = LoadWar()
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_DeclareWar(0, 4))
+		assert.same({ { session = { 0, 4, "DECLARE_SURPRISE_WAR" } }, { close = 1 } }, env.requests)
+	end)
+
+	it("fails while another diplomacy session is open", function()
+		local env = LoadWar(nil, { [5] = OPEN_BORDERS })
+
+		assert.equal(Failed("A diplomacy session with player 5 is open. Answer it first."), env.SentientSystems_DeclareWar(0, 4))
+		assert.same({}, env.requests)
+	end)
+
+	it("sends the war popup's player operation for a city-state", function()
+		local env = LoadWar()
+		local P = env.PlayerOperations
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_DeclareWar(0, 12))
+		assert.same({ { player = 0, operation = P.DIPLOMACY_DECLARE_WAR, parameters = { [P.PARAM_PLAYER_ONE] = 0, [P.PARAM_PLAYER_TWO] = 12 } } }, env.requests)
+	end)
+
+	it("fails for a player not met, or one already at war", function()
+		local env = LoadWar()
+
+		assert.equal(Failed("You haven't met player 9."), env.SentientSystems_DeclareWar(0, 9))
+		assert.equal(Failed("You are already at war with player 5."), env.SentientSystems_DeclareWar(0, 5))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails with the game's reasons, or its own when the game gives none", function()
+		local env = LoadWar({ [4] = { noWar = { "LOC_A", "LOC_B" } }, [12] = { noWar = {} } })
+
+		assert.equal(Failed("LOC_A LOC_B"), env.SentientSystems_DeclareWar(0, 4))
+		assert.equal(Failed("The game doesn't allow a war with player 12 now."), env.SentientSystems_DeclareWar(0, 12))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for an ID with no player", function()
+		assert.equal(Failed("DeclareWar failed: no player 7"), LoadWar().SentientSystems_DeclareWar(0, 7))
+	end)
+end)

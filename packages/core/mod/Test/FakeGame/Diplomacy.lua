@@ -112,6 +112,16 @@ return function(env, world, ctx)
 				return Contains(data.atWar, otherID)
 			end
 
+			-- A war is valid with a player at peace, unless their entry
+			-- gives the failure reasons in noWar.
+			function diplomacy.IsDiplomaticActionValid(_, action, otherID)
+				local reasons = With(data, otherID).noWar
+
+				assert(action == "DIPLOACTION_DECLARE_SURPRISE_WAR", "no fake for " .. action)
+
+				return reasons == nil and not Contains(data.atWar, otherID), { FailureReasons = reasons }
+			end
+
 			function diplomacy.GetVisibilityOn(_, otherID)
 				return With(data, otherID).access or 0
 			end

@@ -1,5 +1,6 @@
 -- Deals that other players put to a player. Fakes a player's proposals, the
--- items of each, and the answers to them, which go in env.requests.
+-- items of each, and the answers to them and the sessions a player asks for,
+-- which go in env.requests.
 
 local AGREEMENTS = {
 	ALLIANCE = 1764885355,
@@ -157,11 +158,14 @@ return function(env, world, ctx)
 		env.requests[#env.requests + 1] = { send = { action, playerID, otherID } }
 	end
 
-	local sessions = {}
+	-- The sessions open for each player, by the other player's ID: one for
+	-- each proposal, and one for each session the player asks for.
+	local sessions, requested = {}, {}
 
 	env.DiplomacyManager = {
 		FindOpenSessionID = function(playerID, otherID)
-			local proposal = (world.players[playerID].proposals or {})[otherID]
+			local proposal = (world.players[playerID] or {}).proposals
+			proposal = (proposal or {})[otherID] or requested[otherID]
 
 			if proposal == nil then
 				return -1
@@ -179,6 +183,10 @@ return function(env, world, ctx)
 		end,
 		CloseSession = function(sessionID)
 			env.requests[#env.requests + 1] = { close = sessionID }
+		end,
+		RequestSession = function(playerID, otherID, sessionType)
+			env.requests[#env.requests + 1] = { session = { playerID, otherID, sessionType } }
+			requested[otherID] = { started = false }
 		end,
 	}
 end
