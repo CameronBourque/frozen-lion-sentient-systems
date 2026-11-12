@@ -11,7 +11,8 @@ Add the actions for the remaining blockers: captured and disloyal cities, espion
    2. `feat(core): add the World Congress proposal vote action`, for a Special Session.
    3. `feat(core): add resolution votes to the World Congress vote action`, for a regular session, with options and targets.
    4. `feat(core): add the World Congress proposal action`.
-   5. `feat(core): add the emergency action`.
+
+   The emergency action moved to [phase 3](../phase-3/README.md). With Gathering Storm, every emergency starts through the World Congress, so its **Join** and **Reject** blocker only comes up with Rise and Fall alone. See [choices/emergencies.md](../../findings/choices/emergencies.md#questions).
 4. **Era dedications.** Add an action that chooses a dedication. Read the call from `EraReviewPopup.lua`. Commit: `feat(core): add the era dedication action`.
 
 ## Done when

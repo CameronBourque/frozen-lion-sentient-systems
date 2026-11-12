@@ -11,6 +11,10 @@ The calls the emergency choice uses, as the emergency popup shows them. The othe
 1. When does `ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION` come up, with **Join** and **Reject**?
 
    A Betrayal Emergency that passed in a Special Session began at once, with `HasBegun` true and only the popup's **OK**, and no blocker. Three attempts with a city-state captured or razed by another civilization started nothing.
+
+   With Gathering Storm, `Expansion2_Congress.xml` makes each of Rise and Fall's emergencies a World Congress proposal, a `Discussions` row with its `EmergencyType`: military, city-state, religious, nuclear, and backstab. So the player votes on an emergency there, and it begins when it passes.
+
+   The blocker is most likely Rise and Fall's own way to join, in a game without Gathering Storm. The emergency action waits for that ruleset in [phase 3](../../roadmap/phase-3/README.md). Confirmed in files on 2026-11-11.
 2. Does a player who is the target see the same blocker and popup as a member? The popup has an **OK** button for the target's case in the files, with no **Join** or **Reject**.
 
 ## What we know now
