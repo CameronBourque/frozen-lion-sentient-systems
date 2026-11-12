@@ -4,8 +4,8 @@ local Helpers = require("Helpers")
 
 local Failed, With = Helpers.Failed, Helpers.With
 
-local UNIT = { id = 7405612, type = "UNIT_BUILDER", x = 20, y = 20, moves = 2, charges = 3 }
-local ENGINEER = { id = 7405612, type = "UNIT_MILITARY_ENGINEER", x = 20, y = 20, moves = 2, charges = 3 }
+local UNIT = { id = 7405612, type = "UNIT_BUILDER", x = 20, y = 20, moves = 2, rowCharges = 3, charges = 3 }
+local ENGINEER = { id = 7405612, type = "UNIT_MILITARY_ENGINEER", x = 20, y = 20, moves = 2, rowCharges = 2, charges = 2 }
 
 -- Returns an environment with the actions loaded into a fake game that has
 -- player 0 with the unit, the given plots, and the techs player 0 has
@@ -137,7 +137,7 @@ describe("remove_feature", function()
 	end)
 
 	it("fails for a unit that could never remove one", function()
-		assert.equal(Failed("This kind of unit can't remove features."), (Run(With(UNIT, { type = "UNIT_KNIGHT" }), "remove_feature", FOREST, { "TECH_MINING" }, Setup)))
+		assert.equal(Failed("This kind of unit can't remove features."), (Run(With(UNIT, { type = "UNIT_KNIGHT", rowCharges = 0 }), "remove_feature", FOREST, { "TECH_MINING" }, Setup)))
 	end)
 
 	it("explains the tile", function()
@@ -183,7 +183,7 @@ describe("harvest", function()
 	end)
 
 	it("fails for a unit that could never harvest", function()
-		assert.equal(Failed("This kind of unit can't harvest resources."), Reason(With(UNIT, { type = "UNIT_KNIGHT" }), WHEAT))
+		assert.equal(Failed("This kind of unit can't harvest resources."), Reason(With(UNIT, { type = "UNIT_KNIGHT", rowCharges = 0 }), WHEAT))
 	end)
 
 	it("explains the tile", function()
@@ -226,7 +226,7 @@ describe("repair", function()
 	end)
 
 	it("fails for a unit that could never repair", function()
-		assert.equal(Failed("This kind of unit can't repair."), (Run(With(UNIT, { type = "UNIT_KNIGHT" }), "repair", PILLAGED)))
+		assert.equal(Failed("This kind of unit can't repair."), (Run(With(UNIT, { type = "UNIT_KNIGHT", rowCharges = 0 }), "repair", PILLAGED)))
 	end)
 
 	it("explains the tile, and gives the reason the game gives", function()
@@ -250,7 +250,7 @@ describe("remove_improvement", function()
 	end)
 
 	it("fails for a unit that could never remove one", function()
-		assert.equal(Failed("This kind of unit can't remove improvements."), (Run(With(UNIT, { type = "UNIT_KNIGHT" }), "remove_improvement", FARM)))
+		assert.equal(Failed("This kind of unit can't remove improvements."), (Run(With(UNIT, { type = "UNIT_KNIGHT", rowCharges = 0 }), "remove_improvement", FARM)))
 	end)
 
 	it("explains the tile", function()
@@ -283,7 +283,7 @@ describe("clear_fallout", function()
 	end)
 
 	it("fails for a unit that could never clear it", function()
-		assert.equal(Failed("This kind of unit can't clear fallout."), (Run(With(UNIT, { type = "UNIT_KNIGHT" }), "clear_fallout", FALLOUT)))
+		assert.equal(Failed("This kind of unit can't clear fallout."), (Run(With(UNIT, { type = "UNIT_KNIGHT", rowCharges = 0 }), "clear_fallout", FALLOUT)))
 	end)
 
 	it("explains the unit and the tile", function()

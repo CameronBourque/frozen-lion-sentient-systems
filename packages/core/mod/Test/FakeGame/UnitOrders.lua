@@ -71,8 +71,8 @@ return function(env, world, ctx)
 			local row = env.GameInfo.Units[ctx.indexes[unit.type]]
 
 			row.FoundCity = unit.type == "UNIT_SETTLER"
-			-- A row's charges come from rowCharges, such as a legion's 1.
-			row.BuildCharges = unit.rowCharges or (unit.type == "UNIT_BUILDER" or unit.type == "UNIT_MILITARY_ENGINEER") and 3 or 0
+			-- The charges a unit of the kind starts with, 0 for most.
+			row.BuildCharges = unit.rowCharges or 0
 			row.Combat = unit.type == "UNIT_KNIGHT" and 50 or 0
 			row.FoundReligion = unit.type == "UNIT_GREAT_PROPHET"
 			row.SpreadCharges = unit.type == "UNIT_MISSIONARY" and 3 or 0

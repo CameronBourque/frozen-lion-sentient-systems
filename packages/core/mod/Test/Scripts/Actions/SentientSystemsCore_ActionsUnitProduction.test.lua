@@ -4,7 +4,7 @@ local Helpers = require("Helpers")
 
 local Failed, With = Helpers.Failed, Helpers.With
 
-local ENGINEER = { id = 7405612, type = "UNIT_MILITARY_ENGINEER", x = 20, y = 20, moves = 2, charges = 2 }
+local ENGINEER = { id = 7405612, type = "UNIT_MILITARY_ENGINEER", x = 20, y = 20, moves = 2, rowCharges = 2, charges = 2 }
 local FLOOD_BARRIER = { type = "BUILDING_FLOOD_BARRIER", turns = 3, cost = 40, progress = 0 }
 local AQUEDUCT = { type = "DISTRICT_AQUEDUCT", plot = { x = 21, y = 20 } }
 
