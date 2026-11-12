@@ -22,6 +22,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [great-works.md](great-works.md) | Moving a great work between slots, and choosing an artifact |
 | [city-fate.md](city-fate.md) | Keeping, razing, liberating, or refusing a captured or rebelled city |
 | [world-congress.md](world-congress.md) | Voting in a World Congress session, and making a proposal |
+| [dedications.md](dedications.md) | Making an era's dedications |
 
 ### Results
 

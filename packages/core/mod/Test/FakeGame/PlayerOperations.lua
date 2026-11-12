@@ -1,6 +1,6 @@
 -- Player requests. Fakes PlayerOperations and UI.RequestPlayerOperation, which
 -- the research, policy, religion, great person, governor, envoy, great work,
--- artifact, escape route, and World Congress actions send.
+-- artifact, escape route, World Congress, and dedication actions send.
 
 return function(env)
 	env.PlayerOperations = {
@@ -52,6 +52,8 @@ return function(env)
 		WORLD_CONGRESS_LOOKED_AT_AVAILABLE = 56,
 		PARAM_OTHER_PLAYER = 57,
 		PARAM_DISCUSSION_TYPE = 58,
+		COMMEMORATE = 59,
+		PARAM_COMMEMORATION_TYPE = 60,
 	}
 	env.UI = env.UI or {}
 

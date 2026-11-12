@@ -20,6 +20,7 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [envoys.md](envoys.md) | The game call that sends envoys to a city-state, and the checks the game doesn't make |
 | [great-works.md](great-works.md) | The game calls that move a great work and choose an artifact, and the checks the game doesn't make |
 | [world-congress.md](world-congress.md) | The game calls that vote in a World Congress session and make a proposal, how Favor limits them, and the popups the session leaves |
+| [dedications.md](dedications.md) | The game call that makes an era's dedications, and the checks the game doesn't make |
 | [city-fate.md](city-fate.md) | The game call that keeps, razes, liberates, or refuses a captured or rebelled city, and the checks the game doesn't make |
 | [governors.md](governors.md) | The game calls that appoint, promote, and assign a governor, and the checks the game doesn't make |
 | [religion.md](religion.md) | The game calls that found a pantheon and a religion and add a belief, and the checks the game doesn't make |

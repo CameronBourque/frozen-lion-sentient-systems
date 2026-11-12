@@ -51,6 +51,7 @@ An action is one Lua function that the bridge calls to run a request function of
 | City fate rules | `SentientSystems_GetCityFates` in `mod/Scripts/SentientSystemsCore_CityFate.lua`, which the city fate choice and action share |
 | Escape rules | `SentientSystems_GetNextEscape` in `mod/Scripts/SentientSystemsCore_Espionage.lua`, which the spy choice and the escape route action share |
 | World Congress rules | `SentientSystems_GetCongressSession` and `SentientSystems_GetCongressAvailable` in `mod/Scripts/SentientSystemsCore_WorldCongress.lua`, which the World Congress choice and actions share |
+| Dedication rules | `SentientSystems_GetPendingDedication` in `mod/Scripts/SentientSystemsCore_Eras.lua`, which the dedication choice and action share |
 | City command fake | `env.CityManager.RequestCommand` in `mod/Test/FakeGame/Attacks.lua`, which puts each command in `env.requests` |
 | Governor rules | The panel's checks and the assignment chooser's cities in `mod/Scripts/SentientSystemsCore_Governors.lua`, which the governor choices and actions share |
 | Great people rules | `SENTIENTSYSTEMS_PATRONAGE` and `SentientSystems_GetPatronage` in `mod/Scripts/SentientSystemsCore_GreatPeople.lua`, which the great people state and actions share |
