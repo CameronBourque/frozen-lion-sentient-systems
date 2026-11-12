@@ -37,14 +37,14 @@ end
 
 local COSTS = { [0] = 0, 4, 12 }
 
-local PROPOSAL = { TypeName = "WC_EMERGENCY_BACKSTAB", Name = "Betrayal Emergency", Description = "Punish them.", Sender = 0, Target = 10 }
+local FLOOR_PROPOSAL = { TypeName = "WC_EMERGENCY_BACKSTAB", Name = "Betrayal Emergency", Description = "Punish them.", Sender = 0, Target = 10 }
 
 describe("SentientSystems_GetWorldCongressChoices", function()
 	it("offers a Special Session's proposals and the vote costs", function()
 		assert.equal(
 			"{\"favor\":196,\"proposals\":[{\"description\":\"Punish them.\",\"name\":\"Betrayal Emergency\",\"sender\":0,\"target\":10,"
 				.. "\"type\":\"WC_EMERGENCY_BACKSTAB\"}],\"resolutions\":[],\"session\":\"special\",\"voteCosts\":[0,4]}",
-			ChoicesWith({ inSession = true, maxVotes = 2, costs = COSTS, proposals = { PROPOSAL } }, { "ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION" })
+			ChoicesWith({ inSession = true, maxVotes = 2, costs = COSTS, proposals = { FLOOR_PROPOSAL } }, { "ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION" })
 		)
 	end)
 
@@ -70,7 +70,7 @@ describe("SentientSystems_GetWorldCongressChoices", function()
 	end)
 
 	it("cleans the icons and colors from a proposal's description", function()
-		local proposal = { TypeName = PROPOSAL.TypeName, Name = PROPOSAL.Name, Description = "Punish [ICON_Gold] [COLOR_RED]them[ENDCOLOR]", Sender = 0, Target = 10 }
+		local proposal = { TypeName = FLOOR_PROPOSAL.TypeName, Name = FLOOR_PROPOSAL.Name, Description = "Punish [ICON_Gold] [COLOR_RED]them[ENDCOLOR]", Sender = 0, Target = 10 }
 		local choice = ChoicesWith({ inSession = true, maxVotes = 2, costs = COSTS, proposals = { proposal } }, { "ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION" })
 
 		assert.truthy(choice:find("\"description\":\"Punish Gold them\"", 1, true))

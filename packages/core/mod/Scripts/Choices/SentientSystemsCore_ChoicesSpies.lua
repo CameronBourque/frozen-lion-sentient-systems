@@ -2,48 +2,18 @@
 -- screen offers them. Follows OnOpen in EspionageEscape.lua.
 -- Shape: bridge/src/choices/spies.ts.
 
--- The routes in the screen's order, each with the district it leaves by. Every
--- city has a city center, so the screen always allows the last.
-local ROUTES = { "DISTRICT_AERODROME", "DISTRICT_HARBOR", "DISTRICT_COMMERCIAL_HUB", "DISTRICT_CITY_CENTER" }
-
--- Returns the escape routes from a city, as the screen shows them. See OnOpen
--- in EspionageEscape.lua.
-local function GetRoutes(city)
-	local routes = {}
-
-	for i, districtType in ipairs(ROUTES) do
-		local district = GameInfo.Districts[districtType]
-		local route = { type = districtType, name = SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_CHOICE_" .. i) }
-
-		if i < #ROUTES and not city:GetDistricts():HasDistrict(district.Index, true, true) then
-			route.blocked = { SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_NO_DISTRICT", district.Name) }
-		else
-			route.turns = district.TravelTime
-		end
-
-		routes[i] = route
-	end
-
-	return routes
-end
+SentientSystems_Include("SentientSystemsCore_Espionage")
 
 -- Returns the spy choice: the next escaping spy. Returns nil with no escaping
--- spy. The screen opens only from a blocker's notification, and its calls are
--- safe only then: GetNextEscapingSpyID crashed the game with no spy escaping,
--- as GetNextPursuedSpyID did with none pursued, so this reads the spy only
--- while a blocker for it is up. See OnOpen in EspionageEscape.lua.
+-- spy.
 function SentientSystems_GetSpyChoices(player)
-	if not SentientSystems_HasBlocker(player:GetID(), "ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE", "ENDTURN_BLOCKING_SPY_CHOOSE_DRAGNET_PRIORITY") then
+	local escape = SentientSystems_GetNextEscape(player)
+
+	if escape == nil then
 		return nil
 	end
 
-	local spy = player:GetUnits():FindID(player:GetDiplomacy():GetNextEscapingSpyID())
-
-	if spy == nil then
-		return nil
-	end
-
-	local city = Cities.GetPlotPurchaseCity(spy:GetX(), spy:GetY())
+	local spy, city = escape.spy, escape.city
 	local pursuer = spy:GetPursuingSpyName()
 
 	return {
@@ -54,7 +24,7 @@ function SentientSystems_GetSpyChoices(player)
 			loot = SentientSystems_LookupText(spy:GetLootName()),
 			pursuer = pursuer == "" and SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_PURSUIT_POLICE") or SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_PURSUIT_COUNTERSPY", pursuer),
 			description = SentientSystems_LookupText("LOC_ESPIONAGE_ESCAPE_TOOLTIP"),
-			routes = GetRoutes(city),
+			routes = escape.routes,
 		},
 	}
 end

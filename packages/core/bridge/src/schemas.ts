@@ -15,6 +15,13 @@ export const POSITION = z.object({ x: z.number(), y: z.number() });
 
 export type Position = z.infer<typeof POSITION>;
 
+// A World Congress resolution's two options, by the letter the choice and the
+// vote action name them by. SENTIENTSYSTEMS_RESOLUTION_OPTIONS in
+// Scripts/SentientSystemsCore_WorldCongress.lua lists the same two.
+export const RESOLUTION_OPTION = z.enum(["A", "B"]);
+
+export type ResolutionOption = z.infer<typeof RESOLUTION_OPTION>;
+
 // A yield the player spends to buy a unit, a building, or a great person, by
 // its key in the purchases choice and the great people state.
 export type PurchaseYield = "gold" | "faith";

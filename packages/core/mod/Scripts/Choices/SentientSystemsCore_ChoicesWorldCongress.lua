@@ -2,46 +2,7 @@
 -- the Populate* functions in WorldCongressPopup.lua.
 -- Shape: bridge/src/choices/world-congress.ts.
 
--- Returns a player's name as the game shows it: the leader's name once the
--- player has met them, and the unmet player text before. See
--- GetVisiblePlayerNameAndIcons in PlayerSupport.lua.
-local function GetPlayerName(playerID, localPlayerID)
-	if playerID ~= localPlayerID and not Players[localPlayerID]:GetDiplomacy():HasMet(playerID) then
-		return Locale.Lookup("LOC_DIPLOPANEL_UNMET_PLAYER")
-	end
-
-	return Locale.Lookup(PlayerConfigurations[playerID]:GetPlayerName())
-end
-
-local function Numbers(list)
-	local numbers = {}
-
-	for _, value in pairs(list or {}) do
-		numbers[#numbers + 1] = tonumber(value)
-	end
-
-	table.sort(numbers)
-
-	return numbers
-end
-
--- Returns the proposals of a call, each with its category's cost, sorted by
--- type so the order doesn't depend on the game's hashes.
-local function GetProposalEntries(categories)
-	local entries = {}
-
-	for _, category in pairs(categories or {}) do
-		for _, proposal in ipairs(category.ProposalsOfType) do
-			entries[#entries + 1] = { proposal = proposal, cost = category.FavorCost }
-		end
-	end
-
-	table.sort(entries, function(a, b)
-		return a.proposal.TypeName < b.proposal.TypeName
-	end)
-
-	return entries
-end
+SentientSystems_Include("SentientSystemsCore_WorldCongress")
 
 -- Returns the target of a resolution that passed, as the review shows it: a
 -- player's name for a player target, and the game's text for anything else.
@@ -49,7 +10,7 @@ local function GetChosenTarget(data, localPlayerID)
 	if data.TargetType == "PlayerType" then
 		local playerID = tonumber(data.ChosenThing)
 
-		return playerID ~= -1 and GetPlayerName(playerID, localPlayerID) or ""
+		return playerID ~= -1 and SentientSystems_GetCongressPlayerName(playerID, localPlayerID) or ""
 	end
 
 	return Locale.Lookup(data.ChosenThing)
@@ -72,18 +33,23 @@ local function GetOutcomes(data, localPlayerID, turnsLeft)
 			}
 
 			if resolution.PlayerSelections ~= nil then
-				outcome.votes = { A = 0, B = 0 }
+				outcome.votes = {}
+
+				for _, option in ipairs(SENTIENTSYSTEMS_RESOLUTION_OPTIONS) do
+					outcome.votes[option.key] = 0
+				end
+
 				outcome.voters = {}
 
 				for _, selection in pairs(resolution.PlayerSelections) do
-					local side = selection.OptionChosen == 1 and "A" or "B"
+					local side = SentientSystems_FindResolutionOption(selection.OptionChosen).key
 					local playerID = tonumber(selection.PlayerID)
 					local chosen = { TargetType = resolution.TargetType, ChosenThing = selection.ResolutionTarget }
 
 					outcome.votes[side] = outcome.votes[side] + selection.Votes
 					outcome.voters[#outcome.voters + 1] = {
 						player = playerID,
-						name = GetPlayerName(playerID, localPlayerID),
+						name = SentientSystems_GetCongressPlayerName(playerID, localPlayerID),
 						option = side,
 						target = GetChosenTarget(chosen, localPlayerID),
 						votes = selection.Votes,
@@ -106,86 +72,6 @@ local function GetOutcomes(data, localPlayerID, turnsLeft)
 	return outcomes
 end
 
--- Returns the resolutions to vote on in a regular session. See
--- PopulateResolutions.
-local function GetResolutions(data, localPlayerID)
-	local resolutions = {}
-
-	for i, resolution in pairs(data) do
-		if type(i) == "number" then
-			local row = GameInfo.Resolutions[resolution.Type]
-			local targets = {}
-
-			for index, target in ipairs(resolution.PossibleTargets) do
-				if resolution.TargetType == "PlayerType" then
-					local playerID = tonumber(target)
-
-					targets[index] = { index = index, player = playerID, name = GetPlayerName(playerID, localPlayerID) }
-				else
-					targets[index] = { index = index, name = Locale.Lookup(target) }
-				end
-			end
-
-			resolutions[#resolutions + 1] = {
-				type = row.ResolutionType,
-				name = Locale.Lookup(row.Name),
-				options = { A = SentientSystems_LookupText(row.Effect1Description), B = SentientSystems_LookupText(row.Effect2Description) },
-				targetType = resolution.TargetType,
-				targets = targets,
-				favored = Numbers(resolution.FavoredPlayerIDs),
-				disfavored = Numbers(resolution.DisfavoredPlayerIDs),
-			}
-		end
-	end
-
-	table.sort(resolutions, function(a, b)
-		return a.type < b.type
-	end)
-
-	return resolutions
-end
-
--- Returns the proposals on the floor to vote for or against. See
--- PopulateProposalStack.
-local function GetProposals(data)
-	local proposals = {}
-
-	for _, entry in ipairs(GetProposalEntries(data.Proposals)) do
-		local proposal = entry.proposal
-
-		proposals[#proposals + 1] = {
-			type = proposal.TypeName,
-			name = proposal.Name,
-			description = SentientSystems_CleanText(proposal.Description),
-			sender = proposal.Sender,
-			target = proposal.Target,
-		}
-	end
-
-	return proposals
-end
-
--- Returns the proposals the player could call a Special Session for. See
--- PopulateEmergencyProposals.
-local function GetAvailable(data)
-	local available = {}
-
-	for _, entry in ipairs(GetProposalEntries(data.Proposals)) do
-		local proposal = entry.proposal
-
-		available[#available + 1] = {
-			type = proposal.TypeName,
-			name = proposal.Name,
-			description = SentientSystems_CleanText(proposal.Description),
-			target = proposal.Target,
-			cost = entry.cost,
-			disabled = proposal.Disabled == true,
-		}
-	end
-
-	return available
-end
-
 -- Returns the World Congress choice. Returns nil with nothing to show. The
 -- congress screen opens only from its notification, so the session and the
 -- results read only while their blocker is up. See SetStage in
@@ -196,23 +82,18 @@ function SentientSystems_GetWorldCongressChoices(player)
 	local choice = {}
 
 	if congress:IsInSession() then
-		if not SentientSystems_HasBlocker(playerID, "ENDTURN_BLOCKING_WORLD_CONGRESS_SESSION") then
+		local session = SentientSystems_GetCongressSession(player)
+
+		if session == nil then
 			return nil
 		end
 
-		local costs = congress:GetVotesandFavorCost(playerID)
-		local voteCosts = {}
-
-		for votes = 1, costs.MaxVotes do
-			voteCosts[votes] = costs[votes - 1]
-		end
-
-		choice.resolutions = GetResolutions(congress:GetResolutions(playerID), playerID)
-		choice.proposals = GetProposals(congress:GetProposals(playerID))
-		choice.session = #choice.resolutions > 0 and "regular" or "special"
-		choice.voteCosts = voteCosts
+		choice.resolutions = session.resolutions
+		choice.proposals = session.proposals
+		choice.session = #session.resolutions > 0 and "regular" or "special"
+		choice.voteCosts = session.voteCosts
 	else
-		local available = GetAvailable(congress:GetEmergencies(playerID))
+		local available = SentientSystems_GetCongressAvailable(player)
 
 		choice.available = #available > 0 and available or nil
 

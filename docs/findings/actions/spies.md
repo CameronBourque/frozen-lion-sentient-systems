@@ -1,8 +1,10 @@
 # Spy actions
 
-Status: open. Starting a mission, a counterspy mission, and a trip are confirmed in a running game with Gathering Storm, with the files sent through the tuner. What the missions give when they finish is not checked.
+Status: open. Starting a mission, a counterspy mission, and a trip, and choosing an escape route, are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
 
-The game calls the spy actions wrap, with the Lua state each runs in and the reasons their checks give. The cities and missions a spy can choose are in [choices/spy-missions.md](../choices/spy-missions.md).
+What the missions give when they finish is not checked. A dragnet priority has never come up, so its request is confirmed only in files.
+
+The game calls the spy actions wrap, with the Lua state each runs in and the reasons their checks give. The cities and missions a spy can choose are in [choices/spy-missions.md](../choices/spy-missions.md), and the escape routes in [choices/spies.md](../choices/spies.md).
 
 The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other unit actions are in the [actions index](README.md).
 
@@ -34,10 +36,25 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 A city of the player's that the spy stands in opens the counterspy list instead, so the action refuses it. Confirmed in files.
 
+### Escape route
+
+`OnButton1` to `OnButton4` in `Base/Assets/UI/Popups/EspionageEscape.lua` each send `UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.SET_ESCAPE_ROUTE, parameters)`, with the route's district index in `PARAM_DISTRICT_TYPE`.
+
+No spy is sent, because the game takes the route for the next escaping spy.
+
+The dragnet priority blocker opens the same screen, so it would send the same request. See [choices/spies.md](../choices/spies.md#escape-screen). Confirmed in files.
+
+The action reads the spy and its routes with `SentientSystems_GetNextEscape`, only while a spy blocker is up, so it never calls `GetNextEscapingSpyID` with no spy escaping, which crashed the game.
+
+It refuses a route the screen turns off, with the screen's own text, since the game's own check on the request isn't known.
+
+Within 2 seconds of the request, in `SentientSystemsCore_UI`, `ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE` was gone, the spy was no longer on the map, and the player's `GetNumSpiesOffMap()` went up by 1. Confirmed on Windows on 2026-11-11.
+
 ## Method
 
 1. Send the files' code to `SentientSystemsCore_UI` as in [choices/production.md](../choices/production.md#method), step 4. Call `SentientSystems_SpyMission(playerID, unitID, mission, district)` and `SentientSystems_SpyTravel(playerID, unitID, ownerID, cityID)`.
-2. To get a ready spy, send `UnitManager.InitUnit(0, "UNIT_SPY", x, y)` in `GameCore_Tuner` on a city's tile. It ignores the spy capacity. To put a spy in another player's city, see [choices/spy-missions.md](../choices/spy-missions.md#method).
+2. For an escape route, load a save with `ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE` up, send `Scripts/SentientSystemsCore_Espionage.lua` too, and call `chooseEscapeRoute` from the bridge.
+3. To get a ready spy, send `UnitManager.InitUnit(0, "UNIT_SPY", x, y)` in `GameCore_Tuner` on a city's tile. It ignores the spy capacity. To put a spy in another player's city, see [choices/spy-missions.md](../choices/spy-missions.md#method).
 
 ## Results
 
@@ -53,4 +70,13 @@ A single-player game on turn 56, on Windows, in `SentientSystemsCore_UI`:
 | A new spy sent to Bibrax, where it stood, and to Aduatuca | "The spy is already in Bibrax.", then `{"ok":true}`, and the player's `GetNumSpiesOffMap()` went to 2 |
 | A trip to a city that doesn't exist | "Player 40 has no city 1." |
 
-Date checked: game files on 2026-11-06. Running game on Windows on 2026-11-06.
+A single-player game with Gathering Storm on turn 92, where Chloe escaped Patna, player 9's city, with 220 Gold, chased by the police. Vehicle and Foot were open, and Airplane and Boat were off:
+
+| Call | Result |
+| --- | --- |
+| `chooseEscapeRoute` with `DISTRICT_HARBOR` | `No Harbor in city` |
+| `chooseEscapeRoute` with `DISTRICT_CAMPUS` | `DISTRICT_CAMPUS isn't an escape route. Use one of DISTRICT_COMMERCIAL_HUB, DISTRICT_CITY_CENTER.` |
+| `chooseEscapeRoute` with `DISTRICT_COMMERCIAL_HUB` | `{"ok":true}`. The blocker cleared, the spy left the map, and the spies off the map went from 3 to 4 |
+| `SentientSystems_ChooseEscapeRoute` with `DISTRICT_CITY_CENTER` again | `You have no spy escaping. The spies choice lists one when a spy is caught.` |
+
+Date checked: game files on 2026-11-06 and 2026-11-11. Running game on Windows on 2026-11-06 and 2026-11-11.

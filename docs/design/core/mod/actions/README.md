@@ -12,7 +12,7 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | --- | --- |
 | [units.md](units.md) | Moves, unit orders, stances, attacks, upgrades, formations, and air and transport |
 | [unit-jobs.md](unit-jobs.md) | Builder jobs, adding production, great people, and religious units |
-| [cities.md](cities.md) | Production, purchases, trade routes, and spy missions |
+| [cities.md](cities.md) | Production, purchases, trade routes, spy missions, and escape routes |
 | [research.md](research.md) | The tech and the civic in research, and their queues |
 | [government.md](government.md) | The policies in a government's slots, the paid unlock, and a change of government |
 | [religion.md](religion.md) | The pantheon, founding a religion with its beliefs, and adding a belief |
@@ -20,6 +20,9 @@ The game's UI Lua files ship as plain text and show which call each screen makes
 | [governors.md](governors.md) | Appointing, promoting, and assigning a governor |
 | [envoys.md](envoys.md) | Sending envoys to a city-state |
 | [great-works.md](great-works.md) | Moving a great work between slots, and choosing an artifact |
+| [city-fate.md](city-fate.md) | Keeping, razing, liberating, or refusing a captured or rebelled city |
+| [world-congress.md](world-congress.md) | Voting in a World Congress session, and making a proposal |
+| [dedications.md](dedications.md) | Making an era's dedications |
 
 ### Results
 

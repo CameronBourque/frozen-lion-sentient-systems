@@ -50,6 +50,8 @@ end
 
 return function(env, world, ctx)
 	env.CityDestroyDirectives = { LIBERATE_FOUNDER = 0, LIBERATE_PREVIOUS_OWNER = 1, KEEP = 2, RAZE = 3, REJECT = 4 }
+	env.CityCommandTypes.DESTROY = 4011
+	env.UnitOperationTypes.PARAM_FLAGS = 11
 	env.CivilizationLevelTypes = { CIVILIZATION_LEVEL_FULL_CIV = 0 }
 	env.CityTransferTypes = CITY_TRANSFER_TYPES
 

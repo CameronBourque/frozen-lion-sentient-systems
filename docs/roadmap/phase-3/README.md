@@ -22,6 +22,7 @@ This phase makes agents distinct and better. It adds personalities, all sweat le
 - Messaging panel and `send_message`
 - Narrator panel in the game UI
 - Run the test matrix
+- An action that joins or rejects an emergency, for `ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION`, tested with Rise and Fall alone once the test matrix adds it. See [choices/emergencies.md](../../findings/choices/emergencies.md#questions)
 
 Design: [knowledge-files.md](../../design/knowledge-files.md), [agents/sweat-level.md](../../design/agents/sweat-level.md), [agents/narration-and-messaging.md](../../design/agents/narration-and-messaging.md) (includes an open question for this phase), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md#test-matrix).
 

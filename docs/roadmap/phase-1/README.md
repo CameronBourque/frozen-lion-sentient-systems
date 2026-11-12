@@ -34,20 +34,21 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 14 | Action API: research and policies | Techs and civics with their queues, policies, the paid policy unlock, and a change of government | `feat(core): add the research, civic, policy, and government actions` | Done. See [actions.md](done/actions.md#action-api-research-and-policies) |
 | 15 | Action API: religion and rewards | The pantheon, great person, religion, governor, and envoy blockers | `feat(core): add the religion, governor, and reward actions` | Done. See [actions.md](done/actions.md#action-api-religion-and-rewards) |
 | 16 | Action API: great works | Moving a great work between slots, and choosing an artifact | `feat(core): add the great work and artifact actions` | Done. See [actions.md](done/actions.md#action-api-great-works) |
-| 17 | [Action API: other blockers](action-api-other-blockers.md) | Captured and disloyal cities, espionage, the World Congress, emergencies, and era dedications | `feat(core): add the city fate, espionage, and congress actions` | |
+| 17 | Action API: other blockers | Captured and disloyal cities, espionage, the World Congress, and era dedications | `feat(core): add the city fate, espionage, congress, and dedication actions` | Done. See [actions.md](done/actions.md#action-api-other-blockers) |
 | 18 | [Action API: nuclear strikes](action-api-nukes.md) | The nuclear and thermonuclear stockpile, fallout and its clearing, and the strike action | `feat(core): add the nuclear actions` | |
 | 19 | [Action API: deals and end turn](action-api-deals-and-end-turn.md) | Deal responses, declaring war, and end turn, with the blocker as the reason | `feat(core): add the deal and end turn actions` | |
-| 20 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
-| 21 | [MCP server](mcp-server.md) | State, on-demand state, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
-| 22 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
-| 23 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
-| 24 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
-| 25 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
-| 26 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 27 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 28 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 29 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
-| 30 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
+| 20 | [Popups for agent players](agent-popups.md) | Skip or close the wonder, natural disaster, Secret Society, artifact, and World Congress popups for an agent player | `feat(core): close the popups for agent players` | |
+| 21 | [Civilopedia lookup](civilopedia-lookup.md) | Game facts from `GameInfo`, localized text, and Concepts | `feat(core): add the Civilopedia lookup` | |
+| 22 | [MCP server](mcp-server.md) | State, on-demand state, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
+| 23 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
+| 24 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
+| 25 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
+| 26 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
+| 27 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
+| 28 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
+| 29 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
+| 30 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
+| 31 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
 
 The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the action API and lookup steps.
 

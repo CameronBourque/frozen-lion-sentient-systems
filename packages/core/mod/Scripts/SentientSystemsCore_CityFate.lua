@@ -1,6 +1,8 @@
--- The captured city choice: what to do with a captured city (RazeCity.lua) or
--- a rebelled one (DisloyalCityChooser.lua), as each screen offers it. Follows
--- OnOpen in both. Shape: bridge/src/choices/captured-cities.ts.
+-- The rules that the city fate choice and action share: the cities waiting for
+-- a decision, and the options each screen offers. Follows OnOpen in
+-- RazeCity.lua and DisloyalCityChooser.lua.
+
+include("SentientSystemsCore_Common")
 
 -- Returns the name of a CityDestroyDirectives value, which is how the choice
 -- names an option.
@@ -10,18 +12,6 @@ local function DirectiveName(directive)
 			return name
 		end
 	end
-end
-
-local function GetCity(city, kind)
-	return {
-		kind = kind,
-		city = city:GetID(),
-		name = Locale.Lookup(city:GetName()),
-		x = city:GetX(),
-		y = city:GetY(),
-		population = city:GetPopulation(),
-		districts = city:GetDistricts():GetNumZonedDistrictsRequiringPopulation(),
-	}
 end
 
 -- Returns the favor that liberating a city gives with Gathering Storm: more for
@@ -85,18 +75,12 @@ local function GetKeepAndRaze(player, city, conqueredFrom, wipedOut)
 	return keep, raze
 end
 
--- Returns the next city the player captured with its options, in the raze
--- screen's order: liberate to the founder, when the city has changed hands
--- since and the player can liberate it to them, liberate to the owner before
--- the war, when the player can liberate it to them, keep, and raze. Returns nil
--- with no captured city. See OnOpen in RazeCity.lua.
-local function GetCapturedCity(player)
-	local city = player:GetCities():GetNextCapturedCity()
-
-	if city == nil then
-		return nil
-	end
-
+-- Returns the options for a captured city, in the raze screen's order:
+-- liberate to the founder, when the city has changed hands since and the
+-- player can liberate it to them, liberate to the owner before the war, when
+-- the player can liberate it to them, keep, and raze. See OnOpen in
+-- RazeCity.lua.
+local function GetCapturedOptions(player, city)
 	local diplomacy = player:GetDiplomacy()
 	local originalOwner = city:GetOriginalOwner()
 	local ownerBefore = city:GetOwnerBeforeOccupation()
@@ -132,48 +116,36 @@ local function GetCapturedCity(player)
 		blocked = raze == nil and { SentientSystems_LookupText("LOC_RAZE_CITY_RAZE_DISABLED_EXPLANATION") } or nil,
 	}
 
-	local entry = GetCity(city, "captured")
-
-	entry.options = options
-
-	return entry
+	return options
 end
 
--- Returns the next city that rebelled to join the player, with its options,
--- keep and refuse, as Rise and Fall's disloyal city screen offers them. Returns
--- nil with no such city, or without Rise and Fall, whose cities have no
--- GetNextRebelledCity. See OnOpen in DisloyalCityChooser.lua.
-local function GetDisloyalCity(player)
-	local cities = player:GetCities()
-	local city = cities.GetNextRebelledCity and cities:GetNextRebelledCity()
-
-	if city == nil then
-		return nil
-	end
-
-	local entry = GetCity(city, "disloyal")
-
-	entry.options = {
+-- Returns the options for a city that rebelled to join the player, keep and
+-- refuse, as Rise and Fall's disloyal city screen offers them. See OnOpen in
+-- DisloyalCityChooser.lua.
+local function GetDisloyalOptions()
+	return {
 		{ type = DirectiveName(CityDestroyDirectives.KEEP), description = SentientSystems_LookupText("LOC_DISLOYAL_CITY_CHOOSER_KEEP_EXPLANATION") },
 		{ type = DirectiveName(CityDestroyDirectives.REJECT), description = SentientSystems_LookupText("LOC_DISLOYAL_CITY_CHOOSER_REFUSE_EXPLANATION") },
 	}
-
-	return entry
 end
 
--- Returns the captured city choice. Returns nil when there are none.
-function SentientSystems_GetCapturedCityChoices(player)
-	local list = {}
-	local captured = GetCapturedCity(player)
-	local disloyal = GetDisloyalCity(player)
+-- Returns the cities waiting for the player to decide their fate, each with
+-- its kind and options: the next captured city, then the next rebelled one,
+-- each when there is one. Without Rise and Fall, cities have no
+-- GetNextRebelledCity.
+function SentientSystems_GetCityFates(player)
+	local cities = player:GetCities()
+	local captured = cities:GetNextCapturedCity()
+	local rebelled = cities.GetNextRebelledCity and cities:GetNextRebelledCity()
+	local fates = {}
 
 	if captured ~= nil then
-		list[#list + 1] = captured
+		fates[#fates + 1] = { city = captured, kind = "captured", options = GetCapturedOptions(player, captured) }
 	end
 
-	if disloyal ~= nil then
-		list[#list + 1] = disloyal
+	if rebelled ~= nil then
+		fates[#fates + 1] = { city = rebelled, kind = "disloyal", options = GetDisloyalOptions() }
 	end
 
-	return #list > 0 and list or nil
+	return fates
 end

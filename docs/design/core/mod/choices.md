@@ -32,7 +32,7 @@ The calls for each choice are in these findings:
 - **Religion.** [findings/choices/religion.md](../../../findings/choices/religion.md).
 - **Envoys.** [findings/choices/city-states.md](../../../findings/choices/city-states.md).
 - **Great people.** [findings/choices/great-people.md](../../../findings/choices/great-people.md).
-- **Captured cities.** [findings/choices/captured-cities.md](../../../findings/choices/captured-cities.md).
+- **City fate.** [findings/choices/city-fate.md](../../../findings/choices/city-fate.md).
 - **Spies.** [findings/choices/spies.md](../../../findings/choices/spies.md).
 - **Spy missions.** [findings/choices/spy-missions.md](../../../findings/choices/spy-missions.md).
 - **Trade routes.** [findings/choices/trade-routes.md](../../../findings/choices/trade-routes.md).

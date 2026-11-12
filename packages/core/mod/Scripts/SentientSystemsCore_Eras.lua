@@ -1,6 +1,6 @@
--- The age rules that the era state and the dedication choice share: which age
--- a player is in, and a dedication's bonus text. Follows EraProgressPanel.lua
--- and DedicationPopup.lua.
+-- The age rules that the era state, the dedication choice, and the dedication
+-- action share: a player's age, the dedication waiting, and its bonus text.
+-- Follows EraProgressPanel.lua and DedicationPopup.lua.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Text")
@@ -37,4 +37,31 @@ function SentientSystems_GetDedicationText(eras, playerID, row, age)
 	end
 
 	return SentientSystems_LookupText(row.NormalAgeBonusDescription)
+end
+
+-- Returns the dedication waiting for the player: the eras, how many to pick,
+-- the age, and the offered rows of GameInfo.CommemorationTypes. Returns nil
+-- with none to make. It reads the era's choices only while the blocker is up,
+-- as the popup does, since a call with nothing waiting crashed the game for
+-- spies. See OnGameEraChanged in DedicationPopup.lua.
+function SentientSystems_GetPendingDedication(player)
+	local playerID = player:GetID()
+
+	if not SentientSystems_HasBlocker(playerID, "ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE") then
+		return nil
+	end
+
+	local eras = Game.GetEras()
+	local picks = eras:GetPlayerNumAllowedCommemorations(playerID)
+	local rows = {}
+
+	for _, index in ipairs(eras:GetPlayerCommemorateChoices(playerID)) do
+		rows[#rows + 1] = GameInfo.CommemorationTypes[index]
+	end
+
+	if picks <= 0 or #rows == 0 then
+		return nil
+	end
+
+	return { eras = eras, picks = picks, age = SentientSystems_GetAge(eras, playerID), rows = rows }
 end

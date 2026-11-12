@@ -1,7 +1,7 @@
 // Tests for spies.ts, against the fake game.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { spyMission, spyTravel } from "../../src/actions/spies.js";
+import { chooseEscapeRoute, spyMission, spyTravel } from "../../src/actions/spies.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -34,5 +34,11 @@ describe("spy actions", () => {
 		answer("SentientSystems_SpyTravel(0, 16711852, 0, 65536)", "{\"ok\":false,\"reason\":\"The spy is already in Aduatuca.\"}");
 
 		expect(await spyTravel(client, 0, 16711852, 0, 65536)).toEqual({ ok: false, reason: "The spy is already in Aduatuca." });
+	});
+
+	test("chooseEscapeRoute passes the route as text", async () => {
+		answer("SentientSystems_ChooseEscapeRoute(0, \"DISTRICT_HARBOR\")", "{\"ok\":true}");
+
+		expect(await chooseEscapeRoute(client, 0, "DISTRICT_HARBOR")).toEqual({ ok: true });
 	});
 });
