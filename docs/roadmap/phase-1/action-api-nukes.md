@@ -4,19 +4,19 @@ Add the nuclear and thermonuclear strike, the stockpile that feeds it, and the f
 
 ## Tasks
 
-1. **Stockpile.** Add the player's nuclear and thermonuclear devices to the state, and whether each unit that can launch one has a strike ready.
+1. **Stockpile.** Add the player's nuclear and thermonuclear devices to the state, and whether each unit and missile silo that can launch one has a strike ready.
 
-   Read the calls from `TopPanel.lua`, which lists `GameInfo.WMDs()` against `Players[id]:GetWMDs()`, and from `UnitPanel.lua`. Commit: `feat(core): add the nuclear stockpile to the state`.
-2. **Fallout.** Add the turns of fallout left to each tile that has it, and an action that clears it. Read the turns from `Game.GetFalloutManager():GetFalloutTurnsRemaining(plotIndex)`, as `PlotToolTip.lua` does.
+   Read the calls from `TopPanel.lua`, which lists `GameInfo.WMDs()` against `Players[id]:GetWMDs()`, from `UnitPanel.lua`, and from the silo banner in `CityBannerManager.lua`. A silo fires through its city, the one `Cities.GetPlotPurchaseCity` gives. Commit: `feat(core): add the nuclear stockpile to the state`.
+2. **Strike.** Add an action that launches a device at a tile from a unit or a silo, with the device type, and lists the tiles in range when the tile isn't a target.
+
+   Read the calls from the WMD and ICBM strike modes of `WorldInput.lua`. A unit uses `UnitOperationTypes.WMD_STRIKE` with `PARAM_WMD_TYPE` and its targets from `UnitManager.GetOperationTargets`. A silo uses `CityCommandTypes.WMD_STRIKE` with the silo as `PARAM_X0` and `PARAM_Y0`, and its targets from `CityManager.GetCommandTargets`. Both take the war check from `CombatManager.IsAttackChangeWarState`. Commit: `feat(core): add the nuclear strike action`.
+3. **Fallout.** Add the turns of fallout left to each tile that has it, and an action that clears it. Read the turns from `Game.GetFalloutManager():GetFalloutTurnsRemaining(plotIndex)`, as `PlotToolTip.lua` does. The strike of task 2 leaves the fallout to test with.
 
    The clear is `UNITOPERATION_CLEAR_CONTAMINATION`, a plain unit operation in the `SPECIFIC` category. Find out which units can do it, such as a builder or a unit of Rome. Commit: `feat(core): add fallout to the state and the clear fallout action`.
-3. **Strike.** Add an action that launches a device at a tile, with the device type, and lists the tiles in range when the tile isn't a target.
-
-   Read the calls from the WMD strike mode of `WorldInput.lua`: `UnitOperationTypes.WMD_STRIKE` with `PARAM_WMD_TYPE`, its targets from `UnitManager.GetOperationTargets`, and the war check from `CombatManager.IsAttackChangeWarState`. Commit: `feat(core): add the nuclear strike action`.
 
 ## Done when
 
-In a running game, the action launches a nuclear device and a thermonuclear device once each from the bridge, and returns a reason for an illegal tile, such as one out of range or one that would start a war. A strike that changes war state is refused as the move and attack actions are.
+In a running game, the action launches a nuclear device and a thermonuclear device once each from the bridge, from a unit and from a silo, and returns a reason for an illegal tile, such as one out of range or one that would start a war. A strike that changes war state is refused as the move and attack actions are.
 
 The state shows the fallout the strike leaves with its turns left, and the clear action clears one tile once, with a reason for a unit that can't.
 
