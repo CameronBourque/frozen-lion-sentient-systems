@@ -32,7 +32,6 @@ return function(env, world, ctx)
 	local TABLES = {
 		RESOURCES = { "Resources", "ResourceType" },
 		TECHNOLOGY = { "Technologies", "TechnologyType" },
-		GREATWORK = { "GreatWorks", "GreatWorkType" },
 	}
 
 	for _, data in pairs(world.players or {}) do
@@ -86,6 +85,9 @@ return function(env, world, ctx)
 		end
 		function item.GetValueType()
 			return Value(data)
+		end
+		function item.GetValueTypeID()
+			return data.typeID
 		end
 		function item.GetValueTypeNameID()
 			return data.name

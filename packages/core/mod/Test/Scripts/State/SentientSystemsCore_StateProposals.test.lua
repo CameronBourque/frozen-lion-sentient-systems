@@ -41,7 +41,7 @@ describe("SentientSystems_GetProposalState", function()
 				items = {
 					{ id = 6, type = "CITIES", from = 0, value = 131073, sub = 2, name = "LOC_CITY_NAME_BAGACUM" },
 					{ id = 7, type = "RESOURCES", from = 0, amount = 2, value = "RESOURCE_NITER", locked = true, parent = 6 },
-					{ id = 9, type = "GREATWORK", from = 0, value = "GREATWORK_OVID_1", name = "LOC_GREATWORK_OVID_1_NAME", locked = true, parent = 6 },
+					{ id = 9, type = "GREATWORK", from = 0, value = 17, typeID = "GREATWORK_OVID_1", name = "LOC_GREATWORK_OVID_1_NAME", locked = true, parent = 6 },
 				},
 			},
 		})

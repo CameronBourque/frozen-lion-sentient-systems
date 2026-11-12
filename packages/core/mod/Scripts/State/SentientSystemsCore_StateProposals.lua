@@ -83,7 +83,10 @@ local function GetItem(item, deal)
 		entry.city = { owner = item:GetFromPlayerID(), id = value }
 		entry.cedeOccupied = item:GetSubType() == CEDE_OCCUPIED or nil
 	elseif kind == "greatWork" then
-		entry.greatWork = GameInfo.GreatWorks[value].GreatWorkType
+		-- The value is the work's index in the game, not its row, and the
+		-- sub type is 0. The deal screen names the icon from the type ID, in
+		-- PopulateDealGreatWorks.
+		entry.greatWork = item:GetValueTypeID()
 	end
 
 	return entry
