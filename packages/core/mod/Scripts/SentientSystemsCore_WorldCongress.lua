@@ -4,6 +4,26 @@
 
 include("SentientSystemsCore_Common")
 
+-- A resolution's two options, each with the letter the choice names it by,
+-- the number the screen sends, and the column of its effect's text. See
+-- OnVoteResolution in WorldCongressPopup.lua.
+SENTIENTSYSTEMS_RESOLUTION_OPTIONS = {
+	{ key = "A", number = 1, column = "Effect1Description" },
+	{ key = "B", number = 2, column = "Effect2Description" },
+}
+
+-- Returns the resolution option with the letter or the screen's number, or
+-- nil. The choice reads a vote by its number, and the action by its letter.
+function SentientSystems_FindResolutionOption(keyOrNumber)
+	for _, option in ipairs(SENTIENTSYSTEMS_RESOLUTION_OPTIONS) do
+		if option.key == keyOrNumber or option.number == keyOrNumber then
+			return option
+		end
+	end
+
+	return nil
+end
+
 -- Returns a player's name as the game shows it: the leader's name once the
 -- player has met them, and the unmet player text before. See
 -- GetVisiblePlayerNameAndIcons in PlayerSupport.lua.
@@ -65,10 +85,16 @@ local function GetResolutions(data, localPlayerID)
 				end
 			end
 
+			local options = {}
+
+			for _, option in ipairs(SENTIENTSYSTEMS_RESOLUTION_OPTIONS) do
+				options[option.key] = SentientSystems_LookupText(row[option.column])
+			end
+
 			resolutions[#resolutions + 1] = {
 				type = row.ResolutionType,
 				name = Locale.Lookup(row.Name),
-				options = { A = SentientSystems_LookupText(row.Effect1Description), B = SentientSystems_LookupText(row.Effect2Description) },
+				options = options,
 				targetType = resolution.TargetType,
 				targets = targets,
 				favored = Numbers(resolution.FavoredPlayerIDs),

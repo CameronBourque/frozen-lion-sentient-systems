@@ -33,11 +33,16 @@ local function GetOutcomes(data, localPlayerID, turnsLeft)
 			}
 
 			if resolution.PlayerSelections ~= nil then
-				outcome.votes = { A = 0, B = 0 }
+				outcome.votes = {}
+
+				for _, option in ipairs(SENTIENTSYSTEMS_RESOLUTION_OPTIONS) do
+					outcome.votes[option.key] = 0
+				end
+
 				outcome.voters = {}
 
 				for _, selection in pairs(resolution.PlayerSelections) do
-					local side = selection.OptionChosen == 1 and "A" or "B"
+					local side = SentientSystems_FindResolutionOption(selection.OptionChosen).key
 					local playerID = tonumber(selection.PlayerID)
 					local chosen = { TargetType = resolution.TargetType, ChosenThing = selection.ResolutionTarget }
 

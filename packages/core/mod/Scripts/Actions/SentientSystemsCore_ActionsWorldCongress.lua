@@ -4,9 +4,6 @@
 
 SentientSystems_Include("SentientSystemsCore_WorldCongress")
 
--- The screen's numbers for a resolution's options. See OnVoteResolution.
-local RESOLUTION_OPTIONS = { A = 1, B = 2 }
-
 local function NameProposal(type, target)
 	return tostring(type) .. " with target " .. tostring(target)
 end
@@ -65,7 +62,7 @@ end
 local function GetResolutionVoteFailure(session, resolution, vote)
 	local name = resolution.type
 
-	if RESOLUTION_OPTIONS[vote.option] == nil then
+	if type(vote.option) ~= "string" or SentientSystems_FindResolutionOption(vote.option) == nil then
 		return "Choose option A or B for " .. name .. ", not " .. tostring(vote.option) .. "."
 	end
 
@@ -154,7 +151,7 @@ local function RequestResolutionVote(playerID, vote)
 	UI.RequestPlayerOperation(playerID, P.WORLD_CONGRESS_RESOLUTION_VOTE, {
 		[P.PARAM_RESOLUTION_TYPE] = GameInfo.Resolutions[vote.type].Hash,
 		[P.PARAM_WORLD_CONGRESS_VOTES] = vote.votes,
-		[P.PARAM_RESOLUTION_OPTION] = RESOLUTION_OPTIONS[vote.option],
+		[P.PARAM_RESOLUTION_OPTION] = SentientSystems_FindResolutionOption(vote.option).number,
 		[P.PARAM_RESOLUTION_SELECTION] = vote.target - 1,
 	})
 end

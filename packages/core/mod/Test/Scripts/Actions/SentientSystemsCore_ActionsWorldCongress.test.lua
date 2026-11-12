@@ -175,6 +175,7 @@ describe("SentientSystems_VoteInCongress in a regular session", function()
 		local env = LoadRegular()
 		local cases = {
 			{ Vote("WC_RES_PATRONAGE", "C", 1, 1), "Choose option A or B for WC_RES_PATRONAGE, not C." },
+			{ Vote("WC_RES_PATRONAGE", 1, 1, 1), "Choose option A or B for WC_RES_PATRONAGE, not 1." },
 			{ Vote("WC_RES_PATRONAGE", "A", 3, 1), "Choose a target from 1 to 2 for WC_RES_PATRONAGE, not 3. Use the index of one of its targets." },
 			{ Vote("WC_RES_PATRONAGE", "A", 0, 1), "Choose a target from 1 to 2 for WC_RES_PATRONAGE, not 0. Use the index of one of its targets." },
 			{ Vote("WC_RES_PATRONAGE", "A", 1, 4), "Cast 1 to 3 votes on WC_RES_PATRONAGE, not 4." },

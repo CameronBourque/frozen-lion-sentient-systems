@@ -1,6 +1,7 @@
 // The World Congress actions, which run the calls in
 // Scripts/Actions/SentientSystemsCore_ActionsWorldCongress.lua.
 
+import type { ResolutionOption } from "../schemas.js";
 import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
 
@@ -8,7 +9,7 @@ import { type ActionResult, sendAction } from "./actions.js";
 // with option A or B, the index of one of its targets, and the number of votes.
 export interface ResolutionVote {
 	type: string;
-	option: "A" | "B";
+	option: ResolutionOption;
 	target: number;
 	votes: number;
 }

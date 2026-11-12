@@ -28,6 +28,10 @@ The choice and the actions both read the session, so the rules are in `Scripts/S
 
 `SentientSystems_GetCongressSession` returns the resolutions, the proposals, and the vote costs while the session blocker is up. `SentientSystems_GetCongressAvailable` returns the proposals the player could make.
 
+`SENTIENTSYSTEMS_RESOLUTION_OPTIONS` lists a resolution's two options, each with its letter, the number the screen sends, and the column of its text. The choice builds `options` from it and reads each voter's option, both through `SentientSystems_FindResolutionOption`, and the action checks a vote's letter and finds its number the same way.
+
+On the bridge, `RESOLUTION_OPTION` in `src/schemas.ts` holds the same letters for the choice's schema and the vote's type.
+
 ## Decisions
 
 | Decision | Reason |

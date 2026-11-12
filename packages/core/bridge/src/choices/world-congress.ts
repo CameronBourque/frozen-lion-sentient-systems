@@ -2,11 +2,12 @@
 // The results of a session's proposals aren't included.
 
 import { z } from "zod";
+import { RESOLUTION_OPTION } from "../schemas.js";
 
 const RESOLUTION = z.object({
 	type: z.string().describe("Such as RESOLUTION_LUXURY_POLICY."),
 	name: z.string(),
-	options: z.object({ A: z.string(), B: z.string() }).describe("The text of each outcome."),
+	options: z.record(RESOLUTION_OPTION, z.string()).describe("The text of each outcome."),
 	targetType: z.string().describe("The kind of target, such as ResourceType or PlayerType."),
 	targets: z.array(z.object({
 		index: z.number().describe("The number a vote sends."),
@@ -39,13 +40,13 @@ const OUTCOME = z.object({
 	elected: z.string().describe("The label of the outcome, A or B."),
 	text: z.string().describe("The outcome."),
 	target: z.string().describe("A player's name or the game's text."),
-	votes: z.object({ A: z.number(), B: z.number() }).optional().describe(
+	votes: z.record(RESOLUTION_OPTION, z.number()).optional().describe(
 		"In the last session's results: the votes for each outcome.",
 	),
 	voters: z.array(z.object({
 		player: z.number(),
 		name: z.string(),
-		option: z.enum(["A", "B"]),
+		option: RESOLUTION_OPTION,
 		target: z.string().describe("What they chose it for."),
 		votes: z.number(),
 	})).optional().describe("In the last session's results: each player's vote."),
