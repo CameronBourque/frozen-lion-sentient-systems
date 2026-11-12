@@ -6,7 +6,12 @@ Add the actions for the remaining blockers: captured and disloyal cities, espion
 
 1. **City fate.** Add actions that keep or raze a captured city and that decide a disloyal city. Read the calls from `RazeCity.lua` and `DisloyalCityChooser.lua`. Commit: `feat(core): add the captured and disloyal city actions`.
 2. **Espionage.** Add actions that choose an escape route and a dragnet priority. Read the calls from `EspionageEscape.lua`. Commit: `feat(core): add the espionage actions`.
-3. **World Congress and emergencies.** Add actions that vote in a session, make a proposal, and answer an emergency. Read the calls from `WorldCongressPopup.lua` and `WorldCrisisPopup.lua`. Commit: `feat(core): add the World Congress and emergency actions`.
+3. **World Congress and emergencies.** Add actions that vote in a session, make a proposal, and answer an emergency. Read the calls from `WorldCongressPopup.lua` and `WorldCrisisPopup.lua`. Commit them one at a time:
+   1. `refactor(core): share the World Congress session reads`.
+   2. `feat(core): add the World Congress proposal vote action`, for a Special Session.
+   3. `feat(core): add resolution votes to the World Congress vote action`, for a regular session, with options and targets.
+   4. `feat(core): add the World Congress proposal action`.
+   5. `feat(core): add the emergency action`.
 4. **Era dedications.** Add an action that chooses a dedication. Read the call from `EraReviewPopup.lua`. Commit: `feat(core): add the era dedication action`.
 
 ## Done when
