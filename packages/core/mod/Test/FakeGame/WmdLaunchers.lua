@@ -1,9 +1,22 @@
--- WMDs. Fakes the device rows, a player's stockpile, and the unit and silo
--- strike checks and targets. world.wmds lists the device types, a player's
--- wmds counts each, and a unit's wmdReady and a plot's siloReady can launch.
+-- WMDs. Fakes the device rows, the stockpile, the strike checks and targets,
+-- and fallout. world.wmds lists the devices, a player's wmds counts each, a
+-- unit's wmdReady and a plot's siloReady launch, and a plot's fallout is turns.
 
 return function(env, world, ctx)
 	local AddRow, indexes, plots, PlotIndex = ctx.AddRow, ctx.indexes, ctx.plots, ctx.PlotIndex
+	local falloutAt = {}
+
+	for _, data in ipairs(world.plots or {}) do
+		falloutAt[PlotIndex(data.x, data.y)] = data.fallout
+	end
+
+	env.Game.GetFalloutManager = function()
+		return {
+			GetFalloutTurnsRemaining = function(_, index)
+				return falloutAt[index] or 0
+			end,
+		}
+	end
 
 	env.GameInfo.WMDs = ctx.TypedRows({}, "WeaponType")
 

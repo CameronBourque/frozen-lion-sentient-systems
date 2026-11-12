@@ -29,6 +29,7 @@ local VERBS = {
 	remove_feature = "remove features",
 	harvest = "harvest resources",
 	remove_improvement = "remove improvements",
+	clear_fallout = "clear fallout",
 }
 
 -- What a unit is doing, by activity, for the reason it can't take an order.

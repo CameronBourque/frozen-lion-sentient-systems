@@ -8,7 +8,7 @@ import { type ActionResult, sendAction } from "./actions.js";
 export type UnitOrder =
 	| { action: "fortify" | "sleep" | "skip" | "alert" | "heal" | "wake" | "delete" | "found_city" | "pillage" | "plunder" }
 	| { action: "activate" | "harvest_wonder" | "found_religion" | "spread_religion" | "remove_heresy" | "heal_followers" | "evangelize_belief" | "launch_inquisition" | "condemn_heretic" }
-	| { action: "remove_feature" | "harvest" | "repair" | "remove_improvement" | "add_production" }
+	| { action: "remove_feature" | "harvest" | "repair" | "remove_improvement" | "clear_fallout" | "add_production" }
 	| { action: "upgrade" | "exit_formation" }
 	| { action: "form_corps" | "form_army" | "enter_formation"; with: number }
 	| { action: "promote"; promotion: string }

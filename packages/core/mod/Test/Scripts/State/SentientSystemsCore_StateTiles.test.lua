@@ -87,6 +87,15 @@ describe("SentientSystems_GetTileStates", function()
 		)
 	end)
 
+	it("adds the turns of fallout left on a revealed tile, as the tooltip shows them", function()
+		local plots = { { x = 0, y = 0, terrain = "TERRAIN_GRASS", fallout = 20 }, { x = 1, y = 0, terrain = "TERRAIN_GRASS", fallout = 0 } }
+
+		assert.equal(
+			"[{\"fallout\":20,\"terrain\":\"TERRAIN_GRASS\",\"visible\":false,\"x\":0,\"y\":0},{\"terrain\":\"TERRAIN_GRASS\",\"visible\":false,\"x\":1,\"y\":0}]",
+			TilesFor({ revealed = { { 0, 0 }, { 1, 0 } } }, plots)
+		)
+	end)
+
 	it("reads only the given player's visibility", function()
 		local env = Game.new()
 

@@ -4,10 +4,11 @@ How the core mod runs the orders of builders, engineers, great people, and relig
 
 ## Builder jobs
 
-`build_road`, `remove_feature`, `harvest`, `repair`, and `remove_improvement` are the builder jobs, in `SentientSystemsCore_ActionsUnitJobs.lua`.
+`build_road`, `remove_feature`, `harvest`, `repair`, `remove_improvement`, and `clear_fallout` are the builder jobs, in `SentientSystemsCore_ActionsUnitJobs.lua`.
 
 - `build_road` is for a Military Engineer and builds the best route the player has, so `type` is optional. A route that differs is refused with the one the game would build.
 - `repair` fixes a pillaged improvement, and a pillaged route when the improvement is whole.
+- `clear_fallout` clears the nuclear fallout on the unit's tile for a build charge. A unit with build charges in its row counts as a builder, so a Roman Legion does these jobs too, as the game allows.
 
 Their reasons come from the unit and the tile: the moves and build charges left, a missing feature or resource, a tech the player lacks, an improvement in the way, and a tile the player doesn't own.
 

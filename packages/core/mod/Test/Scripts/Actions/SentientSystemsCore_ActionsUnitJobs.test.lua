@@ -265,3 +265,35 @@ describe("remove_improvement", function()
 		assert.equal(Failed("The unit is sleeping. Wake it first."), (Run(unit, "remove_improvement", FARM)))
 	end)
 end)
+
+describe("clear_fallout", function()
+	local FALLOUT = Plot({ fallout = 10 })
+
+	it("requests the operation the game allows", function()
+		local result, env = Run(With(UNIT, { canNow = { "clear_fallout" } }), "clear_fallout", FALLOUT)
+
+		assert.equal("{\"ok\":true}", result)
+		assert.same({ { unit = UNIT.id, operation = Hash(env, "UNITOPERATION_CLEAR_CONTAMINATION") } }, env.requests)
+	end)
+
+	it("lets any unit with build charges try, such as a legion", function()
+		local legion = With(UNIT, { type = "UNIT_ROMAN_LEGION", rowCharges = 1, charges = 1, canNow = { "clear_fallout" } })
+
+		assert.equal("{\"ok\":true}", (Run(legion, "clear_fallout", FALLOUT)))
+	end)
+
+	it("fails for a unit that could never clear it", function()
+		assert.equal(Failed("This kind of unit can't clear fallout."), (Run(With(UNIT, { type = "UNIT_KNIGHT" }), "clear_fallout", FALLOUT)))
+	end)
+
+	it("explains the unit and the tile", function()
+		assert.equal(Failed("The unit has no moves left."), (Run(With(UNIT, { moves = 0 }), "clear_fallout", FALLOUT)))
+		assert.equal(Failed("The unit has no build charges left."), (Run(With(UNIT, { charges = 0 }), "clear_fallout", FALLOUT)))
+		assert.equal(Failed("There is no fallout on the tile."), (Run(UNIT, "clear_fallout", Plot())))
+	end)
+
+	it("gives the game's reasons, or says it can't now", function()
+		assert.equal(Failed("LOC_ENEMY_UNIT_ON_TILE"), (Run(With(UNIT, { reasons = { "LOC_ENEMY_UNIT_ON_TILE" } }), "clear_fallout", FALLOUT)))
+		assert.equal(Failed("The unit can't clear fallout now."), (Run(UNIT, "clear_fallout", FALLOUT)))
+	end)
+end)
