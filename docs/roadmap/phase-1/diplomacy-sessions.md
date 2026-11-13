@@ -30,6 +30,6 @@ In a running game, the state lists an AI's comment, request, and first meeting s
 
 ## Record
 
-- The statements, their responses, and what an open session stops, in [findings/actions/diplomacy.md](../../findings/actions/diplomacy.md).
+- The statements, their responses, and what an open session stops, in [findings/actions/ai-sessions.md](../../findings/actions/ai-sessions.md).
 - The sessions section, in [design/core/mod/state.md](../../design/core/mod/state.md), and the action, in [design/core/mod/actions/deals.md](../../design/core/mod/actions/deals.md).
 - The rows of the action, in the `## Parts of an action` table in the [core README](../../../packages/core/README.md).
