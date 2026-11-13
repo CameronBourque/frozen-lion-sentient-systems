@@ -2,7 +2,11 @@
 
 Add the sessions that an AI opens with no deal to the state, and an action that answers one, so an agent player is never held up by a leader screen it can't see. Part of [phase 1](README.md).
 
-An AI opens these sessions to comment, such as on an agenda, and to ask for something, such as a promise, a delegation, or an embassy. The proposals section lists only the sessions that hold a deal.
+An AI opens these sessions to comment, such as on an agenda, to ask for something, such as a promise, a delegation, or an embassy, and to greet the player when the two first meet. The proposals section lists only the sessions that hold a deal.
+
+A first meeting has more than one statement in one session. The first offers a greeting or a goodbye. The greeting leads to a second statement, such as an offer to exchange capital locations, and which one comes depends on who found whom and where.
+
+The player meets a civ when one of their units sees a tile the civ owns, when the civ's unit finds them, or when they meet a city-state whose suzerain they haven't met.
 
 The war and peace actions refuse a major civ while any session is open. See [declaring war](../../findings/actions/war-and-peace.md#declaring-war).
 
@@ -10,15 +14,19 @@ The war and peace actions refuse a major civ while any session is open. See [dec
 
 1. **Find the statements.** Record what an AI session holds and how the leader screen reads it, starting with `OnDiplomacyStatement` and the statement handlers in `DiplomacyActionView.lua`. Record the responses each one offers, such as `POSITIVE`, `NEGATIVE`, and `RESPONSE_IGNORE`.
 
-   With a session open, send a request and the end turn call, and record whether the session stops them. Test it on Scythia's comment after a war, and on a request for a delegation or a promise. Commit: `docs: record the AI diplomacy sessions`.
-2. **State.** Add the open sessions that an AI started with no deal to the state, each with the player, what they said, and the responses. Commit: `feat(core): add the diplomacy sessions to the state`.
-3. **Respond to a session.** Add `SentientSystems_RespondToSession(playerID, otherPlayerID, response)`, which adds the response and closes the session, as the leader screen does when the player leaves it.
+   With a session open, send a request and the end turn call, and record whether the session stops them. Test it on Scythia's comment after a war, and on a request for a delegation or a promise.
+
+   Answer each kind of first meeting, and record its statements and what each choice changes, such as the capital reveal and the AI's opinion. The kinds are near the recipient, a visit to the recipient, near the initiator, and in no man's land. Commit: `docs: record the AI diplomacy sessions`.
+2. **State.** Add the open sessions that an AI started with no deal to the state, each with the player, the statement that is open now, what they said, and the responses. Commit: `feat(core): add the diplomacy sessions to the state`.
+3. **Respond to a session.** Add `SentientSystems_RespondToSession(playerID, otherPlayerID, response)`, which adds the response, or closes the session for the goodbye, as the leader screen does.
+
+   A response that leads to another statement, such as the greeting at a first meeting, leaves the session open on that statement.
 
    Add `respondToSession` to `src/actions/deals.ts`. Commit: `feat(core): add the session response action`.
 
 ## Done when
 
-In a running game, the state lists an AI's comment and request sessions, and `respondToSession` answers each and closes its leader screen. With no session left open, `declareWar` and `endTurn` go through.
+In a running game, the state lists an AI's comment, request, and first meeting sessions. `respondToSession` answers each, through every statement of a first meeting, and closes its leader screen. With no session left open, `declareWar` and `endTurn` go through.
 
 ## Record
 
