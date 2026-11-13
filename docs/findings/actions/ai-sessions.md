@@ -1,6 +1,6 @@
 # AI diplomacy sessions
 
-Status: open. Comments, the first meeting in no man's land, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The requests and the other first meetings are confirmed in files only.
+Status: open. Comments, closing them from a listener, the first meeting in no man's land, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The requests and the other first meetings are confirmed in files only.
 
 The game calls that read and answer a session an AI opens with no deal, such as a comment, a request, or a first meeting, with the Lua state they run in. Sessions that hold a deal are in [diplomacy.md](diplomacy.md). Declaring war and proposing peace are in [war-and-peace.md](war-and-peace.md).
 
@@ -87,6 +87,24 @@ The player met Portugal and Scythia with one move of a great merchant. Each open
 
 The leader screen showed each statement and closed when each session closed. Confirmed on Windows on 2026-11-13.
 
+### Closing a goodbye
+
+A listener on `Events.DiplomacyStatement` in `SentientSystemsCore_UI` called `CloseSession` as soon as a statement from an AI offered only `CHOICE_EXIT`.
+
+The game sent `Events.DiplomacySessionClosed` for each, and the AI turns went on. The screen showed a short black flash, and no leader screen came up. Confirmed on Windows on 2026-11-13.
+
+It closed these statements:
+
+- The Maori leader's reply to `SentientSystems_DeclareWar`, `DECLARE_SURPRISE_WAR`. The player opened that session, so `Initiator` was the player. This is the goodbye the war action leaves up. See [declaring war](war-and-peace.md#declaring-war).
+- Scythia's `DIPLOMATIC_WARNING` and Persia's `DIPLOMATIC_KUDO`.
+- The Netherlands' `DIPLOMATIC_HIDDEN_AGENDA_WARNING` and `DENOUNCE`.
+
+Right after the call, `IsSessionIDOpen` returned `false` for the war reply and `true` for the others, and the close event came in the same second.
+
+### Between two AIs
+
+Over six AI turns, from turn 85 to turn 91, the listener saw 15 statements. Every one went from an AI to the player, and none went between two AIs. The UI state may get this event only for sessions with the local player. Confirmed on Windows on 2026-11-13.
+
 ### What an open session stops
 
 A session waits behind another open session, and a war request then fails. See [declaring war](war-and-peace.md#declaring-war).
@@ -100,6 +118,9 @@ An end turn request with a leader screen up closes the screen and doesn't end th
 3. To list the options, read `GameInfo.DiplomacyStatements` and `GameInfo.DiplomacySelections` for the rows with `ANY` leader and mood, and the `Locale.Lookup` of each option's text.
 4. To answer, send `AddResponse` with the response, or `CloseSession` for `CHOICE_EXIT`. Read the log, the turn, and `PlayersVisibility[0]:IsRevealed` on the other player's capital.
 5. To meet a civ, move a unit until it sees a tile the civ owns.
+6. To close the goodbyes, call `CloseSession` in the listener when the statement's options for `ANY` leader and mood are only `CHOICE_EXIT`, the sender is an AI, and the statement isn't `MAKE_DEAL`.
+
+   End turns, reject each deal with `SentientSystems_RespondToDeal`, and log whether each player is human.
 
 ## Results
 
@@ -116,5 +137,7 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `AddResponse` with `POSITIVE` on Portugal's greeting, then on the offer | `FIRST_MEET_NO_MANS_INFO_EXCHANGE`, then Portugal's capital revealed and the session closed | 2026-11-13 |
 | `AddResponse` with `POSITIVE` on Scythia's greeting, then `CloseSession` | The offer, then the session closed with Scythia's capital still hidden | 2026-11-13 |
 | `GetDiplomaticModifiers(0)` for Portugal and Scythia after the meetings | None for Portugal. One +5 with an unknown reason for Scythia | 2026-11-13 |
+| `SentientSystems_DeclareWar(0, 4)` on turn 85, with the closing listener | The Maori reply and Scythia's warning closed. A black flash, and no leader screen | 2026-11-13 |
+| End turns 85 to 90, with the closing listener | Persia's kudo and the Netherlands' warning and denouncement closed. Five deals held the turns until rejected. No statement between two AIs | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.

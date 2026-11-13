@@ -14,6 +14,8 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
    Can the mod skip it for an agent player, and do the other local-player cinematics, such as the natural wonder and era popups, need the same?
 
+   A natural disaster popup held the AI turns. On turn 87, the player's turn stayed inactive for 4 minutes with it up, and turn 88 began 15 s after it was closed. Confirmed on Windows on 2026-11-13.
+
 ## What we know now
 
 ### Ending the turn
