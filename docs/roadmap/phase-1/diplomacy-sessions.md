@@ -27,12 +27,12 @@ The sessions with a real choice, such as a request or a first meeting, go in the
 
    Sessions that hold a deal stay with the proposals section.
 
-   Keep a message for each: the turn, the player, the statement, the leader's text from `DiplomacyManager.FindTextKey`, and the reason, such as the agenda. Keep each message until the end of the agent's next turn.
+   Keep a message for each: the turn, the player, the statement, the leader's text from `DiplomacyManager.FindTextKey`, and the reason, such as the agenda. Keep each message until the end of the agent's next turn, in that player's entry of the diplomacy section.
 
    Closing in the handler leaves no leader screen. See [closing a goodbye](../../findings/actions/ai-sessions.md#closing-a-goodbye). Commit: `feat(core): close the AI's goodbye sessions for agent players`.
 3. **State.** Add the open sessions with a real choice that an AI started with no deal to the state. Each has the player, the statement that is open now, what they said, and the options, with the reason an option is disabled.
 
-   A session open with no statement recorded, such as one from before a reload, is listed with only the player and a warning, so the agent can still close it. Add the messages from task 2. Commit: `feat(core): add the diplomacy sessions to the state`.
+   A session open with no statement recorded, such as one from before a reload, is listed with only the player and a warning, so the agent can still close it. Commit: `feat(core): add the diplomacy sessions to the state`.
 4. **Respond to a session.** Add `SentientSystems_RespondToSession(playerID, otherPlayerID, response)`, which adds the response, or closes the session for the goodbye, as the leader screen does.
 
    A response that leads to another statement, such as the greeting at a first meeting, leaves the session open on that statement.

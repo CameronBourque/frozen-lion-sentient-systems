@@ -207,4 +207,19 @@ describe("SentientSystems_GetDiplomacyState", function()
 		assert.truthy(json:find("\"others\":[{\"player\":2,\"state\":\"DIPLO_STATE_FRIENDLY\"},{\"player\":4,\"state\":\"DIPLO_STATE_WAR\"}]", 1, true))
 		assert.falsy(DiplomacyOf(0, { [0] = { met = { 1 } }, [1] = {} }):find("others", 1, true))
 	end)
+
+	it("gives what each player said in the goodbyes the core mod closed", function()
+		local env = Game.new()
+
+		FakeGame.Install(env, { turn = 85, players = { [0] = { met = { 1, 2 } }, [1] = {}, [2] = {} } })
+		Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
+		env.SentientSystems_SessionMessages = {
+			{ from = 1, to = 0, turn = 84, statement = "DIPLOMATIC_KUDO", text = "Well done.", reason = "Likes you." },
+		}
+
+		local json = env.SentientSystems_GetState(0):match("\"diplomacy\":(%b[])")
+
+		assert.truthy(json:find("\"messages\":[{\"reason\":\"Likes you.\",\"statement\":\"DIPLOMATIC_KUDO\",\"text\":\"Well done.\",\"turn\":84}]", 1, true))
+		assert.equal(1, select(2, json:gsub("messages", "")))
+	end)
 end)
