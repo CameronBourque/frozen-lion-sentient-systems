@@ -40,11 +40,19 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Test it with `declareWar` on a major civ, and with the sessions from [diplomacy sessions](diplomacy-sessions.md). Commit: `feat(core): close the leader screen for agent players`.
 
+   Closing the goodbye from a listener on `Events.DiplomacyStatement` left no leader screen after `SentientSystems_DeclareWar`. See [closing a goodbye](../../findings/actions/ai-sessions.md#closing-a-goodbye). Check whether that answers this task.
+7. **Unit captured popup.** When a unit of the player's is captured, or the player captures one, a popup names the other civ and waits for **OK**. Record whether it stops a request and the end turn call. Then make the core mod close it for an agent player, and pass its text to the agent.
+
+   `Base/Assets/UI/Popups/UnitCaptured.lua` opens it from `Events.UnitCaptured`, for the local player only, and only in single player. Commit: `feat(core): close the unit captured popup for agent players`.
+8. **Spy mission popup.** When a spy's mission ends, a popup shows the result. Record whether it stops a request and the end turn call. Then make the core mod close it for an agent player, and pass the result to the agent.
+
+   `Base/Assets/UI/Popups/EspionagePopup.lua` opens it from `Events.SpyMissionCompleted`, and also listens to `Events.LocalPlayerTurnEnd`. See [spies.md](../../findings/actions/spies.md#questions), question 1, and test it in a save with a mission about to end. Commit: `feat(core): close the spy mission popup for agent players`.
+
 ## Done when
 
 With an agent as the local player, a wonder that the player completes and a natural disaster show no popup and don't hold up the next request.
 
-Neither does a Secret Society the player joins, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts. A war the agent declares leaves no leader screen open.
+Neither does a Secret Society the player joins, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts. A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
 
 ## Record
 

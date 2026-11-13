@@ -8,7 +8,7 @@ This phase adds games with a human and several agents, the cover card, and memor
 
 - Run the [computer slot test](../../design/agents/slot-type.md#computer-slot-test), and pick the game mode for you and several agents
 - Handle the hotseat pass screen, if that game mode is hotseat
-- For an agent in a computer slot, remove the [diplomacy session](../phase-1/diplomacy-sessions.md) state and the closing of goodbye sessions. An AI opens no leader screen with another AI or between human players, so the agent there learns only what the computer slot test finds
+- For an agent in a computer slot, remove the [diplomacy session](../phase-1/diplomacy-sessions.md) state, the closing of goodbye sessions, and their messages. No leader screen opens between two AIs or two humans. Give the agent only what the computer slot test finds a native AI gets, and match the messages in a human slot to it
 - Cover card during agent turns
 - Verify that no agent sees outside its fog of war
 - Checkpoint IDs and memory snapshots, and the checkpoint ID on each [metrics line](../../design/evaluation.md#metrics-line)
