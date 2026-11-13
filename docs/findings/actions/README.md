@@ -28,5 +28,6 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [research.md](research.md) | The game calls that set and queue the tech and the civic in research, and the checks the game doesn't make |
 | [policies.md](policies.md) | The game calls that set the policies in every slot, pay the unlock, and change the government, and the checks the game doesn't make |
 | [diplomacy.md](diplomacy.md) | The game calls that accept and reject a deal, and how the session closes |
+| [ai-sessions.md](ai-sessions.md) | The game calls that read and answer a session an AI opens with no deal, the options of each statement, and what an open session stops |
 | [war-and-peace.md](war-and-peace.md) | The game calls that declare war and propose peace, and the leader screen they leave open |
 | [end-turn.md](end-turn.md) | The game call that ends the turn, and how the end-turn blockers interact with it |
