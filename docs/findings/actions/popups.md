@@ -1,6 +1,6 @@
 # Popups
 
-Status: open. The natural wonder, hero discovered, and Secret Society popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
+Status: open. The natural wonder, hero discovered, Secret Society, and civic completed popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
 
 The popups that wait for a click, what each holds, and the steps that close each one from `SentientSystemsCore_UI`. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md).
 
@@ -8,6 +8,7 @@ The popups that wait for a click, what each holds, and the steps that close each
 
 1. Does the core mod's close work for the natural wonder popup from its `NaturalWonderPopup_Shown` event, as it does for the wonder built popup?
 2. Which event can the core mod close the Secret Society and hero popups from? Neither fires an event of its own when it opens.
+3. With the tech and civic switch off, do the completed and boost popups stay closed for the rest of the session?
 
 ## What we know now
 
@@ -44,6 +45,16 @@ With the Secret Society popup up, the same call ended turn 16. Player 5 then ope
 
 `UIManager:DequeuePopup` on `/InGame/HeroesPopup`, then on `/InGame/SecretSocietyPopup`, from `SentientSystemsCore_UI` closed each, and `UIManager:IsInPopupQueue` returned `false`. Confirmed on Windows on 2026-11-14.
 
+### Tech, civic, and boost popups
+
+`Base/Assets/UI/Popups/TechCivicCompletedPopup.lua` shows each tech and civic the local player completes, and `BoostUnlockedPopup.lua` shows each boost. Each queues itself with `UIManager:QueuePopup` and takes no lock, so it holds nothing. Confirmed in files.
+
+Both stop adding popups after `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, until `LuaEvents.TutorialUIRoot_EnableTechAndCivicPopups()`. `TutorialUIRoot.lua` fires them, in the tutorial only. The switch lives in each popup's own Lua state, so a load turns it back on. Confirmed in files.
+
+The completed popup fires `LuaEvents.TechCivicCompletedPopup_TechShown` and `_CivicShown` when the player closes each one. Only `TutorialLoader_Expansion2.lua` listens to them. Confirmed in files.
+
+On turn 31, with the civic completed popup up, the switch and `UIManager:DequeuePopup` on `/InGame/TechCivicCompletedPopup` from `SentientSystemsCore_UI` closed it. `UIManager:IsInPopupQueue` returned `false`. Confirmed on Windows on 2026-11-14.
+
 ## Method
 
 1. Send each step through the tuner to `SentientSystemsCore_UI`.
@@ -51,6 +62,7 @@ With the Secret Society popup up, the same call ended turn 16. Player 5 then ope
 3. Read the lock's event ID from the `PopupManager.LOCK` line in `Lua.log`. Run the steps of `Close`, with `UIManager:DequeuePopup` on `/InGame/NaturalWonderPopup`, `Input.PopContext()`, and `UI.ReleaseEventID` with that ID in place of the unlock.
 4. Read the turn, the interface mode, and whether the popup's context is hidden 20 s later.
 5. **Plain popups.** With the hero or Secret Society popup up, call `SentientSystems_EndTurn(0, true)`, and read the turn 15 s later. Then call `UIManager:DequeuePopup` on its context.
+6. **Tech and civic popups.** With the civic completed popup up, fire `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, and call `UIManager:DequeuePopup` on its context.
 
 ## Results
 
@@ -63,5 +75,6 @@ With the Secret Society popup up, the same call ended turn 16. Player 5 then ope
 | `UIManager:DequeuePopup` on `/InGame/HeroesPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 | `SentientSystems_EndTurn(0, true)`, with the Secret Society popup up on turn 16 | `SentientSystemsCore_UI` | `{"ok":true}` and `AGENT_TURN 0`. A session from player 5 opened, and turn 16 was active again | 2026-11-14 |
 | `UIManager:DequeuePopup` on `/InGame/SecretSocietyPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
+| `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, then `UIManager:DequeuePopup` on `/InGame/TechCivicCompletedPopup`, on turn 31 | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 
 Date checked: game files on 2026-11-14. Running game on Windows on 2026-11-14.

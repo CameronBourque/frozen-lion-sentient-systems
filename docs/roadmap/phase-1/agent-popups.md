@@ -58,9 +58,15 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Test it in a save with a unit one move from an unseen natural wonder. Commit: `feat(core): close the natural wonder popup for agent players`.
 
+10. **Tech, civic, and boost popups.** A popup shows each tech and civic the player completes, and each boost, and waits for **Close** or **Continue**. Neither holds anything, but each keeps the player from the pause menu.
+
+    Make the core mod turn them off for an agent player with `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, as the tutorial does, on each load, and close any already open. See [popups.md](../../findings/actions/popups.md#tech-civic-and-boost-popups).
+
+    Test it in a save with a tech, a civic, and a boost a turn away. Commit: `feat(core): turn off the tech and civic popups for agent players`.
+
 ## Done when
 
-With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, and a natural disaster show no popup and don't hold up the next request.
+With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, a tech, a civic, a boost, and a natural disaster show no popup and don't hold up the next request.
 
 Neither does a Secret Society the player discovers or joins, a hero the player discovers, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts.
 
