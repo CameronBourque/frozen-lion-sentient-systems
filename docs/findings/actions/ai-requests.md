@@ -1,6 +1,6 @@
 # AI requests and promises
 
-Status: open. The troop, settling, and spying promises, the delegation, and the embassy are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The other requests are confirmed in files only.
+Status: open. The troop, settling, and spying promises, the delegation, the embassy, and the friendship request are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The other requests are confirmed in files only.
 
 The leader screen sessions where an AI asks the player for something, such as a delegation, an embassy, or a promise. How a session is read and answered is in [ai-sessions.md](ai-sessions.md), with the options of each statement.
 
@@ -39,6 +39,12 @@ Ethiopia's `RESIDENT_EMBASSY` on turn 92 used the `EMBASSY_FROM_AI` options, the
 
 Brazil's `WARNING_DONT_SETTLE_NEAR_ME` on turn 92 gives each option's effect in its text: 30 Diplomatic Favor for the promise, and 25 grievances for the refusal. The text holds `[SIZE_12]` and `[SIZE_18]` tags around it, and the grievance icon. Confirmed on Windows on 2026-11-13.
 
+Kongo's `DECLARE_FRIEND` on turn 117 used the `DECLARE_FRIEND_FROM_AI` options: `CHOICE_POSITIVE`, `CHOICE_NEGATIVE`, `CHOICE_STOP_ASKING`, and `CHOICE_EXIT`, none with a `DiplomaticActionType`. The sessions section listed all four, since Kongo is an AI.
+
+Kongo had been made a declared friend through `SetHasDeclaredFriendship` in `GameCore_Tuner` on turn 92. Confirmed on Windows on 2026-11-13.
+
+With the request up, Kongo's incoming working deal held an old 100 gold gift, which the proposals section listed before the fix for old deals loaded. Confirmed on Windows on 2026-11-13.
+
 ## Method
 
 1. Add the listeners in step 1 of the [AI sessions method](ai-sessions.md#method), or load the core mod, whose sessions section lists each statement.
@@ -57,5 +63,6 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `AddResponse` with `POSITIVE` on Egypt's `DIPLOMATIC_DELEGATION` on turn 15 | `HasDelegationAt(0)` for Egypt went from `false` to `true`. Egypt's reply closed with a message, and no session was left open | 2026-11-13 |
 | `AddResponse` with `NEGATIVE` on Ethiopia's `RESIDENT_EMBASSY` on turn 92 | The reply closed with a message, and Ethiopia's embassy was placed anyway | 2026-11-13 |
 | Turn 97, with Vietnam's `WARNING_STOP_SPYING_ON_ME` up | The sessions section listed it with Brazil queued. `SentientSystems_GetState(0)` failed on the old peace deal's captive, which has no name | 2026-11-13 |
+| Turn 117, with Kongo's `DECLARE_FRIEND` up | The sessions section listed the four options, with stop asking. The proposals section listed an old 100 gold gift from Kongo | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.
