@@ -54,9 +54,15 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Test it in a save with a unit one move from an unseen natural wonder. Commit: `feat(core): close the natural wonder popup for agent players`.
 
+10. **Hero discovered popup.** In the Heroes and Legends mode, a popup shows each hero the player discovers and waits for **Continue**. It holds nothing, so the turn goes on, but it keeps the player from the pause menu. Make the core mod close it for an agent player.
+
+    `DLC/Babylon/UI/Additions/HeroesPopup.lua` opens from the `HERO_DISCOVERED` notification and fires no event of its own. See [popups.md](../../findings/actions/popups.md#hero-discovered-popup), question 2.
+
+    Test it in a save with the mode on and a hero about to be discovered. Commit: `feat(core): close the hero discovered popup for agent players`.
+
 ## Done when
 
-With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, and a natural disaster show no popup and don't hold up the next request.
+With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, a hero the player discovers, and a natural disaster show no popup and don't hold up the next request.
 
 Neither does a Secret Society the player joins, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts. A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
 
