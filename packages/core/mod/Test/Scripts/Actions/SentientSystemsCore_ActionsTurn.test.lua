@@ -72,6 +72,22 @@ describe("SentientSystems_EndTurn", function()
 		assert.equal(1, #env.requests)
 	end)
 
+	it("fails while a leader screen is open, even with force", function()
+		local env = Load({ sessions = { [4] = { id = 7 } }, blockers = { "ENDTURN_BLOCKING_RESEARCH" } })
+		local open = "Player 4 has a leader screen open with you. Answer it with the session response first."
+
+		assert.equal(Failed(open), env.SentientSystems_EndTurn(0))
+		assert.equal(Failed(open), env.SentientSystems_EndTurn(0, true))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails while a deal is waiting", function()
+		local env = Load({ proposals = { [4] = { items = { { id = 2, type = "GOLD", from = 4, amount = 5 } } } } })
+
+		assert.equal(Failed("Player 4 has a deal waiting for you. Answer it with the deal response first."), env.SentientSystems_EndTurn(0, true))
+		assert.same({}, env.requests)
+	end)
+
 	it("fails for an ID with no player", function()
 		assert.equal(Failed("EndTurn failed: no player 3"), Load().SentientSystems_EndTurn(3))
 	end)

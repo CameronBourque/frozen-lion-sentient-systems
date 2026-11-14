@@ -40,7 +40,9 @@ The sessions with a real choice, such as a request or a first meeting, go in the
    A response that leads to another statement, such as the greeting at a first meeting, leaves the session open on that statement.
 
    Add `respondToSession` to `src/actions/deals.ts`. Commit: `feat(core): add the session response action`.
-5. **End the turn.** `SentientSystems_EndTurn` refuses while a session is open, with the session as the reason. It records the request only when it sends it. See [with a leader screen up](../../findings/actions/end-turn.md#with-a-leader-screen-up). Commit: `fix(core): refuse the end turn while a session is open`.
+5. **End the turn.** `SentientSystems_EndTurn` refuses while a session is open, even with `force`, and names the player and the response to use.
+
+   It already records the request only when it sends it, so the refusal keeps a later call from failing as a turn already ended. See [with a leader screen up](../../findings/actions/end-turn.md#with-a-leader-screen-up). Commit: `fix(core): refuse the end turn while a session is open`.
 
 ## Done when
 

@@ -6,8 +6,8 @@ import { type ActionResult, sendAction } from "./actions.js";
 
 // Ends the player's turn. Without force, it fails with the blockers and the
 // units that need orders while any are left. With force, the game skips them.
-// It fails for a second call in one turn, because a second request can skip a
-// turn.
+// It fails while a diplomacy session is open, even with force, and for a
+// second call in one turn, because a second request can skip a turn.
 export function endTurn(client: TunerClient, playerID: number, force = false): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_EndTurn(${playerID}, ${force})`);
 }

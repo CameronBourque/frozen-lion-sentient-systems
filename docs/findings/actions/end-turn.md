@@ -53,6 +53,10 @@ On turn 54, the call without `force` named the great person and production block
 
 On turn 85, the call with `force` returned `{"ok":true}` with Scythia's leader screen up, and the turn didn't end. The action had recorded the request, so it would refuse a second call in that turn. Confirmed on Windows on 2026-11-13.
 
+The action now refuses while a session is open. On turn 97, with Vietnam's promise up, the call with `force` named Vietnam and sent no request. After `SentientSystems_RespondToSession` answered the promise, the call with `force` ended the turn.
+
+During the AI turns that followed, a Cree deal held the turn. Confirmed on Windows on 2026-11-13.
+
 ## Method
 
 Run each step through the tuner, and record the Lua state you ran it in.

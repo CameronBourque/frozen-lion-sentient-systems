@@ -180,12 +180,10 @@ local function GetOpenSessionFailure(playerID, otherPlayerID)
 		return nil
 	end
 
-	for otherID = 0, 63 do
-		local sessionID = DiplomacyManager.FindOpenSessionID(playerID, otherID)
+	local otherID = SentientSystems_FindOpenSession(playerID)
 
-		if otherID ~= playerID and sessionID ~= nil and sessionID ~= -1 then
-			return "A diplomacy session with player " .. otherID .. " is open. Answer it first."
-		end
+	if otherID ~= nil then
+		return "A diplomacy session with player " .. otherID .. " is open. Answer it first."
 	end
 
 	return nil

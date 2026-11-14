@@ -211,6 +211,20 @@ function SentientSystems_HasOpenStatement(playerID)
 	return false
 end
 
+-- Returns the first other player with a session open with the player, and the
+-- session's ID, or nil. A queued session counts, as the game reports it open.
+function SentientSystems_FindOpenSession(playerID)
+	for otherID = 0, 63 do
+		local sessionID = DiplomacyManager.FindOpenSessionID(playerID, otherID)
+
+		if otherID ~= playerID and sessionID ~= nil and sessionID ~= -1 then
+			return otherID, sessionID
+		end
+	end
+
+	return nil
+end
+
 -- Returns the latest statement of the session open between the player and the
 -- other player, with its from and to, or nil. Also returns the session ID, or
 -- nil when no session is open.
