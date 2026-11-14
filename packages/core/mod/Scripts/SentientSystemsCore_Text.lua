@@ -20,7 +20,7 @@ local ALIASES = {
 	civicboosted = { "Inspiration" },
 	religion = { "Religious" },
 	favor = { "Diplomatic Favor" },
-	statgrievance = { "Grievances" },
+	stat_grievance = { "Grievances" },
 }
 
 -- The prefixes that group icon names. The words of one are also said next to

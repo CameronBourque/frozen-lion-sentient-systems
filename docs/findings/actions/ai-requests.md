@@ -64,5 +64,6 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `AddResponse` with `NEGATIVE` on Ethiopia's `RESIDENT_EMBASSY` on turn 92 | The reply closed with a message, and Ethiopia's embassy was placed anyway | 2026-11-13 |
 | Turn 97, with Vietnam's `WARNING_STOP_SPYING_ON_ME` up | The sessions section listed it with Brazil queued. `SentientSystems_GetState(0)` failed on the old peace deal's captive, which has no name | 2026-11-13 |
 | Turn 117, with Kongo's `DECLARE_FRIEND` up | The sessions section listed the four options, with stop asking. The proposals section listed an old 100 gold gift from Kongo | 2026-11-13 |
+| Turn 94 after a reload, with Brazil's `WARNING_STOP_SPYING_ON_ME` up | The state built, with no proposals, though Vietnam's incoming deal still held five old peace items. The option text had no size tags. The grievance icon, `[ICON_STAT_GRIEVANCE]`, still read as words | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.

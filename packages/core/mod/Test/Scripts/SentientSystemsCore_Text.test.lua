@@ -101,7 +101,7 @@ describe("SentientSystems_CleanText", function()
 	end)
 
 	it("drops the size tags, as a leader screen option has them", function()
-		assert.equal("Settle where we please!\nGenerates 25 Grievances", Clean("Settle where we please![NEWLINE][SIZE_12]Generates 25 [ICON_StatGrievance] Grievances[SIZE_18]"))
+		assert.equal("I cannot promise that.\nGenerates 25 Grievances", Clean("I cannot promise that.[NEWLINE][SIZE_12]Generates [COLOR_Civ6DarkRed]25[ENDCOLOR] [ICON_STAT_GRIEVANCE] Grievances[SIZE_18]"))
 	end)
 
 	it("drops a checkmark", function()
