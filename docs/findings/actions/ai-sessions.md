@@ -1,6 +1,6 @@
 # AI diplomacy sessions
 
-Status: open. Comments, closing them from a listener, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The requests are confirmed in files only.
+Status: open. Comments, a promise, closing them from a listener, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The requests and the other promises are confirmed in files only.
 
 The game calls that read and answer a session an AI opens with no deal, such as a comment, a request, or a first meeting, with the Lua state they run in.
 
@@ -38,7 +38,7 @@ A first meeting statement also holds a table under the key `-1610240504`, with `
 
 It matches the type, the subtype, the initiator, the leader, and the mood, and falls back to `ANY` for the leader and the mood.
 
-`DiplomacySupport_RemoveInvalidSelections` then removes an option whose `DiplomaticActionType` fails `IsDiplomaticActionValid`. Confirmed in files.
+`DiplomacySupport_RemoveInvalidSelections` then checks each option's `DiplomaticActionType` with `IsDiplomaticActionValid`. A failed option with `FailureReasons` stays, disabled, with the first reason as its tooltip. One without is removed. Confirmed in files.
 
 `OnSelectConversationDiplomacyStatement` in `DiplomacyActionView.lua` sends each option key as follows. The Expansion 1 replacement adds only war keys. Confirmed in files.
 
@@ -72,6 +72,16 @@ For `WARNING_TOO_MANY_TROOPS_NEAR_ME`, `CHOICE_NEGATIVE` declares war. Confirmed
 After a war on the Maori, Scythia opened a `DIPLOMATIC_WARNING` session. Its only option was `CHOICE_EXIT`. Later wars on the Cree and the Netherlands in the same turn brought no comment. Confirmed on Windows on 2026-11-13.
 
 During the AI turns, Persia opened a `DIPLOMATIC_KUDO` session. The AI turns stopped until `CloseSession` closed it. Kongo then proposed a deal, and the turn went on after `SentientSystems_RespondToDeal` rejected it. Confirmed on Windows on 2026-11-13.
+
+### Promises
+
+Moving troops near Persia and Brazil on turn 54 brought `WARNING_TOO_MANY_TROOPS_NEAR_ME` from each, with Brazil's queued behind Persia's.
+
+Its options are `CHOICE_POSITIVE`, the promise, and `CHOICE_NEGATIVE`, which declares war through `DIPLOACTION_DECLARE_SURPRISE_WAR`. Confirmed on Windows on 2026-11-13.
+
+`AddResponse` with `POSITIVE` brought Persia's reply in the same session, "Thank you.", with only `CHOICE_EXIT`. The closing listener closed it, and Brazil's statement came next. Confirmed on Windows on 2026-11-13.
+
+`AddResponse` with `NEGATIVE` on Brazil's warning declared war on Brazil. Brazil's reply, `DECLARE_SURPRISE_WAR`, came in the same session with only `CHOICE_EXIT`, and the closing listener closed it. Confirmed on Windows on 2026-11-13.
 
 ### Closing a goodbye
 
@@ -120,5 +130,8 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `CloseSession` on Persia's session | Kongo proposed a deal. Turn 86 began after the deal was rejected | 2026-11-13 |
 | `SentientSystems_DeclareWar(0, 4)` on turn 85, with the closing listener | The Maori reply and Scythia's warning closed. A black flash, and no leader screen | 2026-11-13 |
 | End turns 85 to 90, with the closing listener | Persia's kudo and the Netherlands' warning and denouncement closed. Five deals held the turns until rejected. No statement between two AIs | 2026-11-13 |
+| Troops moved near Persia and Brazil on turn 54, with the sessions section | Persia's `WARNING_TOO_MANY_TROOPS_NEAR_ME` with both options enabled, and Brazil's session queued | 2026-11-13 |
+| `AddResponse` with `POSITIVE` on Persia's warning | Persia's reply closed with a message, and Brazil's warning came up | 2026-11-13 |
+| `AddResponse` with `NEGATIVE` on Brazil's warning | `IsAtWarWith(11)` went from `false` to `true`. Brazil's war reply closed with a message, and no session was left open | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.
