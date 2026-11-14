@@ -51,17 +51,19 @@ end
 
 Events.PlayerTurnActivated.Add(SentientSystems_CatchErrors("OnPlayerTurnActivated", OnPlayerTurnActivated))
 
--- Closes a session that offers an agent player only a goodbye. The AI turns
--- wait while it is open, and no one is at the leader screen.
+-- Closes a session that offers an agent player only a goodbye, and remembers
+-- the statement of any other. The AI turns wait while a session is open, and
+-- no one is at the leader screen.
 local function OnDiplomacyStatement(fromID, toID, statement)
 	local player = Players[toID]
 
 	if player ~= nil and IsAgentPlayer(player) then
-		SentientSystems_CloseGoodbye(fromID, toID, statement)
+		SentientSystems_HandleStatement(fromID, toID, statement)
 	end
 end
 
 Events.DiplomacyStatement.Add(SentientSystems_CatchErrors("OnDiplomacyStatement", OnDiplomacyStatement))
+Events.DiplomacySessionClosed.Add(SentientSystems_CatchErrors("OnDiplomacySessionClosed", SentientSystems_ForgetSession))
 
 -- Prints the turn signal again for each agent player whose turn is active now,
 -- so a bridge that connects in the middle of a turn learns of it. Prints

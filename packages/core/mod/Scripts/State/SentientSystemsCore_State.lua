@@ -25,6 +25,7 @@ SentientSystems_Include("SentientSystemsCore_StatePlayer")
 SentientSystems_Include("SentientSystemsCore_StateTrade")
 SentientSystems_Include("SentientSystemsCore_StateWmdLaunchers")
 SentientSystems_Include("SentientSystemsCore_StateProposals")
+SentientSystems_Include("SentientSystemsCore_StateSessions")
 SentientSystems_Include("SentientSystemsCore_StateScoreboard")
 SentientSystems_Include("SentientSystemsCore_StateVictories")
 
@@ -55,6 +56,7 @@ function SentientSystems_GetState(playerID)
 		trade = SentientSystems_GetTradeState(player),
 		wmdLaunchers = SentientSystems_GetWmdLauncherState(player),
 		proposals = SentientSystems_GetProposalState(player),
+		sessions = SentientSystems_GetSessionState(player),
 		scoreboard = SentientSystems_GetScoreboardState(player),
 		victories = SentientSystems_GetVictoryState(player),
 	})

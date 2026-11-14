@@ -30,6 +30,10 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The diplomacy screens.** War or peace with each met player, proposed deals, relationships, grievances, and agendas.
 
   The leader screens that offer an agent player only a goodbye, such as a comment, are closed by the core mod as they arrive. What the leader said stays with that player until the end of the next turn. It is lost when the game loads.
+
+  The other leader screens open with the player, such as a request or a first meeting, are their own section, with what the leader says and the options the screen offers.
+
+  No game call returns a screen's statement, so the core mod keeps it as it arrives. After a load it lists an open screen as unknown, which only the goodbye can close.
 - **The Trade Overview.** The player's routes, with the yields of both ends, the routes of other players that end in the player's cities, and the tourism bonus of a route.
 
   Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes` returns it for one city on demand.
@@ -70,4 +74,5 @@ The shape of each section is in the schemas in [packages/core/bridge/src/state/]
 | The scoreboard lists unmet players as places only | World Rankings shows how many players there are, their order, and whether an unmet one leads, but not who they are |
 | WMD launchers are their own section, grouped by device | It answers what can launch a device now, with no field on every unit and tile. 100 launchers take 2 KB grouped, or 8.5 KB as one entry each. With no devices it is left out, and skips the checks |
 | The core mod closes a goodbye-only leader screen, and the diplomacy section keeps what the leader said | The AI turns wait while a session is open. A human sees the text, so the agent does too, until the [computer slot test](../../agents/slot-type.md#computer-slot-test) shows what an AI gets. Messages are small, so they share the section |
+| The leader screens with a choice are their own section, apart from diplomacy | Like a proposal, each is a decision that waits for the agent, and the AI turns wait with it. The messages record what happened, so they stay in diplomacy |
 | Each state section has its own file in `Scripts/State/` | The state grows with every section, and one file would pass 1,000 lines. A file per section keeps each one and its tests small. `include` finds a file by name in any folder, so the folder only groups the files |

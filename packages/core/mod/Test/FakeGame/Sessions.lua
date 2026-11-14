@@ -1,6 +1,6 @@
--- Leader screen sessions. Fakes the statement and selection tables and the
--- DiplomacyManager calls that read a statement. A hash here is the name
--- itself, so GetKeyName returns a name as it is and has none for a number.
+-- Leader screen sessions. Fakes the statement and selection tables, the
+-- sessions open with a player, and the DiplomacyManager calls that read a
+-- statement. A hash is the name, so GetKeyName has no name for a number.
 
 -- Returns the rows with ANY for a leader or mood they don't give.
 local function WithAnyLeaderAndMood(rows)
@@ -23,6 +23,27 @@ return function(env, world, ctx)
 		if type(value) == "string" then
 			return value
 		end
+	end
+
+	-- The sessions in a player's sessions, by the other player's ID, come
+	-- before those of the proposals fake.
+	local FindProposalSession, GetProposalSession = manager.FindOpenSessionID, manager.GetSessionInfo
+	local opened = {}
+
+	for playerID, data in pairs(world.players or {}) do
+		for otherID, session in pairs(data.sessions or {}) do
+			opened[session.id] = { ToPlayer = playerID, FromPlayer = session.from or otherID }
+		end
+	end
+
+	function manager.FindOpenSessionID(playerID, otherID)
+		local session = ((world.players[playerID] or {}).sessions or {})[otherID]
+
+		return session and session.id or FindProposalSession(playerID, otherID)
+	end
+
+	function manager.GetSessionInfo(sessionID)
+		return opened[sessionID] or GetProposalSession(sessionID)
 	end
 
 	-- The key names the players, so a test can check them.

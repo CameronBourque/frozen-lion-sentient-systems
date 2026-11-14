@@ -1,6 +1,6 @@
 -- The leader screen sessions an AI opens with a player. Closes the ones that
--- offer only a goodbye and keeps what the leader said, as messages.
--- See docs/findings/actions/ai-sessions.md.
+-- offer only a goodbye and keeps what the leader said, and remembers the
+-- statement of each one left open. See docs/findings/actions/ai-sessions.md.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Text")
@@ -21,6 +21,10 @@ local STATE_MOODS = {
 -- The messages of the goodbyes closed, oldest first. A global, so including
 -- this file again keeps them. They are lost when the game loads.
 SentientSystems_SessionMessages = SentientSystems_SessionMessages or {}
+
+-- The latest statement of each session left open, by session ID. No game call
+-- returns it, so it is lost when the game loads.
+SentientSystems_OpenStatements = SentientSystems_OpenStatements or {}
 
 -- Returns the mood name the leader screen picks rows with. A statement sent
 -- before its action takes effect has no mood, so the screen uses the
@@ -89,6 +93,10 @@ function SentientSystems_GetStatementRows(fromID, toID, statement)
 	end, leader, mood)
 end
 
+function SentientSystems_IsDealStatement(typeName)
+	return DEAL_STATEMENTS[typeName] == true
+end
+
 -- Returns whether every selection is the goodbye, CHOICE_EXIT.
 local function IsGoodbyeOnly(selections)
 	for _, selection in ipairs(selections) do
@@ -114,6 +122,17 @@ local function GetStatementReason(row, fromID, toID, statement)
 	return SentientSystems_CleanText(Locale.Lookup(key) .. (agenda or ""))
 end
 
+-- Returns what the leader says, and the reason under it, as the leader screen
+-- shows them. Either is nil when the statement has none.
+function SentientSystems_GetStatementText(row, fromID, toID, statement)
+	-- The leader screen passes FromMood, which statements don't have.
+	local text = row.StatementText and SentientSystems_CleanText(
+		Locale.Lookup(DiplomacyManager.FindTextKey(row.StatementText, fromID, statement.FromMood, toID))
+	)
+
+	return text, GetStatementReason(row, fromID, toID, statement)
+end
+
 -- Keeps a message, and drops those from before the previous turn, so each
 -- lasts through the agent's next turn.
 local function AddSessionMessage(message)
@@ -129,34 +148,73 @@ local function AddSessionMessage(message)
 	SentientSystems_SessionMessages = kept
 end
 
--- Closes a session when an AI's statement to the player offers only the
--- goodbye, and keeps what the leader said. Leaves any other session open,
--- such as a deal, a request, or a statement with no row.
-function SentientSystems_CloseGoodbye(fromID, toID, statement)
+-- Returns whether the statement is an AI's that offers the player only the
+-- goodbye. A deal, a request, or a statement with no row isn't.
+local function IsGoodbyeStatement(fromID, toID, statement, row, selections)
 	local typeName = DiplomacyManager.GetKeyName(statement.StatementType)
 
-	if PlayerConfigurations[fromID]:IsHuman() or DEAL_STATEMENTS[typeName] then
-		return
+	return not PlayerConfigurations[fromID]:IsHuman() and not DEAL_STATEMENTS[typeName]
+		and row ~= nil and IsGoodbyeOnly(selections)
+end
+
+local function CopyStatement(fromID, toID, statement)
+	local copy = { from = fromID, to = toID }
+
+	for key, value in pairs(statement) do
+		copy[key] = value
 	end
 
+	return copy
+end
+
+-- Closes a session when an AI's statement to the player offers only the
+-- goodbye, and keeps what the leader said. Remembers the statement of any
+-- other session, which stays open.
+function SentientSystems_HandleStatement(fromID, toID, statement)
 	local row, selections = SentientSystems_GetStatementRows(fromID, toID, statement)
 
-	if row == nil or not IsGoodbyeOnly(selections) then
+	if not IsGoodbyeStatement(fromID, toID, statement, row, selections) then
+		-- The game may reuse the table, so this keeps a copy.
+		SentientSystems_OpenStatements[statement.SessionID] = CopyStatement(fromID, toID, statement)
+
 		return
 	end
 
+	local text, reason = SentientSystems_GetStatementText(row, fromID, toID, statement)
+
 	DiplomacyManager.CloseSession(statement.SessionID)
+	SentientSystems_OpenStatements[statement.SessionID] = nil
 	AddSessionMessage({
 		from = fromID,
 		to = toID,
 		turn = Game.GetCurrentGameTurn(),
-		statement = typeName,
-		-- The leader screen passes FromMood, which statements don't have.
-		text = row.StatementText and SentientSystems_CleanText(
-			Locale.Lookup(DiplomacyManager.FindTextKey(row.StatementText, fromID, statement.FromMood, toID))
-		),
-		reason = GetStatementReason(row, fromID, toID, statement),
+		statement = DiplomacyManager.GetKeyName(statement.StatementType),
+		text = text,
+		reason = reason,
 	})
+end
+
+function SentientSystems_ForgetSession(sessionID)
+	SentientSystems_OpenStatements[sessionID] = nil
+end
+
+-- Returns the latest statement of the session open between the player and the
+-- other player, with its from and to, or nil. Also returns the session ID, or
+-- nil when no session is open.
+function SentientSystems_GetOpenStatement(playerID, otherID)
+	local sessionID = DiplomacyManager.FindOpenSessionID(playerID, otherID)
+
+	if sessionID == nil or sessionID == -1 then
+		return nil
+	end
+
+	local statement = SentientSystems_OpenStatements[sessionID]
+
+	if statement ~= nil and statement.to == playerID and statement.from == otherID then
+		return statement, sessionID
+	end
+
+	return nil, sessionID
 end
 
 -- Returns the messages from the other player to the player, from the previous

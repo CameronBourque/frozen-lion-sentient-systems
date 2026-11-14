@@ -146,12 +146,12 @@ describe("the diplomacy statement event", function()
 
 	before_each(function()
 		closed = {}
-		env.SentientSystems_CloseGoodbye = function(fromID, toID, statement)
+		env.SentientSystems_HandleStatement = function(fromID, toID, statement)
 			closed[#closed + 1] = { fromID, toID, statement.SessionID }
 		end
 	end)
 
-	it("passes a statement to a human player on, to close a goodbye", function()
+	it("passes a statement to a human player on, to close a goodbye or remember it", function()
 		SetPlayers({ [0] = Player(0, true, true) })
 
 		Fire("DiplomacyStatement", 4, 0, { SessionID = 7 })
@@ -166,6 +166,17 @@ describe("the diplomacy statement event", function()
 		Fire("DiplomacyStatement", 4, 9, { SessionID = 8 })
 
 		assert.same({}, closed)
+	end)
+end)
+
+describe("the diplomacy session closed event", function()
+	it("forgets the statement of the session", function()
+		env.SentientSystems_OpenStatements[7] = { from = 4, to = 0 }
+		env.SentientSystems_OpenStatements[8] = { from = 5, to = 0 }
+
+		Fire("DiplomacySessionClosed", 7)
+
+		assert.same({ [8] = { from = 5, to = 0 } }, env.SentientSystems_OpenStatements)
 	end)
 end)
 
