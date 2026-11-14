@@ -14,11 +14,15 @@ Each task first records whether its popup stops a request and the end turn call,
    `DLC/Expansion2/UI/Additions/NaturalDisasterPopup.lua` sets the `CINEMATIC` interface mode when it opens and `SELECTION` when it closes, as the wonder popup does.
 
    Test it in a Gathering Storm save with the disaster intensity raised. Commit: `feat(core): skip the natural disaster popups for agent players`.
-3. **Secret Society popup.** With the joined popup open, send a request and the end turn call, and record whether the popup stops them. Then make the core mod close the popup for an agent player, so no one has to press **Continue**.
+3. **Secret Society and hero popups.** A popup shows each Secret Society the player discovers or joins, and each hero the player discovers in the Heroes and Legends mode, and waits for **Continue**.
 
-   `DLC/Ethiopia/UI/Additions/SecretSocietyPopup.lua` queues it for the local player only, from the joined and discovered notifications. It sets no interface mode and isn't an end-turn blocker.
+   Neither holds anything, so the turn goes on, but each keeps the player from the pause menu. Make the core mod close both for an agent player.
 
-   Test it in a save with Secret Societies on. Commit: `feat(core): close the secret society popup for agent players`.
+   `DLC/Ethiopia/UI/Additions/SecretSocietyPopup.lua` and `DLC/Babylon/UI/Additions/HeroesPopup.lua` open by themselves from their notifications, with a plain `UIManager:QueuePopup`.
+
+   Each `Close` is only `UIManager:DequeuePopup`, and neither fires an event of its own. So one check can close both, such as dequeuing each one that is in the popup queue at the end of a batch. See [popups.md](../../findings/actions/popups.md#plain-popups).
+
+   Test it in a save with either mode on. Commit: `feat(core): close the secret society and hero popups for agent players`.
 4. **Artifact popup.** After the player chooses an artifact, a popup shows the great work it became. With it open, send a request and the end turn call, and record whether the popup stops them. Then make the core mod close the popup for an agent player, so no one has to press **Close**.
 
    Start with `GreatWorkShowcase.lua`, and check whether it sets the `CINEMATIC` interface mode or is an end-turn blocker. See [great-works.md](../../findings/actions/great-works.md#artifact-request).
@@ -54,17 +58,13 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Test it in a save with a unit one move from an unseen natural wonder. Commit: `feat(core): close the natural wonder popup for agent players`.
 
-10. **Hero discovered popup.** In the Heroes and Legends mode, a popup shows each hero the player discovers and waits for **Continue**. It holds nothing, so the turn goes on, but it keeps the player from the pause menu. Make the core mod close it for an agent player.
-
-    `DLC/Babylon/UI/Additions/HeroesPopup.lua` opens from the `HERO_DISCOVERED` notification and fires no event of its own. See [popups.md](../../findings/actions/popups.md#hero-discovered-popup), question 2.
-
-    Test it in a save with the mode on and a hero about to be discovered. Commit: `feat(core): close the hero discovered popup for agent players`.
-
 ## Done when
 
-With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, a hero the player discovers, and a natural disaster show no popup and don't hold up the next request.
+With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, and a natural disaster show no popup and don't hold up the next request.
 
-Neither does a Secret Society the player joins, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts. A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
+Neither does a Secret Society the player discovers or joins, a hero the player discovers, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts.
+
+A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
 
 ## Record
 

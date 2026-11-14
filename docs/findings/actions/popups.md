@@ -1,15 +1,13 @@
 # Popups
 
-Status: open. The natural wonder and hero discovered popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
+Status: open. The natural wonder, hero discovered, and Secret Society popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
 
 The popups that wait for a click, what each holds, and the steps that close each one from `SentientSystemsCore_UI`. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md).
 
 ## Questions
 
 1. Does the core mod's close work for the natural wonder popup from its `NaturalWonderPopup_Shown` event, as it does for the wonder built popup?
-2. Does the hero discovered popup open with no click, when the notification arrives? It opens from the notification's activate handler. If only a click opens it, an agent player never sees it.
-
-   It fires no event of its own when it opens, so which event can the core mod close it from?
+2. Which event can the core mod close the Secret Society and hero popups from? Neither fires an event of its own when it opens.
 
 ## What we know now
 
@@ -29,15 +27,22 @@ On turn 15, the popup opened during the AI turns, after the player's turn had en
 
 Releasing its event ID from `SentientSystemsCore_UI`, with the other steps of its `Close`, closed it. The interface came back, the mode went back to `SELECTION`, and the turn started with `AGENT_TURN 0`. Confirmed on Windows on 2026-11-14.
 
-### Hero discovered popup
+### Plain popups
 
-`DLC/Babylon/UI/Additions/HeroesPopup.lua`, in the Heroes and Legends mode, opens for the local player when the `HERO_DISCOVERED` notification is activated, through `LuaEvents.NotificationPanel_HeroDiscovered` from `NotificationPanel_Babylon_Heroes.lua`. Confirmed in files.
+The Secret Society and hero discovered popups take no lock, so they hold nothing. Each keeps the player from the pause menu, so from saving, until it closes.
 
-It queues itself with `UIManager:QueuePopup` and takes no lock, so it holds nothing. Its `Close` is only `UIManager:DequeuePopup(ContextPtr)`. It fires no `LuaEvents` when it opens or closes. Confirmed in files.
+- `DLC/Ethiopia/UI/Additions/SecretSocietyPopup.lua` opens from the `SECRETSOCIETY_DISCOVERED` and `SECRETSOCIETY_JOINED` notifications, through `LuaEvents.NotificationPanel_SecretSocietyDiscovered` and `_Joined` from `NotificationPanel_Ethiopia.lua`.
+- `DLC/Babylon/UI/Additions/HeroesPopup.lua`, in the Heroes and Legends mode, opens from the `HERO_DISCOVERED` notification, through `LuaEvents.NotificationPanel_HeroDiscovered` from `NotificationPanel_Babylon_Heroes.lua`.
 
-On turn 15, with the popup up, `SentientSystems_EndTurn(0, true)` ended the turn, and turn 16 began with the popup still up. The player can't reach the pause menu, so can't save, until it closes. Confirmed on Windows on 2026-11-14.
+Each queues itself with `UIManager:QueuePopup`, and its `Close` is only `UIManager:DequeuePopup(ContextPtr)`. Neither fires a `LuaEvents` of its own when it opens or closes. Confirmed in files.
 
-`UIManager:DequeuePopup` on `/InGame/HeroesPopup` from `SentientSystemsCore_UI` closed it, and `UIManager:IsInPopupQueue` returned `false`. Confirmed on Windows on 2026-11-14.
+Both opened by themselves on turn 15, the hero popup first and the Secret Society popup once it closed, with no click on the notifications. Confirmed on Windows on 2026-11-14.
+
+With the hero popup up, `SentientSystems_EndTurn(0, true)` ended the turn, and turn 16 began with the popup still up.
+
+With the Secret Society popup up, the same call ended turn 16. Player 5 then opened a session, and the player's turn became active again on turn 16. Confirmed on Windows on 2026-11-14.
+
+`UIManager:DequeuePopup` on `/InGame/HeroesPopup`, then on `/InGame/SecretSocietyPopup`, from `SentientSystemsCore_UI` closed each, and `UIManager:IsInPopupQueue` returned `false`. Confirmed on Windows on 2026-11-14.
 
 ## Method
 
@@ -45,7 +50,7 @@ On turn 15, with the popup up, `SentientSystems_EndTurn(0, true)` ended the turn
 2. With the popup up, read `Game.GetCurrentGameTurn()` and `Players[0]:IsTurnActive()`, wait 20 s, and read them again.
 3. Read the lock's event ID from the `PopupManager.LOCK` line in `Lua.log`. Run the steps of `Close`, with `UIManager:DequeuePopup` on `/InGame/NaturalWonderPopup`, `Input.PopContext()`, and `UI.ReleaseEventID` with that ID in place of the unlock.
 4. Read the turn, the interface mode, and whether the popup's context is hidden 20 s later.
-5. **Hero discovered popup.** With it up, call `SentientSystems_EndTurn(0, true)`, and read the turn 15 s later. Then call `UIManager:DequeuePopup` on `/InGame/HeroesPopup`.
+5. **Plain popups.** With the hero or Secret Society popup up, call `SentientSystems_EndTurn(0, true)`, and read the turn 15 s later. Then call `UIManager:DequeuePopup` on its context.
 
 ## Results
 
@@ -56,5 +61,7 @@ On turn 15, with the popup up, `SentientSystems_EndTurn(0, true)` ended the turn
 
 | `SentientSystems_EndTurn(0, true)`, with the hero discovered popup up on turn 15 | `SentientSystemsCore_UI` | `{"ok":true}`. Turn 16 began, with the popup still up | 2026-11-14 |
 | `UIManager:DequeuePopup` on `/InGame/HeroesPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
+| `SentientSystems_EndTurn(0, true)`, with the Secret Society popup up on turn 16 | `SentientSystemsCore_UI` | `{"ok":true}` and `AGENT_TURN 0`. A session from player 5 opened, and turn 16 was active again | 2026-11-14 |
+| `UIManager:DequeuePopup` on `/InGame/SecretSocietyPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 
 Date checked: game files on 2026-11-14. Running game on Windows on 2026-11-14.
