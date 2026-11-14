@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.20.0...core-v0.21.0) (2026-11-14)
+
+
+### Features
+
+* **core:** add the diplomacy session state and action ([#93](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/93)) ([7f50af1](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/7f50af1731d3e69014d9ff3a37f862525f303178))
+
 ## [0.20.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.19.0...core-v0.20.0) (2026-11-12)
 
 
