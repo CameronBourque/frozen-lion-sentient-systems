@@ -48,9 +48,15 @@ Each task first records whether its popup stops a request and the end turn call,
 
    `Base/Assets/UI/Popups/EspionagePopup.lua` opens it from `Events.SpyMissionCompleted`, and also listens to `Events.LocalPlayerTurnEnd`. See [spies.md](../../findings/actions/spies.md#questions), question 1, and test it in a save with a mission about to end. Commit: `feat(core): close the spy mission popup for agent players`.
 
+9. **Natural wonder popup.** When the player first sees a natural wonder, a popup shows it and waits for **Close**. It holds the engine's event queue as the wonder built popup does, and held the start of a turn. Then make the core mod close it for an agent player, as for the cinematic popups.
+
+   `Base/Assets/UI/Popups/NaturalWonderPopup.lua` fires `LuaEvents.NaturalWonderPopup_Shown` right after its lock. See [popups.md](../../findings/actions/popups.md#natural-wonder-popup), which has the steps of its `Close` and a live close.
+
+   Test it in a save with a unit one move from an unseen natural wonder. Commit: `feat(core): close the natural wonder popup for agent players`.
+
 ## Done when
 
-With an agent as the local player, a wonder that the player completes and a natural disaster show no popup and don't hold up the next request.
+With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, and a natural disaster show no popup and don't hold up the next request.
 
 Neither does a Secret Society the player joins, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts. A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
 

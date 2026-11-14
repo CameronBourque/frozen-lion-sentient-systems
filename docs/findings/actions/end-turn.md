@@ -12,6 +12,8 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
    `NaturalWonderPopup.lua`, `ProjectBuiltPopup.lua`, `RockBandMoviePopup.lua`, and Gathering Storm's `NaturalDisasterPopup.lua` set it. Confirmed in files.
 
+   The natural wonder popup holds it. See [popups.md](popups.md#natural-wonder-popup).
+
    A natural disaster popup held the AI turns. On turn 87, the player's turn stayed inactive for 4 minutes with it up, and turn 88 began 15 s after it was closed. Confirmed on Windows on 2026-11-13.
 
 ## What we know now
