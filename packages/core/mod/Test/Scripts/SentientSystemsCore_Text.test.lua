@@ -100,6 +100,10 @@ describe("SentientSystems_CleanText", function()
 		assert.equal("-3 Unfavorable Terrain and 5 Rising", Clean("[COLOR_RED]-3 Unfavorable Terrain[ENDCOLOR] and [COLOR:ResCultureLabelCS]5[ENDCOLOR] [COLOR_GREEN][ICON_PressureUp] Rising[ENDCOLOR]"))
 	end)
 
+	it("drops the size tags, as a leader screen option has them", function()
+		assert.equal("Settle where we please!\nGenerates 25 Grievances", Clean("Settle where we please![NEWLINE][SIZE_12]Generates 25 [ICON_StatGrievance] Grievances[SIZE_18]"))
+	end)
+
 	it("drops a checkmark", function()
 		assert.equal("Done", Clean("[ICON_CheckmarkBlue] Done"))
 	end)
