@@ -31,7 +31,11 @@ While Vietnam's promise was open, Vietnam's incoming working deal still held six
 
 Vietnam's `WARNING_TOO_MANY_TROOPS_NEAR_ME` on turn 97, after the player's spy came home, offered `CHOICE_NEGATIVE` disabled.
 
-`IsDiplomaticActionValid` for `DIPLOACTION_DECLARE_SURPRISE_WAR` failed with the reason "Unable to Surprise War", as a friend or ally of the player's team is on Vietnam's team. Confirmed on Windows on 2026-11-13.
+`IsDiplomaticActionValid` for `DIPLOACTION_DECLARE_SURPRISE_WAR` failed with the reason "Unable to Surprise War" and a line that a friend or ally of the player's team is on Vietnam's team. Confirmed on Windows on 2026-11-13.
+
+That line is wrong. The game had no teams, and the player had no friends or allies. The real cause was the peace deal that returned the player's spy, after which war on Vietnam waits 10 turns.
+
+The game's reason may be a bug, and the state passes it on as the leader screen shows it. Confirmed on Windows on 2026-11-13.
 
 ### Requests
 
@@ -69,6 +73,6 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | Turn 97, with Vietnam's `WARNING_STOP_SPYING_ON_ME` up | The sessions section listed it with Brazil queued. `SentientSystems_GetState(0)` failed on the old peace deal's captive, which has no name | 2026-11-13 |
 | Turn 117, with Kongo's `DECLARE_FRIEND` up | The sessions section listed the four options, with stop asking. The proposals section listed an old 100 gold gift from Kongo | 2026-11-13 |
 | Turn 94 after a reload, with Brazil's `WARNING_STOP_SPYING_ON_ME` up | The state built, with no proposals, though Vietnam's incoming deal still held five old peace items. The option text had no size tags. The grievance icon, `[ICON_STAT_GRIEVANCE]`, still read as words | 2026-11-13 |
-| Turn 97, with Vietnam's `WARNING_TOO_MANY_TROOPS_NEAR_ME` up | The state built with no proposals, though Vietnam's incoming deal held the old peace items and a captive with no name. The war option was disabled with its reason | 2026-11-13 |
+| Turn 97, with Vietnam's `WARNING_TOO_MANY_TROOPS_NEAR_ME` up | The state built with no proposals, though Vietnam's incoming deal held the old peace items and a captive with no name. The war option was disabled, with a reason that names teams instead of the peace deal's 10 turns | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.
