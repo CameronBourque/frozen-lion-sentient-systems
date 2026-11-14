@@ -1,6 +1,6 @@
 # AI diplomacy sessions
 
-Status: open. Comments, a promise, closing them from a listener, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The requests and the other promises are confirmed in files only.
+Status: open. Comments, a promise, a delegation request, closing them from a listener, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The other requests and promises are confirmed in files only.
 
 The game calls that read and answer a session an AI opens with no deal, such as a comment, a request, or a first meeting, with the Lua state they run in.
 
@@ -83,6 +83,12 @@ Its options are `CHOICE_POSITIVE`, the promise, and `CHOICE_NEGATIVE`, which dec
 
 `AddResponse` with `NEGATIVE` on Brazil's warning declared war on Brazil. Brazil's reply, `DECLARE_SURPRISE_WAR`, came in the same session with only `CHOICE_EXIT`, and the closing listener closed it. Confirmed on Windows on 2026-11-13.
 
+### Requests
+
+Egypt's `DIPLOMATIC_DELEGATION` on turn 15 used the `DELEGATION_FROM_AI` options: `CHOICE_POSITIVE`, `CHOICE_NEGATIVE`, and `CHOICE_EXIT`, none with a `DiplomaticActionType`.
+
+`AddResponse` with `POSITIVE` placed Egypt's delegation at the player, and Egypt's reply, "Excellent!", came in the same session with only `CHOICE_EXIT`. The closing listener closed it. Confirmed on Windows on 2026-11-13.
+
 ### Closing a goodbye
 
 A listener on `Events.DiplomacyStatement` in `SentientSystemsCore_UI` called `CloseSession` as soon as a statement from an AI offered only `CHOICE_EXIT`.
@@ -133,5 +139,6 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | Troops moved near Persia and Brazil on turn 54, with the sessions section | Persia's `WARNING_TOO_MANY_TROOPS_NEAR_ME` with both options enabled, and Brazil's session queued | 2026-11-13 |
 | `AddResponse` with `POSITIVE` on Persia's warning | Persia's reply closed with a message, and Brazil's warning came up | 2026-11-13 |
 | `AddResponse` with `NEGATIVE` on Brazil's warning | `IsAtWarWith(11)` went from `false` to `true`. Brazil's war reply closed with a message, and no session was left open | 2026-11-13 |
+| `AddResponse` with `POSITIVE` on Egypt's `DIPLOMATIC_DELEGATION` on turn 15 | `HasDelegationAt(0)` for Egypt went from `false` to `true`. Egypt's reply closed with a message, and no session was left open | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.
