@@ -1,7 +1,7 @@
 // Tests for deals.ts, against the fake game.
 
 import { describe, expect, test } from "vitest";
-import { declareWar, proposePeace, respondToDeal } from "../../src/actions/deals.js";
+import { declareWar, proposePeace, respondToDeal, respondToSession } from "../../src/actions/deals.js";
 import { startGame } from "../tuner/fake-game.js";
 
 describe("respondToDeal", () => {
@@ -15,6 +15,20 @@ describe("respondToDeal", () => {
 		})[command] ?? {};
 
 		expect(await respondToDeal(client, 0, 4, false)).toEqual({ ok: true });
+	});
+});
+
+describe("respondToSession", () => {
+	test("passes the players and the option key as a string", async () => {
+		const { game, client } = await startGame();
+		const lua = "SentientSystems_RespondToSession(0, 4, \"CHOICE_POSITIVE\")";
+
+		game.onCommand = (_stateIndex, command) => ({
+			[`SentientSystems_Stash(${lua})`]: { output: ["1"] },
+			"SentientSystems_PrintPiece(1)": { output: ["{\"ok\":true}"] },
+		})[command] ?? {};
+
+		expect(await respondToSession(client, 0, 4, "CHOICE_POSITIVE")).toEqual({ ok: true });
 	});
 });
 

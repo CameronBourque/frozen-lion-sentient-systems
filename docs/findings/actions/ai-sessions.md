@@ -93,6 +93,8 @@ Over six AI turns, from turn 85 to turn 91, the listener saw 15 statements. Ever
 
 ### What an open session stops
 
+The game won't save with a leader screen up. The player has to leave the screen first, so a save made from the menu holds no open session. Confirmed on Windows on 2026-11-13.
+
 A session waits behind another open session, and a war request then fails. See [declaring war](war-and-peace.md#declaring-war).
 
 An end turn request with a leader screen up closes the screen and doesn't end the turn. See [ending the turn](end-turn.md#ending-the-turn).

@@ -5,6 +5,9 @@
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Text")
 
+-- The option key of the leader screen's goodbye, which closes the session.
+SENTIENTSYSTEMS_GOODBYE = "CHOICE_EXIT"
+
 -- The statements that hold a deal. The proposals section and the deal action
 -- handle their sessions.
 local DEAL_STATEMENTS = { MAKE_DEAL = true, MAKE_DEMAND = true }
@@ -100,7 +103,7 @@ end
 -- Returns whether every selection is the goodbye, CHOICE_EXIT.
 local function IsGoodbyeOnly(selections)
 	for _, selection in ipairs(selections) do
-		if selection.Key ~= "CHOICE_EXIT" then
+		if selection.Key ~= SENTIENTSYSTEMS_GOODBYE then
 			return false
 		end
 	end

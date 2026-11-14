@@ -2,6 +2,8 @@
 -- player, other than deals, as DiplomacyActionView.lua shows them.
 -- Shape: bridge/src/state/sessions.ts.
 
+SentientSystems_Include("SentientSystemsCore_StateProposals")
+
 -- The text for a disabled option whose check gives an empty list of reasons.
 local NO_REASON = "The game gives no reason."
 
@@ -89,14 +91,17 @@ local function GetStatementEntry(player, otherID, statement)
 end
 
 -- Returns the entry of the session the other player has open with the player,
--- or nil for none, for a deal, and for a session the player started that has
--- no answer yet. See docs/findings/actions/first-meetings.md.
-local function GetSessionEntry(player, otherID)
+-- and its ID, or nil for none, for a deal, and for a session the player
+-- started that has no answer yet. The session response action checks an
+-- answer against it. See docs/findings/actions/first-meetings.md.
+function SentientSystems_GetSessionEntry(player, otherID)
 	local playerID = player:GetID()
 	local statement, sessionID = SentientSystems_GetOpenStatement(playerID, otherID)
 
 	if statement ~= nil then
-		return GetStatementEntry(player, otherID, statement)
+		local entry = GetStatementEntry(player, otherID, statement)
+
+		return entry, entry and sessionID
 	end
 
 	if sessionID == nil or DiplomacyManager.GetSessionInfo(sessionID).FromPlayer ~= otherID
@@ -108,10 +113,10 @@ local function GetSessionEntry(player, otherID)
 	-- others wait behind it. With none, as when the game loads with a session
 	-- open, the core mod missed it, and the agent can still close it.
 	if SentientSystems_HasOpenStatement(playerID) then
-		return { from = otherID, queued = true }
+		return { from = otherID, queued = true }, sessionID
 	end
 
-	return { from = otherID, unknown = true }
+	return { from = otherID, unknown = true }, sessionID
 end
 
 -- Returns the open sessions, one for each other player, in ID order.
@@ -119,7 +124,7 @@ function SentientSystems_GetSessionState(player)
 	local list = {}
 
 	for _, other in ipairs(PlayerManager.GetAliveMajors()) do
-		local entry = other:GetID() ~= player:GetID() and GetSessionEntry(player, other:GetID())
+		local entry = other:GetID() ~= player:GetID() and SentientSystems_GetSessionEntry(player, other:GetID())
 
 		if entry then
 			list[#list + 1] = entry

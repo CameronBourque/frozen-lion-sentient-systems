@@ -1,6 +1,6 @@
 # Deal actions
 
-How the core mod answers a deal another player proposes, as the deal screen does, declares war, as the war popup does, and proposes peace, as the leader screen does. Part of the [action API](README.md).
+How the core mod answers a deal another player proposes, as the deal screen does, answers a leader screen, declares war, as the war popup does, and proposes peace, as the leader screen does. Part of the [action API](README.md).
 
 ## Respond to a deal
 
@@ -13,6 +13,20 @@ A deal is waiting when `SentientSystems_GetProposedDeal` returns one, the same c
 Its reasons, in order, name no deal waiting from that player, and a deal that is no longer valid, which can only be rejected.
 
 On the bridge, `respondToDeal` in `src/actions/deals.ts` sends the call.
+
+## Respond to a session
+
+`SentientSystems_RespondToSession(playerID, otherPlayerID, option)` in the same file answers the leader screen the other player has open with the player, such as a request, a promise, or a first meeting. `option` is a key from the state's `sessions` section. See [the options](../../../../findings/actions/ai-sessions.md#the-options).
+
+`CHOICE_EXIT` closes the session, as the leader screen does when the player leaves. Any other key adds the response the screen adds for it: `POSITIVE`, `NEGATIVE`, `RESPONSE_IGNORE`, `REJECTED_PERMANENT` for `CHOICE_STOP_ASKING`, and the key itself for any other.
+
+A response can lead to another statement in the same session, such as the offer after a greeting, and the state then lists it. An AI's reply with only a goodbye closes on its own.
+
+The action checks the answer against `SentientSystems_GetSessionEntry`, the same entry the state lists.
+
+Its reasons, in order, name a session that holds a deal, no session, a queued session, an unknown one, where only `CHOICE_EXIT` works, an option the session doesn't offer, with the ones it does, and a disabled option, with the game's reason.
+
+On the bridge, `respondToSession` in `src/actions/deals.ts` sends the call.
 
 ## Declare war
 
@@ -44,6 +58,9 @@ An AI answers after the call. On the bridge, `proposePeace` in `src/actions/deal
 | A refusal is always the `NEGATIVE` response | It is the screen's own refusal of an AI's deal. `REJECTED_PERMANENT`, for a deal with an unacceptable item, asks the AI to stop proposing it, which is a different choice |
 | Accepting a war deal declares the war without a prompt | The screen's prompt asks the player to confirm. The agent confirms by accepting |
 | The action answers the whole deal and can't change it | A counter-offer is proposing a deal, which is planned for phase 3 |
+| The session action takes an option key, not a response | The key is what the state lists, and the action maps it as the leader screen does, so the agent never needs the game's response names |
+| Stop asking needs no confirmation | The leader screen asks the player to confirm. The agent confirms by choosing the option |
+| The bridge doesn't wait for the AI's reply to a session | The reply comes in the same session. A goodbye closes on its own and a choice shows in the next state, so the agent reads it there |
 | Declaring war is always a surprise war | The formal war and the other casus belli need conditions the state doesn't show yet. They come with the other diplomacy actions in phase 3 |
 | Peace is the game's own peace deal, with nothing added | It keeps the cities the player occupies, which the game cedes to the player. Asking for more is proposing a deal, which is planned for phase 3 |
 | The bridge waits for an AI's answer to peace | The answer comes after the call, within a second. A result that waits tells the agent whether the war is over, so it doesn't plan the next move on a guess. An AI that answers after the wait shows in the state |

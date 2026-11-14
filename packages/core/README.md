@@ -57,8 +57,10 @@ An action is one Lua function that the bridge calls to run a request function of
 | Governor rules | The panel's checks and the assignment chooser's cities in `mod/Scripts/SentientSystemsCore_Governors.lua`, which the governor choices and actions share |
 | Great people rules | `SENTIENTSYSTEMS_PATRONAGE` and `SentientSystems_GetPatronage` in `mod/Scripts/SentientSystemsCore_GreatPeople.lua`, which the great people state and actions share |
 | Proposal rules | `SentientSystems_GetProposedDeal` in `mod/Scripts/State/SentientSystemsCore_StateProposals.lua`, which the proposals state and the deal action share |
+| Session rules | `SentientSystems_GetSessionEntry` in `mod/Scripts/State/SentientSystemsCore_StateSessions.lua`, and `SENTIENTSYSTEMS_GOODBYE` and `SentientSystems_IsDealStatement` in `mod/Scripts/SentientSystemsCore_Sessions.lua`, which the sessions state and actions share |
 | Diplomacy session fake | `CopyIncomingToOutgoingWorkingDeal`, `ClearWorkingDeal`, the outgoing deal's items, `SendWorkingDeal`, `AddResponse`, `CloseSession`, and `RequestSession` in `mod/Test/FakeGame/Proposals.lua`, which put each call in `env.requests` |
-| War and peace check fake | `IsDiplomaticActionValid` and `CanMakePeaceWith` on the diplomacy in `mod/Test/FakeGame/Diplomacy.lua`, with each player's `noWar` and `noPeace` reasons |
+| War and peace check fake | `IsDiplomaticActionValid` and `CanMakePeaceWith` on the diplomacy in `mod/Test/FakeGame/Diplomacy.lua`, with each player's `noWar` and `noPeace` reasons, and `invalid` for any other action |
+| Leader screen fake | The statement and selection rows, the sessions open with each player, and the text calls in `mod/Test/FakeGame/Sessions.lua` |
 | End turn fake | `env.UI.RequestAction` and `env.ActionTypes` in `mod/Test/FakeGame/EndTurn.lua`, which put each request in `env.requests` |
 | Policy request fake | `RequestPolicyChanges` and `RequestChangeGovernment` on the culture in `mod/Test/FakeGame/Governments.lua`, which put each change in `env.requests` |
 

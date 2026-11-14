@@ -74,5 +74,7 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | Turn 117, with Kongo's `DECLARE_FRIEND` up | The sessions section listed the four options, with stop asking. The proposals section listed an old 100 gold gift from Kongo | 2026-11-13 |
 | Turn 94 after a reload, with Brazil's `WARNING_STOP_SPYING_ON_ME` up | The state built, with no proposals, though Vietnam's incoming deal still held five old peace items. The option text had no size tags. The grievance icon, `[ICON_STAT_GRIEVANCE]`, still read as words | 2026-11-13 |
 | Turn 97, with Vietnam's `WARNING_TOO_MANY_TROOPS_NEAR_ME` up | The state built with no proposals, though Vietnam's incoming deal held the old peace items and a captive with no name. The war option was disabled, with a reason that names teams instead of the peace deal's 10 turns | 2026-11-13 |
+| `SentientSystems_RespondToSession(0, 10, ...)` on Vietnam's warning, with `CHOICE_NEGATIVE`, then `CHOICE_EXIT` | Refused: the war option with the game's reason, and the goodbye as not offered, with the two options listed | 2026-11-13 |
+| `SentientSystems_RespondToSession(0, 10, "CHOICE_POSITIVE")` | `{"ok":true}`. Vietnam's "Thank you." closed with a message, and no session was left open | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.

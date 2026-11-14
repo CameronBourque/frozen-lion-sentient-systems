@@ -35,7 +35,7 @@ The sessions with a real choice, such as a request or a first meeting, go in the
    No game call returns an open session's statement, so the core mod keeps the latest one of each session it leaves open.
 
    A session open with no statement kept, such as one from before a reload, is listed with only the player and marked unknown, so the agent can still close it. While another session has its statement up, it is marked queued instead. Commit: `feat(core): add the diplomacy sessions to the state`.
-4. **Respond to a session.** Add `SentientSystems_RespondToSession(playerID, otherPlayerID, response)`, which adds the response, or closes the session for the goodbye, as the leader screen does.
+4. **Respond to a session.** Add `SentientSystems_RespondToSession(playerID, otherPlayerID, option)`, which takes an option key from the sessions section and adds its response, or closes the session for the goodbye, as the leader screen does.
 
    A response that leads to another statement, such as the greeting at a first meeting, leaves the session open on that statement.
 

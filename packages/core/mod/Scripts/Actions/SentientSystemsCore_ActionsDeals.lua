@@ -1,8 +1,9 @@
--- The deal and war actions of the diplomacy screens.
+-- The deal, session, and war actions of the diplomacy screens.
 -- SentientSystemsCore_Actions.lua loads this file. The calls are in
--- docs/findings/actions/diplomacy.md.
+-- docs/findings/actions/diplomacy.md and ai-sessions.md.
 
 SentientSystems_Include("SentientSystemsCore_StateProposals")
+SentientSystems_Include("SentientSystemsCore_StateSessions")
 
 -- Accepts the deal as the screen's Accept button does, from the copy the screen
 -- makes when the deal arrives. See OnProposeOrAcceptDeal in
@@ -53,6 +54,101 @@ end
 -- returns the result as JSON.
 function SentientSystems_RespondToDeal(playerID, otherPlayerID, accept)
 	return SentientSystems_RunAction("RespondToDeal", RespondToDeal, playerID, otherPlayerID, accept)
+end
+
+-- The response that the leader screen adds for each option. The goodbye closes
+-- the session, and any other key is its own response. See
+-- OnSelectConversationDiplomacyStatement in DiplomacyActionView.lua.
+local RESPONSES = {
+	CHOICE_POSITIVE = "POSITIVE",
+	CHOICE_NEGATIVE = "NEGATIVE",
+	CHOICE_IGNORE = "RESPONSE_IGNORE",
+	CHOICE_STOP_ASKING = "REJECTED_PERMANENT",
+}
+
+local function FindSessionOption(options, key)
+	for _, option in ipairs(options) do
+		if option.key == key then
+			return option
+		end
+	end
+
+	return nil
+end
+
+local function GetOptionKeys(options)
+	local keys = {}
+
+	for i, option in ipairs(options) do
+		keys[i] = option.key
+	end
+
+	return table.concat(keys, ", ")
+end
+
+-- Returns why the player can't answer the session with the option, or nil.
+-- The checks are those of the sessions section, so they match what the agent
+-- read.
+local function GetSessionFailure(playerID, otherPlayerID, entry, option)
+	local who = "Player " .. otherPlayerID
+
+	if entry == nil and SentientSystems_GetProposedDeal(playerID, otherPlayerID) ~= nil then
+		return who .. "'s session holds a deal. Answer it with the deal response."
+	end
+
+	if entry == nil then
+		return who .. " has no leader screen open with you. The sessions section lists them."
+	end
+
+	if entry.queued then
+		return who .. "'s session waits behind another one. Answer that one first."
+	end
+
+	if entry.unknown then
+		return option ~= SENTIENTSYSTEMS_GOODBYE and "The core mod didn't see what " .. who:lower() .. " said, so only " .. SENTIENTSYSTEMS_GOODBYE .. " can answer it." or nil
+	end
+
+	local found = FindSessionOption(entry.options, option)
+
+	if found == nil then
+		return who .. "'s session doesn't offer " .. tostring(option) .. ". It offers " .. GetOptionKeys(entry.options) .. "."
+	end
+
+	if found.disabled ~= nil then
+		return tostring(option) .. " is disabled: " .. found.disabled
+	end
+
+	return nil
+end
+
+-- Answers the leader screen the other player has open with the player, as a
+-- click on the option does. A response can lead to another statement in the
+-- same session, which the sessions section then lists.
+local function RespondToSession(playerID, otherPlayerID, option)
+	local player = SentientSystems_GetPlayer(playerID)
+
+	SentientSystems_GetPlayer(otherPlayerID)
+
+	local entry, sessionID = SentientSystems_GetSessionEntry(player, otherPlayerID)
+	local failure = GetSessionFailure(playerID, otherPlayerID, entry, option)
+
+	if failure ~= nil then
+		return failure
+	end
+
+	if option == SENTIENTSYSTEMS_GOODBYE then
+		DiplomacyManager.CloseSession(sessionID)
+	else
+		DiplomacyManager.AddResponse(sessionID, playerID, RESPONSES[option] or option)
+	end
+
+	return nil
+end
+
+-- Answers the other player's leader screen with an option key from the
+-- sessions section, and returns the result as JSON.
+function SentientSystems_RespondToSession(playerID, otherPlayerID, option)
+	return SentientSystems_RunAction("RespondToSession", RespondToSession, playerID, otherPlayerID, option)
 end
 
 -- Returns whether the player is a city-state, which the war popup and the
