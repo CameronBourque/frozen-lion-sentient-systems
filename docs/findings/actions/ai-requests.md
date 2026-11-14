@@ -1,0 +1,54 @@
+# AI requests and promises
+
+Status: open. The troop and settling promises, the delegation, and the embassy are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The other requests are confirmed in files only.
+
+The leader screen sessions where an AI asks the player for something, such as a delegation, an embassy, or a promise. How a session is read and answered is in [ai-sessions.md](ai-sessions.md), with the options of each statement.
+
+The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other actions are in the [actions index](README.md).
+
+## Questions
+
+1. What do open borders, friendship, and an alliance request do when answered? Record the follow-up statement for each response, and whether the game closes the session after it.
+2. Why did refusing Ethiopia's embassy still place it? The game may place an embassy with no answer needed, or count `NEGATIVE` as no answer.
+
+## What we know now
+
+### Promises
+
+Moving troops near Persia and Brazil on turn 54 brought `WARNING_TOO_MANY_TROOPS_NEAR_ME` from each, with Brazil's queued behind Persia's.
+
+Its options are `CHOICE_POSITIVE`, the promise, and `CHOICE_NEGATIVE`, which declares war through `DIPLOACTION_DECLARE_SURPRISE_WAR`. Confirmed on Windows on 2026-11-13.
+
+`AddResponse` with `POSITIVE` brought Persia's reply in the same session, "Thank you.", with only `CHOICE_EXIT`. The closing listener closed it, and Brazil's statement came next. Confirmed on Windows on 2026-11-13.
+
+`AddResponse` with `NEGATIVE` on Brazil's warning declared war on Brazil. Brazil's reply, `DECLARE_SURPRISE_WAR`, came in the same session with only `CHOICE_EXIT`, and the closing listener closed it. Confirmed on Windows on 2026-11-13.
+
+### Requests
+
+Egypt's `DIPLOMATIC_DELEGATION` on turn 15 used the `DELEGATION_FROM_AI` options: `CHOICE_POSITIVE`, `CHOICE_NEGATIVE`, and `CHOICE_EXIT`, none with a `DiplomaticActionType`.
+
+`AddResponse` with `POSITIVE` placed Egypt's delegation at the player, and Egypt's reply, "Excellent!", came in the same session with only `CHOICE_EXIT`. The closing listener closed it. Confirmed on Windows on 2026-11-13.
+
+Ethiopia's `RESIDENT_EMBASSY` on turn 92 used the `EMBASSY_FROM_AI` options, the same three. `AddResponse` with `NEGATIVE` brought the reply "Disappointing.", which the listener closed, yet `HasEmbassyAt(0)` for Ethiopia went from `false` to `true`. Confirmed on Windows on 2026-11-13.
+
+Brazil's `WARNING_DONT_SETTLE_NEAR_ME` on turn 92 gives each option's effect in its text: 30 Diplomatic Favor for the promise, and 25 grievances for the refusal. The text holds `[SIZE_12]` and `[SIZE_18]` tags around it, and the grievance icon. Confirmed on Windows on 2026-11-13.
+
+## Method
+
+1. Add the listeners in step 1 of the [AI sessions method](ai-sessions.md#method), or load the core mod, whose sessions section lists each statement.
+2. Load a save with a request or a promise up, or move troops next to an AI's border, settle near its cities, or buy tiles near them, and end the turn.
+3. To answer, send `AddResponse` with the response. Read the follow-up statement, the messages, and the change, such as `HasDelegationAt`, `HasEmbassyAt`, or `IsAtWarWith`.
+
+## Results
+
+A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
+
+| Call | Result | Date |
+| --- | --- | --- |
+| Troops moved near Persia and Brazil on turn 54, with the sessions section | Persia's `WARNING_TOO_MANY_TROOPS_NEAR_ME` with both options enabled, and Brazil's session queued | 2026-11-13 |
+| `AddResponse` with `POSITIVE` on Persia's warning | Persia's reply closed with a message, and Brazil's warning came up | 2026-11-13 |
+| `AddResponse` with `NEGATIVE` on Brazil's warning | `IsAtWarWith(11)` went from `false` to `true`. Brazil's war reply closed with a message, and no session was left open | 2026-11-13 |
+| `AddResponse` with `POSITIVE` on Egypt's `DIPLOMATIC_DELEGATION` on turn 15 | `HasDelegationAt(0)` for Egypt went from `false` to `true`. Egypt's reply closed with a message, and no session was left open | 2026-11-13 |
+| `AddResponse` with `NEGATIVE` on Ethiopia's `RESIDENT_EMBASSY` on turn 92 | The reply closed with a message, and Ethiopia's embassy was placed anyway | 2026-11-13 |
+
+Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.

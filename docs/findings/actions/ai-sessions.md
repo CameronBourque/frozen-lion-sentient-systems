@@ -1,16 +1,16 @@
 # AI diplomacy sessions
 
-Status: open. Comments, a promise, a delegation request, closing them from a listener, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The other requests and promises are confirmed in files only.
+Status: open. Comments, closing them from a listener, and how an open session holds the turns are confirmed in a running game with Gathering Storm, with calls sent through the tuner.
 
 The game calls that read and answer a session an AI opens with no deal, such as a comment, a request, or a first meeting, with the Lua state they run in.
 
-The first meetings are in [first-meetings.md](first-meetings.md). Sessions that hold a deal are in [diplomacy.md](diplomacy.md). Declaring war and proposing peace are in [war-and-peace.md](war-and-peace.md).
+The first meetings are in [first-meetings.md](first-meetings.md), and the requests and promises in [ai-requests.md](ai-requests.md). Sessions that hold a deal are in [diplomacy.md](diplomacy.md). Declaring war and proposing peace are in [war-and-peace.md](war-and-peace.md).
 
 The core mod's result format is in [design/core/mod/actions/README.md](../../design/core/mod/actions/README.md). The other actions are in the [actions index](README.md).
 
 ## Questions
 
-1. What do the requests do when answered? The requests are a delegation, an embassy, open borders, friendship, an alliance, and the promises. Record the follow-up statement for each response, and whether the game closes the session after it.
+1. Do two AIs open sessions with each other, out of sight of the UI state? See [between two AIs](#between-two-ais), and the [computer slot test](../../design/agents/slot-type.md#computer-slot-test).
 
 ## What we know now
 
@@ -73,22 +73,6 @@ After a war on the Maori, Scythia opened a `DIPLOMATIC_WARNING` session. Its onl
 
 During the AI turns, Persia opened a `DIPLOMATIC_KUDO` session. The AI turns stopped until `CloseSession` closed it. Kongo then proposed a deal, and the turn went on after `SentientSystems_RespondToDeal` rejected it. Confirmed on Windows on 2026-11-13.
 
-### Promises
-
-Moving troops near Persia and Brazil on turn 54 brought `WARNING_TOO_MANY_TROOPS_NEAR_ME` from each, with Brazil's queued behind Persia's.
-
-Its options are `CHOICE_POSITIVE`, the promise, and `CHOICE_NEGATIVE`, which declares war through `DIPLOACTION_DECLARE_SURPRISE_WAR`. Confirmed on Windows on 2026-11-13.
-
-`AddResponse` with `POSITIVE` brought Persia's reply in the same session, "Thank you.", with only `CHOICE_EXIT`. The closing listener closed it, and Brazil's statement came next. Confirmed on Windows on 2026-11-13.
-
-`AddResponse` with `NEGATIVE` on Brazil's warning declared war on Brazil. Brazil's reply, `DECLARE_SURPRISE_WAR`, came in the same session with only `CHOICE_EXIT`, and the closing listener closed it. Confirmed on Windows on 2026-11-13.
-
-### Requests
-
-Egypt's `DIPLOMATIC_DELEGATION` on turn 15 used the `DELEGATION_FROM_AI` options: `CHOICE_POSITIVE`, `CHOICE_NEGATIVE`, and `CHOICE_EXIT`, none with a `DiplomaticActionType`.
-
-`AddResponse` with `POSITIVE` placed Egypt's delegation at the player, and Egypt's reply, "Excellent!", came in the same session with only `CHOICE_EXIT`. The closing listener closed it. Confirmed on Windows on 2026-11-13.
-
 ### Closing a goodbye
 
 A listener on `Events.DiplomacyStatement` in `SentientSystemsCore_UI` called `CloseSession` as soon as a statement from an AI offered only `CHOICE_EXIT`.
@@ -136,9 +120,5 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `CloseSession` on Persia's session | Kongo proposed a deal. Turn 86 began after the deal was rejected | 2026-11-13 |
 | `SentientSystems_DeclareWar(0, 4)` on turn 85, with the closing listener | The Maori reply and Scythia's warning closed. A black flash, and no leader screen | 2026-11-13 |
 | End turns 85 to 90, with the closing listener | Persia's kudo and the Netherlands' warning and denouncement closed. Five deals held the turns until rejected. No statement between two AIs | 2026-11-13 |
-| Troops moved near Persia and Brazil on turn 54, with the sessions section | Persia's `WARNING_TOO_MANY_TROOPS_NEAR_ME` with both options enabled, and Brazil's session queued | 2026-11-13 |
-| `AddResponse` with `POSITIVE` on Persia's warning | Persia's reply closed with a message, and Brazil's warning came up | 2026-11-13 |
-| `AddResponse` with `NEGATIVE` on Brazil's warning | `IsAtWarWith(11)` went from `false` to `true`. Brazil's war reply closed with a message, and no session was left open | 2026-11-13 |
-| `AddResponse` with `POSITIVE` on Egypt's `DIPLOMATIC_DELEGATION` on turn 15 | `HasDelegationAt(0)` for Egypt went from `false` to `true`. Egypt's reply closed with a message, and no session was left open | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.
