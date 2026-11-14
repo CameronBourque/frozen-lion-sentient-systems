@@ -140,6 +140,46 @@ describe("the turn event", function()
 	end)
 end)
 
+describe("the diplomacy statement event", function()
+	-- Records each statement passed on, in place of closing it.
+	local closed
+
+	before_each(function()
+		closed = {}
+		env.SentientSystems_HandleStatement = function(fromID, toID, statement)
+			closed[#closed + 1] = { fromID, toID, statement.SessionID }
+		end
+	end)
+
+	it("passes a statement to a human player on, to close a goodbye or remember it", function()
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		Fire("DiplomacyStatement", 4, 0, { SessionID = 7 })
+
+		assert.same({ { 4, 0, 7 } }, closed)
+	end)
+
+	it("leaves a statement to an AI player or a player that doesn't exist", function()
+		SetPlayers({ [5] = Player(5, false, true) })
+
+		Fire("DiplomacyStatement", 4, 5, { SessionID = 7 })
+		Fire("DiplomacyStatement", 4, 9, { SessionID = 8 })
+
+		assert.same({}, closed)
+	end)
+end)
+
+describe("the diplomacy session closed event", function()
+	it("forgets the statement of the session", function()
+		env.SentientSystems_OpenStatements[7] = { from = 4, to = 0 }
+		env.SentientSystems_OpenStatements[8] = { from = 5, to = 0 }
+
+		Fire("DiplomacySessionClosed", 7)
+
+		assert.same({ [8] = { from = 5, to = 0 } }, env.SentientSystems_OpenStatements)
+	end)
+end)
+
 describe("SentientSystems_Resync", function()
 	it("prints AGENT_TURN for each human player whose turn is active", function()
 		SetPlayers({

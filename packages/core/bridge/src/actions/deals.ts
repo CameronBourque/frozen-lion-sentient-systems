@@ -1,4 +1,4 @@
-// The deal, war, and peace actions, which run the calls in
+// The deal, session, war, and peace actions, which run the calls in
 // Scripts/Actions/SentientSystemsCore_ActionsDeals.lua.
 
 import { setTimeout as sleep } from "node:timers/promises";
@@ -10,6 +10,14 @@ import { type ActionResult, sendAction } from "./actions.js";
 // the session closed.
 export function respondToDeal(client: TunerClient, playerID: number, otherPlayerID: number, accept: boolean): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_RespondToDeal(${playerID}, ${otherPlayerID}, ${accept})`);
+}
+
+// Answers the leader screen that another player has open with the player, with
+// an option key from the sessions section of the state, such as
+// CHOICE_POSITIVE. An ok result means the game took the answer. The session
+// may go on with another statement, which the next state lists.
+export function respondToSession(client: TunerClient, playerID: number, otherPlayerID: number, option: string): Promise<ActionResult> {
+	return sendAction(client, `SentientSystems_RespondToSession(${playerID}, ${otherPlayerID}, ${JSON.stringify(option)})`);
 }
 
 // Declares a surprise war on the other player, a major civ or a city-state. It

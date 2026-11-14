@@ -22,6 +22,7 @@ Before [phase 2](../../roadmap/phase-2/README.md), a test puts an agent in a com
 2. Can the request functions act for a player who isn't the local player?
 3. When does the agent take its turn? Turn processing can't wait for an LLM, and computer players may move while you do.
 4. How does the mod mark a player as an agent? The game data has no requirement that checks a per-player flag. Only `REQUIREMENT_PLOT_PROPERTY_MATCHES` exists. Gameplay Lua can attach modifiers to one player with `AttachModifierByID`.
+5. How does an agent in a computer slot learn and answer what an AI asks of it, such as a promise or a delegation? An AI opens a leader screen only with a human player. See [AI diplomacy sessions](../../findings/actions/ai-sessions.md).
 
 An agent gets the same bonuses in a human slot and a computer slot. Difficulty bonuses are data.
 

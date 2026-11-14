@@ -18,9 +18,11 @@ The one name for each thing in this project, and what it means. Use these names 
 | Cover card | The full-screen card that hides the map during agent turns when a human plays | [cover-and-spectator.md](design/agents/cover-and-spectator.md#cover-card) |
 | Decision helper | Bridge code that reads the state and returns a ranked list of options for one kind of decision. It never acts | [helpers.md](design/decision-support/helpers.md) |
 | Deep strategic review | A mode of the agent loop that uses a stronger model and compacts the journal | [knowledge-files.md](design/knowledge-files.md#file-layout) |
+| Diplomacy session | A conversation between two players on the leader screen, under one session ID. It holds one or more statements, and it stays open until a player closes it | [ai-sessions.md](findings/actions/ai-sessions.md#what-a-session-holds) |
 | End-turn check | The bridge's check for blockers and unused resources when the agent calls `end_turn`. Unused resources stop only the first call of a turn | [end-turn-check.md](design/decision-support/end-turn-check.md) |
 | Feature mod | The agent players mod or the advisors mod. Each has its own version and a required core range | [versioning.md](design/versioning.md#packages) |
 | Finding | A file in `findings/` that records what is true about the game or our tools, with a status of Confirmed or Unconfirmed | [rules/docs.md](rules/docs.md#findings) |
+| First meeting | The diplomacy session an AI opens when it and the player meet. Its statements depend on who found whom and where | [first-meetings.md](findings/actions/first-meetings.md) |
 | FireTuner | The SDK's debug program, `FireTuner2.exe`. The FireTuner protocol is the wire protocol it uses | [tuner/protocol.md](findings/tuner/protocol.md) |
 | Game review | The review after a game ends that finds turning points and blunders from the metrics lines and decision records, and writes lessons for you to review | [game-review.md](design/decision-support/game-review.md) |
 | Gate | The test at the end of a phase. It must pass before the next phase starts | [roadmap/](roadmap/README.md) |
@@ -30,7 +32,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Lua state | One Lua environment in the running game, such as `InGame` or `GameCore_Tuner`. The tuner lists the states and runs Lua in one of them. Use "context" only for the `.modinfo` `Context` attribute | [lua/contexts.md](findings/lua/contexts.md) |
 | Map quiz | An automatic test that asks each model tier questions about saved maps, with answers that code computed, to pick the map format | [map-format.md](design/decision-support/map-format.md#map-quiz) |
 | Marker wrapper | The Lua the tuner client puts around each command. It prints `@@ss:begin:<id>` and `@@ss:end:<id>:<result>`, so the bridge knows which output belongs to which command | [tuner/commands.md](findings/tuner/commands.md#probe-results) |
-| Metrics line | One line of numbers, such as score, yields, and victory progress, that the bridge writes for each player after each agent turn | [game-review.md](design/decision-support/game-review.md#metrics-line) |
+| Metrics line | One line of numbers, such as score, yields, and victory progress, that the bridge writes for each player after each agent turn | [evaluation.md](design/evaluation.md#metrics-line) |
 | Model tier | One of three levels of model, light, standard, and strong, that model routing picks for a model turn. Each tier is an operation in `models.yaml` | [model-routing.md](design/decision-support/model-routing.md#tiers) |
 | MVP | The minimum viable product: one agent finishes a full single-player game against the native AI. It is phase 1 | [phase-1/](roadmap/phase-1/README.md) |
 | Native AI | The game's built-in computer players | [slot-type.md](design/agents/slot-type.md) |
@@ -38,15 +40,18 @@ The one name for each thing in this project, and what it means. Use these names 
 | Personality | A file that sets an agent's priorities, behavior rules, and narrator voice | [knowledge-files.md](design/knowledge-files.md#layers) |
 | Phase | One stage of the roadmap, with one gate, in `roadmap/phase-N/`. Write "phase 0" in lowercase in running text | [roadmap/](roadmap/README.md) |
 | Region summary | One line of counts for a part of the map, such as the land around a city. A candidate map format | [map-format.md](design/decision-support/map-format.md#candidate-formats) |
+| Relative measure | One of the agent's numbers compared with the other players' numbers on the same turn, such as its rank or its ratio to the leader | [evaluation.md](design/evaluation.md#relative-measures) |
 | Request function | A game function, such as `UnitManager.RequestOperation`, that asks the engine to do an action. The engine checks that the action is legal | [game-api.md](findings/game-api.md) |
 | Scenario test | A test that loads a save at one hard moment, lets the agent play a few turns, and checks the outcome with code | [testing.md](design/testing.md#scenario-tests) |
 | Significance score | The bridge's score for how much a model turn matters, from its wake triggers, the decisions waiting, and the scoreboard. It sets the model tier | [model-routing.md](design/decision-support/model-routing.md#significance-score) |
 | Single executable application (SEA) | Node's way to build one executable that holds the Node runtime and a bundled program. The bridge ships as one | [build-tooling.md](findings/build-tooling.md) |
 | Spectator mode | A game setup option for agent-only games that lets you watch agents play | [cover-and-spectator.md](design/agents/cover-and-spectator.md#spectator-mode) |
+| Spending limit | A cap in the config file on what model calls cost in one agent turn or one run of the bridge. A run is one start of the bridge | [turn-loop.md](design/agents/turn-loop.md#stopping) |
 | Standing order | A multi-turn plan, such as a build list or a unit goal, that plain code in the bridge carries out each turn until it finishes or the agent cancels it | [standing-orders.md](design/decision-support/standing-orders.md#orders) |
 | State diff | The changes since the agent's last model turn, which the bridge sends in place of the full state | [standing-orders.md](design/decision-support/standing-orders.md#state-diff) |
 | Step | One unit of work in a phase, in its own file `NN-short-name.md` | [rules/docs.md](rules/docs.md#roadmap) |
 | Sweat level | How hard an agent pushes toward victory: no sweat, balanced, or super sweat | [sweat-level.md](design/agents/sweat-level.md) |
+| Target band | The range of relative measures that counts as on target for one sweat level | [evaluation.md](design/evaluation.md#targets) |
 | Tuner | The debug server inside the game. FireTuner and the bridge connect to it over TCP | [tuner/setup.md](findings/tuner/setup.md) |
 | Turn signal | The tagged line that the core mod prints when a human player's turn starts, such as `[SENTIENTSYSTEMS] AGENT_TURN 0` | [architecture.md](design/architecture.md#turn-signal) |
 | Turning point | A window of turns where the agent fell behind the other players, found by the game review | [game-review.md](design/decision-support/game-review.md#steps) |

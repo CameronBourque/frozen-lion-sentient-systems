@@ -8,7 +8,7 @@ Sweat level sets how hard an agent pushes toward victory. It is a mindset in the
 | Balanced | Keeps pace with the leaders. Watches the scoreboard and catches up when it falls behind, but does not race to the front |
 | Super sweat | Uses every advantage. Picks the best strategy for its position, pushes one victory hard, and takes any edge the rules allow |
 
-These descriptions are a starting point. Tuning comes from logs, decision records, and playtests. No sweat is the hardest level to get right, because models default to reasonable play.
+These descriptions are a starting point. Tuning comes from logs, decision records, and playtests. The numbers that tell whether an agent plays at its level are the [targets](../evaluation.md#targets) in `docs/design/evaluation.md`. No sweat is the hardest level to get right, because models default to reasonable play.
 
 The level files live in `sweat/`. See [knowledge-files.md](../knowledge-files.md).
 

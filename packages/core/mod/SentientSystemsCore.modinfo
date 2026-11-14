@@ -32,6 +32,7 @@
 			<File>Scripts/SentientSystemsCore_Espionage.lua</File>
 			<File>Scripts/SentientSystemsCore_Wmds.lua</File>
 			<File>Scripts/SentientSystemsCore_WorldCongress.lua</File>
+			<File>Scripts/SentientSystemsCore_Sessions.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
@@ -95,6 +96,7 @@
 			<File>Scripts/State/SentientSystemsCore_StateGreatWorks.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StateProposals.lua</File>
+			<File>Scripts/State/SentientSystemsCore_StateSessions.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayerEra.lua</File>
 			<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>
@@ -130,6 +132,7 @@
 		<File>Scripts/SentientSystemsCore_Espionage.lua</File>
 		<File>Scripts/SentientSystemsCore_Wmds.lua</File>
 		<File>Scripts/SentientSystemsCore_WorldCongress.lua</File>
+		<File>Scripts/SentientSystemsCore_Sessions.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
@@ -193,6 +196,7 @@
 		<File>Scripts/State/SentientSystemsCore_StateGreatWorks.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayer.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StateProposals.lua</File>
+		<File>Scripts/State/SentientSystemsCore_StateSessions.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayerIncome.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayerEra.lua</File>
 		<File>Scripts/State/SentientSystemsCore_StatePlayerResources.lua</File>

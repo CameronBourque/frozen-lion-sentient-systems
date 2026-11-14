@@ -20,6 +20,7 @@ local ALIASES = {
 	civicboosted = { "Inspiration" },
 	religion = { "Religious" },
 	favor = { "Diplomatic Favor" },
+	stat_grievance = { "Grievances" },
 }
 
 -- The prefixes that group icon names. The words of one are also said next to
@@ -172,14 +173,14 @@ local function IsPrecededByName(before, phrases)
 	return false
 end
 
--- Returns a line without its color tags, and with each icon replaced: a list
--- marker at the start of the line by a dash when keepMarkers is set, and any
--- other marker, a decorative icon, or an icon followed by its own name by
--- nothing. Any other icon becomes its name.
+-- Returns a line without its color and size tags, and with each icon
+-- replaced: a list marker at the start of the line by a dash when keepMarkers
+-- is set, and any other marker, a decorative icon, or an icon followed by its
+-- own name by nothing. Any other icon becomes its name.
 local function CleanLine(line, keepMarkers)
 	local result, position = "", 1
 
-	line = line:gsub("%[COLOR[_:][%w_]+%]", ""):gsub("%[ENDCOLOR%]", "")
+	line = line:gsub("%[COLOR[_:][%w_]+%]", ""):gsub("%[ENDCOLOR%]", ""):gsub("%[SIZE_%d+%]", "")
 
 	while true do
 		local first, last, icon = line:find("%[ICON_([%w_]+)%]", position)

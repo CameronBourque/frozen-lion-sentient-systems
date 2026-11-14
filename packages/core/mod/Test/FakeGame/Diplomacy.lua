@@ -120,8 +120,21 @@ return function(env, world, ctx)
 				DIPLOACTION_MAKE_PEACE = { field = "noPeace", atWar = true },
 			}
 
+			-- Any other action is valid unless the entry's invalid table gives
+			-- it, with its failure reasons, or false for a check with none.
+			local function IsOtherActionValid(action, otherID)
+				local reasons = (With(data, otherID).invalid or {})[action]
+
+				return reasons == nil, { FailureReasons = reasons or nil }
+			end
+
 			function diplomacy.IsDiplomaticActionValid(_, action, otherID)
-				local check = assert(CHECKS[action], "no fake for " .. action)
+				local check = CHECKS[action]
+
+				if check == nil then
+					return IsOtherActionValid(action, otherID)
+				end
+
 				local reasons = With(data, otherID)[check.field]
 
 				return reasons == nil and Contains(data.atWar, otherID) == check.atWar, { FailureReasons = reasons }

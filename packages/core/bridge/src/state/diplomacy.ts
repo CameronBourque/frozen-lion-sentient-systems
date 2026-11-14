@@ -60,4 +60,12 @@ export const DIPLOMACY = z.array(z.object({
 		pointsPerTurn: z.number().optional(),
 		turnsUntilExpiration: z.number().optional(),
 	}).optional().describe("Left out without Rise and Fall."),
+	messages: z.array(z.object({
+		turn: z.number(),
+		statement: z.string().describe("A statement type, such as DIPLOMATIC_KUDO or DENOUNCE."),
+		text: z.string().optional().describe("What the leader said."),
+		reason: z.string().optional().describe("The reason the leader screen shows under the text, with the agenda."),
+	})).optional().describe(
+		"What they said in a leader screen that offered only a goodbye, which the core mod closed. From the previous turn and this one, oldest first. Lost when the game loads.",
+	),
 }).describe("One met player, in ID order."));

@@ -19,6 +19,7 @@ import { PROPOSALS } from "./proposals.js";
 import { RELIGION } from "./religion.js";
 import { RIVAL_CITY, RIVAL_UNIT } from "./rivals.js";
 import { SCOREBOARD } from "./scoreboard.js";
+import { SESSIONS } from "./sessions.js";
 import { TILE } from "./tiles.js";
 import { TRADE } from "./trade.js";
 import { UNIT } from "./units.js";
@@ -41,6 +42,7 @@ export const STATE = z.object({
 		units: z.array(RIVAL_UNIT).describe("Other players' units that the player can see now."),
 	}),
 	proposals: PROPOSALS,
+	sessions: SESSIONS,
 	religion: RELIGION,
 	envoys: ENVOYS,
 	espionage: ESPIONAGE,

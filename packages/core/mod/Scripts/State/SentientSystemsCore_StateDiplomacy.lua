@@ -237,10 +237,15 @@ local function GetEntry(player, other)
 		alliance = GetAlliance(playerID, otherID),
 		grievances = GetGrievances(player, otherID),
 		others = GetOthers(other, playerID),
+		messages = SentientSystems_GetSessionMessages(playerID, otherID),
 	}
 
 	if #entry.others == 0 then
 		entry.others = nil
+	end
+
+	if #entry.messages == 0 then
+		entry.messages = nil
 	end
 
 	entry.access.name = Locale.Lookup(GameInfo.Visibilities[entry.access.level].Name)

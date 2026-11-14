@@ -82,6 +82,114 @@ local function LoadWar(diplomacy, proposals)
 	return env
 end
 
+-- A troop warning with a promise, a war, and stop asking, and a greeting.
+local SESSION_WORLD = {
+	statements = {
+		{ Type = "WARNING_TROOPS", SubType = "NONE", Initiator = "AI", Selections = "WARN" },
+		{ Type = "FIRST_MEET", SubType = "NONE", Initiator = "AI", Selections = "MEET" },
+	},
+	selections = {
+		{ Type = "WARN", Key = "CHOICE_POSITIVE", Sort = 0 },
+		{ Type = "WARN", Key = "CHOICE_NEGATIVE", Sort = 1, DiplomaticActionType = "DIPLOACTION_DECLARE_SURPRISE_WAR" },
+		{ Type = "WARN", Key = "CHOICE_STOP_ASKING", Sort = 2 },
+		{ Type = "MEET", Key = "CHOICE_POSITIVE", Sort = 0 },
+		{ Type = "MEET", Key = "CHOICE_EXIT", Sort = 1 },
+		{ Type = "MEET", Key = "CHOICE_FOLLOW", Sort = 2 },
+	},
+}
+
+-- Returns an environment with the actions loaded, where player 4 has session 7
+-- open with player 0, and player 5 session 8. data replaces player 0's data.
+local function LoadSessions(data)
+	local env = Game.new()
+	local world = { players = { [0] = data or { sessions = { [4] = { id = 7 }, [5] = { id = 8 } } }, [4] = {}, [5] = {} } }
+
+	for key, value in pairs(SESSION_WORLD) do
+		world[key] = value
+	end
+
+	FakeGame.Install(env, world)
+	Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
+	env.requests = {}
+
+	return env
+end
+
+-- Has player 4 make the statement of the given type in session 7.
+local function Say(env, statementType)
+	env.SentientSystems_HandleStatement(4, 0, { SessionID = 7, StatementType = statementType, StatementSubType = "NONE", Initiator = 4 })
+	env.requests = {}
+end
+
+describe("SentientSystems_RespondToSession", function()
+	it("adds the response that the leader screen adds for each option", function()
+		local env = LoadSessions()
+
+		Say(env, "WARNING_TROOPS")
+
+		for _, option in ipairs({ "CHOICE_POSITIVE", "CHOICE_NEGATIVE", "CHOICE_STOP_ASKING" }) do
+			assert.equal("{\"ok\":true}", env.SentientSystems_RespondToSession(0, 4, option))
+		end
+
+		assert.same({
+			{ response = { 7, 0, "POSITIVE" } },
+			{ response = { 7, 0, "NEGATIVE" } },
+			{ response = { 7, 0, "REJECTED_PERMANENT" } },
+		}, env.requests)
+	end)
+
+	it("closes the session for the goodbye, and sends any other key as it is", function()
+		local env = LoadSessions()
+
+		Say(env, "FIRST_MEET")
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_RespondToSession(0, 4, "CHOICE_EXIT"))
+		assert.equal("{\"ok\":true}", env.SentientSystems_RespondToSession(0, 4, "CHOICE_FOLLOW"))
+		assert.same({ { close = 7 }, { response = { 7, 0, "CHOICE_FOLLOW" } } }, env.requests)
+	end)
+
+	it("fails for an option the session doesn't offer, or one that is disabled", function()
+		local env = LoadSessions({
+			sessions = { [4] = { id = 7 } },
+			diplomacy = { [4] = { noWar = { "LOC_NOT_NOW" } } },
+		})
+
+		Say(env, "WARNING_TROOPS")
+
+		assert.equal(
+			Failed("Player 4's session doesn't offer CHOICE_EXIT. It offers CHOICE_POSITIVE, CHOICE_NEGATIVE, CHOICE_STOP_ASKING."),
+			env.SentientSystems_RespondToSession(0, 4, "CHOICE_EXIT")
+		)
+		assert.equal(Failed("CHOICE_NEGATIVE is disabled: LOC_NOT_NOW"), env.SentientSystems_RespondToSession(0, 4, "CHOICE_NEGATIVE"))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails for a queued session, and allows only the goodbye for an unknown one", function()
+		local queued = LoadSessions()
+		local unknown = LoadSessions()
+
+		Say(queued, "FIRST_MEET")
+
+		assert.equal(Failed("Player 5's session waits behind another one. Answer that one first."), queued.SentientSystems_RespondToSession(0, 5, "CHOICE_EXIT"))
+		assert.equal(
+			Failed("The core mod didn't see what player 5 said, so only CHOICE_EXIT can answer it."),
+			unknown.SentientSystems_RespondToSession(0, 5, "CHOICE_POSITIVE")
+		)
+		assert.equal("{\"ok\":true}", unknown.SentientSystems_RespondToSession(0, 5, "CHOICE_EXIT"))
+		assert.same({ { close = 8 } }, unknown.requests)
+	end)
+
+	it("fails with no session, and points a deal to the deal response", function()
+		local deal = LoadSessions({ proposals = { [4] = OPEN_BORDERS } })
+
+		assert.equal(Failed("Player 4's session holds a deal. Answer it with the deal response."), deal.SentientSystems_RespondToSession(0, 4, "CHOICE_EXIT"))
+		assert.equal(
+			Failed("Player 4 has no leader screen open with you. The sessions section lists them."),
+			LoadSessions({}).SentientSystems_RespondToSession(0, 4, "CHOICE_EXIT")
+		)
+	end)
+end)
+
 describe("SentientSystems_DeclareWar", function()
 	it("asks for the war popup's session for a major civ, then closes it", function()
 		local env = LoadWar()
