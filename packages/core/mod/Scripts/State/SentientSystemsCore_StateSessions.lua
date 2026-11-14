@@ -90,7 +90,7 @@ end
 
 -- Returns the entry of the session the other player has open with the player,
 -- or nil for none, for a deal, and for a session the player started that has
--- no answer yet.
+-- no answer yet. See docs/findings/actions/first-meetings.md.
 local function GetSessionEntry(player, otherID)
 	local playerID = player:GetID()
 	local statement, sessionID = SentientSystems_GetOpenStatement(playerID, otherID)
@@ -99,14 +99,19 @@ local function GetSessionEntry(player, otherID)
 		return GetStatementEntry(player, otherID, statement)
 	end
 
-	-- The core mod missed the statement, as when the game loads with the
-	-- session open. The agent can still close it.
-	if sessionID ~= nil and DiplomacyManager.GetSessionInfo(sessionID).FromPlayer == otherID
-		and SentientSystems_GetProposedDeal(playerID, otherID) == nil then
-		return { from = otherID, unknown = true }
+	if sessionID == nil or DiplomacyManager.GetSessionInfo(sessionID).FromPlayer ~= otherID
+		or SentientSystems_GetProposedDeal(playerID, otherID) ~= nil then
+		return nil
 	end
 
-	return nil
+	-- A queued session looks open to every call. With a statement up, the
+	-- others wait behind it. With none, as when the game loads with a session
+	-- open, the core mod missed it, and the agent can still close it.
+	if SentientSystems_HasOpenStatement(playerID) then
+		return { from = otherID, queued = true }
+	end
+
+	return { from = otherID, unknown = true }
 end
 
 -- Returns the open sessions, one for each other player, in ID order.

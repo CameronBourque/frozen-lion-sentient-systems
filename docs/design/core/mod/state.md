@@ -33,7 +33,7 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 
   The other leader screens open with the player, such as a request or a first meeting, are their own section, with what the leader says and the options the screen offers.
 
-  No game call returns a screen's statement, so the core mod keeps it as it arrives. After a load it lists an open screen as unknown, which only the goodbye can close.
+  No game call returns a screen's statement, so the core mod keeps it as it arrives. A screen queued behind another looks open to every game call, so while one has its statement up, the others are listed as queued. After a load it lists an open screen as unknown, which only the goodbye can close.
 - **The Trade Overview.** The player's routes, with the yields of both ends, the routes of other players that end in the player's cities, and the tourism bonus of a route.
 
   Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes` returns it for one city on demand.

@@ -12,11 +12,14 @@ const OPTION = z.object({
 
 export const SESSIONS = z.array(z.object({
 	from: z.number(),
-	statement: z.string().optional().describe("Such as FIRST_MEET. Left out when unknown."),
-	subType: z.string().optional().describe("Such as NO_MANS for a meeting outside both borders. Left out for NONE."),
+	statement: z.string().optional().describe("Such as FIRST_MEET_NO_MANS. Left out when unknown."),
+	subType: z.string().optional().describe("Left out for NONE."),
 	text: z.string().optional().describe("What the leader says."),
 	reason: z.string().optional().describe("The reason the leader screen shows under the text."),
 	options: z.array(OPTION).optional().describe("In the leader screen's order. Left out when unknown."),
+	queued: z.literal(true).optional().describe(
+		"The session waits behind another one, and its statement comes when that one closes.",
+	),
 	unknown: z.literal(true).optional().describe(
 		"The core mod didn't see the statement, as after the game loads, so only the goodbye is known to close it.",
 	),

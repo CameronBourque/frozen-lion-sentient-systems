@@ -22,7 +22,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | End-turn check | The bridge's check for blockers and unused resources when the agent calls `end_turn`. Unused resources stop only the first call of a turn | [end-turn-check.md](design/decision-support/end-turn-check.md) |
 | Feature mod | The agent players mod or the advisors mod. Each has its own version and a required core range | [versioning.md](design/versioning.md#packages) |
 | Finding | A file in `findings/` that records what is true about the game or our tools, with a status of Confirmed or Unconfirmed | [rules/docs.md](rules/docs.md#findings) |
-| First meeting | The diplomacy session an AI opens when it and the player meet. Its statements depend on who found whom and where | [ai-sessions.md](findings/actions/ai-sessions.md#first-meetings) |
+| First meeting | The diplomacy session an AI opens when it and the player meet. Its statements depend on who found whom and where | [first-meetings.md](findings/actions/first-meetings.md) |
 | FireTuner | The SDK's debug program, `FireTuner2.exe`. The FireTuner protocol is the wire protocol it uses | [tuner/protocol.md](findings/tuner/protocol.md) |
 | Game review | The review after a game ends that finds turning points and blunders from the metrics lines and decision records, and writes lessons for you to review | [game-review.md](design/decision-support/game-review.md) |
 | Gate | The test at the end of a phase. It must pass before the next phase starts | [roadmap/](roadmap/README.md) |

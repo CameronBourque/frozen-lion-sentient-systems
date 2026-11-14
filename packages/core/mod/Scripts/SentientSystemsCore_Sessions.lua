@@ -198,6 +198,16 @@ function SentientSystems_ForgetSession(sessionID)
 	SentientSystems_OpenStatements[sessionID] = nil
 end
 
+function SentientSystems_HasOpenStatement(playerID)
+	for _, statement in pairs(SentientSystems_OpenStatements) do
+		if statement.to == playerID then
+			return true
+		end
+	end
+
+	return false
+end
+
 -- Returns the latest statement of the session open between the player and the
 -- other player, with its from and to, or nil. Also returns the session ID, or
 -- nil when no session is open.

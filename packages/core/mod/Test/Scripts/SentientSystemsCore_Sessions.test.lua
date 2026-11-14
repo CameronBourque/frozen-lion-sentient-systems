@@ -245,6 +245,17 @@ describe("SentientSystems_GetOpenStatement", function()
 	end)
 end)
 
+describe("SentientSystems_HasOpenStatement", function()
+	it("says whether a session left open with the player has its statement kept", function()
+		local env = Load()
+
+		assert.is_false(env.SentientSystems_HasOpenStatement(0))
+		env.SentientSystems_HandleStatement(4, 0, Statement({ StatementType = "DIPLOMATIC_DELEGATION" }))
+		assert.is_true(env.SentientSystems_HasOpenStatement(0))
+		assert.is_false(env.SentientSystems_HasOpenStatement(5))
+	end)
+end)
+
 describe("SentientSystems_GetSessionMessages", function()
 	it("keeps a message through the next turn, and drops it after", function()
 		local env, world = Load()

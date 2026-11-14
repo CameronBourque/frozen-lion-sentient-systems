@@ -145,6 +145,14 @@ describe("SentientSystems_GetSessionState", function()
 		assert.equal("[{\"from\":4,\"unknown\":true}]", GetSessionsJson(env))
 	end)
 
+	it("marks a session as queued while another has its statement up", function()
+		local env = Load()
+
+		env.SentientSystems_HandleStatement(5, 0, Statement(5))
+
+		assert.truthy(GetSessionsJson(env):find("[{\"from\":4,\"queued\":true},{\"from\":5,", 1, true))
+	end)
+
 	it("leaves out a deal, which the proposals section lists", function()
 		local seen = Load(WithOneSession())
 		local unseen = Load({ [0] = { human = true, proposals = { [4] = { items = { { id = 2, type = "GOLD", from = 4, amount = 1 } } } } } })
