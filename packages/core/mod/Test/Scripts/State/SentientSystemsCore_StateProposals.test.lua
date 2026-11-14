@@ -93,6 +93,28 @@ describe("SentientSystems_GetProposalState", function()
 		assert.equal("[]", ProposalsWith({}))
 	end)
 
+	it("leaves out the name of a captive the game has none for", function()
+		local json = ProposalsWith({ [4] = { items = { { id = 2, type = "CAPTIVE", from = 4, value = 18 } } } })
+
+		assert.truthy(json:find("{\"id\":2,\"kind\":\"captive\"}", 1, true))
+	end)
+
+	it("leaves out an old deal while the session holds another statement", function()
+		local env = Game.new()
+		local items = { { id = 2, type = "GOLD", from = 4, amount = 4 } }
+
+		FakeGame.Install(env, {
+			players = { [0] = { sessions = { [4] = { id = 7 } }, proposals = { [4] = { items = items } } }, [4] = {} },
+		})
+		env.requests = {}
+		Game.run(env, "Scripts/State/SentientSystemsCore_State.lua")
+		assert.truthy(env.SentientSystems_GetState(0):find("\"proposals\":[{", 1, true))
+
+		env.SentientSystems_HandleStatement(4, 0, { SessionID = 7, StatementType = "WARNING_STOP_SPYING_ON_ME", Initiator = 4 })
+
+		assert.truthy(env.SentientSystems_GetState(0):find("\"proposals\":[]", 1, true))
+	end)
+
 	it("lists the proposals of each player in ID order", function()
 		local json = ProposalsWith({
 			[5] = { items = { { id = 2, type = "GOLD", from = 5, amount = 1 } } },

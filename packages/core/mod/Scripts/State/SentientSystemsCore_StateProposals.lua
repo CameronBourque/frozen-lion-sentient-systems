@@ -2,6 +2,8 @@
 -- Follows DiplomacyDealView.lua.
 -- Shape: bridge/src/state/proposals.ts.
 
+SentientSystems_Include("SentientSystemsCore_Sessions")
+
 -- The deal item types, by the name of each in DealItemTypes.
 local KINDS = {
 	GOLD = "gold",
@@ -66,8 +68,12 @@ local function GetItem(item, deal)
 		locked = item:IsLocked() or nil,
 	}
 
-	if NAMED[kind] then
-		entry.name = Locale.Lookup(item:GetValueTypeNameID())
+	-- A captive can have no name, and the deal screen then shows none, as
+	-- PopulateDealCaptives in DiplomacyDealView.lua does.
+	local nameID = item:GetValueTypeNameID()
+
+	if NAMED[kind] and nameID ~= nil then
+		entry.name = Locale.Lookup(nameID)
 	end
 
 	if kind == "gold" or kind == "favor" or kind == "resource" then
@@ -104,6 +110,16 @@ local function GetItems(deal, playerID)
 	return asks, offers
 end
 
+-- Returns whether the core mod saw the session's statement, and it isn't a
+-- deal. The incoming deal can keep the items of an old one, such as a peace
+-- deal, while the session holds a promise.
+local function IsOtherStatement(playerID, otherID)
+	local statement = SentientSystems_GetOpenStatement(playerID, otherID)
+
+	return statement ~= nil
+		and not SentientSystems_IsDealStatement(DiplomacyManager.GetKeyName(statement.StatementType))
+end
+
 -- Returns the deal the other player has put to the player, and its session,
 -- or nil. A deal is put to the player when the other player started an open
 -- session and the incoming deal has items.
@@ -113,7 +129,8 @@ function SentientSystems_GetProposedDeal(playerID, otherID)
 
 	if otherID ~= playerID and sessionID and sessionID ~= -1
 		and DiplomacyManager.GetSessionInfo(sessionID).FromPlayer == otherID
-		and deal ~= nil and deal:GetItemCount() > 0 then
+		and deal ~= nil and deal:GetItemCount() > 0
+		and not IsOtherStatement(playerID, otherID) then
 		return deal, sessionID
 	end
 

@@ -1,6 +1,6 @@
 # AI requests and promises
 
-Status: open. The troop and settling promises, the delegation, and the embassy are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The other requests are confirmed in files only.
+Status: open. The troop, settling, and spying promises, the delegation, and the embassy are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The other requests are confirmed in files only.
 
 The leader screen sessions where an AI asks the player for something, such as a delegation, an embassy, or a promise. How a session is read and answered is in [ai-sessions.md](ai-sessions.md), with the options of each statement.
 
@@ -22,6 +22,12 @@ Its options are `CHOICE_POSITIVE`, the promise, and `CHOICE_NEGATIVE`, which dec
 `AddResponse` with `POSITIVE` brought Persia's reply in the same session, "Thank you.", with only `CHOICE_EXIT`. The closing listener closed it, and Brazil's statement came next. Confirmed on Windows on 2026-11-13.
 
 `AddResponse` with `NEGATIVE` on Brazil's warning declared war on Brazil. Brazil's reply, `DECLARE_SURPRISE_WAR`, came in the same session with only `CHOICE_EXIT`, and the closing listener closed it. Confirmed on Windows on 2026-11-13.
+
+Vietnam's `WARNING_STOP_SPYING_ON_ME` on turn 97 uses the `WARNING_STOP_SPYING_ON_ME_FROM_AI` options, `CHOICE_POSITIVE` and `CHOICE_NEGATIVE`, with 30 Diplomatic Favor and 25 grievances in their text. Brazil's session waited behind it. Confirmed on Windows on 2026-11-13.
+
+While Vietnam's promise was open, Vietnam's incoming working deal still held six items of an old peace deal: two `MAKE_PEACE` agreements, a city to cede, gold, and a captive spy.
+
+`GetValueTypeNameID` returned nothing for the captive. An open session with items in the incoming deal is no sign of a proposal. Confirmed on Windows on 2026-11-13.
 
 ### Requests
 
@@ -50,5 +56,6 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `AddResponse` with `NEGATIVE` on Brazil's warning | `IsAtWarWith(11)` went from `false` to `true`. Brazil's war reply closed with a message, and no session was left open | 2026-11-13 |
 | `AddResponse` with `POSITIVE` on Egypt's `DIPLOMATIC_DELEGATION` on turn 15 | `HasDelegationAt(0)` for Egypt went from `false` to `true`. Egypt's reply closed with a message, and no session was left open | 2026-11-13 |
 | `AddResponse` with `NEGATIVE` on Ethiopia's `RESIDENT_EMBASSY` on turn 92 | The reply closed with a message, and Ethiopia's embassy was placed anyway | 2026-11-13 |
+| Turn 97, with Vietnam's `WARNING_STOP_SPYING_ON_ME` up | The sessions section listed it with Brazil queued. `SentientSystems_GetState(0)` failed on the old peace deal's captive, which has no name | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.
