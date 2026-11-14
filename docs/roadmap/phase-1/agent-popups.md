@@ -38,7 +38,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Start with `DiplomacyActionView.lua` and the question in [the leader screen](../../findings/actions/war-and-peace.md#the-leader-screen). Avoid replacing `DiplomacyActionView.lua`, which Gathering Storm and other mods replace.
 
-   Test it with `declareWar` on a major civ, and with the sessions from [diplomacy sessions](diplomacy-sessions.md). Commit: `feat(core): close the leader screen for agent players`.
+   Test it with `declareWar` on a major civ, and with the sessions in [AI diplomacy sessions](../../findings/actions/ai-sessions.md). The goodbye closing passed with `declareWar` on the Maori on 2026-11-13. Commit: `feat(core): close the leader screen for agent players`.
 
    Closing the goodbye from a listener on `Events.DiplomacyStatement` left no leader screen after `SentientSystems_DeclareWar`. See [closing a goodbye](../../findings/actions/ai-sessions.md#closing-a-goodbye). Check whether that answers this task.
 7. **Unit captured popup.** When a unit of the player's is captured, or the player captures one, a popup names the other civ and waits for **OK**. Record whether it stops a request and the end turn call. Then make the core mod close it for an agent player, and pass its text to the agent.

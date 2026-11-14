@@ -1,6 +1,6 @@
 # Phase 1: turn action steps
 
-The finished Action API steps of [phase 1](../README.md) that clear the last blockers, answer deals, and end the turn. The step table's `#` column sets their order.
+The finished Action API steps of [phase 1](../README.md) that clear the last blockers, answer deals and leader screens, and end the turn. The step table's `#` column sets their order.
 
 ## Action API: other blockers
 
@@ -26,8 +26,24 @@ It added `endTurn`, which returns the blockers and the units that need orders as
 
 The bridge's `proposePeace` waits for the AI's answer. A plain peace keeps the cities the player occupies. The great work type in the proposals state now comes from the item's type ID.
 
-The leader screen that a war or a peace leaves open moved to [popups for agent players](../agent-popups.md), and the sessions an AI opens with no deal to [diplomacy sessions](../diplomacy-sessions.md).
+The leader screen that a war or a peace leaves open moved to [popups for agent players](../agent-popups.md), and the sessions an AI opens with no deal to [diplomacy sessions](#diplomacy-sessions).
 
 - The reasons are in [design/core/mod/actions/turn.md](../../../design/core/mod/actions/turn.md) and [deals.md](../../../design/core/mod/actions/deals.md).
 - The calls are in [actions/end-turn.md](../../../findings/actions/end-turn.md), [actions/diplomacy.md](../../../findings/actions/diplomacy.md), and [actions/war-and-peace.md](../../../findings/actions/war-and-peace.md).
+- The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
+
+## Diplomacy sessions
+
+Pull request: feat(core): add the diplomacy session state and action.
+
+It closes each leader screen from an AI that offers an agent player only a goodbye, such as a comment or the reply to a war, and keeps what the leader said as a message in that player's diplomacy entry.
+
+The other screens, such as a request, a promise, or a first meeting, are a new `sessions` state section, with the leader's text and the options the screen offers, disabled ones with the game's reason.
+
+`respondToSession` answers one with an option key, and a first meeting goes on through each of its statements. `endTurn` refuses while any session is open, even with `force`. The proposals section leaves out an old deal that stays in the incoming deal while the session holds another statement.
+
+The messages and the closing are for a human slot only. Phase 2 replaces them with what the [computer slot test](../../../design/agents/slot-type.md#computer-slot-test) finds a native AI gets.
+
+- The sessions section and the messages are in [design/core/mod/state.md](../../../design/core/mod/state.md#decisions), and the reasons in [design/core/mod/actions/deals.md](../../../design/core/mod/actions/deals.md#respond-to-a-session) and [turn.md](../../../design/core/mod/actions/turn.md).
+- The calls are in [actions/ai-sessions.md](../../../findings/actions/ai-sessions.md), [actions/ai-requests.md](../../../findings/actions/ai-requests.md), [actions/first-meetings.md](../../../findings/actions/first-meetings.md), and [actions/end-turn.md](../../../findings/actions/end-turn.md#with-a-leader-screen-up).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).
