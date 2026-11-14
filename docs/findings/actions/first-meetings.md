@@ -60,6 +60,8 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `AddResponse` with `POSITIVE` twice on Ambiorix's session | `FIRST_MEET_VISIT_RECIPIENT`, then the session closed | 2026-11-13 |
 | `InitUnit(18, "UNIT_SCOUT", 49, 27)`, next to the player's land, then an end turn request | Met at once. `FIRST_MEET_NEAR_INITIATOR` from Eleanor came with the request | 2026-11-13 |
 | `CloseSession` on Eleanor's first statement | The session closed with no follow-up. Eleanor stayed met, with a +2 modifier with an unknown reason | 2026-11-13 |
-
+| The merchant moved to `27,31` on turn 391, then `SentientSystems_RespondToSession` with `CHOICE_EXIT` for Scythia | Refused, as Scythia's session waited behind Portugal's | 2026-11-13 |
+| `SentientSystems_RespondToSession(0, 6, "CHOICE_POSITIVE")` twice | The offer, then Portugal's capital revealed, the session closed, and Scythia's greeting came up | 2026-11-13 |
+| `SentientSystems_RespondToSession(0, 15, "CHOICE_EXIT")` on Scythia's greeting | The session closed with no follow-up, and no session was left open | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.

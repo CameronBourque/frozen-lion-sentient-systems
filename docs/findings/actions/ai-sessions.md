@@ -122,5 +122,6 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`:
 | `CloseSession` on Persia's session | Kongo proposed a deal. Turn 86 began after the deal was rejected | 2026-11-13 |
 | `SentientSystems_DeclareWar(0, 4)` on turn 85, with the closing listener | The Maori reply and Scythia's warning closed. A black flash, and no leader screen | 2026-11-13 |
 | End turns 85 to 90, with the closing listener | Persia's kudo and the Netherlands' warning and denouncement closed. Five deals held the turns until rejected. No statement between two AIs | 2026-11-13 |
+| `SentientSystems_DeclareWar(0, 4)` on turn 85, with the shared open session check and the session messages | `{"ok":true}` and at war. The Maori reply and Scythia's warning closed as messages, and no session was left open | 2026-11-13 |
 
 Date checked: game files on 2026-11-13. Running game on Windows on 2026-11-13.
