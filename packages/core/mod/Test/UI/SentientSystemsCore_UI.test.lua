@@ -31,6 +31,24 @@ local function SetPlayers(players)
 	end
 end
 
+-- Returns a table of events in which each event records its handlers, so a
+-- test can fire it.
+local function EventTable()
+	return setmetatable({}, {
+		__index = function(events, name)
+			local event = { handlers = {} }
+
+			function event.Add(handler)
+				event.handlers[#event.handlers + 1] = handler
+			end
+
+			events[name] = event
+
+			return event
+		end,
+	})
+end
+
 local function Fire(event, ...)
 	for _, handler in ipairs(env.Events[event].handlers) do
 		handler(...)
@@ -44,20 +62,8 @@ before_each(function()
 			return "SentientSystemsCore_UI"
 		end,
 	}
-	-- Each event records its handlers, so a test can fire it.
-	env.Events = setmetatable({}, {
-		__index = function(events, name)
-			local event = { handlers = {} }
-
-			function event.Add(handler)
-				event.handlers[#event.handlers + 1] = handler
-			end
-
-			events[name] = event
-
-			return event
-		end,
-	})
+	env.Events = EventTable()
+	env.LuaEvents = EventTable()
 	env.Game = {
 		GetCurrentGameTurn = function()
 			return 12
@@ -177,6 +183,77 @@ describe("the diplomacy session closed event", function()
 		Fire("DiplomacySessionClosed", 7)
 
 		assert.same({ [8] = { from = 5, to = 0 } }, env.SentientSystems_OpenStatements)
+	end)
+end)
+
+describe("the wonder built popup", function()
+	-- Counts the calls to close the popup, in place of closing it.
+	local closes
+	local realClose
+
+	local function Show(localPlayer)
+		env.Game.GetLocalPlayer = function()
+			return localPlayer
+		end
+
+		for _, handler in ipairs(env.LuaEvents.WonderBuiltPopup_Shown.handlers) do
+			handler()
+		end
+	end
+
+	before_each(function()
+		closes = 0
+		realClose = env.SentientSystems_CloseWonderPopup
+		env.SentientSystems_CloseWonderPopup = function()
+			closes = closes + 1
+		end
+	end)
+
+	it("closes the popup for a human player", function()
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		Show(0)
+
+		assert.equal(1, closes)
+	end)
+
+	it("leaves the popup for an AI player or a player that doesn't exist", function()
+		SetPlayers({ [5] = Player(5, false, true) })
+
+		Show(5)
+		Show(-1)
+
+		assert.equal(0, closes)
+	end)
+
+	it("sends the closed signal when the batch of game events ends", function()
+		local closedSignals = 0
+
+		env.UI = {
+			ReferenceCurrentEvent = function()
+				return 9
+			end,
+			PlaySound = function() end,
+			ReleaseEventID = function() end,
+			SetInterfaceMode = function() end,
+		}
+		env.UIManager = { DequeuePopup = function() end }
+		env.Input = { PopContext = function() end }
+		env.UILens = { RestoreActiveLens = function() end }
+		env.InterfaceModeTypes = { SELECTION = 1 }
+		env.ContextPtr.LookUpControl = function() end
+		env.LuaEvents.WonderBuiltPopup_Closed = function()
+			closedSignals = closedSignals + 1
+		end
+		env.SentientSystems_CloseWonderPopup = realClose
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		Show(0)
+		assert.equal(0, closedSignals)
+		Fire("GameCoreEventPublishComplete")
+		Fire("GameCoreEventPublishComplete")
+
+		assert.equal(1, closedSignals)
 	end)
 end)
 

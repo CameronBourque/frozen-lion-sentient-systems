@@ -4,6 +4,7 @@
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_State")
 SentientSystems_Include("SentientSystemsCore_Sessions")
+SentientSystems_Include("SentientSystemsCore_Popups")
 SentientSystems_Include("SentientSystemsCore_Choices")
 SentientSystems_Include("SentientSystemsCore_Actions")
 SentientSystems_Include("SentientSystemsCore_Placement")
@@ -64,6 +65,19 @@ end
 
 Events.DiplomacyStatement.Add(SentientSystems_CatchErrors("OnDiplomacyStatement", OnDiplomacyStatement))
 Events.DiplomacySessionClosed.Add(SentientSystems_CatchErrors("OnDiplomacySessionClosed", SentientSystems_ForgetSession))
+
+-- Closes the wonder built popup when it opens for an agent player. It opens
+-- for the local player only.
+local function OnWonderBuiltPopupShown()
+	local player = Players[Game.GetLocalPlayer()]
+
+	if player ~= nil and IsAgentPlayer(player) then
+		SentientSystems_CloseWonderPopup()
+	end
+end
+
+LuaEvents.WonderBuiltPopup_Shown.Add(SentientSystems_CatchErrors("OnWonderBuiltPopupShown", OnWonderBuiltPopupShown))
+Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPublishComplete", SentientSystems_SendPopupSignals))
 
 -- Prints the turn signal again for each agent player whose turn is active now,
 -- so a bridge that connects in the middle of a turn learns of it. Prints

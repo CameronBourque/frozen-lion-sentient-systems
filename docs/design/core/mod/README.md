@@ -19,6 +19,16 @@ A gameplay script writes the checkpoint ID described in [memory.md](../../memory
 
 It queries the `GameInfo` tables and localized text at runtime, so DLC and other mods are included. It also reads the Civilopedia's Concepts section for general rules such as movement, combat, and terrain.
 
+## Popups
+
+An agent player can't see the screen, so the core mod closes each popup that waits for a click when it opens for an agent player. `SentientSystemsCore_Popups.lua` holds the steps that close each one, and `SentientSystemsCore_UI.lua` calls them from the popup's own event.
+
+A popup's lock holds the engine's event queue, so requests and the AI turns wait until it closes. The close repeats the popup's own `Close`, and releases the event ID twice: once for its own reference, and once for the popup's lock. See [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-the-wonder-built-popup-up).
+
+A popup's closed signal waits for `Events.GameCoreEventPublishComplete`, so it comes after every listener of the open signal. `InGame.lua` hides the interface on the open signal and shows it again on the closed one.
+
+The popup's own manager still counts itself locked after the close. Later popups of that kind go into its queue and never show, so they never hold the queue. A human who took over the slot in the same session would see none of them.
+
 ## JSON shapes
 
 The zod schemas in `packages/core/bridge/src/` are the only home of the JSON shapes. A field whose name doesn't say what it means gets a `.describe()` note.
@@ -37,4 +47,5 @@ The zod schemas in `packages/core/bridge/src/` are the only home of the JSON sha
 | A helper that several scripts share lives in the smallest file that every caller loads: `SentientSystemsCore_Math.lua` for rounding, and `SentientSystemsCore_Lookups.lua` for lookups by ID, yield names, and plot positions | A fix lands in one place, and a script loads no code it doesn't use |
 | A helper that only one feature's scripts share stays in that feature's file, such as `ChoicesPurchases.lua`, and the others include it | `SentientSystemsCore_Common.lua` keeps only what every script needs to run: tagged printing, error catching, and the checked include |
 | A Lua function takes a tile position as separate `x` and `y` arguments, and `SentientSystems_GetPosition` builds the position table that the JSON holds | The game's own calls, such as `Map.GetPlot(x, y)`, take separate numbers, and so do the FireTuner call strings that the bridge sends |
+| The core mod closes a popup by repeating its `Close`, and doesn't replace the popup's file | Gathering Storm and other mods replace the game's UI files, so a replaced file would clash with them. The popup's `Close` is local to its context, so the core mod repeats its steps |
 | Each local function name in the core mod has one definition | Two functions with one name and different bodies sent a reader to the wrong file. A name that says what the function returns, such as `GetHeldPromotions`, can't be mistaken for another |

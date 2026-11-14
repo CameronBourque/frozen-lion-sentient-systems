@@ -8,11 +8,9 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. Does the wonder built popup stop requests or the end turn call while it is open?
+1. Do the other popups that set the `CINEMATIC` interface mode hold the event queue as the wonder built popup does?
 
-   `Base/Assets/UI/Popups/WonderBuiltPopup.lua` shows it for the local player only, from `Events.WonderCompleted`, and sets the `CINEMATIC` interface mode until the player presses **Close**. It is not an end-turn blocker.
-
-   Can the mod skip it for an agent player, and do the other local-player cinematics, such as the natural wonder and era popups, need the same?
+   `NaturalWonderPopup.lua`, `ProjectBuiltPopup.lua`, `RockBandMoviePopup.lua`, and Gathering Storm's `NaturalDisasterPopup.lua` set it. Confirmed in files.
 
    A natural disaster popup held the AI turns. On turn 87, the player's turn stayed inactive for 4 minutes with it up, and turn 88 began 15 s after it was closed. Confirmed on Windows on 2026-11-13.
 
@@ -43,6 +41,26 @@ With a leader screen up, the request closes the screen and doesn't end the turn.
 
 A third request, with only the map up, ended the turn. Confirmed on Windows on 2026-11-13.
 
+### With the wonder built popup up
+
+`Base/Assets/UI/Popups/WonderBuiltPopup.lua` opens for the local player only, from `Events.WonderCompleted`. It isn't an end-turn blocker.
+
+Its `ExclusivePopupManager:Lock`, in `PopupManager.lua`, takes `UI.ReferenceCurrentEvent()`, which holds the engine's event queue until `Close` calls `UI.ReleaseEventID`. Confirmed in files.
+
+The hold, not the `CINEMATIC` interface mode, stops the game. On turn 56, with the popup up:
+
+- A move from `SentientSystems_MoveUnit` returned `{"ok":true}` and didn't move the unit. It moved once the hold was released.
+- `SentientSystems_EndTurn(0, true)` returned `{"ok":true}`, and the turn didn't end, before or after the release. The action had recorded the request, so a second call was refused as a turn already ended.
+- `AGENT_TURN 0` printed only after the release.
+
+Releasing the event ID from `SentientSystemsCore_UI`, with the other steps of `Close`, closed the popup, and the AI turns ran. Confirmed on Windows on 2026-11-14.
+
+The core mod closes it for an agent player. See [design/core/mod/README.md](../../design/core/mod/README.md#popups). In a listener on `LuaEvents.WonderBuiltPopup_Shown`, which the popup fires right after its lock, `UI.ReferenceCurrentEvent()` returned the lock's ID, 50196. Confirmed on Windows on 2026-11-14.
+
+`InGame.lua` hides the interface on the same `Shown` event, and shows it again on `WonderBuiltPopup_Closed`. Sent from the `Shown` listener, the closed signal came before the hide, and the interface stayed hidden.
+
+Sent on the next `Events.GameCoreEventPublishComplete`, it came after, and the interface came back. `ContextPtr:RequestRefresh()` never ran its handler, because the core mod's context is hidden. Confirmed on Windows on 2026-11-14.
+
 ### The end turn action
 
 `SentientSystems_EndTurn` sends the same request from `SentientSystemsCore_UI`. See [design/core/mod/actions/turn.md](../../design/core/mod/actions/turn.md).
@@ -64,6 +82,7 @@ Run each step through the tuner, and record the Lua state you ran it in.
 1. **End the turn.** Run `UI.RequestAction(ActionTypes.ACTION_ENDTURN)`, and check that the next `AGENT_TURN` line arrives.
 2. **Run the action.** With a blocker left, call `endTurn` from `packages/core/bridge/src/actions/turn.ts` without `force`, then with `force`, then with `force` again. Check the reason, the end of the turn, and the refusal.
 3. **End the turn with a leader screen up.** Declare war on a major civ with `SentientSystems_DeclareWar`, then send the request. Read `Game.GetCurrentGameTurn()` and `Players[0]:IsTurnActive()` 10 s later.
+4. **Act with the wonder built popup up.** Force a wonder to finish, so the popup opens. Send a move and `SentientSystems_EndTurn(0, true)`, and read the unit and the turn. Then release the lock's event ID from `Lua.log` with the steps of `Close`, and read them again.
 
 ## Results
 
@@ -78,5 +97,8 @@ The bridge ran this step in a single-player game, with one city and one unit.
 | `SentientSystems_EndTurn(0, true)` on turn 85, with Scythia's comment up | `SentientSystemsCore_UI` | `{"ok":true}`. Scythia's session closed, and the turn stayed at 85 | 2026-11-13 |
 | `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` with the Netherlands leader's goodbye up | `SentientSystemsCore_UI` | The screen closed, and the turn stayed at 85 | 2026-11-13 |
 | The same request with only the map up | `SentientSystemsCore_UI` | The turn ended | 2026-11-13 |
+| `SentientSystems_MoveUnit` and `SentientSystems_EndTurn(0, true)` on turn 56, with the wonder built popup up | `SentientSystemsCore_UI` | `{"ok":true}` for both. The unit didn't move, and the turn didn't end | 2026-11-14 |
+| `UI.ReleaseEventID` with the lock's ID, and the other steps of `Close` | `SentientSystemsCore_UI` | The popup closed. The unit moved, and the AI turns ran | 2026-11-14 |
+| The core mod's listener, after a reload and a forced wonder | `SentientSystemsCore_UI` | No popup showed. The interface hid and came back, and a move ran at once | 2026-11-14 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, and a leader screen on 2026-11-13.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, a leader screen on 2026-11-13, and the wonder built popup on 2026-11-14.
