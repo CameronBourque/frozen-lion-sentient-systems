@@ -71,6 +71,8 @@ With the Secret Society popup up, the same call ended turn 16. Player 5 then ope
 
 Both stop adding popups after `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, until `LuaEvents.TutorialUIRoot_EnableTechAndCivicPopups()`. `TutorialUIRoot.lua` fires them, in the tutorial only. The switch lives in each popup's own Lua state, so a load turns it back on. Confirmed in files.
 
+Each popup adds an entry only from the notification panel's `LuaEvents`, such as `NotificationPanel_ShowTechDiscovered` and `NotificationPanel_ShowTechBoost`, so none opens before the load ends. Confirmed in files.
+
 The completed popup fires `LuaEvents.TechCivicCompletedPopup_TechShown` and `_CivicShown` when the player closes each one. Only `TutorialLoader_Expansion2.lua` listens to them. Confirmed in files.
 
 On turn 31, with the civic completed popup up, the switch and `UIManager:DequeuePopup` on `/InGame/TechCivicCompletedPopup` from `SentientSystemsCore_UI` closed it. `UIManager:IsInPopupQueue` returned `false`. Confirmed on Windows on 2026-11-14.
@@ -97,6 +99,7 @@ On turn 31, with the civic completed popup up, the switch and `UIManager:Dequeue
 | `SentientSystems_EndTurn(0, true)`, with the Secret Society popup up on turn 16 | `SentientSystemsCore_UI` | `{"ok":true}` and `AGENT_TURN 0`. A session from player 5 opened, and turn 16 was active again | 2026-11-14 |
 | `UIManager:DequeuePopup` on `/InGame/SecretSocietyPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 | `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, then `UIManager:DequeuePopup` on `/InGame/TechCivicCompletedPopup`, on turn 31 | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
+| `TriggerBoost` for Mining and `SetTech` for Pottery on turn 25, after a load with the core mod's switch | `GameCore_Tuner` | A `NOTIFICATION_TECH_BOOST`, which opens its popup by itself, and two `NOTIFICATION_TECH_DISCOVERED`. Neither popup opened | 2026-11-14 |
 | `ApplyEvent` with `RANDOM_EVENT_METEOR_SHOWER` (31), on turn 140 | `GameCore_Tuner` | A lock, with ID 838575, then the interface hidden and shown again. The popup's context hidden, the `SELECTION` mode, and a move ran | 2026-11-14 |
 | `ApplyEvent` with `RANDOM_EVENT_COMET_STRIKE` (43), in the same turn | `GameCore_Tuner` | A comet lake on the tile, and no lock. A move ran | 2026-11-14 |
 | `SentientSystems_EndTurn(0, true)` | `SentientSystemsCore_UI` | `PopupManager.Unlock` with ID 838600. The player's turn became active again on turn 140 | 2026-11-14 |

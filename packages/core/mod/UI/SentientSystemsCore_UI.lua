@@ -95,6 +95,17 @@ end
 Events.RandomEventOccurred.Add(SentientSystems_CatchErrors("OnRandomEventOccurred", OnRandomEventOccurred))
 Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPublishComplete", SentientSystems_FinishPopups))
 
+-- Turns off the tech, civic, and boost popups for an agent player, as the
+-- tutorial does. Each popup keeps the switch in its own Lua state, so each load
+-- turns them back on. They open only from notifications, after the load.
+local function TurnOffTechAndCivicPopups()
+	if IsLocalAgent() then
+		LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()
+	end
+end
+
+Events.LoadGameViewStateDone.Add(SentientSystems_CatchErrors("TurnOffTechAndCivicPopups", TurnOffTechAndCivicPopups))
+
 -- Prints the turn signal again for each agent player whose turn is active now,
 -- so a bridge that connects in the middle of a turn learns of it. Prints
 -- nothing between turns or during AI turns. PlayerManager.GetAlive() lists

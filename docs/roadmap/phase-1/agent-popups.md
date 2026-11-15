@@ -60,7 +60,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
 10. **Tech, civic, and boost popups.** A popup shows each tech and civic the player completes, and each boost, and waits for **Close** or **Continue**. Neither holds anything, but each keeps the player from the pause menu.
 
-    Make the core mod turn them off for an agent player with `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, as the tutorial does, on each load, and close any already open. See [popups.md](../../findings/actions/popups.md#tech-civic-and-boost-popups).
+    Make the core mod turn them off for an agent player with `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, as the tutorial does, when each load ends. See [popups.md](../../findings/actions/popups.md#tech-civic-and-boost-popups).
 
     Test it in a save with a tech, a civic, and a boost a turn away. Commit: `feat(core): turn off the tech and civic popups for agent players`.
 

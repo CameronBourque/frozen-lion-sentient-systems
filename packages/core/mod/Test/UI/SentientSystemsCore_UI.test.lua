@@ -68,6 +68,9 @@ before_each(function()
 		GetCurrentGameTurn = function()
 			return 12
 		end,
+		GetLocalPlayer = function()
+			return -1
+		end,
 	}
 	env.Modding = {
 		GetActiveMods = function()
@@ -275,6 +278,22 @@ describe("the popups", function()
 		Fire("GameCoreEventPublishComplete")
 
 		assert.equal(1, closedSignals)
+	end)
+
+	it("turns off the tech, civic, and boost popups when a load ends, for a human player only", function()
+		local turnedOff = 0
+
+		env.LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups = function()
+			turnedOff = turnedOff + 1
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		SetLocalPlayer(0)
+		Fire("LoadGameViewStateDone")
+		SetLocalPlayer(5)
+		Fire("LoadGameViewStateDone")
+
+		assert.equal(1, turnedOff)
 	end)
 end)
 
