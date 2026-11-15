@@ -34,4 +34,5 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [war-and-peace.md](war-and-peace.md) | The game calls that declare war and propose peace, and the leader screen they leave open |
 | [end-turn.md](end-turn.md) | The game call that ends the turn, and how the end-turn blockers interact with it |
 | [popups.md](popups.md) | The popups that lock the event queue and wait for a click, and the steps that close each one |
+| [congress-popups.md](congress-popups.md) | The screens a World Congress session opens, and how the core mod closes each one |
 | [plain-popups.md](plain-popups.md) | The popups that hold nothing but keep the player from the pause menu, and how the core mod closes or turns off each one |

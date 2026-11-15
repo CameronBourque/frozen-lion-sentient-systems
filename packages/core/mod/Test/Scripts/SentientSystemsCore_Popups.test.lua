@@ -182,6 +182,20 @@ describe("SentientSystems_ClosePlainPopups", function()
 		}, calls)
 	end)
 
+	it("closes the congress intro by dequeuing it, and the voting screen through its own close event", function()
+		env.ContextPtr.LookUpControl = function(_, path)
+			return ({ ["/InGame/WorldCongressIntro"] = "intro", ["/InGame/WorldCongressPopup"] = "voting" })[path]
+		end
+		env.UIManager.IsInPopupQueue = function()
+			return true
+		end
+		env.LuaEvents.DiplomacyActionView_HideCongress = Record("DiplomacyActionView_HideCongress")
+
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({ { "DequeuePopup", "intro" }, { "DiplomacyActionView_HideCongress" } }, calls)
+	end)
+
 	it("sends the closed signal of a plain popup that has one", function()
 		env.ContextPtr.LookUpControl = function(_, path)
 			return path == "/InGame/HistoricMoments" and "moments" or nil

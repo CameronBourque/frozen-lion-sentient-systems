@@ -45,7 +45,8 @@ SENTIENTSYSTEMS_POPUPS = {
 -- The popups that hold nothing, by the name of their context. Each Close is
 -- UIManager:DequeuePopup, then the closed signal, if it has one. A screen
 -- shows by unhiding its context instead, and its Close hides it and plays its
--- stop sounds.
+-- stop sounds. closeEvent names a LuaEvent that runs the popup's own Close,
+-- for a Close that does more.
 SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- HeroesPopup.lua, in the Heroes and Legends mode
 	{ name = "HeroesPopup" },
@@ -58,6 +59,13 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- popup, which the dedication action doesn't need.
 	{ name = "EraReviewPopup" },
 	-- GreatWorkShowcase.lua, for each great work the player creates
+	-- WorldCongressIntro.lua, in Gathering Storm. Its Continue opens the voting
+	-- screen, which the congress vote action doesn't need.
+	{ name = "WorldCongressIntro" },
+	-- WorldCongressPopup.lua, in Gathering Storm: the voting and results
+	-- screen. Its ClosePopup also pops its input context, and outside a session
+	-- tells the game the player looked at the congress.
+	{ name = "WorldCongressPopup", closeEvent = "DiplomacyActionView_HideCongress" },
 	{
 		name = "GreatWorkShowcase",
 		isScreen = true,
@@ -76,7 +84,9 @@ end
 
 -- Closes a plain popup, as its Close does.
 local function ClosePlainPopup(popup, context)
-	if popup.isScreen then
+	if popup.closeEvent ~= nil then
+		LuaEvents[popup.closeEvent]()
+	elseif popup.isScreen then
 		context:SetHide(true)
 	else
 		UIManager:DequeuePopup(context)

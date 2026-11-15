@@ -60,13 +60,11 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Test it with a great writer, artist, or musician's `activate` order, or an archaeologist's dig. Commit: `feat(core): close the great work popup for agent players`.
 
-9. **World Congress popups.** When a session starts, the congress screen opens with **Continue**, then shows the voting screen. It stays open after `voteInCongress` has voted and submitted. After a session, the results screen opens, and an emergency that passed shows its own popup.
+9. **World Congress popups.** When a session starts, the congress intro opens with **Continue**, which opens the voting screen. After a session, the results screen opens.
 
-   Record whether each one stops a request and the end turn call. **Submit** on the voting screen after the action replaces the action's votes and keeps the Favor it spent, so close it before a player can press it. Then make the core mod close them for an agent player.
+   The core mod dequeues the intro, so the voting screen and the between-turns screen after it never open, and the vote action votes without them. It closes the voting and results screen through `LuaEvents.DiplomacyActionView_HideCongress`, which runs its own close.
 
-   Start with `WorldCongressPopup.lua`, `WorldCongressIntro.lua`, `WorldCongressBetweenTurns.lua`, and `WorldCrisisPopup.lua`, and the `WORLD_CONGRESS_RESULTS` and `EMERGENCY_DECLARED` notifications. See [world-congress.md](../../findings/actions/world-congress.md#popups).
-
-   Test it in a save at a session, as for the vote action. Commit: `feat(core): close the World Congress popups for agent players`.
+   See [congress-popups.md](../../findings/actions/congress-popups.md). Commit: `feat(core): close the World Congress popups for agent players`.
 
 10. **Leader screen.** A war that `declareWar` declares on a major civ, and a peace that `proposePeace` makes, leave the leader screen open on the overview, and no timing of the session close closes it.
 
@@ -97,6 +95,12 @@ Each task first records whether its popup stops a request and the end turn call,
     The rock band's `Close` also calls `Events.UnitStopCinematicAnimation`, and fires `LuaEvents.RockBandMoviePopup_OpenRockBandPopup`, which opens `RockBandPopup.lua` with the concert's result. Check that popup too, and pass the result to the agent. See [end-turn.md](../../findings/actions/end-turn.md#questions).
 
     Test it in a save with a project a turn from done, and a rock band next to a foreign city. Commit: `feat(core): close the project and rock band popups for agent players`.
+
+14. **Emergency popup.** When an emergency is declared, a popup shows it and waits. Its `Close` sends `ACCEPT_EMERGENCY` when the emergency needs no answer. Record what that does, and how the core mod can repeat it, then close the popup for an agent player.
+
+    `DLC/Expansion2/UI/Additions/WorldCrisisPopup.lua` opens from `Events.EmergencyAvailable` and `LuaEvents.WorldCongress_ShowEmergency`. See [congress-popups.md](../../findings/actions/congress-popups.md#questions), question 1.
+
+    Test it in a save with an emergency a turn away. Commit: `feat(core): close the emergency popup for agent players`.
 
 ## Done when
 
