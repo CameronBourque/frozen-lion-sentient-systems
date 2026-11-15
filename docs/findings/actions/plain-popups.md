@@ -2,7 +2,7 @@
 
 Status: confirmed. The hero discovered, Secret Society, and civic completed popups, and the core mod's close and switch, are confirmed in a running game with Gathering Storm, with calls sent through the tuner.
 
-The popups that take no lock, so hold nothing, but wait for a click and some keep the player from the pause menu, so from saving, until they close. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md). The popups that lock are in [popups.md](popups.md).
+The popups that take no lock but wait for a click. Some keep the player from the pause menu, and so from saving. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/done/popups.md#popups-for-agent-players). The popups that lock are in [popups.md](popups.md).
 
 ## Questions
 

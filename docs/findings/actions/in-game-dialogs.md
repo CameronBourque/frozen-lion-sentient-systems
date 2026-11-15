@@ -2,7 +2,7 @@
 
 Status: confirmed. The unit captured dialog, and closing it with its own button from `SentientSystemsCore_UI`, are confirmed in a running game with Gathering Storm, with calls sent through the tuner. So is the core mod's own close.
 
-The small dialogs that `PopupDialogInGame` raises through one shared context, `InGamePopup`, and how to close them from outside. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md).
+The small dialogs that `PopupDialogInGame` raises through one shared context, `InGamePopup`, and how to close them from outside. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/done/popups.md#popups-for-agent-players).
 
 ## Questions
 

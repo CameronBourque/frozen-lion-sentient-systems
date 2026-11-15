@@ -2,7 +2,7 @@
 
 Status: confirmed. The congress intro, the voting and results screen, and the emergency popup, and the core mod's close of each, are confirmed in a running game with Gathering Storm, with calls sent through the tuner.
 
-The screens a World Congress session opens, what each holds, and how the core mod closes each for an agent player. The vote action is in [world-congress.md](world-congress.md). Closing them is [popups for agent players](../../roadmap/phase-1/agent-popups.md).
+The screens a World Congress session opens, what each holds, and how the core mod closes each for an agent player. The vote action is in [world-congress.md](world-congress.md). Closing them is [popups for agent players](../../roadmap/phase-1/done/popups.md#popups-for-agent-players).
 
 ## Questions
 
