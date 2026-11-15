@@ -86,11 +86,23 @@ Each task first records whether its popup stops a request and the end turn call,
 
     `Base/Assets/UI/Popups/EspionagePopup.lua` opens it from `Events.SpyMissionCompleted`, and also listens to `Events.LocalPlayerTurnEnd`. See [spies.md](../../findings/actions/spies.md#questions), question 1, and test it in a save with a mission about to end. Commit: `feat(core): close the spy mission popup for agent players`.
 
+13. **Project built and rock band popups.** A popup shows each project the player completes, such as a space race launch, and each rock band concert in Gathering Storm. Each sets the `CINEMATIC` interface mode, holds the event queue, and waits for **Close**.
+
+    Make the core mod close both for an agent player, as for the cinematic popups.
+
+    `Base/Assets/UI/Popups/ProjectBuiltPopup.lua` locks with `ExclusivePopupManager:Lock` and fires `LuaEvents.ProjectBuiltPopup_Shown`.
+
+    `DLC/Expansion2/UI/Additions/RockBandMoviePopup.lua` holds the event with `UI.ReferenceCurrentEvent()` and fires `LuaEvents.RockBandMoviePopup_Shown`. Confirmed in files.
+
+    The rock band's `Close` also calls `Events.UnitStopCinematicAnimation`, and fires `LuaEvents.RockBandMoviePopup_OpenRockBandPopup`, which opens `RockBandPopup.lua` with the concert's result. Check that popup too, and pass the result to the agent. See [end-turn.md](../../findings/actions/end-turn.md#questions).
+
+    Test it in a save with a project a turn from done, and a rock band next to a foreign city. Commit: `feat(core): close the project and rock band popups for agent players`.
+
 ## Done when
 
 With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, a tech, a civic, a boost, and a natural disaster show no popup and don't hold up the next request.
 
-Neither does a Secret Society the player discovers or joins, a hero the player discovers, an artifact the player chooses, a historic moment, a new era and its review, or a World Congress session, its results, or an emergency it starts.
+Neither does a Secret Society the player discovers or joins, a hero the player discovers, an artifact the player chooses, a historic moment, a new era and its review, a project, a rock band concert, or a World Congress session, its results, or an emergency it starts.
 
 A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
 
