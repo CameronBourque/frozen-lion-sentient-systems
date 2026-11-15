@@ -66,6 +66,10 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- screen. Its ClosePopup also pops its input context, and outside a session
 	-- tells the game the player looked at the congress.
 	{ name = "WorldCongressPopup", closeEvent = "DiplomacyActionView_HideCongress" },
+	-- WorldCrisisPopup.lua, in Gathering Storm. An emergency there begins
+	-- through the congress vote, so the popup only shows it. Its OK also sends
+	-- ACCEPT_EMERGENCY, which changes nothing the player can see.
+	{ name = "WorldCrisisPopup" },
 	{
 		name = "GreatWorkShowcase",
 		isScreen = true,

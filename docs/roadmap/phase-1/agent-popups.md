@@ -96,11 +96,11 @@ Each task first records whether its popup stops a request and the end turn call,
 
     Test it in a save with a project a turn from done, and a rock band next to a foreign city. Commit: `feat(core): close the project and rock band popups for agent players`.
 
-14. **Emergency popup.** When an emergency is declared, a popup shows it and waits. Its `Close` sends `ACCEPT_EMERGENCY` when the emergency needs no answer. Record what that does, and how the core mod can repeat it, then close the popup for an agent player.
+14. **Emergency popup.** When an emergency is declared, a popup shows it and waits for **OK**. With Gathering Storm, every emergency begins through the congress vote, so the popup asks nothing.
 
-    `DLC/Expansion2/UI/Additions/WorldCrisisPopup.lua` opens from `Events.EmergencyAvailable` and `LuaEvents.WorldCongress_ShowEmergency`. See [congress-popups.md](../../findings/actions/congress-popups.md#questions), question 1.
+    `DLC/Expansion2/UI/Additions/WorldCrisisPopup.lua` queues itself with `UIManager:QueuePopup`, so the core mod closes it with the other plain popups. Its **OK** also sends `ACCEPT_EMERGENCY`, which changed nothing the player can see, so the core mod leaves it out. See [congress-popups.md](../../findings/actions/congress-popups.md#emergency-popup).
 
-    Test it in a save with an emergency a turn away. Commit: `feat(core): close the emergency popup for agent players`.
+    Commit: `feat(core): close the emergency popup for agent players`.
 
 ## Done when
 
