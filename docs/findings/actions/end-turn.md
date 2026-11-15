@@ -8,9 +8,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. Do the project built and rock band popups hold the event queue as the wonder built popup does?
-
-   `ProjectBuiltPopup.lua` and `RockBandMoviePopup.lua` set the `CINEMATIC` interface mode, as the wonder built, natural wonder, and natural disaster popups do. Confirmed in files.
+None open. The project built and rock band popups are in [popups.md](popups.md#project-built-popup).
 
 ## What we know now
 

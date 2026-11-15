@@ -229,6 +229,27 @@ describe("SentientSystems_ClosePlainPopups", function()
 		assert.same({ { "DoLeftClick" } }, calls)
 	end)
 
+	it("presses the close button of the project and concert movie popups, then dequeues the concert result", function()
+		local controls = {
+			["/InGame/ProjectBuiltPopup"] = "project",
+			["/InGame/ProjectBuiltPopup/Close"] = { DoLeftClick = Record("ProjectClose") },
+			["/InGame/RockBandMoviePopup"] = "movie",
+			["/InGame/RockBandMoviePopup/Close"] = { DoLeftClick = Record("MovieClose") },
+			["/InGame/RockBandPopup"] = "result",
+		}
+
+		env.ContextPtr.LookUpControl = function(_, path)
+			return controls[path]
+		end
+		env.UIManager.IsInPopupQueue = function()
+			return true
+		end
+
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({ { "ProjectClose" }, { "MovieClose" }, { "DequeuePopup", "result" } }, calls)
+	end)
+
 	it("sends the closed signal of a plain popup that has one", function()
 		env.ContextPtr.LookUpControl = function(_, path)
 			return path == "/InGame/HistoricMoments" and "moments" or nil

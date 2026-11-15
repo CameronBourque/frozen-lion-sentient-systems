@@ -75,6 +75,16 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- it shows waits in the popup's own list, which only its Close opens, so
 	-- that one never shows.
 	{ name = "EspionagePopup" },
+	-- ProjectBuiltPopup.lua, for a project with a popup, such as a space race
+	-- launch. It locks the event queue, and its Close shows the next project or
+	-- unlocks.
+	{ name = "ProjectBuiltPopup", closeButton = "Close" },
+	-- RockBandMoviePopup.lua, in Gathering Storm, for a concert. It holds the
+	-- event queue, and its Close stops the concert's camera and animation and
+	-- opens RockBandPopup.
+	{ name = "RockBandMoviePopup", closeButton = "Close" },
+	-- RockBandPopup.lua, in Gathering Storm: the concert's result
+	{ name = "RockBandPopup" },
 	-- GreatWorkShowcase.lua, for each great work the player creates
 	{
 		name = "GreatWorkShowcase",

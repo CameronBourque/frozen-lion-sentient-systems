@@ -1,6 +1,6 @@
 # Popups
 
-Status: confirmed. The natural wonder and natural disaster popups, and the core mod's close of each, are confirmed in a running game with Gathering Storm, with calls sent through the tuner. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
+Status: open. The natural wonder, natural disaster, project built, and rock band popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner. So is the core mod's close of each. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
 
 The popups that lock the engine's event queue and wait for a click, and the steps that close each one from `SentientSystemsCore_UI`. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md). The popups that hold nothing are in [plain-popups.md](plain-popups.md).
 
@@ -54,6 +54,32 @@ The comet struck in the same turn, while the popup's manager still counted itsel
 
 A second comet, after the turn-end reset, locked and closed, and a unit moved at once. Confirmed on Windows on 2026-11-14.
 
+### Project built popup
+
+`ProjectBuiltPopup.lua` opens on `Events.CityProjectCompletedNarrative` for a project of the local player's with a `PopupText`, such as a space race launch, outside multiplayer.
+
+It locks with `ExclusivePopupManager:Lock`, sets the `CINEMATIC` mode, and fires `LuaEvents.ProjectBuiltPopup_Shown`.
+
+A project that ends while it's up waits in its own list. Its `Close` button shows that one next, or fires `ProjectBuiltPopup_Closed`, sets `SELECTION`, and unlocks. Confirmed in files.
+
+`FinishProgress()` on a city building the Earth satellite opened it, with a `PopupManager.LOCK` line, in the `CINEMATIC` mode. `DoLeftClick()` on `/InGame/ProjectBuiltPopup/Close` fired `ProjectBuiltPopup_Closed`, unlocked once, hid it, and set `SELECTION`. Confirmed on Windows on 2026-11-15.
+
+### Rock band popups
+
+In Gathering Storm, `RockBandMoviePopup.lua` opens on `Events.PostTourismBomb` for a concert of the local player's, outside multiplayer and hotseat. 
+
+It holds the current event with `UI.ReferenceCurrentEvent()`, queues itself, sets the `CINEMATIC` mode, plays the concert's camera and animation, and fires `LuaEvents.RockBandMoviePopup_Shown`.
+
+Its `Close` button releases the event, stops the camera and animation, fires `LuaEvents.RockBandMoviePopup_OpenRockBandPopup` with the owner, unit, result, and tourism, then `RockBandMoviePopup_Closed`, and sets `SELECTION`.
+
+`RockBandPopup.lua` opens from that event and queues itself. It shows the result's tier, tourism, albums sold, and whether the band levels up, gains a promotion, or breaks up. Its `Close` only dequeues it. Confirmed in files.
+
+A concert on player 1's harbor fired `PostTourismBomb` with 1000 tourism and result 4, and the movie popup showed in the `CINEMATIC` mode.
+
+`DoLeftClick()` on `/InGame/RockBandMoviePopup/Close` opened the result popup, Creative Differences, and set `SELECTION`. `UIManager:DequeuePopup` hid the result popup. The band was gone. Confirmed on Windows on 2026-11-15.
+
+With the core mod's close, both popups closed as they opened, at the end of the batch that locked them, and the mode went back to `SELECTION`. The concert's result popup was filled, then dequeued. The camera moved after each. Confirmed on Windows on 2026-11-15.
+
 ## Method
 
 1. Send each step through the tuner to `SentientSystemsCore_UI`.
@@ -76,5 +102,12 @@ A second comet, after the turn-end reset, locked and closed, and a unit moved at
 | `ApplyEvent` with `RANDOM_EVENT_COMET_STRIKE` (43), in the same turn | `GameCore_Tuner` | A comet lake on the tile, and no lock. A move ran | 2026-11-14 |
 | `SentientSystems_EndTurn(0, true)` | `SentientSystemsCore_UI` | `PopupManager.Unlock` with ID 838600. The player's turn became active again on turn 140 | 2026-11-14 |
 | `ApplyEvent` with `RANDOM_EVENT_COMET_STRIKE` (43) again | `GameCore_Tuner` | A lock, with ID 840367, then the interface hidden and shown again. The popup's context hidden, and a move ran | 2026-11-14 |
+| `FinishProgress()` on Ratumacos, building `PROJECT_LAUNCH_EARTH_SATELLITE`, on turn 85 | `GameCore_Tuner` | A lock, with ID 1418556, `ProjectBuiltPopup_Shown`, and `CINEMATIC` | 2026-11-15 |
+| `DoLeftClick()` on `/InGame/ProjectBuiltPopup/Close` | `SentientSystemsCore_UI` | `ProjectBuiltPopup_Closed`, `PopupManager.Unlock` with ID 1418556, the context hidden, and `SELECTION` | 2026-11-15 |
+| A concert started from the unit panel | The game | `PostTourismBomb` with 0, the band, 49, 24, 4, and 1000, then `RockBandMoviePopup_Shown`, and `CINEMATIC` | 2026-11-15 |
+| `DoLeftClick()` on `/InGame/RockBandMoviePopup/Close` | `SentientSystemsCore_UI` | `RockBandMoviePopup_OpenRockBandPopup` with 0, the band, 4, and 1000, then `RockBandMoviePopup_Closed`, `SELECTION`, and the result popup queued | 2026-11-15 |
+| `UIManager:DequeuePopup` on `/InGame/RockBandPopup` | `SentientSystemsCore_UI` | The result popup hidden, and the band gone | 2026-11-15 |
+| `FinishProgress()` on Ratumacos again, with the core mod's close | `GameCore_Tuner` | A lock, `ProjectBuiltPopup_Shown`, then `ProjectBuiltPopup_Closed` and the unlock, the context hidden, and `SELECTION` | 2026-11-15 |
+| `UnitManager.RequestOperation` on the band with the hash of `UNITOPERATION_TOURISM_BOMB`, with the core mod's close | `SentientSystemsCore_UI` | `RockBandMoviePopup_Shown`, the result popup opened, and `RockBandMoviePopup_Closed`. Both hidden, and `SELECTION` | 2026-11-15 |
 
-Date checked: game files on 2026-11-14. Running game on Windows on 2026-11-14 and 2026-11-15.
+Date checked: game files on 2026-11-14 and 2026-11-15. Running game on Windows on 2026-11-14 and 2026-11-15.

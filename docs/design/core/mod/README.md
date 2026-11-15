@@ -43,6 +43,8 @@ A screen such as the great work popup shows by unhiding its context, so the core
 
 The leader screen names its close button instead, which the core mod presses with `DoLeftClick`. It closes the screen only while no diplomacy session is open, when the screen shows only the overview, as after a peace.
 
+The project built and rock band movie popups hold the event queue, and their own close does more, such as showing the next project or opening the concert's result. So the core mod presses their close buttons too, with the plain popups.
+
 The unit captured message comes through the shared `InGamePopup` dialog, which also asks the player to confirm strikes and cities. So the core mod closes it only after `LuaEvents.OnRaisePopupInGame` raises `UnitCaptured`, by pressing the dialog's own button, found through `GetChildren()`.
 
 Where the game has a switch that keeps a popup from opening, the core mod uses it instead.
