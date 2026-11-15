@@ -43,7 +43,9 @@ SENTIENTSYSTEMS_POPUPS = {
 }
 
 -- The popups that hold nothing, by the name of their context. Each Close is
--- UIManager:DequeuePopup, then the closed signal, if it has one.
+-- UIManager:DequeuePopup, then the closed signal, if it has one. A screen
+-- shows by unhiding its context instead, and its Close hides it and plays its
+-- stop sounds.
 SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- HeroesPopup.lua, in the Heroes and Legends mode
 	{ name = "HeroesPopup" },
@@ -55,7 +57,39 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- EraReviewPopup.lua, in Rise and Fall. Its Continue opens the dedication
 	-- popup, which the dedication action doesn't need.
 	{ name = "EraReviewPopup" },
+	-- GreatWorkShowcase.lua, for each great work the player creates
+	{
+		name = "GreatWorkShowcase",
+		isScreen = true,
+		sounds = { "Stop_Great_Music", "Stop_Speech_GreatWriting", "Stop_Great_Works_Gallery_Ambience" },
+	},
 }
+
+-- Returns whether a plain popup's context is showing.
+local function IsPlainPopupOpen(popup, context)
+	if popup.isScreen then
+		return not context:IsHidden()
+	end
+
+	return UIManager:IsInPopupQueue(context)
+end
+
+-- Closes a plain popup, as its Close does.
+local function ClosePlainPopup(popup, context)
+	if popup.isScreen then
+		context:SetHide(true)
+	else
+		UIManager:DequeuePopup(context)
+	end
+
+	for _, sound in ipairs(popup.sounds or {}) do
+		UI.PlaySound(sound)
+	end
+
+	if popup.closed ~= nil then
+		LuaEvents[popup.closed]()
+	end
+end
 
 -- Closes each plain popup that is open. A popup whose mode is off has no
 -- context. Call it when a batch of game events ends and when the interface is
@@ -65,12 +99,8 @@ function SentientSystems_ClosePlainPopups()
 	for _, popup in ipairs(SENTIENTSYSTEMS_PLAIN_POPUPS) do
 		local context = ContextPtr:LookUpControl("/InGame/" .. popup.name)
 
-		if context ~= nil and UIManager:IsInPopupQueue(context) then
-			UIManager:DequeuePopup(context)
-
-			if popup.closed ~= nil then
-				LuaEvents[popup.closed]()
-			end
+		if context ~= nil and IsPlainPopupOpen(popup, context) then
+			ClosePlainPopup(popup, context)
 		end
 	end
 end

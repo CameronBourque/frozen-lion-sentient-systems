@@ -37,7 +37,7 @@ The popup's own manager still counts itself locked after the close. Later popups
 
 A plain popup, such as the hero or Secret Society popup, holds nothing. `SENTIENTSYSTEMS_PLAIN_POPUPS` lists them, each with its closed signal if it has one.
 
-The core mod dequeues each one in the popup queue when a batch of game events ends, when a load ends, and on `Events.UIIdle`, when the historic moment popup shows a moment it held back.
+The core mod dequeues each one in the popup queue when a batch of game events ends, when a load ends, and on `Events.UIIdle`, when the historic moment popup shows a moment it held back. A screen such as the great work popup shows by unhiding its context, so the core mod hides it instead.
 
 Where the game has a switch that keeps a popup from opening, the core mod uses it instead.
 

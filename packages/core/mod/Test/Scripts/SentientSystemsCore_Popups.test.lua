@@ -155,6 +155,33 @@ describe("SentientSystems_ClosePlainPopups", function()
 		assert.same({ { "DequeuePopup", "review" } }, calls)
 	end)
 
+	it("hides the great work showcase when it shows, and stops its sounds", function()
+		local hidden = false
+		local showcase = {
+			IsHidden = function()
+				return hidden
+			end,
+			SetHide = function(_, isHidden)
+				hidden = isHidden
+				calls[#calls + 1] = { "SetHide", isHidden }
+			end,
+		}
+
+		env.ContextPtr.LookUpControl = function(_, path)
+			return path == "/InGame/GreatWorkShowcase" and showcase or nil
+		end
+
+		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({
+			{ "SetHide", true },
+			{ "PlaySound", "Stop_Great_Music" },
+			{ "PlaySound", "Stop_Speech_GreatWriting" },
+			{ "PlaySound", "Stop_Great_Works_Gallery_Ambience" },
+		}, calls)
+	end)
+
 	it("sends the closed signal of a plain popup that has one", function()
 		env.ContextPtr.LookUpControl = function(_, path)
 			return path == "/InGame/HistoricMoments" and "moments" or nil

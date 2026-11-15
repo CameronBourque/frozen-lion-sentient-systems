@@ -54,11 +54,11 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Check that the [dedication action](../../design/core/mod/actions/dedications.md) still works with the review popup closed. Test it in a save a turn from a new era. Commit: `feat(core): close the era popups for agent players`.
 
-8. **Artifact popup.** After the player chooses an artifact, a popup shows the great work it became. With it open, send a request and the end turn call, and record whether the popup stops them. Then make the core mod close the popup for an agent player, so no one has to press **Close**.
+8. **Great work popup.** A popup shows each great work the player creates, such as an artifact, a painting, or a relic, and waits for **Close**. It holds nothing.
 
-   Start with `GreatWorkShowcase.lua`, and check whether it sets the `CINEMATIC` interface mode or is an end-turn blocker. See [great-works.md](../../findings/actions/great-works.md#artifact-request).
+   `Base/Assets/UI/GreatWorkShowcase.lua` shows by unhiding its context, not through the popup queue, so the core mod hides it with the other plain popups and plays its stop sounds. See [plain-popups.md](../../findings/actions/plain-popups.md#great-work-popup).
 
-   Test it in a save with an archaeologist digging, as for the artifact action. Commit: `feat(core): close the artifact popup for agent players`.
+   Test it with a great writer, artist, or musician's `activate` order, or an archaeologist's dig. Commit: `feat(core): close the great work popup for agent players`.
 
 9. **World Congress popups.** When a session starts, the congress screen opens with **Continue**, then shows the voting screen. It stays open after `voteInCongress` has voted and submitted. After a session, the results screen opens, and an emergency that passed shows its own popup.
 
@@ -102,7 +102,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
 With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, a tech, a civic, a boost, and a natural disaster show no popup and don't hold up the next request.
 
-Neither does a Secret Society the player discovers or joins, a hero the player discovers, an artifact the player chooses, a historic moment, a new era and its review, a project, a rock band concert, or a World Congress session, its results, or an emergency it starts.
+Neither does a Secret Society the player discovers or joins, a hero the player discovers, a great work the player creates, a historic moment, a new era and its review, a project, a rock band concert, or a World Congress session, its results, or an emergency it starts.
 
 A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
 

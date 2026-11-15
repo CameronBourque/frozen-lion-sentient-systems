@@ -63,6 +63,18 @@ That age was golden with no dedication to pick, because the game had the Dramati
 
 `GetPlayerNumAllowedCommemorations(0)` was 0, and no commemoration blocker was up, the same before and after `UIManager:DequeuePopup` closed it. Confirmed on Windows on 2026-11-15.
 
+### Great work popup
+
+`Base/Assets/UI/GreatWorkShowcase.lua` shows each great work the local player creates, from `Events.GreatWorkCreated`, and each relic, from `LuaEvents.NotificationPanel_ShowRelicCreated`. It's also the gallery that the launch bar and the great works overview open. Confirmed in files.
+
+It doesn't use the popup queue or a lock. `ShowScreen` calls `ContextPtr:SetHide(false)`, and `HideScreen` calls `ContextPtr:SetHide(true)` and plays `Stop_Great_Music`, `Stop_Speech_GreatWriting`, and `Stop_Great_Works_Gallery_Ambience`. Confirmed in files.
+
+`GreatWorkShowcase_Babylon_Heroes.lua` and `GreatWorkShowcase_KublaiKhan_Vietnam_MODE.lua` replace it with the same context name. Confirmed in files.
+
+With the core mod's close, a great artist's `activate` order created a great work, and `Events.GreatWorkCreated` fired. The screen was hidden right after. Confirmed on Windows on 2026-11-15.
+
+`LuaEvents.GreatWorksOverview_ViewGreatWork` for that work, as the gallery sends it, showed the screen. The core mod hid it within 5 s. Confirmed on Windows on 2026-11-15.
+
 ### Tech, civic, and boost popups
 
 `Base/Assets/UI/Popups/TechCivicCompletedPopup.lua` shows each tech and civic the local player completes, and `BoostUnlockedPopup.lua` shows each boost. Each queues itself with `UIManager:QueuePopup` and takes no lock, so it holds nothing. Confirmed in files.
@@ -99,6 +111,8 @@ With the switch on, a civic boost and a civic completed later in the same sessio
 | `SentientSystems_EndTurn(0, true)` on turn 119, the last turn of an era | `SentientSystemsCore_UI` | `EraCompletePopupXP2` locked, then unlocked after its animation. `AGENT_TURN 0`, and the era review popup up | 2026-11-15 |
 | `UIManager:DequeuePopup` on `/InGame/EraReviewPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-15 |
 | The same turn end again, with the core mod's close turned off, then `DequeuePopup` | `SentientSystemsCore_UI` | 0 dedications allowed, no commemoration blocker, and `COMMEMORATION_WITHOUT_CHOICE`, with the popup open and after the close | 2026-11-15 |
+| `SentientSystems_UnitAction(0, <artist>, "activate")` on a theater square, with the core mod's close | `SentientSystemsCore_UI` | `{"ok":true}`, `GreatWorkCreated` for the work, and the screen hidden | 2026-11-15 |
+| `LuaEvents.GreatWorksOverview_ViewGreatWork` for that work | `SentientSystemsCore_UI` | The screen shown, then hidden within 5 s | 2026-11-15 |
 | `SetCivic` for Naval Tradition on turn 50, then for Exploration on turn 51, with the core mod's close | `GameCore_Tuner` | Moments of interest level 3 and their notifications, and no popup | 2026-11-15 |
 | A world wonder forced to complete on turn 51, then the moment's notification and the timeline button clicked, with the core mod's close | Game, by hand | Each popup closed at once, with `HistoricMoments_Opened` then `_Closed` | 2026-11-15 |
 
