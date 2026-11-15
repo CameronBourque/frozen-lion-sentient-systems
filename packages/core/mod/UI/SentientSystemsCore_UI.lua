@@ -95,6 +95,17 @@ end
 Events.RandomEventOccurred.Add(SentientSystems_CatchErrors("OnRandomEventOccurred", OnRandomEventOccurred))
 Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPublishComplete", SentientSystems_FinishPopups))
 
+local function ClosePlainPopups()
+	if IsLocalAgent() then
+		SentientSystems_ClosePlainPopups()
+	end
+end
+
+-- A plain popup can open from a notification during a load too, before any
+-- batch ends.
+Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
+Events.LoadScreenClose.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
+
 -- Turns off the tech, civic, and boost popups for an agent player, as the
 -- tutorial does. Each popup keeps the switch in its own Lua state, so each load
 -- turns them back on. They open only from notifications, after the load.

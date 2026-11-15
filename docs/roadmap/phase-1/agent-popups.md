@@ -28,7 +28,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
    `DLC/Ethiopia/UI/Additions/SecretSocietyPopup.lua` and `DLC/Babylon/UI/Additions/HeroesPopup.lua` open by themselves from their notifications, with a plain `UIManager:QueuePopup`.
 
-   Each `Close` is only `UIManager:DequeuePopup`, and neither fires an event of its own. So one check can close both, such as dequeuing each one that is in the popup queue at the end of a batch. See [popups.md](../../findings/actions/popups.md#plain-popups).
+   Each `Close` is only `UIManager:DequeuePopup`, and neither fires an event of its own. They open from notifications at any time, so the core mod dequeues each one in the popup queue when a batch of game events or a load ends. See [popups.md](../../findings/actions/popups.md#plain-popups).
 
    Test it in a save with either mode on. Commit: `feat(core): close the secret society and hero popups for agent players`.
 

@@ -33,6 +33,8 @@ A meteor shower or a comet strike, in the apocalypse mode, lets its animation dr
 
 The popup's own manager still counts itself locked after the close. Later popups of that kind go into its queue and never show, so they never hold the queue. A human who took over the slot in the same session would see none of them.
 
+A plain popup, such as the hero or Secret Society popup, holds nothing and fires no event when it opens. `SENTIENTSYSTEMS_PLAIN_POPUPS` lists them, and the core mod dequeues each one in the popup queue when a batch of game events ends, and when a load ends.
+
 Where the game has a switch that keeps a popup from opening, the core mod uses it instead.
 
 When a load ends, `SentientSystemsCore_UI.lua` fires the tutorial's `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()` for an agent player, which turns off the tech, civic, and boost popups. See [findings/actions/popups.md](../../../findings/actions/popups.md#tech-civic-and-boost-popups).

@@ -65,6 +65,10 @@ With the Secret Society popup up, the same call ended turn 16. Player 5 then ope
 
 `UIManager:DequeuePopup` on `/InGame/HeroesPopup`, then on `/InGame/SecretSocietyPopup`, from `SentientSystemsCore_UI` closed each, and `UIManager:IsInPopupQueue` returned `false`. Confirmed on Windows on 2026-11-14.
 
+The core mod closes them when a batch of game events ends. On turn 25 of another save, a listener on `Events.GameCoreEventPublishComplete` closed an open hero popup after a unit's move.
+
+Reloaded on turn 15 with the core mod's close, the hero and Secret Society notifications came again, and neither popup was open afterward. Confirmed on Windows on 2026-11-14.
+
 ### Tech, civic, and boost popups
 
 `Base/Assets/UI/Popups/TechCivicCompletedPopup.lua` shows each tech and civic the local player completes, and `BoostUnlockedPopup.lua` shows each boost. Each queues itself with `UIManager:QueuePopup` and takes no lock, so it holds nothing. Confirmed in files.
@@ -98,6 +102,7 @@ On turn 31, with the civic completed popup up, the switch and `UIManager:Dequeue
 | `UIManager:DequeuePopup` on `/InGame/HeroesPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 | `SentientSystems_EndTurn(0, true)`, with the Secret Society popup up on turn 16 | `SentientSystemsCore_UI` | `{"ok":true}` and `AGENT_TURN 0`. A session from player 5 opened, and turn 16 was active again | 2026-11-14 |
 | `UIManager:DequeuePopup` on `/InGame/SecretSocietyPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
+| `SentientSystems_EndTurn(0, true)` on turn 15 of the same save, reloaded with the core mod's close | `SentientSystemsCore_UI` | With the natural wonder popup closed by hand, the hero and Secret Society notifications came, and both popups stayed hidden and out of the queue | 2026-11-14 |
 | `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, then `UIManager:DequeuePopup` on `/InGame/TechCivicCompletedPopup`, on turn 31 | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 | `TriggerBoost` for Mining and `SetTech` for Pottery on turn 25, after a load with the core mod's switch | `GameCore_Tuner` | A `NOTIFICATION_TECH_BOOST`, which opens its popup by itself, and two `NOTIFICATION_TECH_DISCOVERED`. Neither popup opened | 2026-11-14 |
 | `ApplyEvent` with `RANDOM_EVENT_METEOR_SHOWER` (31), on turn 140 | `GameCore_Tuner` | A lock, with ID 838575, then the interface hidden and shown again. The popup's context hidden, the `SELECTION` mode, and a move ran | 2026-11-14 |

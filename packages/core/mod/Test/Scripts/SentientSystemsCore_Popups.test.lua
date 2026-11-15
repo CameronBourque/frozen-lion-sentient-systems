@@ -98,6 +98,25 @@ describe("SentientSystems_ClosePopup", function()
 	end)
 end)
 
+describe("SentientSystems_ClosePlainPopups", function()
+	it("closes each plain popup in the popup queue, and skips the others and those with no context", function()
+		local contexts = { ["/InGame/HeroesPopup"] = "heroes" }
+
+		env.ContextPtr.LookUpControl = function(_, path)
+			return contexts[path]
+		end
+		env.UIManager.IsInPopupQueue = function(_, context)
+			return context == "heroes"
+		end
+
+		env.SentientSystems_ClosePlainPopups()
+		contexts["/InGame/SecretSocietyPopup"] = "society"
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({ { "DequeuePopup", "heroes" }, { "DequeuePopup", "heroes" } }, calls)
+	end)
+end)
+
 describe("SentientSystems_IsSequencedDisaster", function()
 	it("is true for a disaster whose animation drives its popup", function()
 		assert.is_true(env.SentientSystems_IsSequencedDisaster(40))

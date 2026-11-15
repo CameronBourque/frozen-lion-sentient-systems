@@ -34,6 +34,28 @@ SENTIENTSYSTEMS_POPUPS = {
 	},
 }
 
+-- The popups that hold nothing and fire no event when they open, by the name of
+-- their context. Each Close is only UIManager:DequeuePopup.
+SENTIENTSYSTEMS_PLAIN_POPUPS = {
+	-- HeroesPopup.lua, in the Heroes and Legends mode
+	"HeroesPopup",
+	-- SecretSocietyPopup.lua, in the Secret Societies mode
+	"SecretSocietyPopup",
+}
+
+-- Closes each plain popup that is open. A popup whose mode is off has no
+-- context. Call it when a batch of game events ends, since they open from
+-- notifications at any time.
+function SentientSystems_ClosePlainPopups()
+	for _, name in ipairs(SENTIENTSYSTEMS_PLAIN_POPUPS) do
+		local context = ContextPtr:LookUpControl("/InGame/" .. name)
+
+		if context ~= nil and UIManager:IsInPopupQueue(context) then
+			UIManager:DequeuePopup(context)
+		end
+	end
+end
+
 -- The LuaEvents to send, and the event IDs to release, once the current batch
 -- of game events ends.
 local pendingSignals = {}

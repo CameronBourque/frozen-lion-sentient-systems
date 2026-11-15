@@ -280,6 +280,24 @@ describe("the popups", function()
 		assert.equal(1, closedSignals)
 	end)
 
+	it("closes the plain popups when a batch of game events or a load ends, for a human player only", function()
+		local sweeps = 0
+
+		env.SentientSystems_ClosePlainPopups = function()
+			sweeps = sweeps + 1
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		SetLocalPlayer(0)
+		Fire("GameCoreEventPublishComplete")
+		Fire("LoadScreenClose")
+		SetLocalPlayer(5)
+		Fire("GameCoreEventPublishComplete")
+		Fire("LoadScreenClose")
+
+		assert.equal(2, sweeps)
+	end)
+
 	it("turns off the tech, civic, and boost popups when a load ends, for a human player only", function()
 		local turnedOff = 0
 
