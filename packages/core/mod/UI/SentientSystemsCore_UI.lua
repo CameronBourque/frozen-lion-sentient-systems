@@ -94,6 +94,7 @@ end
 
 Events.RandomEventOccurred.Add(SentientSystems_CatchErrors("OnRandomEventOccurred", OnRandomEventOccurred))
 Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPublishComplete", SentientSystems_FinishPopups))
+Events.GameCoreEventPlaybackComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPlaybackComplete", SentientSystems_StopPopupCamera))
 
 local function ClosePlainPopups()
 	if IsLocalAgent() then

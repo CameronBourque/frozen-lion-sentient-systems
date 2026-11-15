@@ -87,6 +87,18 @@ describe("SentientSystems_ClosePopup", function()
 		}, calls)
 	end)
 
+	it("clears the natural wonder's plots and stops its speech and camera before the natural wonder popup closes", function()
+		env.SentientSystems_ClosePopup("NaturalWonderPopup")
+
+		assert.same({
+			{ "ClearTemporaryPlotVisibility", "NaturalWonder" },
+			{ "PlaySound", "Stop_Speech_NaturalWonders" },
+			{ "StopAllCameraAnimations" },
+			{ "DequeuePopup", "/InGame/NaturalWonderPopup" },
+		}, { unpack(calls, 1, 4) })
+		assert.equal(2, #CallsNamed("ReleaseEventID"))
+	end)
+
 	it("clears the disaster's plots and stops its sounds and camera before the disaster popup closes", function()
 		env.SentientSystems_ClosePopup("NaturalDisasterPopup")
 
@@ -95,6 +107,20 @@ describe("SentientSystems_ClosePopup", function()
 		assert.same({ "StopAllCameraAnimations" }, calls[14])
 		assert.same({ "DequeuePopup", "/InGame/NaturalDisasterPopup" }, calls[15])
 		assert.equal(2, #CallsNamed("ReleaseEventID"))
+	end)
+end)
+
+describe("SentientSystems_StopPopupCamera", function()
+	it("stops the camera once after popups close, and not when none has", function()
+		env.SentientSystems_StopPopupCamera()
+		env.SentientSystems_ClosePopup("WonderBuiltPopup")
+		env.SentientSystems_ClosePopup("NaturalWonderPopup")
+		calls = {}
+
+		env.SentientSystems_StopPopupCamera()
+		env.SentientSystems_StopPopupCamera()
+
+		assert.same({ { "StopAllCameraAnimations" } }, calls)
 	end)
 end)
 

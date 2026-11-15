@@ -8,13 +8,9 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. Do the other popups that set the `CINEMATIC` interface mode hold the event queue as the wonder built popup does?
+1. Do the project built and rock band popups hold the event queue as the wonder built popup does?
 
-   `NaturalWonderPopup.lua`, `ProjectBuiltPopup.lua`, `RockBandMoviePopup.lua`, and Gathering Storm's `NaturalDisasterPopup.lua` set it. Confirmed in files.
-
-   The natural wonder popup holds it. See [popups.md](popups.md#natural-wonder-popup).
-
-   A natural disaster popup held the AI turns. On turn 87, the player's turn stayed inactive for 4 minutes with it up, and turn 88 began 15 s after it was closed. Confirmed on Windows on 2026-11-13. The core mod's close is in [popups.md](popups.md#natural-disaster-popup).
+   `ProjectBuiltPopup.lua` and `RockBandMoviePopup.lua` set the `CINEMATIC` interface mode, as the wonder built, natural wonder, and natural disaster popups do. Confirmed in files.
 
 ## What we know now
 
@@ -62,6 +58,12 @@ The core mod closes it for an agent player. See [design/core/mod/README.md](../.
 `InGame.lua` hides the interface on the same `Shown` event, and shows it again on `WonderBuiltPopup_Closed`. Sent from the `Shown` listener, the closed signal came before the hide, and the interface stayed hidden.
 
 Sent on the next `Events.GameCoreEventPublishComplete`, it came after, and the interface came back. `ContextPtr:RequestRefresh()` never ran its handler, because the core mod's context is hidden. Confirmed on Windows on 2026-11-14.
+
+### With other cinematic popups up
+
+The natural wonder popup and Gathering Storm's natural disaster popup set the `CINEMATIC` interface mode and hold the event queue, as the wonder built popup does. See [popups.md](popups.md).
+
+A natural disaster popup held the AI turns. On turn 87, the player's turn stayed inactive for 4 minutes with it up, and turn 88 began 15 s after it was closed. Confirmed on Windows on 2026-11-13.
 
 ### The end turn action
 

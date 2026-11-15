@@ -216,13 +216,14 @@ describe("the popups", function()
 		end
 	end)
 
-	it("closes the wonder and disaster popups for a human player", function()
+	it("closes the wonder, natural wonder, and disaster popups for a human player", function()
 		SetPlayers({ [0] = Player(0, true, true) })
 
 		Show("WonderBuiltPopup", 0)
+		Show("NaturalWonderPopup", 0)
 		Show("NaturalDisasterPopup", 0)
 
-		assert.same({ "WonderBuiltPopup", "NaturalDisasterPopup" }, closed)
+		assert.same({ "WonderBuiltPopup", "NaturalWonderPopup", "NaturalDisasterPopup" }, closed)
 	end)
 
 	it("leaves a popup for an AI player or a player that doesn't exist", function()

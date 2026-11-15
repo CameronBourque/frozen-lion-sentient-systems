@@ -8,7 +8,7 @@ This phase makes the mods usable by a nontechnical user and ships the first rele
 
 - **Agent** option in the player-type dropdown
 - Personality and sweat level dropdowns per slot
-- Spectator mode setup option, pacing, and camera
+- Spectator mode setup option, pacing, and camera, including the camera moves that closed popups still start, such as the jump to a natural wonder and the start of its fly-around
 - Map reveal toggle, rendering only. Test the observer view in question 1 of [state/tile-visibility.md](../../findings/state/tile-visibility.md#questions) first
 - Relabel **Difficulty** as **AI Difficulty**
 - Launcher shortcut that starts the bridge and the game

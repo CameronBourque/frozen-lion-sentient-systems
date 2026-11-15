@@ -29,6 +29,8 @@ A popup's lock holds the engine's event queue, so requests and the AI turns wait
 
 A popup's closed signal waits for `Events.GameCoreEventPublishComplete`, so it comes after every listener of the open signal. `InGame.lua` hides the interface on the open signal and shows it again on the closed one.
 
+A popup can start a camera move after the batch ends, such as the natural wonder's fly-around, which keeps the camera until it stops. So the core mod stops the camera again on the next `Events.GameCoreEventPlaybackComplete` after a close. See [findings/actions/popups.md](../../../findings/actions/popups.md#natural-wonder-popup).
+
 A meteor shower or a comet strike, in the apocalypse mode, lets its animation drive its popup. The popup opens on `RandomEventStarted` and locks again on `RandomEventOccurred`, so the core mod releases that second lock at the end of the batch too. See [findings/actions/popups.md](../../../findings/actions/popups.md#natural-disaster-popup).
 
 The popup's own manager still counts itself locked after the close. Later popups of that kind go into its queue and never show, so they never hold the queue. A human who took over the slot in the same session would see none of them.
@@ -37,7 +39,7 @@ A plain popup, such as the hero or Secret Society popup, holds nothing and fires
 
 Where the game has a switch that keeps a popup from opening, the core mod uses it instead.
 
-When a load ends, `SentientSystemsCore_UI.lua` fires the tutorial's `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()` for an agent player, which turns off the tech, civic, and boost popups. See [findings/actions/popups.md](../../../findings/actions/popups.md#tech-civic-and-boost-popups).
+When a load ends, `SentientSystemsCore_UI.lua` fires the tutorial's `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()` for an agent player, which turns off the tech, civic, and boost popups. See [findings/actions/popups.md](../../../findings/actions/plain-popups.md#tech-civic-and-boost-popups).
 
 ## JSON shapes
 

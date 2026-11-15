@@ -18,7 +18,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
 3. **Tech, civic, and boost popups.** A popup shows each tech and civic the player completes, and each boost, and waits for **Close** or **Continue**. Neither holds anything, but each keeps the player from the pause menu.
 
-   Make the core mod turn them off for an agent player with `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, as the tutorial does, when each load ends. See [popups.md](../../findings/actions/popups.md#tech-civic-and-boost-popups).
+   Make the core mod turn them off for an agent player with `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, as the tutorial does, when each load ends. See [popups.md](../../findings/actions/plain-popups.md#tech-civic-and-boost-popups).
 
    Test it in a save with a tech, a civic, and a boost a turn away. Commit: `feat(core): turn off the tech and civic popups for agent players`.
 
@@ -28,7 +28,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
    `DLC/Ethiopia/UI/Additions/SecretSocietyPopup.lua` and `DLC/Babylon/UI/Additions/HeroesPopup.lua` open by themselves from their notifications, with a plain `UIManager:QueuePopup`.
 
-   Each `Close` is only `UIManager:DequeuePopup`, and neither fires an event of its own. They open from notifications at any time, so the core mod dequeues each one in the popup queue when a batch of game events or a load ends. See [popups.md](../../findings/actions/popups.md#plain-popups).
+   Each `Close` is only `UIManager:DequeuePopup`, and neither fires an event of its own. They open from notifications at any time, so the core mod dequeues each one in the popup queue when a batch of game events or a load ends. See [popups.md](../../findings/actions/plain-popups.md#secret-society-and-hero-popups).
 
    Test it in a save with either mode on. Commit: `feat(core): close the secret society and hero popups for agent players`.
 

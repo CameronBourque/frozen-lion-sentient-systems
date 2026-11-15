@@ -20,6 +20,14 @@ SENTIENTSYSTEMS_POPUPS = {
 			UI.PlaySound("Stop_Wonder_Tracks")
 		end,
 	},
+	-- NaturalWonderPopup.lua
+	NaturalWonderPopup = {
+		stop = function()
+			UI.ClearTemporaryPlotVisibility("NaturalWonder")
+			UI.PlaySound("Stop_Speech_NaturalWonders")
+			Events.StopAllCameraAnimations()
+		end,
+	},
 	-- NaturalDisasterPopup.lua, in Gathering Storm
 	NaturalDisasterPopup = {
 		stop = function()
@@ -60,6 +68,8 @@ end
 -- of game events ends.
 local pendingSignals = {}
 local pendingReleases = {}
+-- Whether a popup closed since the camera was last stopped.
+local isCameraStopPending = false
 
 -- Releases an event twice: once for the reference the caller took, and once
 -- for the popup's lock on it.
@@ -83,6 +93,7 @@ function SentientSystems_ClosePopup(name)
 	-- InGame.lua hides the interface on the same Shown event, maybe after this
 	-- call, so the closed signal waits for the end of the batch.
 	pendingSignals[#pendingSignals + 1] = name .. "_Closed"
+	isCameraStopPending = true
 end
 
 -- Returns whether a disaster's animation drives its popup. Its popup opens on
@@ -117,5 +128,16 @@ function SentientSystems_FinishPopups()
 
 	for _, name in ipairs(signals) do
 		LuaEvents[name]()
+	end
+end
+
+-- Stops the camera move of each popup closed since the last call, such as the
+-- natural wonder's fly-around, which keeps the camera until it stops. The move
+-- starts after the batch of game events ends. Call it when the game finishes
+-- playing back its events.
+function SentientSystems_StopPopupCamera()
+	if isCameraStopPending then
+		isCameraStopPending = false
+		Events.StopAllCameraAnimations()
 	end
 end
