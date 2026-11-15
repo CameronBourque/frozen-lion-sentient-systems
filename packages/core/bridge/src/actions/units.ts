@@ -6,7 +6,7 @@ import type { TunerClient } from "../tuner/client.js";
 import { type ActionResult, sendAction } from "./actions.js";
 
 export type UnitOrder =
-	| { action: "fortify" | "sleep" | "skip" | "alert" | "heal" | "wake" | "delete" | "found_city" | "pillage" | "plunder" }
+	| { action: "fortify" | "sleep" | "skip" | "alert" | "heal" | "wake" | "delete" | "found_city" | "pillage" | "plunder" | "concert" }
 	| { action: "activate" | "harvest_wonder" | "found_religion" | "spread_religion" | "remove_heresy" | "heal_followers" | "evangelize_belief" | "launch_inquisition" | "condemn_heretic" }
 	| { action: "remove_feature" | "harvest" | "repair" | "remove_improvement" | "clear_fallout" | "add_production" }
 	| { action: "upgrade" | "exit_formation" }

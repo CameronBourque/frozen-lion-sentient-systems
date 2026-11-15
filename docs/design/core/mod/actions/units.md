@@ -44,6 +44,8 @@ A unit with no moves left can't launch, though the game's check allows it, becau
 
 `pillage` takes the improvement or district first and the road when the game won't pillage the tile otherwise, so a tile with both takes two orders.
 
+`concert` starts a rock band's concert on its tile, in Gathering Storm. `UnitOperationTypes` has no entry for it, so the request uses the operation's hash from `GameInfo.UnitOperations`. With no reason from the game, the core mod says what a concert needs. See [findings/actions/popups.md](../../../../findings/actions/popups.md#rock-band-popups).
+
 ## Upgrade
 
 `upgrade` requests the game's upgrade command, in `SentientSystemsCore_ActionsUnitUpgrade.lua`. The game's reasons name the gold, the resources, and the territory, and the core mod adds the cost of the upgrade.

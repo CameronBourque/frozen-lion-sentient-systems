@@ -74,6 +74,8 @@ Its `Close` button releases the event, stops the camera and animation, fires `Lu
 
 `Events.PostTourismBomb(ownerID, unitID, x, y, resultID, tourism)` gives the result as an index into `Unit_RockbandResults_XP2`. `UnitOperationTypes.TOURISM_BOMB` is nil, so a request needs the operation's hash from `GameInfo.UnitOperations`.
 
+The core mod's `concert` order sends it, and started a concert on player 1's harbor. Confirmed on Windows on 2026-11-15.
+
 `RockBandPopup.lua` opens from that event and queues itself. It shows the result's tier, tourism, albums sold, and whether the band levels up, gains a promotion, or breaks up. Its `Close` only dequeues it. Confirmed in files.
 
 A concert on player 1's harbor fired `PostTourismBomb` with 1000 tourism and result 4, and the movie popup showed in the `CINEMATIC` mode.
@@ -111,5 +113,7 @@ With the core mod's close, both popups closed as they opened, at the end of the 
 | `UIManager:DequeuePopup` on `/InGame/RockBandPopup` | `SentientSystemsCore_UI` | The result popup hidden, and the band gone | 2026-11-15 |
 | `FinishProgress()` on Ratumacos again, with the core mod's close | `GameCore_Tuner` | A lock, `ProjectBuiltPopup_Shown`, then `ProjectBuiltPopup_Closed` and the unlock, the context hidden, and `SELECTION` | 2026-11-15 |
 | `UnitManager.RequestOperation` on the band with the hash of `UNITOPERATION_TOURISM_BOMB`, with the core mod's close | `SentientSystemsCore_UI` | `RockBandMoviePopup_Shown`, the result popup opened, and `RockBandMoviePopup_Closed`. Both hidden, and `SELECTION` | 2026-11-15 |
+| `SentientSystems_UnitAction(0, band, "concert")` on player 1's harbor | `SentientSystemsCore_UI` | `{"ok":true}`, the concert's event in the state, both popups closed, and the band gone | 2026-11-15 |
+| The same on a fortified knight, a spy on a mission, and an awake jet fighter and trader | `SentientSystemsCore_UI` | "Wake it first", "busy with an order", and "This kind of unit can't perform a concert." | 2026-11-15 |
 
 Date checked: game files on 2026-11-14 and 2026-11-15. Running game on Windows on 2026-11-14 and 2026-11-15.
