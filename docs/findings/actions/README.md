@@ -35,4 +35,5 @@ The game calls the action API wraps, with the reasons their checks give. See the
 | [end-turn.md](end-turn.md) | The game call that ends the turn, and how the end-turn blockers interact with it |
 | [popups.md](popups.md) | The popups that lock the event queue and wait for a click, and the steps that close each one |
 | [congress-popups.md](congress-popups.md) | The screens a World Congress session opens, and how the core mod closes each one |
+| [in-game-dialogs.md](in-game-dialogs.md) | The small dialogs raised through the shared `InGamePopup` context, such as unit captured, and how to close them |
 | [plain-popups.md](plain-popups.md) | The popups that hold nothing but keep the player from the pause menu, and how the core mod closes or turns off each one |

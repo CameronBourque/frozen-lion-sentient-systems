@@ -240,6 +240,68 @@ describe("SentientSystems_ClosePlainPopups", function()
 	end)
 end)
 
+describe("the unit captured dialog", function()
+	-- Returns a control with the ID and children given.
+	local function Control(id, children, isHidden)
+		return {
+			GetID = function()
+				return id
+			end,
+			GetChildren = function()
+				return children
+			end,
+			IsHidden = function()
+				return isHidden
+			end,
+		}
+	end
+
+	local function SetDialog(isHidden)
+		local button = Control("Button", {})
+
+		button.DoLeftClick = Record("DoLeftClick")
+
+		local root = Control("PopupRoot", { Control("PopupStack", { Control("Row", { button }) }) }, isHidden)
+
+		env.ContextPtr.LookUpControl = function(_, path)
+			return path == "/InGame/InGamePopup" and Control("InGamePopup", { root }) or nil
+		end
+	end
+
+	it("presses the dialog's button once it shows, after a unit captured raise", function()
+		SetDialog(true)
+		env.SentientSystems_NoteRaisedDialog("UnitCaptured")
+		env.SentientSystems_ClosePlainPopups()
+		assert.same({}, calls)
+
+		SetDialog(false)
+		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({ { "DoLeftClick" } }, calls)
+	end)
+
+	it("presses nothing while the shown dialog has no button", function()
+		local root = Control("PopupRoot", { Control("PopupStack", {}) }, false)
+
+		env.ContextPtr.LookUpControl = function(_, path)
+			return path == "/InGame/InGamePopup" and Control("InGamePopup", { root }) or nil
+		end
+		env.SentientSystems_NoteRaisedDialog("UnitCaptured")
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({}, calls)
+	end)
+
+	it("leaves the dialog open for another raise, such as a strike to confirm", function()
+		SetDialog(false)
+		env.SentientSystems_NoteRaisedDialog("ConfirmWMDStrike")
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({}, calls)
+	end)
+end)
+
 describe("SentientSystems_IsSequencedDisaster", function()
 	it("is true for a disaster whose animation drives its popup", function()
 		assert.is_true(env.SentientSystems_IsSequencedDisaster(40))

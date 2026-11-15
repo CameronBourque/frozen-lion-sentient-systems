@@ -116,10 +116,65 @@ local function ClosePlainPopup(popup, context)
 	end
 end
 
--- Closes each plain popup that is open. A popup whose mode is off has no
--- context. Call it when a batch of game events ends and when the interface is
--- idle, since they open from notifications at any time, or from their own
--- queue once nothing else shows.
+-- The IDs of the InGamePopup dialogs closed. The shared dialog also asks the
+-- player to confirm a strike or a city, so the others stay open.
+local CLOSED_DIALOGS = {
+	-- UnitCaptured.lua, when the player loses or captures a unit
+	UnitCaptured = true,
+}
+
+-- Whether a closed dialog was raised and is still waiting to close.
+local isDialogPending = false
+
+-- Remembers a dialog raised through InGamePopup, to close at the end of the
+-- batch, once InGamePopup has shown it. Call it from OnRaisePopupInGame.
+function SentientSystems_NoteRaisedDialog(id)
+	if CLOSED_DIALOGS[id] then
+		isDialogPending = true
+	end
+end
+
+-- Returns the first control with the ID under a control, searching its
+-- children. A path doesn't reach the controls of InGamePopup, but its
+-- children do.
+local function FindChild(control, id)
+	for _, child in ipairs(control:GetChildren() or {}) do
+		if child:GetID() == id then
+			return child
+		end
+
+		local found = FindChild(child, id)
+
+		if found ~= nil then
+			return found
+		end
+	end
+
+	return nil
+end
+
+-- Presses the button of the dialog waiting to close, once it shows. Its only
+-- button runs InGamePopup's own close.
+local function CloseRaisedDialog()
+	local context = ContextPtr:LookUpControl("/InGame/InGamePopup")
+	local root = context and FindChild(context, "PopupRoot")
+
+	if root == nil or root:IsHidden() then
+		return
+	end
+
+	local button = FindChild(root, "Button")
+
+	if button ~= nil then
+		isDialogPending = false
+		button:DoLeftClick()
+	end
+end
+
+-- Closes each plain popup that is open, and the dialog waiting to close. A
+-- popup whose mode is off has no context. Call it when a batch of game events
+-- ends and when the interface is idle, since they open from notifications at
+-- any time, or from their own queue once nothing else shows.
 function SentientSystems_ClosePlainPopups()
 	for _, popup in ipairs(SENTIENTSYSTEMS_PLAIN_POPUPS) do
 		local context = ContextPtr:LookUpControl("/InGame/" .. popup.name)
@@ -127,6 +182,10 @@ function SentientSystems_ClosePlainPopups()
 		if context ~= nil and IsPlainPopupOpen(popup, context) then
 			ClosePlainPopup(popup, context)
 		end
+	end
+
+	if isDialogPending then
+		CloseRaisedDialog()
 	end
 end
 

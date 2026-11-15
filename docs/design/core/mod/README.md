@@ -43,6 +43,8 @@ A screen such as the great work popup shows by unhiding its context, so the core
 
 The leader screen names its close button instead, which the core mod presses with `DoLeftClick`. It closes the screen only while no diplomacy session is open, when the screen shows only the overview, as after a peace.
 
+The unit captured message comes through the shared `InGamePopup` dialog, which also asks the player to confirm strikes and cities. So the core mod closes it only after `LuaEvents.OnRaisePopupInGame` raises `UnitCaptured`, by pressing the dialog's own button, found through `GetChildren()`.
+
 Where the game has a switch that keeps a popup from opening, the core mod uses it instead.
 
 When a load ends, `SentientSystemsCore_UI.lua` fires the tutorial's `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()` for an agent player, which turns off the tech, civic, and boost popups. See [findings/actions/popups.md](../../../findings/actions/plain-popups.md#tech-civic-and-boost-popups).

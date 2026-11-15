@@ -301,6 +301,26 @@ describe("the popups", function()
 		assert.equal(3, sweeps)
 	end)
 
+	it("passes a dialog raised through InGamePopup on, for a human player only", function()
+		local noted = {}
+
+		env.SentientSystems_NoteRaisedDialog = function(id)
+			noted[#noted + 1] = id
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		SetLocalPlayer(0)
+		for _, handler in ipairs(env.LuaEvents.OnRaisePopupInGame.handlers) do
+			handler("UnitCaptured", {})
+		end
+		SetLocalPlayer(5)
+		for _, handler in ipairs(env.LuaEvents.OnRaisePopupInGame.handlers) do
+			handler("UnitCaptured", {})
+		end
+
+		assert.same({ "UnitCaptured" }, noted)
+	end)
+
 	it("turns off the tech, civic, and boost popups when a load ends, for a human player only", function()
 		local turnedOff = 0
 

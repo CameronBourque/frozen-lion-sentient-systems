@@ -72,9 +72,11 @@ Each task first records whether its popup stops a request and the end turn call,
 
     Commit: `feat(core): close the leader screen for agent players`.
 
-11. **Unit captured popup.** When a unit of the player's is captured, or the player captures one, a popup names the other civ and waits for **OK**. Record whether it stops a request and the end turn call. Then make the core mod close it for an agent player, and pass its text to the agent.
+11. **Unit captured popup.** When a unit of the player's is captured, or the player captures one, a dialog names the other civ and waits for **OK**. It holds nothing.
 
-    `Base/Assets/UI/Popups/UnitCaptured.lua` opens it from `Events.UnitCaptured`, for the local player only, and only in single player. Commit: `feat(core): close the unit captured popup for agent players`.
+    `Base/Assets/UI/Popups/UnitCaptured.lua` raises it through the shared `InGamePopup` dialog with `LuaEvents.OnRaisePopupInGame("UnitCaptured", options)`. After that raise, the core mod presses the dialog's own button, which it finds through `GetChildren()`. See [in-game-dialogs.md](../../findings/actions/in-game-dialogs.md).
+
+    Commit: `feat(core): close the unit captured popup for agent players`.
 
 12. **Spy mission popup.** When a spy's mission ends, a popup shows the result. Record whether it stops a request and the end turn call. Then make the core mod close it for an agent player, and pass the result to the agent.
 
@@ -98,13 +100,19 @@ Each task first records whether its popup stops a request and the end turn call,
 
     Commit: `feat(core): close the emergency popup for agent players`.
 
+15. **Event messages.** The core mod closes the unit captured dialog and the spy mission popup, so the agent never reads their text. Add a short list of recent events to the state, kept for the agent's next turn as the leader messages are, with each one's turn and text.
+
+    Fill it from the options of the `UnitCaptured` raise, and from the spy mission's result. See [in-game-dialogs.md](../../findings/actions/in-game-dialogs.md#questions), question 1.
+
+    Test it with a captured builder and a finished spy mission. Commit: `feat(core): add the event messages to the state`.
+
 ## Done when
 
 With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, a tech, a civic, a boost, and a natural disaster show no popup and don't hold up the next request.
 
 Neither does a Secret Society the player discovers or joins, a hero the player discovers, a great work the player creates, a historic moment, a new era and its review, a project, a rock band concert, or a World Congress session, its results, or an emergency it starts.
 
-A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
+A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text in the state.
 
 ## Record
 

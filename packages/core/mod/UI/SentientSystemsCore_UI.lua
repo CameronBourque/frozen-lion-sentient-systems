@@ -108,6 +108,14 @@ Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("ClosePlainP
 Events.LoadScreenClose.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
 Events.UIIdle.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
 
+local function OnRaisePopupInGame(id)
+	if IsLocalAgent() then
+		SentientSystems_NoteRaisedDialog(id)
+	end
+end
+
+LuaEvents.OnRaisePopupInGame.Add(SentientSystems_CatchErrors("OnRaisePopupInGame", OnRaisePopupInGame))
+
 -- Turns off the tech, civic, and boost popups for an agent player, as the
 -- tutorial does. Each popup keeps the switch in its own Lua state, so each load
 -- turns them back on. They open only from notifications, after the load.
