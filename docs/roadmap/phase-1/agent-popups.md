@@ -42,7 +42,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
    Record whether it stops a request and the end turn call, then make the core mod close it for an agent player.
 
-   `DLC/Expansion2/UI/Additions/HistoricMoments.lua` queues itself with `UIManager:QueuePopup`, fires `LuaEvents.HistoricMoments_Opened`, and listens to `Events.LocalPlayerTurnEnd`. Confirmed in files.
+   `DLC/Expansion2/UI/Additions/HistoricMoments.lua` queues itself with `UIManager:QueuePopup`, so the core mod closes it with the hero and Secret Society popups, and also on `Events.UIIdle`. It sends `LuaEvents.HistoricMoments_Closed` after, for the launch bar. See [plain-popups.md](../../findings/actions/plain-popups.md#historic-moment-popup).
 
    Test it in a save a turn from a historic moment, such as a first to build a wonder or meet a civ. Commit: `feat(core): close the historic moment popups for agent players`.
 

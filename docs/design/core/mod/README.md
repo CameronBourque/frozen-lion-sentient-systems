@@ -35,7 +35,9 @@ A meteor shower or a comet strike, in the apocalypse mode, lets its animation dr
 
 The popup's own manager still counts itself locked after the close. Later popups of that kind go into its queue and never show, so they never hold the queue. A human who took over the slot in the same session would see none of them.
 
-A plain popup, such as the hero or Secret Society popup, holds nothing and fires no event when it opens. `SENTIENTSYSTEMS_PLAIN_POPUPS` lists them, and the core mod dequeues each one in the popup queue when a batch of game events ends, and when a load ends.
+A plain popup, such as the hero or Secret Society popup, holds nothing. `SENTIENTSYSTEMS_PLAIN_POPUPS` lists them, each with its closed signal if it has one.
+
+The core mod dequeues each one in the popup queue when a batch of game events ends, when a load ends, and on `Events.UIIdle`, when the historic moment popup shows a moment it held back.
 
 Where the game has a switch that keeps a popup from opening, the core mod uses it instead.
 

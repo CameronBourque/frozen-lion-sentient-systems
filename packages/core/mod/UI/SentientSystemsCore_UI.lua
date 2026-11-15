@@ -103,9 +103,10 @@ local function ClosePlainPopups()
 end
 
 -- A plain popup can open from a notification during a load too, before any
--- batch ends.
+-- batch ends, and the historic moment popup from its own queue on UIIdle.
 Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
 Events.LoadScreenClose.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
+Events.UIIdle.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
 
 -- Turns off the tech, civic, and boost popups for an agent player, as the
 -- tutorial does. Each popup keeps the switch in its own Lua state, so each load

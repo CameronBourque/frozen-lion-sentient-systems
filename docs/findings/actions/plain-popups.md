@@ -2,7 +2,7 @@
 
 Status: confirmed. The hero discovered, Secret Society, and civic completed popups, and the core mod's close and switch, are confirmed in a running game with Gathering Storm, with calls sent through the tuner.
 
-The popups that take no lock, so hold nothing, but keep the player from the pause menu, so from saving, until they close. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md). The popups that lock are in [popups.md](popups.md).
+The popups that take no lock, so hold nothing, but wait for a click and some keep the player from the pause menu, so from saving, until they close. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md). The popups that lock are in [popups.md](popups.md).
 
 ## Questions
 
@@ -31,6 +31,20 @@ Reloaded on turn 15 with the core mod's close, the hero and Secret Society notif
 
 A hero popup can be open as soon as a load ends, before any batch ends. On turn 25 of a reloaded save, the hero popup was up after the load. Confirmed on Windows on 2026-11-14.
 
+### Historic moment popup
+
+`DLC/Expansion2/UI/Additions/HistoricMoments.lua`, in Rise and Fall, is the timeline screen, and also opens by itself for a historic moment of interest level 3 or more. It opens from `Events.NotificationActivated` for the `NOTIFICATION_PRIDE_MOMENT_RECORDED` notification. Confirmed in files.
+
+When `UI.CanShowPopup` is false, it holds the moment in its own queue and shows it on a later `Events.UIIdle`. Confirmed in files.
+
+`Show` queues the context with `UIManager:QueuePopup` and fires `LuaEvents.HistoricMoments_Opened`. `Close` dequeues it, plays `UI_Screen_Close`, and fires `LuaEvents.HistoricMoments_Closed`. `LaunchBar.lua` listens to both to show the timeline button open or closed. Confirmed in files.
+
+`Options.GetAppOption("Debug", "SuppressInfoPopups")` in `AppOptions.txt` turns these popups off, for every player. Confirmed in files.
+
+On turns 50 and 51, `SetCivic` from `GameCore_Tuner` recorded moments of interest level 3, and `NOTIFICATION_PRIDE_MOMENT_RECORDED` has `AutoActivate` set. Still, the popup didn't open by itself, before or after the turn ended, with `SuppressInfoPopups` at 0. Confirmed on Windows on 2026-11-15.
+
+`Activate(false)` on the turn 51 notification, as the game's own activation, opened the popup twice. The core mod closed it each time, and `HistoricMoments_Closed` followed each `HistoricMoments_Opened`. Confirmed on Windows on 2026-11-15.
+
 ### Tech, civic, and boost popups
 
 `Base/Assets/UI/Popups/TechCivicCompletedPopup.lua` shows each tech and civic the local player completes, and `BoostUnlockedPopup.lua` shows each boost. Each queues itself with `UIManager:QueuePopup` and takes no lock, so it holds nothing. Confirmed in files.
@@ -51,6 +65,7 @@ With the switch on, a civic boost and a civic completed later in the same sessio
 2. **Secret Society and hero popups.** With the hero or Secret Society popup up, call `SentientSystems_EndTurn(0, true)`, and read the turn 15 s later. Then call `UIManager:DequeuePopup` on its context.
 3. **Tech and civic popups.** With the civic completed popup up, fire `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, and call `UIManager:DequeuePopup` on its context.
 4. **The core mod's switch.** After a load, run `TriggerBoost` and `SetTech` on `Players[0]:GetTechs()` in `GameCore_Tuner`, and read whether each popup's context is in the popup queue.
+5. **Historic moments.** Add listeners that print on `LuaEvents.HistoricMoments_Opened` and `_Closed`. Run `SetCivic` in `GameCore_Tuner` for the first civic of a later era, then `Activate(false)` on the new `NOTIFICATION_PRIDE_MOMENT_RECORDED`, and read the popup queue.
 
 ## Results
 
@@ -63,5 +78,7 @@ With the switch on, a civic boost and a civic completed later in the same sessio
 | `SentientSystems_EndTurn(0, true)` on turn 15 of the same save, reloaded with the core mod's close | `SentientSystemsCore_UI` | With the natural wonder popup closed by hand, the hero and Secret Society notifications came, and both popups stayed hidden and out of the queue | 2026-11-14 |
 | `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, then `UIManager:DequeuePopup` on `/InGame/TechCivicCompletedPopup`, on turn 31 | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 | `TriggerBoost` for Mining and `SetTech` for Pottery on turn 25, after a load with the core mod's switch | `GameCore_Tuner` | A `NOTIFICATION_TECH_BOOST`, which opens its popup by itself, and two `NOTIFICATION_TECH_DISCOVERED`. Neither popup opened | 2026-11-14 |
+| `SetCivic` for Naval Tradition on turn 50, then for Exploration on turn 51, with the core mod's close | `GameCore_Tuner` | Moments of interest level 3 and their notifications, and no popup | 2026-11-15 |
+| `Activate(false)` on the turn 51 moment's notification | `SentientSystemsCore_UI` | `HistoricMoments_Opened` then `_Closed`, twice. The context hidden, and out of the popup queue | 2026-11-15 |
 
-Date checked: game files on 2026-11-14. Running game on Windows on 2026-11-14.
+Date checked: game files on 2026-11-14. Running game on Windows on 2026-11-14 and 2026-11-15.
