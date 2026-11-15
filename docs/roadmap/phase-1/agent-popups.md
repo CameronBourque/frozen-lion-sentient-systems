@@ -48,9 +48,9 @@ Each task first records whether its popup stops a request and the end turn call,
 
 7. **Era popups.** When a new era starts, a popup shows it, then the era review popup shows the age the player earned, golden, normal, or dark, before the dedication choice. Record whether each one stops a request and the end turn call, then make the core mod close both for an agent player.
 
-   `DLC/Expansion2/UI/Additions/EraCompletePopup.lua` opens on `Events.LocalPlayerTurnBegin` and can lock with `ExclusivePopupManager:Lock`, so it may hold the event queue.
+   `DLC/Expansion2/UI/Additions/EraCompletePopup.lua` locks, then closes itself when its animation ends, so it needs nothing. `EraReviewPopup.lua` queues itself with `UIManager:QueuePopup`, so the core mod closes it with the other plain popups.
 
-   `EraReviewPopup.lua` opens from `LuaEvents.EraReviewPopup_Show` with a plain `UIManager:QueuePopup`, and its **Continue** fires `LuaEvents.EraReviewPopup_MakeDedication`. Confirmed in files.
+   Its **Continue** opens the dedication popup, which the dedication action doesn't need. See [plain-popups.md](../../findings/actions/plain-popups.md#era-popups).
 
    Check that the [dedication action](../../design/core/mod/actions/dedications.md) still works with the review popup closed. Test it in a save a turn from a new era. Commit: `feat(core): close the era popups for agent players`.
 

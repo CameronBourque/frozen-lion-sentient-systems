@@ -36,6 +36,14 @@ None open.
 - **Choosing.** Each pick sends `PlayerOperations.COMMEMORATE` with `PARAM_COMMEMORATION_TYPE` set to the row's index, once for each pick. Confirmed in files.
 - **Blocker first.** The choice reads the era's choices only while `ENDTURN_BLOCKING_COMMEMORATION_AVAILABLE` is up, as the popup does, because a `GetNext` call with nothing waiting crashed the game for spies. See [choices/spies.md](spies.md). Confirmed in files.
 
+### Games with no dedications
+
+The Dramatic Ages mode, in `DLC/Byzantium_Gaul/Data/Byzantium_Gaul_DramaticAges_MODE.xml`, sets `COMMEMORATE_BASE_CHOICES_ALLOWED` and `COMMEMORATE_OPTIONS_MAX` to 0, so no age offers a dedication.
+
+It sends `NOTIFICATION_COMMEMORATION_WITHOUT_CHOICE` in place of the blocker, and gives golden and dark age policy cards, such as `POLICY_REFORM_THE_COINAGE`, instead. Confirmed in files.
+
+On turn 120 of a game with it on, a golden age allowed 0 dedications and showed no blocker. Confirmed on Windows on 2026-11-15.
+
 ## Method
 
 1. To end an era on a game with `EnableTuner 1`, send `Game.SetCurrentGameTurn(n)` through `GameCore_Tuner`, with `n` one turn before the era's latest end turn, from `Game.GetEras():GetCurrentEraMaximumEndTurn()`, then end the turn.

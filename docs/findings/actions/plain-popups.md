@@ -47,6 +47,22 @@ On turn 51, a world wonder forced to complete in Lahore opened the popup by itse
 
 It also closed the timeline opened from the launch bar, and the moment opened from its notification. `HistoricMoments_Closed` followed each `HistoricMoments_Opened`. Confirmed on Windows on 2026-11-15.
 
+### Era popups
+
+`DLC/Expansion2/UI/Additions/EraCompletePopup.lua` opens on `Events.LocalPlayerTurnBegin` on the first turn of a new era. In single player it locks with `ExclusivePopupManager:Lock`. It closes itself when its animation ends, so it waits for no click. Confirmed in files.
+
+`EraReviewPopup.lua` opens from `LuaEvents.EraReviewPopup_Show`, which `NotificationPanel_Expansion1.lua` fires when the `COMMEMORATION_AVAILABLE` or `COMMEMORATION_WITHOUT_CHOICE` notification activates. It queues itself with `UIManager:QueuePopup`. Confirmed in files.
+
+Its close only dequeues it. Its **Continue** dequeues it and fires `LuaEvents.EraReviewPopup_MakeDedication`, which opens `DedicationPopup.lua`. Nothing else opens the dedication popup. Confirmed in files.
+
+On turn 119, ending the turn into a new era locked the new-era popup. It unlocked by itself after its animation, and the turn began with `AGENT_TURN 0`.
+
+The `COMMEMORATION_WITHOUT_CHOICE` notification activated by itself, and the era review popup opened. `UIManager:DequeuePopup` on `/InGame/EraReviewPopup` closed it. Confirmed on Windows on 2026-11-15.
+
+That age was golden with no dedication to pick, because the game had the Dramatic Ages mode on. See [choices/dedications.md](../choices/dedications.md#games-with-no-dedications). Reloaded and ended again with the core mod's close turned off, the review popup stayed open on turn 120.
+
+`GetPlayerNumAllowedCommemorations(0)` was 0, and no commemoration blocker was up, the same before and after `UIManager:DequeuePopup` closed it. Confirmed on Windows on 2026-11-15.
+
 ### Tech, civic, and boost popups
 
 `Base/Assets/UI/Popups/TechCivicCompletedPopup.lua` shows each tech and civic the local player completes, and `BoostUnlockedPopup.lua` shows each boost. Each queues itself with `UIManager:QueuePopup` and takes no lock, so it holds nothing. Confirmed in files.
@@ -80,6 +96,9 @@ With the switch on, a civic boost and a civic completed later in the same sessio
 | `SentientSystems_EndTurn(0, true)` on turn 15 of the same save, reloaded with the core mod's close | `SentientSystemsCore_UI` | With the natural wonder popup closed by hand, the hero and Secret Society notifications came, and both popups stayed hidden and out of the queue | 2026-11-14 |
 | `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()`, then `UIManager:DequeuePopup` on `/InGame/TechCivicCompletedPopup`, on turn 31 | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-14 |
 | `TriggerBoost` for Mining and `SetTech` for Pottery on turn 25, after a load with the core mod's switch | `GameCore_Tuner` | A `NOTIFICATION_TECH_BOOST`, which opens its popup by itself, and two `NOTIFICATION_TECH_DISCOVERED`. Neither popup opened | 2026-11-14 |
+| `SentientSystems_EndTurn(0, true)` on turn 119, the last turn of an era | `SentientSystemsCore_UI` | `EraCompletePopupXP2` locked, then unlocked after its animation. `AGENT_TURN 0`, and the era review popup up | 2026-11-15 |
+| `UIManager:DequeuePopup` on `/InGame/EraReviewPopup` | `SentientSystemsCore_UI` | The context hidden, and out of the popup queue | 2026-11-15 |
+| The same turn end again, with the core mod's close turned off, then `DequeuePopup` | `SentientSystemsCore_UI` | 0 dedications allowed, no commemoration blocker, and `COMMEMORATION_WITHOUT_CHOICE`, with the popup open and after the close | 2026-11-15 |
 | `SetCivic` for Naval Tradition on turn 50, then for Exploration on turn 51, with the core mod's close | `GameCore_Tuner` | Moments of interest level 3 and their notifications, and no popup | 2026-11-15 |
 | A world wonder forced to complete on turn 51, then the moment's notification and the timeline button clicked, with the core mod's close | Game, by hand | Each popup closed at once, with `HistoricMoments_Opened` then `_Closed` | 2026-11-15 |
 

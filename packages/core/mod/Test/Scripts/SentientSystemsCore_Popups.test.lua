@@ -142,6 +142,19 @@ describe("SentientSystems_ClosePlainPopups", function()
 		assert.same({ { "DequeuePopup", "heroes" }, { "DequeuePopup", "heroes" } }, calls)
 	end)
 
+	it("closes the era review popup", function()
+		env.ContextPtr.LookUpControl = function(_, path)
+			return path == "/InGame/EraReviewPopup" and "review" or nil
+		end
+		env.UIManager.IsInPopupQueue = function()
+			return true
+		end
+
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({ { "DequeuePopup", "review" } }, calls)
+	end)
+
 	it("sends the closed signal of a plain popup that has one", function()
 		env.ContextPtr.LookUpControl = function(_, path)
 			return path == "/InGame/HistoricMoments" and "moments" or nil

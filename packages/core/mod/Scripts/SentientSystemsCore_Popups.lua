@@ -52,6 +52,9 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- HistoricMoments.lua, in Rise and Fall. The launch bar shows the timeline
 	-- open until the closed signal.
 	{ name = "HistoricMoments", closed = "HistoricMoments_Closed" },
+	-- EraReviewPopup.lua, in Rise and Fall. Its Continue opens the dedication
+	-- popup, which the dedication action doesn't need.
+	{ name = "EraReviewPopup" },
 }
 
 -- Closes each plain popup that is open. A popup whose mode is off has no
