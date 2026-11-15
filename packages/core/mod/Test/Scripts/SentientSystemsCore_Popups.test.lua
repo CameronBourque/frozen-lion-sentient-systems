@@ -196,6 +196,35 @@ describe("SentientSystems_ClosePlainPopups", function()
 		assert.same({ { "DequeuePopup", "intro" }, { "DiplomacyActionView_HideCongress" } }, calls)
 	end)
 
+	it("presses the leader screen's close button when it shows with no session open", function()
+		local openSession = 4
+		local screen = {
+			IsHidden = function()
+				return false
+			end,
+		}
+		local button = { DoLeftClick = Record("DoLeftClick") }
+
+		env.Game = {
+			GetLocalPlayer = function()
+				return 0
+			end,
+		}
+		env.SentientSystems_FindOpenSession = function(playerID)
+			return playerID == 0 and openSession or nil
+		end
+		env.ContextPtr.LookUpControl = function(_, path)
+			return ({ ["/InGame/DiplomacyActionView"] = screen, ["/InGame/DiplomacyActionView/CloseButton"] = button })[path]
+		end
+
+		env.SentientSystems_ClosePlainPopups()
+		assert.same({}, calls)
+		openSession = nil
+		env.SentientSystems_ClosePlainPopups()
+
+		assert.same({ { "DoLeftClick" } }, calls)
+	end)
+
 	it("sends the closed signal of a plain popup that has one", function()
 		env.ContextPtr.LookUpControl = function(_, path)
 			return path == "/InGame/HistoricMoments" and "moments" or nil

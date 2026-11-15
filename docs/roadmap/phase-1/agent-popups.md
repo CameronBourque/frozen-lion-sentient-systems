@@ -66,15 +66,11 @@ Each task first records whether its popup stops a request and the end turn call,
 
    See [congress-popups.md](../../findings/actions/congress-popups.md). Commit: `feat(core): close the World Congress popups for agent players`.
 
-10. **Leader screen.** A war that `declareWar` declares on a major civ, and a peace that `proposePeace` makes, leave the leader screen open on the overview, and no timing of the session close closes it.
+10. **Leader screen.** A peace that `proposePeace` makes leaves the leader screen open on the overview. A war that `declareWar` declares doesn't, since the core mod closes the AI's goodbye.
 
-    Find a way to keep the leader screen from opening for an agent player, or to close it cleanly, and check whether the open screen stops a request and the end turn call.
+    With no session open, the leader screen shows only the overview, so the core mod closes it with the other plain popups. It presses the screen's own **X** with `DoLeftClick` on `/InGame/DiplomacyActionView/CloseButton`. See [the leader screen](../../findings/actions/war-and-peace.md#the-leader-screen).
 
-    Start with `DiplomacyActionView.lua` and the question in [the leader screen](../../findings/actions/war-and-peace.md#the-leader-screen). Avoid replacing `DiplomacyActionView.lua`, which Gathering Storm and other mods replace.
-
-    Test it with `declareWar` on a major civ, and with the sessions in [AI diplomacy sessions](../../findings/actions/ai-sessions.md). The goodbye closing passed with `declareWar` on the Maori on 2026-11-13. Commit: `feat(core): close the leader screen for agent players`.
-
-    Closing the goodbye from a listener on `Events.DiplomacyStatement` left no leader screen after `SentientSystems_DeclareWar`. See [closing a goodbye](../../findings/actions/ai-sessions.md#closing-a-goodbye). Check whether that answers this task.
+    Commit: `feat(core): close the leader screen for agent players`.
 
 11. **Unit captured popup.** When a unit of the player's is captured, or the player captures one, a popup names the other civ and waits for **OK**. Record whether it stops a request and the end turn call. Then make the core mod close it for an agent player, and pass its text to the agent.
 

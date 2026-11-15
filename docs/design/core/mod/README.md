@@ -41,6 +41,8 @@ The core mod dequeues each one in the popup queue when a batch of game events en
 
 A screen such as the great work popup shows by unhiding its context, so the core mod hides it instead. A popup whose own close does more, such as the congress voting screen, names a LuaEvent that runs that close.
 
+The leader screen names its close button instead, which the core mod presses with `DoLeftClick`. It closes the screen only while no diplomacy session is open, when the screen shows only the overview, as after a peace.
+
 Where the game has a switch that keeps a popup from opening, the core mod uses it instead.
 
 When a load ends, `SentientSystemsCore_UI.lua` fires the tutorial's `LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups()` for an agent player, which turns off the tech, civic, and boost popups. See [findings/actions/popups.md](../../../findings/actions/plain-popups.md#tech-civic-and-boost-popups).

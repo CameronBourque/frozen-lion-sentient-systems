@@ -46,7 +46,9 @@ SENTIENTSYSTEMS_POPUPS = {
 -- UIManager:DequeuePopup, then the closed signal, if it has one. A screen
 -- shows by unhiding its context instead, and its Close hides it and plays its
 -- stop sounds. closeEvent names a LuaEvent that runs the popup's own Close,
--- for a Close that does more.
+-- for a Close that does more, and closeButton names the button that does, to
+-- press. A popup with onlyWithoutSession stays open while the player has a
+-- diplomacy session open.
 SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- HeroesPopup.lua, in the Heroes and Legends mode
 	{ name = "HeroesPopup" },
@@ -58,7 +60,6 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- EraReviewPopup.lua, in Rise and Fall. Its Continue opens the dedication
 	-- popup, which the dedication action doesn't need.
 	{ name = "EraReviewPopup" },
-	-- GreatWorkShowcase.lua, for each great work the player creates
 	-- WorldCongressIntro.lua, in Gathering Storm. Its Continue opens the voting
 	-- screen, which the congress vote action doesn't need.
 	{ name = "WorldCongressIntro" },
@@ -70,15 +71,23 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- through the congress vote, so the popup only shows it. Its OK also sends
 	-- ACCEPT_EMERGENCY, which changes nothing the player can see.
 	{ name = "WorldCrisisPopup" },
+	-- GreatWorkShowcase.lua, for each great work the player creates
 	{
 		name = "GreatWorkShowcase",
 		isScreen = true,
 		sounds = { "Stop_Great_Music", "Stop_Speech_GreatWriting", "Stop_Great_Works_Gallery_Ambience" },
 	},
+	-- DiplomacyActionView.lua: the leader screen. With no session open it shows
+	-- only the overview, as after a peace, and its X runs its own Close.
+	{ name = "DiplomacyActionView", isScreen = true, closeButton = "CloseButton", onlyWithoutSession = true },
 }
 
 -- Returns whether a plain popup's context is showing.
 local function IsPlainPopupOpen(popup, context)
+	if popup.onlyWithoutSession and SentientSystems_FindOpenSession(Game.GetLocalPlayer()) ~= nil then
+		return false
+	end
+
 	if popup.isScreen then
 		return not context:IsHidden()
 	end
@@ -90,6 +99,8 @@ end
 local function ClosePlainPopup(popup, context)
 	if popup.closeEvent ~= nil then
 		LuaEvents[popup.closeEvent]()
+	elseif popup.closeButton ~= nil then
+		ContextPtr:LookUpControl("/InGame/" .. popup.name .. "/" .. popup.closeButton):DoLeftClick()
 	elseif popup.isScreen then
 		context:SetHide(true)
 	else
