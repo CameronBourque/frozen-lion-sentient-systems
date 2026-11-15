@@ -8,6 +8,7 @@ SentientSystems_Include("SentientSystemsCore_Lookups")
 SentientSystems_Include("SentientSystemsCore_Text")
 SentientSystems_Include("SentientSystemsCore_Math")
 SentientSystems_Include("SentientSystemsCore_Sessions")
+SentientSystems_Include("SentientSystemsCore_Events")
 SentientSystems_Include("SentientSystemsCore_StateCities")
 SentientSystems_Include("SentientSystemsCore_StateContinents")
 SentientSystems_Include("SentientSystemsCore_StateDiplomacy")
@@ -57,6 +58,7 @@ function SentientSystems_GetState(playerID)
 		wmdLaunchers = SentientSystems_GetWmdLauncherState(player),
 		proposals = SentientSystems_GetProposalState(player),
 		sessions = SentientSystems_GetSessionState(player),
+		events = SentientSystems_GetEventMessages(playerID),
 		scoreboard = SentientSystems_GetScoreboardState(player),
 		victories = SentientSystems_GetVictoryState(player),
 	})

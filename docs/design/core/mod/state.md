@@ -46,6 +46,9 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The plot tooltip.** On each revealed tile with nuclear fallout: the turns it has left.
 - **The Continent lens.** The index of each tile's continent, and a list of the continents the player has revealed with their types and names, as the lens and the tooltip show them.
 - **Their own screens.** Climate and disasters.
+- **The popups the core mod closes.** A unit the player lost to a capture or captured, and a rock band's concert result, as the unit captured and rock band popups word them. Each stays until the end of the next turn, and is lost when the game loads.
+
+  The spy mission popup needs no entry, since the Espionage screen's mission history has the result.
 - **World Rankings and the leader panel.** The scoreboard and victory progress, as World Rankings shows them. Each met player's score, military strength, and science, culture, gold, and faith per turn, as the leader panel at the top right shows them.
 
 The scoreboard lists every player in the screen's order. A met player has their ID and the values the screen shows, and an unmet player has only their place, as the screen shows a `?` icon.
@@ -55,6 +58,8 @@ A feature that isn't in the ruleset, such as loyalty without the Rise and Fall e
 ## Files
 
 `SentientSystems_GetState(playerID)` in `Scripts/State/SentientSystemsCore_State.lua` returns the view as JSON, and the UI script loads it with `include`. The bridge reads it through the stash.
+
+The events come from `Scripts/SentientSystemsCore_Events.lua`, which the UI script fills from `Events.UnitCaptured` and `Events.PostTourismBomb`.
 
 Each section of the view has its own file in `Scripts/State/`, such as `SentientSystemsCore_StateCities.lua`, which defines one global, such as `SentientSystems_GetCityStates(player)`. The state file loads each one and puts the sections together.
 
@@ -75,4 +80,5 @@ The shape of each section is in the schemas in [packages/core/bridge/src/state/]
 | WMD launchers are their own section, grouped by device | It answers what can launch a device now, with no field on every unit and tile. 100 launchers take 2 KB grouped, or 8.5 KB as one entry each. With no devices it is left out, and skips the checks |
 | The core mod closes a goodbye-only leader screen, and the diplomacy section keeps what the leader said | The AI turns wait while a session is open. A human sees the text, so the agent does too, until the [computer slot test](../../agents/slot-type.md#computer-slot-test) shows what an AI gets. Messages are small, so they share the section |
 | The leader screens with a choice are their own section, apart from diplomacy | Like a proposal, each is a decision that waits for the agent, and the AI turns wait with it. The messages record what happened, so they stay in diplomacy |
+| The text of a popup the core mod closes is its own section, events, filled from the game's events | The popup only knows the local player, and the events name every player. One section holds every such text, since none has a home of its own |
 | Each state section has its own file in `Scripts/State/` | The state grows with every section, and one file would pass 1,000 lines. A file per section keeps each one and its tests small. `include` finds a file by name in any folder, so the folder only groups the files |

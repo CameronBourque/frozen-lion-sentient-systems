@@ -96,11 +96,11 @@ Each task first records whether its popup stops a request and the end turn call,
 
     Commit: `feat(core): close the emergency popup for agent players`.
 
-15. **Event messages.** The core mod closes the unit captured dialog and the spy mission and rock band result popups, so the agent never reads their text. Add a short list of recent events to the state, kept for the agent's next turn as the leader messages are, with each one's turn and text.
+15. **Event messages.** The core mod closes the unit captured dialog and the rock band result popup, so the agent never reads their text. Add an events section to the state, kept for the agent's next turn as the leader messages are, with each one's turn, kind, and text.
 
-    Fill it from the options of the `UnitCaptured` raise, the history of each mission `Events.SpyMissionCompleted` names, and the result of each concert `Events.PostTourismBomb` names. See [in-game-dialogs.md](../../findings/actions/in-game-dialogs.md#questions), question 1, and [spies.md](../../findings/actions/spies.md#mission-popup).
+    Fill it from `Events.UnitCaptured` and `Events.PostTourismBomb`, for each agent player they name, worded as the popups word them. A spy mission's result needs nothing, since the espionage section's mission history has it. See [design/core/mod/state.md](../../design/core/mod/state.md#state-serializer).
 
-    Test it with a captured builder, a finished spy mission, and a concert. Commit: `feat(core): add the event messages to the state`.
+    Test it with a unit lost, a unit captured, and a concert. Commit: `feat(core): add the event messages to the state`.
 
 16. **Rock band concert action.** No action starts a concert, so the agent can't use a rock band. `UnitOperationTypes.TOURISM_BOMB` is nil, so send the hash of `UNITOPERATION_TOURISM_BOMB` from `GameInfo.UnitOperations`, which started one from the tuner.
 
@@ -120,7 +120,7 @@ With an agent as the local player, a wonder that the player completes, a natural
 
 Neither does a Secret Society the player discovers or joins, a hero the player discovers, a great work the player creates, a historic moment, a new era and its review, a project, a rock band concert, or a World Congress session, its results, or an emergency it starts.
 
-A war the agent declares leaves no leader screen open. A captured unit, a finished spy mission, and a concert show no popup, and the agent gets their text in the state. The agent can start a concert.
+A war the agent declares leaves no leader screen open. A captured unit, a finished spy mission, and a concert show no popup, and the agent gets their text in the state, or the mission's in the mission history. The agent can start a concert.
 
 ## Record
 

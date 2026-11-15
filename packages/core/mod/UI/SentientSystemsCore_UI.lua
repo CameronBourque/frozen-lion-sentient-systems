@@ -5,6 +5,7 @@ include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_State")
 SentientSystems_Include("SentientSystemsCore_Sessions")
 SentientSystems_Include("SentientSystemsCore_Popups")
+SentientSystems_Include("SentientSystemsCore_Events")
 SentientSystems_Include("SentientSystemsCore_Choices")
 SentientSystems_Include("SentientSystemsCore_Actions")
 SentientSystems_Include("SentientSystemsCore_Placement")
@@ -39,13 +40,18 @@ local function IsAgentPlayer(player)
 	return player:IsHuman()
 end
 
+-- Whether an agent plays the player with the ID, which may be no player.
+local function IsAgentID(playerID)
+	local player = Players[playerID]
+
+	return player ~= nil and IsAgentPlayer(player)
+end
+
 -- Prints the turn signal, "[SENTIENTSYSTEMS] AGENT_TURN <playerID>", when an
 -- agent player's turn starts. isFirstTime is false when the event fires again
 -- for a turn that already started.
 local function OnPlayerTurnActivated(playerID, isFirstTime)
-	local player = Players[playerID]
-
-	if player ~= nil and IsAgentPlayer(player) then
+	if IsAgentID(playerID) then
 		SentientSystems_Print("AGENT_TURN", playerID)
 	end
 end
@@ -56,9 +62,7 @@ Events.PlayerTurnActivated.Add(SentientSystems_CatchErrors("OnPlayerTurnActivate
 -- the statement of any other. The AI turns wait while a session is open, and
 -- no one is at the leader screen.
 local function OnDiplomacyStatement(fromID, toID, statement)
-	local player = Players[toID]
-
-	if player ~= nil and IsAgentPlayer(player) then
+	if IsAgentID(toID) then
 		SentientSystems_HandleStatement(fromID, toID, statement)
 	end
 end
@@ -68,9 +72,7 @@ Events.DiplomacySessionClosed.Add(SentientSystems_CatchErrors("OnDiplomacySessio
 
 -- Whether an agent plays the local player, the only player popups open for.
 local function IsLocalAgent()
-	local player = Players[Game.GetLocalPlayer()]
-
-	return player ~= nil and IsAgentPlayer(player)
+	return IsAgentID(Game.GetLocalPlayer())
 end
 
 -- Returns the listener that closes a popup when it opens for an agent player.
@@ -115,6 +117,28 @@ local function OnRaisePopupInGame(id)
 end
 
 LuaEvents.OnRaisePopupInGame.Add(SentientSystems_CatchErrors("OnRaisePopupInGame", OnRaisePopupInGame))
+
+-- Keeps what the unit captured popup would show, for each agent player on
+-- either side. The popup shows only for the local player.
+local function OnUnitCaptured(ownerID, unitID, owningID, capturerID)
+	if IsAgentID(ownerID) then
+		SentientSystems_NoteUnitLost(ownerID, capturerID)
+	end
+
+	if IsAgentID(capturerID) then
+		SentientSystems_NoteUnitCaptured(capturerID, ownerID)
+	end
+end
+
+Events.UnitCaptured.Add(SentientSystems_CatchErrors("OnUnitCaptured", OnUnitCaptured))
+
+local function OnPostTourismBomb(ownerID, unitID, x, y, resultID, tourism)
+	if IsAgentID(ownerID) then
+		SentientSystems_NoteConcert(ownerID, unitID, resultID, tourism)
+	end
+end
+
+Events.PostTourismBomb.Add(SentientSystems_CatchErrors("OnPostTourismBomb", OnPostTourismBomb))
 
 -- Turns off the tech, civic, and boost popups for an agent player, as the
 -- tutorial does. Each popup keeps the switch in its own Lua state, so each load

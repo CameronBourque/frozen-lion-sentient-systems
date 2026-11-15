@@ -11,6 +11,7 @@ import { CONTINENT } from "./continents.js";
 import { DIPLOMACY } from "./diplomacy.js";
 import { ENVOYS } from "./envoys.js";
 import { ESPIONAGE } from "./espionage.js";
+import { EVENTS } from "./events.js";
 import { GOVERNORS } from "./governors.js";
 import { GREAT_PEOPLE } from "./great-people.js";
 import { GREAT_WORKS } from "./great-works.js";
@@ -43,6 +44,7 @@ export const STATE = z.object({
 	}),
 	proposals: PROPOSALS,
 	sessions: SESSIONS,
+	events: EVENTS,
 	religion: RELIGION,
 	envoys: ENVOYS,
 	espionage: ESPIONAGE,

@@ -97,6 +97,14 @@ describe("SentientSystems_HasBlocker", function()
 	end)
 end)
 
+describe("SentientSystems_AddRecent", function()
+	it("adds the item last, and drops the items from before the turn before it", function()
+		local list = { { turn = 83 }, { turn = 84 }, { turn = 85 } }
+
+		assert.same({ { turn = 84 }, { turn = 85 }, { turn = 85, new = true } }, env.SentientSystems_AddRecent(list, { turn = 85, new = true }))
+	end)
+end)
+
 describe("SentientSystems_Contains", function()
 	it("tells whether the list holds the value", function()
 		assert.is_true(env.SentientSystems_Contains({ "a", "b" }, "b"))

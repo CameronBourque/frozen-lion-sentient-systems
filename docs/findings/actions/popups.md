@@ -72,6 +72,8 @@ It holds the current event with `UI.ReferenceCurrentEvent()`, queues itself, set
 
 Its `Close` button releases the event, stops the camera and animation, fires `LuaEvents.RockBandMoviePopup_OpenRockBandPopup` with the owner, unit, result, and tourism, then `RockBandMoviePopup_Closed`, and sets `SELECTION`.
 
+`Events.PostTourismBomb(ownerID, unitID, x, y, resultID, tourism)` gives the result as an index into `Unit_RockbandResults_XP2`. `UnitOperationTypes.TOURISM_BOMB` is nil, so a request needs the operation's hash from `GameInfo.UnitOperations`.
+
 `RockBandPopup.lua` opens from that event and queues itself. It shows the result's tier, tourism, albums sold, and whether the band levels up, gains a promotion, or breaks up. Its `Close` only dequeues it. Confirmed in files.
 
 A concert on player 1's harbor fired `PostTourismBomb` with 1000 tourism and result 4, and the movie popup showed in the `CINEMATIC` mode.

@@ -321,6 +321,38 @@ describe("the popups", function()
 		assert.same({ "UnitCaptured" }, noted)
 	end)
 
+	it("keeps a unit capture for each human player on either side", function()
+		local noted = {}
+
+		env.SentientSystems_NoteUnitLost = function(playerID, capturerID)
+			noted[#noted + 1] = { "lost", playerID, capturerID }
+		end
+		env.SentientSystems_NoteUnitCaptured = function(playerID, ownerID)
+			noted[#noted + 1] = { "captured", playerID, ownerID }
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		Fire("UnitCaptured", 0, 77, 0, 5)
+		Fire("UnitCaptured", 5, 78, 5, 0)
+		Fire("UnitCaptured", 5, 79, 5, 63)
+
+		assert.same({ { "lost", 0, 5 }, { "captured", 0, 5 } }, noted)
+	end)
+
+	it("keeps a concert of a human player's only", function()
+		local noted = {}
+
+		env.SentientSystems_NoteConcert = function(...)
+			noted[#noted + 1] = { ... }
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		Fire("PostTourismBomb", 0, 21, 4, 5, 2, 1000)
+		Fire("PostTourismBomb", 5, 22, 4, 5, 2, 1000)
+
+		assert.same({ { 0, 21, 2, 1000 } }, noted)
+	end)
+
 	it("turns off the tech, civic, and boost popups when a load ends, for a human player only", function()
 		local turnedOff = 0
 
