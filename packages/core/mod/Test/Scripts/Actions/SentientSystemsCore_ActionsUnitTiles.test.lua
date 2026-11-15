@@ -177,3 +177,37 @@ describe("improve", function()
 		assert.equal(Failed("The unit is sleeping. Wake it first."), env.SentientSystems_UnitAction(0, UNIT.id, "improve", nil, nil, "IMPROVEMENT_FARM"))
 	end)
 end)
+
+describe("concert", function()
+	local BAND = With(UNIT, { type = "UNIT_ROCK_BAND" })
+
+	-- Returns an environment in Gathering Storm, unless isBase.
+	local function LoadBand(unit, isBase)
+		local env = Game.new()
+
+		FakeGame.Install(env, { expansion2 = not isBase, players = { [0] = { units = { unit } } } })
+		Game.run(env, "Scripts/Actions/SentientSystemsCore_Actions.lua")
+
+		return env
+	end
+
+	it("requests the concert the game allows, by its hash", function()
+		local env = LoadBand(With(BAND, { canNow = { "concert" } }))
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, UNIT.id, "concert"))
+		assert.same({ { unit = UNIT.id, operation = Hash(env, "UNITOPERATION_TOURISM_BOMB") } }, env.requests)
+	end)
+
+	it("fails for a unit that isn't a rock band", function()
+		assert.equal(Failed("This kind of unit can't perform a concert."), LoadBand(UNIT).SentientSystems_UnitAction(0, UNIT.id, "concert"))
+	end)
+
+	it("gives the game's reasons, or what a concert needs when it gives none", function()
+		assert.equal(Failed("Not in foreign territory."), LoadBand(With(BAND, { reasons = { "Not in foreign territory." } })).SentientSystems_UnitAction(0, UNIT.id, "concert"))
+		assert.equal(Failed("It performs on a district or wonder in another civ's territory, with moves left."), LoadBand(BAND).SentientSystems_UnitAction(0, UNIT.id, "concert"))
+	end)
+
+	it("fails without Gathering Storm", function()
+		assert.equal(Failed("Rock bands need Gathering Storm."), LoadBand(BAND, true).SentientSystems_UnitAction(0, UNIT.id, "concert"))
+	end)
+end)

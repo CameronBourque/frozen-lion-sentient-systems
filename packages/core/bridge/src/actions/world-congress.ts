@@ -31,9 +31,10 @@ function luaVote(vote: CongressVote): string {
 	return `{ type = ${JSON.stringify(vote.type)}, target = ${vote.target}, votes = ${vote.votes}, ${side} }`;
 }
 
-// Casts the player's votes in a World Congress session and submits them. Every
-// resolution needs a vote, and a proposal left out is an abstention. An ok
-// result means the game took the votes, not that the session is over.
+// Casts the player's votes in a World Congress session, submits them, and ends
+// the turn, as the screen does. Every resolution needs a vote, and a proposal
+// left out is an abstention. An ok result means the game took the votes, not
+// that the session is over.
 export function voteInCongress(client: TunerClient, playerID: number, votes: CongressVote[]): Promise<ActionResult> {
 	return sendAction(client, `SentientSystems_VoteInCongress(${playerID}, {${votes.map(luaVote).join(", ")}})`);
 }

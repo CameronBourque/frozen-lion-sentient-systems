@@ -25,7 +25,8 @@ local function Load(favor, blockers, inSession)
 	return env
 end
 
--- Returns a proposal vote request for player 0, then the submit request.
+-- Returns a proposal vote request for player 0, then the submit request and
+-- the end turn request.
 local function Requests(env, votes)
 	local P = env.PlayerOperations
 	local requests = {}
@@ -39,12 +40,13 @@ local function Requests(env, votes)
 	end
 
 	requests[#requests + 1] = { player = 0, operation = P.WORLD_CONGRESS_SUBMIT_TURN, parameters = {} }
+	requests[#requests + 1] = { action = env.ActionTypes.ACTION_ENDTURN }
 
 	return requests
 end
 
 describe("SentientSystems_VoteInCongress", function()
-	it("votes for and against proposals by their sender and target, then submits", function()
+	it("votes for and against proposals by their sender and target, then submits and ends the turn", function()
 		local env = Load()
 		local votes = { { type = "WC_EMERGENCY_BACKSTAB", target = 10, votes = 3 }, { type = "WC_EMERGENCY_REQUEST_AID", target = 3, votes = 2, against = true } }
 
@@ -161,6 +163,7 @@ describe("SentientSystems_VoteInCongress in a regular session", function()
 			ResolutionRequest(env, -1934671345, 1, 1, 0),
 			{ player = 0, operation = P.WORLD_CONGRESS_DISCUSSION_VOTE, parameters = { [P.PARAM_PLAYER_ONE] = 0, [P.PARAM_PLAYER_TWO] = 10, [P.PARAM_WORLD_CONGRESS_VOTES] = -1 } },
 			{ player = 0, operation = P.WORLD_CONGRESS_SUBMIT_TURN, parameters = {} },
+			{ action = env.ActionTypes.ACTION_ENDTURN },
 		}, env.requests)
 	end)
 

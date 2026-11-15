@@ -31,6 +31,24 @@ local function SetPlayers(players)
 	end
 end
 
+-- Returns a table of events in which each event records its handlers, so a
+-- test can fire it.
+local function EventTable()
+	return setmetatable({}, {
+		__index = function(events, name)
+			local event = { handlers = {} }
+
+			function event.Add(handler)
+				event.handlers[#event.handlers + 1] = handler
+			end
+
+			events[name] = event
+
+			return event
+		end,
+	})
+end
+
 local function Fire(event, ...)
 	for _, handler in ipairs(env.Events[event].handlers) do
 		handler(...)
@@ -44,23 +62,14 @@ before_each(function()
 			return "SentientSystemsCore_UI"
 		end,
 	}
-	-- Each event records its handlers, so a test can fire it.
-	env.Events = setmetatable({}, {
-		__index = function(events, name)
-			local event = { handlers = {} }
-
-			function event.Add(handler)
-				event.handlers[#event.handlers + 1] = handler
-			end
-
-			events[name] = event
-
-			return event
-		end,
-	})
+	env.Events = EventTable()
+	env.LuaEvents = EventTable()
 	env.Game = {
 		GetCurrentGameTurn = function()
 			return 12
+		end,
+		GetLocalPlayer = function()
+			return -1
 		end,
 	}
 	env.Modding = {
@@ -177,6 +186,102 @@ describe("the diplomacy session closed event", function()
 		Fire("DiplomacySessionClosed", 7)
 
 		assert.same({ [8] = { from = 5, to = 0 } }, env.SentientSystems_OpenStatements)
+	end)
+end)
+
+describe("the popups", function()
+	local function SetLocalPlayer(localPlayer)
+		env.Game.GetLocalPlayer = function()
+			return localPlayer
+		end
+	end
+
+	it("closes the popups when a batch of game events or a load ends, or the interface is idle, for a human player only", function()
+		local sweeps = 0
+
+		env.SentientSystems_ClosePopups = function()
+			sweeps = sweeps + 1
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		SetLocalPlayer(0)
+		Fire("GameCoreEventPublishComplete")
+		Fire("LoadScreenClose")
+		Fire("UIIdle")
+		SetLocalPlayer(5)
+		Fire("GameCoreEventPublishComplete")
+		Fire("LoadScreenClose")
+		Fire("UIIdle")
+
+		assert.equal(3, sweeps)
+	end)
+
+	it("passes a dialog raised through InGamePopup on, for a human player only", function()
+		local noted = {}
+
+		env.SentientSystems_NoteRaisedDialog = function(id)
+			noted[#noted + 1] = id
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		SetLocalPlayer(0)
+		for _, handler in ipairs(env.LuaEvents.OnRaisePopupInGame.handlers) do
+			handler("UnitCaptured", {})
+		end
+		SetLocalPlayer(5)
+		for _, handler in ipairs(env.LuaEvents.OnRaisePopupInGame.handlers) do
+			handler("UnitCaptured", {})
+		end
+
+		assert.same({ "UnitCaptured" }, noted)
+	end)
+
+	it("keeps a unit capture for each human player on either side", function()
+		local noted = {}
+
+		env.SentientSystems_NoteUnitLost = function(playerID, capturerID)
+			noted[#noted + 1] = { "lost", playerID, capturerID }
+		end
+		env.SentientSystems_NoteUnitCaptured = function(playerID, ownerID)
+			noted[#noted + 1] = { "captured", playerID, ownerID }
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		Fire("UnitCaptured", 0, 77, 0, 5)
+		Fire("UnitCaptured", 5, 78, 5, 0)
+		Fire("UnitCaptured", 5, 79, 5, 63)
+
+		assert.same({ { "lost", 0, 5 }, { "captured", 0, 5 } }, noted)
+	end)
+
+	it("keeps a concert of a human player's only", function()
+		local noted = {}
+
+		env.SentientSystems_NoteConcert = function(...)
+			noted[#noted + 1] = { ... }
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		Fire("PostTourismBomb", 0, 21, 4, 5, 2, 1000)
+		Fire("PostTourismBomb", 5, 22, 4, 5, 2, 1000)
+
+		assert.same({ { 0, 21, 2, 1000 } }, noted)
+	end)
+
+	it("turns off the tech, civic, and boost popups when a load ends, for a human player only", function()
+		local turnedOff = 0
+
+		env.LuaEvents.TutorialUIRoot_DisableTechAndCivicPopups = function()
+			turnedOff = turnedOff + 1
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		SetLocalPlayer(0)
+		Fire("LoadGameViewStateDone")
+		SetLocalPlayer(5)
+		Fire("LoadGameViewStateDone")
+
+		assert.equal(1, turnedOff)
 	end)
 end)
 

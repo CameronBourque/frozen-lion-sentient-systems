@@ -1,6 +1,6 @@
--- The unit orders that act on the unit's own tile: found city, improve, and
--- pillage, of an improvement or a road. Uses the stances file's helpers. The
--- calls are in docs/findings/actions/.
+-- The unit orders that act on the unit's own tile: found city, improve,
+-- pillage, of an improvement or a road, and a rock band's concert. Uses the
+-- stances file's helpers. The calls are in docs/findings/actions/.
 
 -- Returns whether the player has revealed the tile. A city on a revealed tile
 -- shows its banner, so the player knows it.
@@ -191,4 +191,24 @@ end)
 
 SentientSystems_AddUnitAction("improve", function(_, unit, _, _, type)
 	return Improve(unit, type)
+end)
+
+-- A rock band's concert, in Gathering Storm. UnitOperationTypes has no
+-- TOURISM_BOMB, so DoOperation's hash from GameInfo is the one that works.
+SentientSystems_AddUnitAction("concert", function(_, unit)
+	if not SentientSystems_HasExpansion2() then
+		return "Rock bands need Gathering Storm."
+	end
+
+	return SentientSystems_DoOperation(unit, "concert", "UNITOPERATION_TOURISM_BOMB", {
+		kind = function(row)
+			local xp2 = GameInfo.Units_XP2[row.UnitType]
+
+			return xp2 ~= nil and xp2.TourismBombPossible
+		end,
+		hint = function()
+			return SentientSystems_GetOperationReasons(unit, GameInfo.UnitOperations.UNITOPERATION_TOURISM_BOMB.Hash)
+				or "It performs on a district or wonder in another civ's territory, with moves left."
+		end,
+	})
 end)

@@ -16,6 +16,7 @@ const STATE: State = {
 	tiles: [],
 	proposals: [],
 	sessions: [],
+	events: [],
 	scoreboard: [],
 	victories: {},
 	religion: {},

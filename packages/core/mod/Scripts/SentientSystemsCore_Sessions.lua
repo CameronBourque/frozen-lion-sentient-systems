@@ -136,21 +136,6 @@ function SentientSystems_GetStatementText(row, fromID, toID, statement)
 	return text, GetStatementReason(row, fromID, toID, statement)
 end
 
--- Keeps a message, and drops those from before the previous turn, so each
--- lasts through the agent's next turn.
-local function AddSessionMessage(message)
-	local kept = {}
-
-	for _, old in ipairs(SentientSystems_SessionMessages) do
-		if old.turn >= message.turn - 1 then
-			kept[#kept + 1] = old
-		end
-	end
-
-	kept[#kept + 1] = message
-	SentientSystems_SessionMessages = kept
-end
-
 -- Returns whether the statement is an AI's that offers the player only the
 -- goodbye. A deal, a request, or a statement with no row isn't.
 local function IsGoodbyeStatement(fromID, toID, statement, row, selections)
@@ -187,7 +172,7 @@ function SentientSystems_HandleStatement(fromID, toID, statement)
 
 	DiplomacyManager.CloseSession(statement.SessionID)
 	SentientSystems_OpenStatements[statement.SessionID] = nil
-	AddSessionMessage({
+	SentientSystems_SessionMessages = SentientSystems_AddRecent(SentientSystems_SessionMessages, {
 		from = fromID,
 		to = toID,
 		turn = Game.GetCurrentGameTurn(),

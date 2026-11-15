@@ -57,6 +57,22 @@ function SentientSystems_HasBlocker(playerID, ...)
 	return false
 end
 
+-- Returns the list with the item added last, keeping only the items from the
+-- item's turn and the turn before. Each item has a turn.
+function SentientSystems_AddRecent(list, item)
+	local kept = {}
+
+	for _, old in ipairs(list) do
+		if old.turn >= item.turn - 1 then
+			kept[#kept + 1] = old
+		end
+	end
+
+	kept[#kept + 1] = item
+
+	return kept
+end
+
 -- Returns whether the list holds the value.
 function SentientSystems_Contains(list, value)
 	for _, item in ipairs(list) do

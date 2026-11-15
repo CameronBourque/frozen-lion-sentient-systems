@@ -197,8 +197,9 @@ local function VoteInCongress(playerID, votes)
 	end
 
 	-- The screen submits after its votes, with any proposal left out as an
-	-- abstention.
+	-- abstention, then ends the turn. No player acts after voting.
 	UI.RequestPlayerOperation(playerID, PlayerOperations.WORLD_CONGRESS_SUBMIT_TURN, {})
+	UI.RequestAction(ActionTypes.ACTION_ENDTURN)
 
 	return nil
 end

@@ -33,6 +33,8 @@
 			<File>Scripts/SentientSystemsCore_Wmds.lua</File>
 			<File>Scripts/SentientSystemsCore_WorldCongress.lua</File>
 			<File>Scripts/SentientSystemsCore_Sessions.lua</File>
+			<File>Scripts/SentientSystemsCore_Popups.lua</File>
+			<File>Scripts/SentientSystemsCore_Events.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
@@ -133,6 +135,8 @@
 		<File>Scripts/SentientSystemsCore_Wmds.lua</File>
 		<File>Scripts/SentientSystemsCore_WorldCongress.lua</File>
 		<File>Scripts/SentientSystemsCore_Sessions.lua</File>
+		<File>Scripts/SentientSystemsCore_Popups.lua</File>
+		<File>Scripts/SentientSystemsCore_Events.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>

@@ -2,7 +2,7 @@
 
 Status: open. Starting a mission, a counterspy mission, and a trip, and choosing an escape route, are confirmed in a running game with Gathering Storm, with the files sent through the tuner.
 
-What the missions give when they finish is not checked. A dragnet priority has never come up, so its request is confirmed only in files.
+So are the mission popup and what a finished mission gives. A dragnet priority has never come up, so its request is confirmed only in files.
 
 The game calls the spy actions wrap, with the Lua state each runs in and the reasons their checks give. The cities and missions a spy can choose are in [choices/spy-missions.md](../choices/spy-missions.md), and the escape routes in [choices/spies.md](../choices/spies.md).
 
@@ -10,7 +10,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. What does a mission give when it ends, and does renewing a Listening Post with no parameters work as the popup's **Renew**, which passes the city's `PARAM_X` and `PARAM_Y`? Gain Sources and the counterspy mission were started, and none had finished.
+None open.
 
 ## What we know now
 
@@ -29,6 +29,18 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 - A finished mission shows a result in the mission popup. Only Listening Post and a counterspy mission can be renewed there, by `RenewMission`, which requests the same operation again with the target plot.
 
   A spy that is caught or must escape raises the escape route blocker, which the [spy choice](../choices/spies.md) and the espionage blocker step cover.
+
+### Mission popup
+
+`Events.SpyMissionCompleted(playerID, missionID)` fires for every player's finished missions, with the player's turn active.
+
+`Players[playerID]:GetDiplomacy():GetMission(playerID, missionID)` returns the mission's history: `Operation`, `CityName`, `PlotIndex`, `Name` of the spy, `InitialResult`, `EscapeResult`, `LootInfo`, `LevelAfter`, and `CompletionTurn`.
+
+`ShowMissionCompletedPopup` in `EspionagePopup.lua` queues the popup for the local player's missions only. It skips a counterspy mission that ends outside the player's turn. A mission that ends while the popup shows waits in the popup's own list, which only its `Close` opens. Confirmed in files.
+
+The popup shows the outcome, its text, and the rewards, such as a promotion or the loot. Its OK is `MissionSucceedButton` or `MissionFailureButton`, and each runs `Close`, which dequeues it. Only a Listening Post or counterspy mission shows **Renew**.
+
+It holds nothing. A turn ended with the popup open, and the next turn began. With the core mod's dequeue, the same mission left the popup out of the queue and hidden when turn 117 began, with its outcome text filled, and the log had no error. Confirmed on Windows on 2026-11-15.
 
 ### Travel
 
@@ -79,4 +91,14 @@ A single-player game with Gathering Storm on turn 92, where Chloe escaped Patna,
 | `chooseEscapeRoute` with `DISTRICT_COMMERCIAL_HUB` | `{"ok":true}`. The blocker cleared, the spy left the map, and the spies off the map went from 3 to 4 |
 | `SentientSystems_ChooseEscapeRoute` with `DISTRICT_CITY_CENTER` again | `You have no spy escaping. The spies choice lists one when a spy is caught.` |
 
-Date checked: game files on 2026-11-06 and 2026-11-11. Running game on Windows on 2026-11-06 and 2026-11-11.
+A single-player game with Gathering Storm on turn 116, in `SentientSystemsCore_UI`, with a listener printing each `SpyMissionCompleted` and the mission's history:
+
+| Call | Result |
+| --- | --- |
+| `SentientSystems_EndTurn(0, true)` on turn 116 | Missions of players 1 and 6 ended, then on turn 117 Siphon Funds of player 0 with `InitialResult` 5 and `LootInfo` 300. The popup showed **SUCCESS!**, 300 Gold, and a promotion |
+| The same on turn 117, with the popup open | The AI turns waited on a friendship request from player 6, not the popup. After `SentientSystems_RespondToSession(0, 6, "CHOICE_NEGATIVE")`, turn 118 began |
+| The same on turn 118, with a failed Sabotage Production popup open | Turn 119 began with the popup still open |
+| `DoLeftClick()` on the hidden `MissionSucceedButton` of the failure popup | The popup left the queue and hid |
+| `SentientSystems_EndTurn(0, true)` on turn 116 again, with the core mod's dequeue | Turn 117 began with the popup out of the queue and hidden, and its text held the 300 Gold outcome |
+
+Date checked: game files on 2026-11-06, 2026-11-11, and 2026-11-15. Running game on Windows on 2026-11-06, 2026-11-11, and 2026-11-15.

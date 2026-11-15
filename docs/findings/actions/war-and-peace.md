@@ -1,6 +1,6 @@
 # War and peace actions
 
-Status: open. Declaring a surprise war and proposing peace, on a major civ and a city-state, are confirmed in a running game with Gathering Storm, by hand and through the actions, with the files sent through the tuner. How to close the leader screen that a war or a peace leaves open is open.
+Status: confirmed. Declaring a surprise war and proposing peace, on a major civ and a city-state, are confirmed in a running game with Gathering Storm, by hand and through the actions, with the files sent through the tuner. So is the core mod's close of the leader screen a peace leaves open.
 
 The game calls that the war and peace actions wrap, with the Lua state they run in. Answering a deal is in [diplomacy.md](diplomacy.md).
 
@@ -8,7 +8,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
 ## Questions
 
-1. How can the core mod close the leader screen that a war or a peace leaves open, or keep it from opening for an agent player? No timing of `CloseSession` closes it, and the screen has no event that closes it from outside. See [the leader screen](#the-leader-screen).
+None open.
 
 ## What we know now
 
@@ -64,6 +64,20 @@ No timing of `CloseSession` closed the screen. Closed at once, on the reply, or 
 
 The screen closes itself with `OnForceClose` when the local player's turn ends or begins, and when the wonder or natural wonder popup signals it opened. `InGame.lua` hides the whole HUD on those same popup signals. Confirmed in files.
 
+With the core mod's goodbye close in `SentientSystemsCore_UI`, `SentientSystems_DeclareWar` on player 4 left no leader screen. The screen opened and closed itself, the war held, and no session was open 3 s to 15 s after. Confirmed on Windows on 2026-11-15.
+
+`SentientSystems_ProposePeace` on player 10, at war since turn 52, made peace on turn 85 of another game. The leader screen showed at once and stayed open on the overview for 15 s, with no session open. Confirmed on Windows on 2026-11-15.
+
+The screen's **X** button, `Controls.CloseButton`, calls `OnClose`, which acts like Esc: `CloseFocusedState(false)`. From the overview, that calls `Close`, which shows the HUD again.
+
+Nothing outside the screen calls it, except the turn's start and end and the wonder and natural wonder popups' `Shown` signals. Confirmed in files.
+
+`ContextPtr:LookUpControl("/InGame/DiplomacyActionView/CloseButton")` from `SentientSystemsCore_UI` returns the button, and its `DoLeftClick()` presses it.
+
+After a peace, it closed the screen at once, with `Closing Diplomacy Action View` in `Lua.log`, the HUD back, and `SELECTION`. Confirmed on Windows on 2026-11-15.
+
+The core mod presses it at the end of a batch of game events while no session is open. After a reload, `proposePeace` on player 10, then `declareWar` on player 4, each left the leader screen hidden within 3 s, with `SELECTION` and no session open. Confirmed on Windows on 2026-11-15.
+
 ## Method
 
 1. To run the actions before the `.modinfo` loads them, send `SentientSystemsCore_ActionsDeals.lua` without its comment and include lines.
@@ -90,5 +104,9 @@ A single-player game with Gathering Storm, on turn 54, in `SentientSystemsCore_U
 | The same, with `CloseSession` in the same call | Still at war right after the call, and at peace 3 s later | 2026-11-12 |
 | `proposePeace(client, 0, 10)` after a reload, then again | `{"ok":true}` in 584 ms, and Con Cuông the player's, no longer occupied. The second call returned the not-at-war reason | 2026-11-12 |
 | `proposePeace` to city-state 12, just after `declareWar` on it | The city-state reason | 2026-11-12 |
+| `SentientSystems_DeclareWar(0, 4)` on turn 56 of another game, with the core mod's goodbye close | `{"ok":true}`. At war, no session, and the leader screen hidden, from 3 s to 15 s after | 2026-11-15 |
+| `SentientSystems_ProposePeace(0, 10)` on turn 85 of another game, with the core mod's goodbye close | `{"ok":true}`. At peace, no session, and the leader screen shown, from 3 s to 15 s after | 2026-11-15 |
+| The same after a reload, then `DoLeftClick()` on `/InGame/DiplomacyActionView/CloseButton` 6 s after | The leader screen hidden at once, `SELECTION`, and no session | 2026-11-15 |
+| `SentientSystems_ProposePeace(0, 10)` then `SentientSystems_DeclareWar(0, 4)`, after a reload with the core mod's close | `{"ok":true}` for each. The leader screen hidden from 3 s after each, `SELECTION`, and no session | 2026-11-15 |
 
 Date checked: game files on 2026-11-11 and 2026-11-12. Running game on Windows: the war action on 2026-11-11, and the leader screen and peace on 2026-11-12.
