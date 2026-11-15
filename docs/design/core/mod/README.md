@@ -21,11 +21,15 @@ It queries the `GameInfo` tables and localized text at runtime, so DLC and other
 
 ## Popups
 
-An agent player can't see the screen, so the core mod closes each popup that waits for a click when it opens for an agent player. `SentientSystemsCore_Popups.lua` holds the steps that close each one, and `SentientSystemsCore_UI.lua` calls them from the popup's own event.
+An agent player can't see the screen, so the core mod closes each popup that waits for a click when it opens for an agent player.
+
+`SENTIENTSYSTEMS_POPUPS` in `SentientSystemsCore_Popups.lua` lists each popup by its context's name, with the steps of its `Close` that differ. `SentientSystemsCore_UI.lua` closes it from its `<name>_Shown` event.
 
 A popup's lock holds the engine's event queue, so requests and the AI turns wait until it closes. The close repeats the popup's own `Close`, and releases the event ID twice: once for its own reference, and once for the popup's lock. See [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-the-wonder-built-popup-up).
 
 A popup's closed signal waits for `Events.GameCoreEventPublishComplete`, so it comes after every listener of the open signal. `InGame.lua` hides the interface on the open signal and shows it again on the closed one.
+
+A meteor shower or a comet strike, in the apocalypse mode, lets its animation drive its popup. The popup opens on `RandomEventStarted` and locks again on `RandomEventOccurred`, so the core mod releases that second lock at the end of the batch too. See [findings/actions/popups.md](../../../findings/actions/popups.md#natural-disaster-popup).
 
 The popup's own manager still counts itself locked after the close. Later popups of that kind go into its queue and never show, so they never hold the queue. A human who took over the slot in the same session would see none of them.
 

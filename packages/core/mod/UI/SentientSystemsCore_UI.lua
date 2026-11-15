@@ -66,18 +66,34 @@ end
 Events.DiplomacyStatement.Add(SentientSystems_CatchErrors("OnDiplomacyStatement", OnDiplomacyStatement))
 Events.DiplomacySessionClosed.Add(SentientSystems_CatchErrors("OnDiplomacySessionClosed", SentientSystems_ForgetSession))
 
--- Closes the wonder built popup when it opens for an agent player. It opens
--- for the local player only.
-local function OnWonderBuiltPopupShown()
+-- Whether an agent plays the local player, the only player popups open for.
+local function IsLocalAgent()
 	local player = Players[Game.GetLocalPlayer()]
 
-	if player ~= nil and IsAgentPlayer(player) then
-		SentientSystems_CloseWonderPopup()
+	return player ~= nil and IsAgentPlayer(player)
+end
+
+-- Returns the listener that closes a popup when it opens for an agent player.
+local function GetPopupCloser(name)
+	return function()
+		if IsLocalAgent() then
+			SentientSystems_ClosePopup(name)
+		end
 	end
 end
 
-LuaEvents.WonderBuiltPopup_Shown.Add(SentientSystems_CatchErrors("OnWonderBuiltPopupShown", OnWonderBuiltPopupShown))
-Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPublishComplete", SentientSystems_SendPopupSignals))
+for name in pairs(SENTIENTSYSTEMS_POPUPS) do
+	LuaEvents[name .. "_Shown"].Add(SentientSystems_CatchErrors("On" .. name .. "Shown", GetPopupCloser(name)))
+end
+
+local function OnRandomEventOccurred(type)
+	if IsLocalAgent() then
+		SentientSystems_ReleaseDisasterLock(type)
+	end
+end
+
+Events.RandomEventOccurred.Add(SentientSystems_CatchErrors("OnRandomEventOccurred", OnRandomEventOccurred))
+Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPublishComplete", SentientSystems_FinishPopups))
 
 -- Prints the turn signal again for each agent player whose turn is active now,
 -- so a bridge that connects in the middle of a turn learns of it. Prints

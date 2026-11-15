@@ -186,44 +186,65 @@ describe("the diplomacy session closed event", function()
 	end)
 end)
 
-describe("the wonder built popup", function()
-	-- Counts the calls to close the popup, in place of closing it.
-	local closes
+describe("the popups", function()
+	-- The names of the popups closed, in place of closing them.
+	local closed
 	local realClose
 
-	local function Show(localPlayer)
+	local function SetLocalPlayer(localPlayer)
 		env.Game.GetLocalPlayer = function()
 			return localPlayer
 		end
+	end
 
-		for _, handler in ipairs(env.LuaEvents.WonderBuiltPopup_Shown.handlers) do
+	local function Show(name, localPlayer)
+		SetLocalPlayer(localPlayer)
+
+		for _, handler in ipairs(env.LuaEvents[name .. "_Shown"].handlers) do
 			handler()
 		end
 	end
 
 	before_each(function()
-		closes = 0
-		realClose = env.SentientSystems_CloseWonderPopup
-		env.SentientSystems_CloseWonderPopup = function()
-			closes = closes + 1
+		closed = {}
+		realClose = env.SentientSystems_ClosePopup
+		env.SentientSystems_ClosePopup = function(name)
+			closed[#closed + 1] = name
 		end
 	end)
 
-	it("closes the popup for a human player", function()
+	it("closes the wonder and disaster popups for a human player", function()
 		SetPlayers({ [0] = Player(0, true, true) })
 
-		Show(0)
+		Show("WonderBuiltPopup", 0)
+		Show("NaturalDisasterPopup", 0)
 
-		assert.equal(1, closes)
+		assert.same({ "WonderBuiltPopup", "NaturalDisasterPopup" }, closed)
 	end)
 
-	it("leaves the popup for an AI player or a player that doesn't exist", function()
+	it("leaves a popup for an AI player or a player that doesn't exist", function()
 		SetPlayers({ [5] = Player(5, false, true) })
 
-		Show(5)
-		Show(-1)
+		Show("WonderBuiltPopup", 5)
+		Show("NaturalDisasterPopup", -1)
 
-		assert.equal(0, closes)
+		assert.same({}, closed)
+	end)
+
+	it("passes a disaster on to release its second lock, for a human player only", function()
+		local released = {}
+
+		env.SentientSystems_ReleaseDisasterLock = function(type)
+			released[#released + 1] = type
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		SetLocalPlayer(0)
+		Fire("RandomEventOccurred", 40, 2, 10, 11)
+		SetLocalPlayer(5)
+		Fire("RandomEventOccurred", 41, 2, 10, 11)
+
+		assert.same({ 40 }, released)
 	end)
 
 	it("sends the closed signal when the batch of game events ends", function()
@@ -245,10 +266,10 @@ describe("the wonder built popup", function()
 		env.LuaEvents.WonderBuiltPopup_Closed = function()
 			closedSignals = closedSignals + 1
 		end
-		env.SentientSystems_CloseWonderPopup = realClose
+		env.SentientSystems_ClosePopup = realClose
 		SetPlayers({ [0] = Player(0, true, true) })
 
-		Show(0)
+		Show("WonderBuiltPopup", 0)
 		assert.equal(0, closedSignals)
 		Fire("GameCoreEventPublishComplete")
 		Fire("GameCoreEventPublishComplete")
