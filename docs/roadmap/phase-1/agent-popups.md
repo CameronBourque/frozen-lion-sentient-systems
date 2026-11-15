@@ -78,9 +78,9 @@ Each task first records whether its popup stops a request and the end turn call,
 
     Commit: `feat(core): close the unit captured popup for agent players`.
 
-12. **Spy mission popup.** When a spy's mission ends, a popup shows the result. Record whether it stops a request and the end turn call. Then make the core mod close it for an agent player, and pass the result to the agent.
+12. **Spy mission popup.** When a spy's mission ends, a popup shows the result and waits for **OK**. It holds nothing, so the core mod dequeues it as a plain popup. The result reaches the agent through task 15.
 
-    `Base/Assets/UI/Popups/EspionagePopup.lua` opens it from `Events.SpyMissionCompleted`, and also listens to `Events.LocalPlayerTurnEnd`. See [spies.md](../../findings/actions/spies.md#questions), question 1, and test it in a save with a mission about to end. Commit: `feat(core): close the spy mission popup for agent players`.
+    `Base/Assets/UI/Popups/EspionagePopup.lua` opens it from `Events.SpyMissionCompleted`. A counterspy mission's **Renew** isn't needed, since the agent starts the mission again when the spy is idle. See [spies.md](../../findings/actions/spies.md#mission-popup). Commit: `feat(core): close the spy mission popup for agent players`.
 
 13. **Project built and rock band popups.** A popup shows each project the player completes, such as a space race launch, and each rock band concert in Gathering Storm. Each sets the `CINEMATIC` interface mode, holds the event queue, and waits for **Close**.
 
@@ -102,7 +102,7 @@ Each task first records whether its popup stops a request and the end turn call,
 
 15. **Event messages.** The core mod closes the unit captured dialog and the spy mission popup, so the agent never reads their text. Add a short list of recent events to the state, kept for the agent's next turn as the leader messages are, with each one's turn and text.
 
-    Fill it from the options of the `UnitCaptured` raise, and from the spy mission's result. See [in-game-dialogs.md](../../findings/actions/in-game-dialogs.md#questions), question 1.
+    Fill it from the options of the `UnitCaptured` raise, and from the history of each mission of the player's that `Events.SpyMissionCompleted` names. See [in-game-dialogs.md](../../findings/actions/in-game-dialogs.md#questions), question 1, and [spies.md](../../findings/actions/spies.md#mission-popup).
 
     Test it with a captured builder and a finished spy mission. Commit: `feat(core): add the event messages to the state`.
 

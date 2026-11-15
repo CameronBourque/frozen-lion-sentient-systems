@@ -142,9 +142,13 @@ describe("SentientSystems_ClosePlainPopups", function()
 		assert.same({ { "DequeuePopup", "heroes" }, { "DequeuePopup", "heroes" } }, calls)
 	end)
 
-	it("closes the era review and emergency popups", function()
+	it("closes the era review, emergency, and spy mission popups", function()
 		env.ContextPtr.LookUpControl = function(_, path)
-			return ({ ["/InGame/EraReviewPopup"] = "review", ["/InGame/WorldCrisisPopup"] = "emergency" })[path]
+			return ({
+				["/InGame/EraReviewPopup"] = "review",
+				["/InGame/WorldCrisisPopup"] = "emergency",
+				["/InGame/EspionagePopup"] = "spy",
+			})[path]
 		end
 		env.UIManager.IsInPopupQueue = function()
 			return true
@@ -152,7 +156,7 @@ describe("SentientSystems_ClosePlainPopups", function()
 
 		env.SentientSystems_ClosePlainPopups()
 
-		assert.same({ { "DequeuePopup", "review" }, { "DequeuePopup", "emergency" } }, calls)
+		assert.same({ { "DequeuePopup", "review" }, { "DequeuePopup", "emergency" }, { "DequeuePopup", "spy" } }, calls)
 	end)
 
 	it("hides the great work showcase when it shows, and stops its sounds", function()

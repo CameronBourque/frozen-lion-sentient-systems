@@ -71,6 +71,10 @@ SENTIENTSYSTEMS_PLAIN_POPUPS = {
 	-- through the congress vote, so the popup only shows it. Its OK also sends
 	-- ACCEPT_EMERGENCY, which changes nothing the player can see.
 	{ name = "WorldCrisisPopup" },
+	-- EspionagePopup.lua, when a spy's mission ends. A mission that ends while
+	-- it shows waits in the popup's own list, which only its Close opens, so
+	-- that one never shows.
+	{ name = "EspionagePopup" },
 	-- GreatWorkShowcase.lua, for each great work the player creates
 	{
 		name = "GreatWorkShowcase",
