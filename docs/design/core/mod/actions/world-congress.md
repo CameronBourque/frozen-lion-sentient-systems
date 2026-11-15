@@ -4,15 +4,15 @@ How the core mod runs the World Congress actions, as the congress screen does. P
 
 ## Vote in a session
 
-`SentientSystems_VoteInCongress(playerID, votes)` in `Scripts/Actions/SentientSystemsCore_ActionsWorldCongress.lua` casts every vote of the session and submits them.
+`SentientSystems_VoteInCongress(playerID, votes)` in `Scripts/Actions/SentientSystemsCore_ActionsWorldCongress.lua` casts every vote of the session, submits them, and ends the turn.
 
 A vote on a resolution of the `worldCongress` choice names it by its `type`, with `option`, A or B, from its `options`, `target`, the `index` of one of its `targets`, and `votes`. Every resolution needs one, as on the screen.
 
 A vote on a proposal names it by its `type` and `target`, with `votes`, and `against` to oppose it. A proposal left out is an abstention.
 
-The screen's **Accept** sends one `WORLD_CONGRESS_RESOLUTION_VOTE` for each resolution, then one `WORLD_CONGRESS_DISCUSSION_VOTE` for each proposal, keyed by its sender and target, and then `WORLD_CONGRESS_SUBMIT_TURN`, so the action does too.
+The screen's **Accept** sends one `WORLD_CONGRESS_RESOLUTION_VOTE` for each resolution, then one `WORLD_CONGRESS_DISCUSSION_VOTE` for each proposal, keyed by its sender and target, and then `WORLD_CONGRESS_SUBMIT_TURN` and `UI.RequestAction(ActionTypes.ACTION_ENDTURN)`, so the action does too.
 
-It doesn't send the screen's end turn request: the submit clears the session blocker. See [world-congress.md](../../../../findings/actions/world-congress.md).
+The submit alone clears the session blocker, but no player acts after voting. Without the end turn, the agent's end turn action would refuse, since it had already ended that turn number before the session. See [congress-popups.md](../../../../findings/actions/congress-popups.md).
 
 Its reasons, in order, name no session to vote in, votes that aren't a list, a vote that isn't a table, and an item voted on twice.
 
@@ -51,7 +51,7 @@ On the bridge, `RESOLUTION_OPTION` in `src/schemas.ts` holds the same letters fo
 | One action casts every vote and submits | The screen sends the votes as one batch, and the Favor check needs all of them |
 | A vote's type says whether it is on a resolution or a proposal | The agent copies the type from the choice, and the two never share one |
 | A resolution's target is the index of one of its targets | Targets can be players, resources, or great person classes, and the index names any of them |
-| The action doesn't end the turn | Ending the turn is its own action, and the submit alone clears the blocker |
+| The vote action ends the turn after the submit, as the screen's **Submit** does | No player acts after voting, and the end turn action refuses a turn number it already ended before the session |
 | A vote names a proposal by its type and target | The agent copies both from the choice, and the action finds the sender the request needs |
 | A proposal takes the type, not its hash | The agent copies the type from the choice, and the action finds the hash in `GameInfo.Discussions` |
 | Proposing marks the congress as looked at | The screen does so when it closes, and an agent has no screen to close |

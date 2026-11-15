@@ -62,7 +62,7 @@ Its `Close` sends `PlayerOperations.ACCEPT_EMERGENCY` when the emergency needs n
 | `SentientSystems_EndTurn(0, true)` | `SentientSystemsCore_UI` | Turn 86 began, with the results screen open from `WORLD_CONGRESS_RESULTS` | 2026-11-15 |
 | `LuaEvents.DiplomacyActionView_HideCongress()` | `SentientSystemsCore_UI` | The screen hidden and out of the queue, `SELECTION`, and no congress blocker | 2026-11-15 |
 | `SentientSystems_EndTurn(0, true)` on turn 85, before the session, with the core mod's close | `SentientSystemsCore_UI` | Turn 85 active again, with the session's blocker and no congress screen open | 2026-11-15 |
-| `SentientSystems_VoteInCongress` as before, then `SentientSystems_EndTurn(0, true)` | `SentientSystemsCore_UI` | `{"ok":true}`, then "You already ended turn 85" | 2026-11-15 |
+| `SentientSystems_VoteInCongress` as before, then `SentientSystems_EndTurn(0, true)` | `SentientSystemsCore_UI` | `{"ok":true}`, then "You already ended turn 85", since the vote action didn't end the turn yet | 2026-11-15 |
 | `UI.RequestAction(ActionTypes.ACTION_ENDTURN)` | `SentientSystemsCore_UI` | Turn 86, with no congress screen open, no congress blocker, and `SELECTION` | 2026-11-15 |
 
 Date checked: game files on 2026-11-15. Running game on Windows on 2026-11-15.
