@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.21.0...core-v0.22.0) (2026-11-15)
+
+
+### Features
+
+* **core:** close the popups for agent players ([#95](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/95)) ([e9cd023](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/e9cd023af6504ab3c3f06c571b3d13df5412f90d))
+
 ## [0.21.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.20.0...core-v0.21.0) (2026-11-14)
 
 
