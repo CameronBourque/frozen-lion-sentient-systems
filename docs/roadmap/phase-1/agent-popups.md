@@ -64,11 +64,27 @@ Each task first records whether its popup stops a request and the end turn call,
 
     Test it in a save with a tech, a civic, and a boost a turn away. Commit: `feat(core): turn off the tech and civic popups for agent players`.
 
+11. **Historic moment popups.** In Rise and Fall, a popup shows some of the historic moments that earn the player era score. It doesn't keep the player from the pause menu, but it waits for **Close**.
+
+    Record whether it stops a request and the end turn call, then make the core mod close it for an agent player.
+
+    `DLC/Expansion2/UI/Additions/HistoricMoments.lua` queues itself with `UIManager:QueuePopup`, fires `LuaEvents.HistoricMoments_Opened`, and listens to `Events.LocalPlayerTurnEnd`. Confirmed in files.
+
+    Test it in a save a turn from a historic moment, such as a first to build a wonder or meet a civ. Commit: `feat(core): close the historic moment popups for agent players`.
+
+12. **Era popups.** When a new era starts, a popup shows it, then the era review popup shows the age the player earned, golden, normal, or dark, before the dedication choice. Record whether each one stops a request and the end turn call, then make the core mod close both for an agent player.
+
+    `DLC/Expansion2/UI/Additions/EraCompletePopup.lua` opens on `Events.LocalPlayerTurnBegin` and can lock with `ExclusivePopupManager:Lock`, so it may hold the event queue.
+
+    `EraReviewPopup.lua` opens from `LuaEvents.EraReviewPopup_Show` with a plain `UIManager:QueuePopup`, and its **Continue** fires `LuaEvents.EraReviewPopup_MakeDedication`. Confirmed in files.
+
+    Check that the [dedication action](../../design/core/mod/actions/dedications.md) still works with the review popup closed. Test it in a save a turn from a new era. Commit: `feat(core): close the era popups for agent players`.
+
 ## Done when
 
 With an agent as the local player, a wonder that the player completes, a natural wonder the player finds, a tech, a civic, a boost, and a natural disaster show no popup and don't hold up the next request.
 
-Neither does a Secret Society the player discovers or joins, a hero the player discovers, an artifact the player chooses, or a World Congress session, its results, or an emergency it starts.
+Neither does a Secret Society the player discovers or joins, a hero the player discovers, an artifact the player chooses, a historic moment, a new era and its review, or a World Congress session, its results, or an emergency it starts.
 
 A war the agent declares leaves no leader screen open. A captured unit and a finished spy mission show no popup, and the agent gets their text.
 

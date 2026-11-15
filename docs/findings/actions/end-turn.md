@@ -14,7 +14,7 @@ The core mod's result format is in [design/core/mod/actions/README.md](../../des
 
    The natural wonder popup holds it. See [popups.md](popups.md#natural-wonder-popup).
 
-   A natural disaster popup held the AI turns. On turn 87, the player's turn stayed inactive for 4 minutes with it up, and turn 88 began 15 s after it was closed. Confirmed on Windows on 2026-11-13.
+   A natural disaster popup held the AI turns. On turn 87, the player's turn stayed inactive for 4 minutes with it up, and turn 88 began 15 s after it was closed. Confirmed on Windows on 2026-11-13. The core mod's close is in [popups.md](popups.md#natural-disaster-popup).
 
 ## What we know now
 
