@@ -17,104 +17,56 @@ local function Record(name)
 	end
 end
 
--- Returns the calls with the given name.
-local function CallsNamed(name)
-	local found = {}
-
-	for _, call in ipairs(calls) do
-		if call[1] == name then
-			found[#found + 1] = call
-		end
-	end
-
-	return found
-end
-
 before_each(function()
-	local eventID = 73360
-
 	calls = {}
 	env = Game.new()
-	env.UI = {
-		ReferenceCurrentEvent = function()
-			return eventID
-		end,
-		PlaySound = Record("PlaySound"),
-		ReleaseEventID = Record("ReleaseEventID"),
-		SetInterfaceMode = Record("SetInterfaceMode"),
-		ClearTemporaryPlotVisibility = Record("ClearTemporaryPlotVisibility"),
-	}
+	env.UI = { PlaySound = Record("PlaySound") }
 	env.UIManager = { DequeuePopup = Record("DequeuePopup") }
-	env.Input = { PopContext = Record("PopContext") }
-	env.UILens = { RestoreActiveLens = Record("RestoreActiveLens") }
-	env.InterfaceModeTypes = { SELECTION = -1615000917 }
 	env.Events = { StopAllCameraAnimations = Record("StopAllCameraAnimations") }
 	env.ContextPtr = {
 		LookUpControl = function(_, path)
 			return path
 		end,
 	}
-	env.LuaEvents = {
-		WonderBuiltPopup_Closed = Record("WonderBuiltPopup_Closed"),
-		NaturalDisasterPopup_Closed = Record("NaturalDisasterPopup_Closed"),
-	}
-	env.GameInfo = {
-		RandomEvents = {
-			[3] = { RandomEventType = "RANDOM_EVENT_FLOOD_MODERATE" },
-			[40] = { RandomEventType = "RANDOM_EVENT_COMET_STRIKE" },
-			[41] = { RandomEventType = "RANDOM_EVENT_SOLAR_FLARE" },
-		},
-		RandomEvent_Presentation = {
-			RANDOM_EVENT_FLOOD_MODERATE = { Animation = "REVEAL_FLOOD" },
-			RANDOM_EVENT_COMET_STRIKE = { Animation = "REVEAL_COMET", SequenceType = "SCENE_EVENT_TRIGGER" },
-		},
-	}
+	env.LuaEvents = {}
 	Game.run(env, "Scripts/SentientSystemsCore_Popups.lua")
 end)
 
-describe("SentientSystems_ClosePopup", function()
-	it("closes the wonder popup and releases its event twice, as the popup's Close does", function()
-		env.SentientSystems_ClosePopup("WonderBuiltPopup")
+-- Shows the popups named, in the popup queue, each with a Close button that
+-- records its press.
+local function ShowLocked(...)
+	local controls = {}
 
-		assert.same({
-			{ "PlaySound", "Stop_Wonder_Tracks" },
-			{ "DequeuePopup", "/InGame/WonderBuiltPopup" },
-			{ "PopContext" },
-			{ "ReleaseEventID", 73360 },
-			{ "ReleaseEventID", 73360 },
-			{ "SetInterfaceMode", -1615000917 },
-			{ "RestoreActiveLens" },
-		}, calls)
-	end)
+	for _, name in ipairs({ ... }) do
+		controls["/InGame/" .. name] = name
+		controls["/InGame/" .. name .. "/Close"] = { DoLeftClick = Record(name .. "Close") }
+	end
 
-	it("clears the natural wonder's plots and stops its speech and camera before the natural wonder popup closes", function()
-		env.SentientSystems_ClosePopup("NaturalWonderPopup")
+	env.ContextPtr.LookUpControl = function(_, path)
+		return controls[path]
+	end
+	env.UIManager.IsInPopupQueue = function()
+		return true
+	end
+end
 
-		assert.same({
-			{ "ClearTemporaryPlotVisibility", "NaturalWonder" },
-			{ "PlaySound", "Stop_Speech_NaturalWonders" },
-			{ "StopAllCameraAnimations" },
-			{ "DequeuePopup", "/InGame/NaturalWonderPopup" },
-		}, { unpack(calls, 1, 4) })
-		assert.equal(2, #CallsNamed("ReleaseEventID"))
-	end)
+describe("the popups that lock the event queue", function()
+	it("presses the Close button of the wonder, natural wonder, and disaster popups", function()
+		ShowLocked("WonderBuiltPopup", "NaturalWonderPopup", "NaturalDisasterPopup")
 
-	it("clears the disaster's plots and stops its sounds and camera before the disaster popup closes", function()
-		env.SentientSystems_ClosePopup("NaturalDisasterPopup")
+		env.SentientSystems_ClosePopups()
 
-		assert.same({ "ClearTemporaryPlotVisibility", "NaturalDisaster" }, calls[1])
-		assert.equal(12, #CallsNamed("PlaySound"))
-		assert.same({ "StopAllCameraAnimations" }, calls[14])
-		assert.same({ "DequeuePopup", "/InGame/NaturalDisasterPopup" }, calls[15])
-		assert.equal(2, #CallsNamed("ReleaseEventID"))
+		assert.same({ { "WonderBuiltPopupClose" }, { "NaturalWonderPopupClose" }, { "NaturalDisasterPopupClose" } }, calls)
 	end)
 end)
 
 describe("SentientSystems_StopPopupCamera", function()
-	it("stops the camera once after popups close, and not when none has", function()
+	it("stops the camera once after the natural wonder popup closes, and not after another popup", function()
+		ShowLocked("WonderBuiltPopup")
+		env.SentientSystems_ClosePopups()
 		env.SentientSystems_StopPopupCamera()
-		env.SentientSystems_ClosePopup("WonderBuiltPopup")
-		env.SentientSystems_ClosePopup("NaturalWonderPopup")
+		ShowLocked("NaturalWonderPopup")
+		env.SentientSystems_ClosePopups()
 		calls = {}
 
 		env.SentientSystems_StopPopupCamera()
@@ -124,8 +76,8 @@ describe("SentientSystems_StopPopupCamera", function()
 	end)
 end)
 
-describe("SentientSystems_ClosePlainPopups", function()
-	it("closes each plain popup in the popup queue, and skips the others and those with no context", function()
+describe("SentientSystems_ClosePopups", function()
+	it("closes each popup in the popup queue, and skips the others and those with no context", function()
 		local contexts = { ["/InGame/HeroesPopup"] = "heroes" }
 
 		env.ContextPtr.LookUpControl = function(_, path)
@@ -135,9 +87,9 @@ describe("SentientSystems_ClosePlainPopups", function()
 			return context == "heroes"
 		end
 
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 		contexts["/InGame/SecretSocietyPopup"] = "society"
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({ { "DequeuePopup", "heroes" }, { "DequeuePopup", "heroes" } }, calls)
 	end)
@@ -154,7 +106,7 @@ describe("SentientSystems_ClosePlainPopups", function()
 			return true
 		end
 
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({ { "DequeuePopup", "review" }, { "DequeuePopup", "emergency" }, { "DequeuePopup", "spy" } }, calls)
 	end)
@@ -175,8 +127,8 @@ describe("SentientSystems_ClosePlainPopups", function()
 			return path == "/InGame/GreatWorkShowcase" and showcase or nil
 		end
 
-		env.SentientSystems_ClosePlainPopups()
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({
 			{ "SetHide", true },
@@ -195,7 +147,7 @@ describe("SentientSystems_ClosePlainPopups", function()
 		end
 		env.LuaEvents.DiplomacyActionView_HideCongress = Record("DiplomacyActionView_HideCongress")
 
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({ { "DequeuePopup", "intro" }, { "DiplomacyActionView_HideCongress" } }, calls)
 	end)
@@ -221,10 +173,10 @@ describe("SentientSystems_ClosePlainPopups", function()
 			return ({ ["/InGame/DiplomacyActionView"] = screen, ["/InGame/DiplomacyActionView/CloseButton"] = button })[path]
 		end
 
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 		assert.same({}, calls)
 		openSession = nil
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({ { "DoLeftClick" } }, calls)
 	end)
@@ -245,12 +197,12 @@ describe("SentientSystems_ClosePlainPopups", function()
 			return true
 		end
 
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({ { "ProjectClose" }, { "MovieClose" }, { "DequeuePopup", "result" } }, calls)
 	end)
 
-	it("sends the closed signal of a plain popup that has one", function()
+	it("sends the closed signal of a popup that has one", function()
 		env.ContextPtr.LookUpControl = function(_, path)
 			return path == "/InGame/HistoricMoments" and "moments" or nil
 		end
@@ -259,7 +211,7 @@ describe("SentientSystems_ClosePlainPopups", function()
 		end
 		env.LuaEvents.HistoricMoments_Closed = Record("HistoricMoments_Closed")
 
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({ { "DequeuePopup", "moments" }, { "HistoricMoments_Closed" } }, calls)
 	end)
@@ -296,12 +248,12 @@ describe("the unit captured dialog", function()
 	it("presses the dialog's button once it shows, after a unit captured raise", function()
 		SetDialog(true)
 		env.SentientSystems_NoteRaisedDialog("UnitCaptured")
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 		assert.same({}, calls)
 
 		SetDialog(false)
-		env.SentientSystems_ClosePlainPopups()
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({ { "DoLeftClick" } }, calls)
 	end)
@@ -313,7 +265,7 @@ describe("the unit captured dialog", function()
 			return path == "/InGame/InGamePopup" and Control("InGamePopup", { root }) or nil
 		end
 		env.SentientSystems_NoteRaisedDialog("UnitCaptured")
-		env.SentientSystems_ClosePlainPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({}, calls)
 	end)
@@ -321,49 +273,7 @@ describe("the unit captured dialog", function()
 	it("leaves the dialog open for another raise, such as a strike to confirm", function()
 		SetDialog(false)
 		env.SentientSystems_NoteRaisedDialog("ConfirmWMDStrike")
-		env.SentientSystems_ClosePlainPopups()
-
-		assert.same({}, calls)
-	end)
-end)
-
-describe("SentientSystems_IsSequencedDisaster", function()
-	it("is true for a disaster whose animation drives its popup", function()
-		assert.is_true(env.SentientSystems_IsSequencedDisaster(40))
-	end)
-
-	it("is false for another disaster, one with no presentation, or an unknown type", function()
-		assert.is_false(env.SentientSystems_IsSequencedDisaster(3))
-		assert.is_false(env.SentientSystems_IsSequencedDisaster(41))
-		assert.is_false(env.SentientSystems_IsSequencedDisaster(99))
-	end)
-end)
-
-describe("SentientSystems_FinishPopups", function()
-	it("sends the closed signal of each popup closed, once", function()
-		env.SentientSystems_ClosePopup("WonderBuiltPopup")
-		env.SentientSystems_ClosePopup("NaturalDisasterPopup")
-		calls = {}
-
-		env.SentientSystems_FinishPopups()
-		env.SentientSystems_FinishPopups()
-
-		assert.same({ { "WonderBuiltPopup_Closed" }, { "NaturalDisasterPopup_Closed" } }, calls)
-	end)
-
-	it("releases the second lock of a disaster whose animation drives its popup, once", function()
-		env.SentientSystems_ReleaseDisasterLock(40)
-
-		assert.same({}, calls)
-		env.SentientSystems_FinishPopups()
-		env.SentientSystems_FinishPopups()
-
-		assert.same({ { "ReleaseEventID", 73360 }, { "ReleaseEventID", 73360 } }, calls)
-	end)
-
-	it("releases nothing for another disaster", function()
-		env.SentientSystems_ReleaseDisasterLock(3)
-		env.SentientSystems_FinishPopups()
+		env.SentientSystems_ClosePopups()
 
 		assert.same({}, calls)
 	end)

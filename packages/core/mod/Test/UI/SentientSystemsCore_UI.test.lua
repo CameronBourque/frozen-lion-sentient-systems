@@ -190,101 +190,16 @@ describe("the diplomacy session closed event", function()
 end)
 
 describe("the popups", function()
-	-- The names of the popups closed, in place of closing them.
-	local closed
-	local realClose
-
 	local function SetLocalPlayer(localPlayer)
 		env.Game.GetLocalPlayer = function()
 			return localPlayer
 		end
 	end
 
-	local function Show(name, localPlayer)
-		SetLocalPlayer(localPlayer)
-
-		for _, handler in ipairs(env.LuaEvents[name .. "_Shown"].handlers) do
-			handler()
-		end
-	end
-
-	before_each(function()
-		closed = {}
-		realClose = env.SentientSystems_ClosePopup
-		env.SentientSystems_ClosePopup = function(name)
-			closed[#closed + 1] = name
-		end
-	end)
-
-	it("closes the wonder, natural wonder, and disaster popups for a human player", function()
-		SetPlayers({ [0] = Player(0, true, true) })
-
-		Show("WonderBuiltPopup", 0)
-		Show("NaturalWonderPopup", 0)
-		Show("NaturalDisasterPopup", 0)
-
-		assert.same({ "WonderBuiltPopup", "NaturalWonderPopup", "NaturalDisasterPopup" }, closed)
-	end)
-
-	it("leaves a popup for an AI player or a player that doesn't exist", function()
-		SetPlayers({ [5] = Player(5, false, true) })
-
-		Show("WonderBuiltPopup", 5)
-		Show("NaturalDisasterPopup", -1)
-
-		assert.same({}, closed)
-	end)
-
-	it("passes a disaster on to release its second lock, for a human player only", function()
-		local released = {}
-
-		env.SentientSystems_ReleaseDisasterLock = function(type)
-			released[#released + 1] = type
-		end
-		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
-
-		SetLocalPlayer(0)
-		Fire("RandomEventOccurred", 40, 2, 10, 11)
-		SetLocalPlayer(5)
-		Fire("RandomEventOccurred", 41, 2, 10, 11)
-
-		assert.same({ 40 }, released)
-	end)
-
-	it("sends the closed signal when the batch of game events ends", function()
-		local closedSignals = 0
-
-		env.UI = {
-			ReferenceCurrentEvent = function()
-				return 9
-			end,
-			PlaySound = function() end,
-			ReleaseEventID = function() end,
-			SetInterfaceMode = function() end,
-		}
-		env.UIManager = { DequeuePopup = function() end }
-		env.Input = { PopContext = function() end }
-		env.UILens = { RestoreActiveLens = function() end }
-		env.InterfaceModeTypes = { SELECTION = 1 }
-		env.ContextPtr.LookUpControl = function() end
-		env.LuaEvents.WonderBuiltPopup_Closed = function()
-			closedSignals = closedSignals + 1
-		end
-		env.SentientSystems_ClosePopup = realClose
-		SetPlayers({ [0] = Player(0, true, true) })
-
-		Show("WonderBuiltPopup", 0)
-		assert.equal(0, closedSignals)
-		Fire("GameCoreEventPublishComplete")
-		Fire("GameCoreEventPublishComplete")
-
-		assert.equal(1, closedSignals)
-	end)
-
-	it("closes the plain popups when a batch of game events or a load ends, or the interface is idle, for a human player only", function()
+	it("closes the popups when a batch of game events or a load ends, or the interface is idle, for a human player only", function()
 		local sweeps = 0
 
-		env.SentientSystems_ClosePlainPopups = function()
+		env.SentientSystems_ClosePopups = function()
 			sweeps = sweeps + 1
 		end
 		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })

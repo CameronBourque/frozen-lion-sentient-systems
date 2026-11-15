@@ -23,27 +23,21 @@ It queries the `GameInfo` tables and localized text at runtime, so DLC and other
 
 An agent player can't see the screen, so the core mod closes each popup that waits for a click when it opens for an agent player.
 
-`SENTIENTSYSTEMS_POPUPS` in `SentientSystemsCore_Popups.lua` lists each popup by its context's name, with the steps of its `Close` that differ. `SentientSystemsCore_UI.lua` closes it from its `<name>_Shown` event.
+`SENTIENTSYSTEMS_POPUPS` in `SentientSystemsCore_Popups.lua` lists each popup by its context's name, with how it closes.
 
-A popup's lock holds the engine's event queue, so requests and the AI turns wait until it closes. The close repeats the popup's own `Close`, and releases the event ID twice: once for its own reference, and once for the popup's lock. See [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-the-wonder-built-popup-up).
+`SentientSystemsCore_UI.lua` closes each one that is open when a batch of game events ends, when a load ends, and on `Events.UIIdle`, when the historic moment popup shows a moment it held back.
 
-A popup's closed signal waits for `Events.GameCoreEventPublishComplete`, so it comes after every listener of the open signal. `InGame.lua` hides the interface on the open signal and shows it again on the closed one.
+A popup that holds nothing, such as the hero, Secret Society, or spy mission popup, closes by dequeuing it, with its closed signal if it has one. A screen such as the great work popup shows by unhiding its context, so the core mod hides it instead.
 
-A popup can start a camera move after the batch ends, such as the natural wonder's fly-around, which keeps the camera until it stops. So the core mod stops the camera again on the next `Events.GameCoreEventPlaybackComplete` after a close. See [findings/actions/popups.md](../../../findings/actions/popups.md#natural-wonder-popup).
+A popup whose own close does more names a LuaEvent that runs that close, such as the congress voting screen's, or the button that runs it, for `DoLeftClick`. The leader screen closes only while no diplomacy session is open, when it shows only the overview, as after a peace.
 
-A meteor shower or a comet strike, in the apocalypse mode, lets its animation drive its popup. The popup opens on `RandomEventStarted` and locks again on `RandomEventOccurred`, so the core mod releases that second lock at the end of the batch too. See [findings/actions/popups.md](../../../findings/actions/popups.md#natural-disaster-popup).
+The wonder built, natural wonder, natural disaster, project built, and rock band movie popups hold the engine's event queue, so requests and the AI turns wait until they close.
 
-The popup's own manager still counts itself locked after the close. Later popups of that kind go into its queue and never show, so they never hold the queue. A human who took over the slot in the same session would see none of them.
+The core mod presses each one's own `Close` button. It shows the popup's next queued one, or sends the closed signal and unlocks.
 
-A plain popup, such as the hero, Secret Society, or spy mission popup, holds nothing. `SENTIENTSYSTEMS_PLAIN_POPUPS` lists them, each with its closed signal if it has one.
+A meteor shower or a comet strike lets its animation drive its popup. The popup opens on `RandomEventStarted` and locks again on `RandomEventOccurred` only while it is still open, so a close at the end of the first batch leaves no second lock. See [findings/actions/popups.md](../../../findings/actions/popups.md#natural-disaster-popup).
 
-The core mod dequeues each one in the popup queue when a batch of game events ends, when a load ends, and on `Events.UIIdle`, when the historic moment popup shows a moment it held back.
-
-A screen such as the great work popup shows by unhiding its context, so the core mod hides it instead. A popup whose own close does more, such as the congress voting screen, names a LuaEvent that runs that close.
-
-The leader screen names its close button instead, which the core mod presses with `DoLeftClick`. It closes the screen only while no diplomacy session is open, when the screen shows only the overview, as after a peace.
-
-The project built and rock band movie popups hold the event queue, and their own close does more, such as showing the next project or opening the concert's result. So the core mod presses their close buttons too, with the plain popups.
+The natural wonder's fly-around starts after the batch ends, and keeps the camera until it stops. So the core mod stops the camera again on the next `Events.GameCoreEventPlaybackComplete` after that popup closes. See [findings/actions/popups.md](../../../findings/actions/popups.md#natural-wonder-popup).
 
 The unit captured message comes through the shared `InGamePopup` dialog, which also asks the player to confirm strikes and cities. So the core mod closes it only after `LuaEvents.OnRaisePopupInGame` raises `UnitCaptured`, by pressing the dialog's own button, found through `GetChildren()`.
 
@@ -69,5 +63,5 @@ The zod schemas in `packages/core/bridge/src/` are the only home of the JSON sha
 | A helper that several scripts share lives in the smallest file that every caller loads: `SentientSystemsCore_Math.lua` for rounding, and `SentientSystemsCore_Lookups.lua` for lookups by ID, yield names, and plot positions | A fix lands in one place, and a script loads no code it doesn't use |
 | A helper that only one feature's scripts share stays in that feature's file, such as `ChoicesPurchases.lua`, and the others include it | `SentientSystemsCore_Common.lua` keeps only what every script needs to run: tagged printing, error catching, and the checked include |
 | A Lua function takes a tile position as separate `x` and `y` arguments, and `SentientSystems_GetPosition` builds the position table that the JSON holds | The game's own calls, such as `Map.GetPlot(x, y)`, take separate numbers, and so do the FireTuner call strings that the bridge sends |
-| The core mod closes a popup by repeating its `Close`, and doesn't replace the popup's file | Gathering Storm and other mods replace the game's UI files, so a replaced file would clash with them. The popup's `Close` is local to its context, so the core mod repeats its steps |
+| The core mod closes a popup through its own `Close`, and doesn't replace its file | Other mods replace the game's UI files, so a replaced file would clash. `Close` is local to its context, so the core mod presses its button or fires its LuaEvent. A copy of its steps missed the popup's lock |
 | Each local function name in the core mod has one definition | Two functions with one name and different bodies sent a reader to the wrong file. A name that says what the function returns, such as `GetHeldPromotions`, can't be mistaken for another |

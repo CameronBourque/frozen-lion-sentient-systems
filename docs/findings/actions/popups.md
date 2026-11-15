@@ -1,6 +1,8 @@
 # Popups
 
-Status: open. The natural wonder, natural disaster, project built, and rock band popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner. So is the core mod's close of each. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
+Status: confirmed. The natural wonder, natural disaster, project built, and rock band popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner.
+
+So is the core mod's close of each. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
 
 The popups that lock the engine's event queue and wait for a click, and the steps that close each one from `SentientSystemsCore_UI`. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/agent-popups.md). The popups that hold nothing are in [plain-popups.md](plain-popups.md).
 
@@ -26,15 +28,15 @@ On turn 15, the popup opened during the AI turns, after the player's turn had en
 
 Releasing its event ID from `SentientSystemsCore_UI`, with the other steps of its `Close`, closed it. The interface came back, the mode went back to `SELECTION`, and the turn started with `AGENT_TURN 0`. Confirmed on Windows on 2026-11-14.
 
-The core mod closes it from `NaturalWonderPopup_Shown`, as it does the wonder built popup. Reloaded on turn 15 and ended, the popup locked and closed with no click, and `AGENT_TURN 0` printed. Confirmed on Windows on 2026-11-15.
+The core mod closes it by pressing its `Close` button when the batch of game events ends. On turn 15 the Great Barrier Reef's popup locked, closed, and unlocked with no click. Confirmed on Windows on 2026-11-15.
 
-That close left the camera stuck. `ShowPopup` calls `UI.OnNaturalWonderRevealed` before the lock, and the camera's fly-around around the wonder starts later and keeps the camera until it stops.
+The camera stayed stuck, both with `Close` and with an earlier copy of its steps. `ShowPopup` calls `UI.OnNaturalWonderRevealed` before the lock, and the camera's fly-around around the wonder starts later and keeps the camera until it stops.
 
-`Events.StopAllCameraAnimations()` in the close, and again on the next `GameCoreEventPublishComplete`, came too early, and the camera stayed stuck. Sent through the tuner later, the same call freed it. Confirmed on Windows on 2026-11-15.
+`Events.StopAllCameraAnimations()` in the close, and again on the next `GameCoreEventPublishComplete`, came too early. Sent through the tuner later, the same call freed it. Confirmed on Windows on 2026-11-15.
 
 After the lock, `GameCoreEventPublishComplete` and `UIIdle` fired at once. About 1 s later came `LocalPlayerTurnBegin`, `PlayerTurnActivated`, and `GameCoreEventPlaybackComplete`. `SystemUpdateUI` didn't fire for `SentientSystemsCore_UI`.
 
-Stopping the camera on that `GameCoreEventPlaybackComplete` freed it. Confirmed on Windows on 2026-11-15.
+Stopping the camera on that `GameCoreEventPlaybackComplete` freed it, after the button press too. Confirmed on Windows on 2026-11-15.
 
 ### Natural disaster popup
 
@@ -44,15 +46,11 @@ A meteor shower or a comet strike has the `SCENE_EVENT_TRIGGER` sequence type in
 
 `AcquireSequenceLock` releases the first lock's ID once more, then references the current event. Confirmed in files.
 
-With the core mod's close, the popups of ordinary disasters, such as a volcano eruption, closed by themselves, and the turns went on. The camera still panned to each one. Confirmed on Windows on 2026-11-14.
+The core mod closes it by pressing its `Close` button when the batch of game events ends. On turn 15, `GameRandomEvents.ApplyEvent` from `GameCore_Tuner` raised a dust storm, a meteor shower, and a comet near Lahore. Each popup locked, closed, and unlocked with the same ID, and a unit moved at once.
 
-On turn 140, `GameRandomEvents.ApplyEvent` from `GameCore_Tuner` struck a meteor shower, then a comet.
+So a meteor shower's or a comet's popup closes before `RandomEventOccurred`, and takes no second lock. The comet struck in the same turn as the meteor shower and showed as usual. Turn 16 began after the end turn. Confirmed on Windows on 2026-11-15.
 
-The meteor shower's popup locked and closed, and a unit moved at once. When the turn ended, the popup's manager unlocked a later ID than its first lock, so the second lock was taken, and the core mod's release freed it.
-
-The comet struck in the same turn, while the popup's manager still counted itself locked, so its popup went into the popup's queue and took no lock.
-
-A second comet, after the turn-end reset, locked and closed, and a unit moved at once. Confirmed on Windows on 2026-11-14.
+A forest fire on a forest next to Lahore raised no popup.
 
 ### Project built popup
 
@@ -102,10 +100,10 @@ With the core mod's close, both popups closed as they opened, at the end of the 
 | `SentientSystems_EndTurn(0, true)` on turn 15, reloaded with the core mod's close | `SentientSystemsCore_UI` | A lock, with ID 852786, then the interface hidden and shown again. The context hidden, `SELECTION`, and `AGENT_TURN 0`. The camera stuck in the fly-around | 2026-11-15 |
 | The same, with the camera stopped again on `GameCoreEventPublishComplete` | `SentientSystemsCore_UI` | The camera stuck | 2026-11-15 |
 | The same, with a listener that stops the camera on the next `GameCoreEventPlaybackComplete` | `SentientSystemsCore_UI` | The camera moved | 2026-11-15 |
-| `ApplyEvent` with `RANDOM_EVENT_METEOR_SHOWER` (31), on turn 140 | `GameCore_Tuner` | A lock, with ID 838575, then the interface hidden and shown again. The popup's context hidden, the `SELECTION` mode, and a move ran | 2026-11-14 |
-| `ApplyEvent` with `RANDOM_EVENT_COMET_STRIKE` (43), in the same turn | `GameCore_Tuner` | A comet lake on the tile, and no lock. A move ran | 2026-11-14 |
-| `SentientSystems_EndTurn(0, true)` | `SentientSystemsCore_UI` | `PopupManager.Unlock` with ID 838600. The player's turn became active again on turn 140 | 2026-11-14 |
-| `ApplyEvent` with `RANDOM_EVENT_COMET_STRIKE` (43) again | `GameCore_Tuner` | A lock, with ID 840367, then the interface hidden and shown again. The popup's context hidden, and a move ran | 2026-11-14 |
+| `SentientSystems_MoveUnit` of a modern armor to see the Great Barrier Reef, on turn 15, with the button press and no camera stop | `SentientSystemsCore_UI` | A lock, `NaturalWonderPopup_Shown`, then `NaturalWonderPopup_Closed` and the unlock, and `SELECTION`. The camera stuck | 2026-11-15 |
+| The same after a reload, with the camera stop | `SentientSystemsCore_UI` | The same lock and close, and the camera moved | 2026-11-15 |
+| `ApplyEvent` with a dust storm (13), a meteor shower (31), and a comet (43), on turn 15, with the button press | `GameCore_Tuner` | For each, a lock, then the unlock with the same ID, the context hidden, `SELECTION`, and a move ran | 2026-11-15 |
+| `ApplyEvent` with `RANDOM_EVENT_FOREST_FIRE` (33) on a forest | `GameCore_Tuner` | No popup | 2026-11-15 |
 | `FinishProgress()` on Ratumacos, building `PROJECT_LAUNCH_EARTH_SATELLITE`, on turn 85 | `GameCore_Tuner` | A lock, with ID 1418556, `ProjectBuiltPopup_Shown`, and `CINEMATIC` | 2026-11-15 |
 | `DoLeftClick()` on `/InGame/ProjectBuiltPopup/Close` | `SentientSystemsCore_UI` | `ProjectBuiltPopup_Closed`, `PopupManager.Unlock` with ID 1418556, the context hidden, and `SELECTION` | 2026-11-15 |
 | A concert started from the unit panel | The game | `PostTourismBomb` with 0, the band, 49, 24, 4, and 1000, then `RockBandMoviePopup_Shown`, and `CINEMATIC` | 2026-11-15 |

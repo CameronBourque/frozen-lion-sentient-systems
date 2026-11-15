@@ -108,9 +108,9 @@ Each task first records whether its popup stops a request and the end turn call,
 
     Test it with a rock band on a foreign district. Commit: `feat(core): add the rock band concert action`.
 
-17. **Close the lock popups with their own buttons.** `SENTIENTSYSTEMS_POPUPS` repeats the `Close` of the wonder built, natural wonder, and natural disaster popups. It never resets a popup's own lock, so a later one may only queue.
+17. **Close the lock popups with their own buttons.** The core mod repeated the `Close` of the wonder built, natural wonder, and natural disaster popups from their `_Shown` events. That never reset a popup's own lock, so a later one of the same kind only queued.
 
-    Move them to the plain popups with `closeButton`, as task 13 does. Keep the camera stop on `GameCoreEventPlaybackComplete`, and the meteor and comet second lock release only if their `Close` doesn't release it.
+    Move them to the popup list with `closeButton`, as task 13 does, and remove the copied steps and the meteor and comet second lock release. Keep the camera stop on `GameCoreEventPlaybackComplete` for the natural wonder.
 
     Test a wonder, a natural wonder and its camera, a disaster, and a meteor shower or comet. Commit: `refactor(core): close the lock popups with their own buttons`.
 

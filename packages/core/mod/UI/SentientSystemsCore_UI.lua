@@ -75,40 +75,19 @@ local function IsLocalAgent()
 	return IsAgentID(Game.GetLocalPlayer())
 end
 
--- Returns the listener that closes a popup when it opens for an agent player.
-local function GetPopupCloser(name)
-	return function()
-		if IsLocalAgent() then
-			SentientSystems_ClosePopup(name)
-		end
-	end
-end
-
-for name in pairs(SENTIENTSYSTEMS_POPUPS) do
-	LuaEvents[name .. "_Shown"].Add(SentientSystems_CatchErrors("On" .. name .. "Shown", GetPopupCloser(name)))
-end
-
-local function OnRandomEventOccurred(type)
-	if IsLocalAgent() then
-		SentientSystems_ReleaseDisasterLock(type)
-	end
-end
-
-Events.RandomEventOccurred.Add(SentientSystems_CatchErrors("OnRandomEventOccurred", OnRandomEventOccurred))
-Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPublishComplete", SentientSystems_FinishPopups))
 Events.GameCoreEventPlaybackComplete.Add(SentientSystems_CatchErrors("OnGameCoreEventPlaybackComplete", SentientSystems_StopPopupCamera))
 
-local function ClosePlainPopups()
+local function ClosePopups()
 	if IsLocalAgent() then
-		SentientSystems_ClosePlainPopups()
+		SentientSystems_ClosePopups()
 	end
 end
 
--- A plain popup can open from a notification during a load too, before any
--- batch ends, and the historic moment popup from its own queue on UIIdle.
-Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
-Events.LoadScreenClose.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
-Events.UIIdle.Add(SentientSystems_CatchErrors("ClosePlainPopups", ClosePlainPopups))
+-- A popup can open from a notification during a load too, before any batch
+-- ends, and the historic moment popup from its own queue on UIIdle.
+Events.GameCoreEventPublishComplete.Add(SentientSystems_CatchErrors("ClosePopups", ClosePopups))
+Events.LoadScreenClose.Add(SentientSystems_CatchErrors("ClosePopups", ClosePopups))
+Events.UIIdle.Add(SentientSystems_CatchErrors("ClosePopups", ClosePopups))
 
 local function OnRaisePopupInGame(id)
 	if IsLocalAgent() then

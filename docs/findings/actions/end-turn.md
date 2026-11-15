@@ -51,11 +51,11 @@ The hold, not the `CINEMATIC` interface mode, stops the game. On turn 56, with t
 
 Releasing the event ID from `SentientSystemsCore_UI`, with the other steps of `Close`, closed the popup, and the AI turns ran. Confirmed on Windows on 2026-11-14.
 
-The core mod closes it for an agent player. See [design/core/mod/README.md](../../design/core/mod/README.md#popups). In a listener on `LuaEvents.WonderBuiltPopup_Shown`, which the popup fires right after its lock, `UI.ReferenceCurrentEvent()` returned the lock's ID, 50196. Confirmed on Windows on 2026-11-14.
+The core mod closes it for an agent player by pressing its `Close` button when the batch of game events ends. See [design/core/mod/README.md](../../design/core/mod/README.md#popups).
 
-`InGame.lua` hides the interface on the same `Shown` event, and shows it again on `WonderBuiltPopup_Closed`. Sent from the `Shown` listener, the closed signal came before the hide, and the interface stayed hidden.
+`InGame.lua` hides the interface on `WonderBuiltPopup_Shown`, and shows it again on `WonderBuiltPopup_Closed`, which the popup's own `Close` sends after the hide.
 
-Sent on the next `Events.GameCoreEventPublishComplete`, it came after, and the interface came back. `ContextPtr:RequestRefresh()` never ran its handler, because the core mod's context is hidden. Confirmed on Windows on 2026-11-14.
+A forced Ruhr Valley in Lahore locked, closed, and unlocked with the same ID, with no click. Confirmed on Windows on 2026-11-15.
 
 ### With other cinematic popups up
 
@@ -101,6 +101,6 @@ The bridge ran this step in a single-player game, with one city and one unit.
 | The same request with only the map up | `SentientSystemsCore_UI` | The turn ended | 2026-11-13 |
 | `SentientSystems_MoveUnit` and `SentientSystems_EndTurn(0, true)` on turn 56, with the wonder built popup up | `SentientSystemsCore_UI` | `{"ok":true}` for both. The unit didn't move, and the turn didn't end | 2026-11-14 |
 | `UI.ReleaseEventID` with the lock's ID, and the other steps of `Close` | `SentientSystemsCore_UI` | The popup closed. The unit moved, and the AI turns ran | 2026-11-14 |
-| The core mod's listener, after a reload and a forced wonder | `SentientSystemsCore_UI` | No popup showed. The interface hid and came back, and a move ran at once | 2026-11-14 |
+| `FinishProgress()` on Lahore, building `BUILDING_RUHR_VALLEY`, with the core mod's button press | `GameCore_Tuner` | A lock, `WonderBuiltPopup_Shown`, then `WonderBuiltPopup_Closed` and the unlock, the context hidden, and `SELECTION` | 2026-11-15 |
 
 Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, a leader screen on 2026-11-13, and the wonder built popup on 2026-11-14.
