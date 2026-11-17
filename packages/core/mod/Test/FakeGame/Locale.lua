@@ -1,5 +1,5 @@
--- Locale. Fakes Locale.Lookup, which returns a key with no text as it is, and
--- Locale.ToUpper.
+-- Locale. Fakes Locale.Lookup, which returns a key with no text as it is,
+-- Locale.HasTextKey, and Locale.ToUpper.
 
 return function(env, world, ctx)
 	local text = world.text or {}
@@ -19,6 +19,9 @@ return function(env, world, ctx)
 			end
 
 			return (text[key] or key) .. "(" .. table.concat(arguments, ",") .. ")"
+		end,
+		HasTextKey = function(key)
+			return text[key] ~= nil
 		end,
 		ToUpper = function(key)
 			return (text[key] or key):upper()

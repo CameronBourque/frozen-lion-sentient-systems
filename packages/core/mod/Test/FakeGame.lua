@@ -456,5 +456,6 @@ FakeGame.Register("Victories", require("FakeGame/Victories"))
 FakeGame.Register("Attacks", require("FakeGame/Attacks"))
 FakeGame.Register("TileOrders", require("FakeGame/TileOrders"))
 FakeGame.Register("WmdLaunchers", require("FakeGame/WmdLaunchers"))
+FakeGame.Register("Civilopedia", require("FakeGame/Civilopedia"))
 
 return FakeGame

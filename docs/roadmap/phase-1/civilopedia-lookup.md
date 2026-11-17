@@ -11,10 +11,12 @@ Add the core mod's lookup, which answers questions about game facts from the Civ
 
    Index each page's text as the `Search` description.
 
-   Rank exact page IDs first, then titles that start with the query, then the game's `Search` results, then other substring matches on page IDs and titles. Drop duplicates.
+   Rank exact page IDs first, then titles that start with the query, titles that hold it, the game's `Search` results, and page IDs that hold it. Drop duplicates.
 
    A `Search` result's snippet is its excerpt, and another match's snippet is the first sentence of its text. If `Search` is missing, log a warning and use the substring matches. Commit: `feat(core): add Civilopedia search`.
 3. **Page.** Add `SentientSystems_LookupPage(pageID, sectionID)`, which returns the page's title, its `GameInfo` row, and its text. The text is the row's `Description`, or a Concepts page's `CONTENT` paragraphs. Leave out the `HISTORY`, `CAPSULE`, and `DETAILED` chapters.
+
+   For the pages with no text, such as techs and leaders, read which other tables their page files show, as [findings/civilopedia.md](../../findings/civilopedia.md#titles-and-text) lists, and add the ones that hold rules.
 
    Leave out the row's `Hash`, `Index`, `RowId`, `rowid`, `PrimaryKey`, `Name`, and `Description` columns, and every column that is `0` or `false`. References to other rows stay as type names.
 

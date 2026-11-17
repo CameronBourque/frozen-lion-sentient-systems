@@ -36,6 +36,9 @@ None open.
 - **Game objects.** Every other layout's only chapter is `HISTORY`, and the `Leader` layout adds `CAPSULE` and `DETAILED`.
 
   The rules text of a unit, building, or other object is the `Description` column of its row, such as `LOC_UNIT_SETTLER_DESCRIPTION`. The page files show its stats from the row and from other tables. Confirmed.
+- **Pages with no rules text.** Of the 1,776 pages left after the missing-section drop, 486 have no `Description` column or chapter outside history, such as every tech, civic, leader, resource, terrain, government, and great person, and some buildings, such as `BUILDING_PALACE`.
+
+  Their page files build the page from other tables, such as unlocks, yields, and traits. Confirmed.
 - **Rows.** A `GameInfo` row also holds `Hash`, `Index`, `RowId`, `rowid`, and `PrimaryKey`, and many columns that are `0` or `false`. The settler's row has 57 columns, with `Cost=80` and `BaseMoves=2`. Confirmed.
 - **Tags in text.** The text holds font icons such as `[ICON_Movement]`. `Locale.StripTags` removes them. Confirmed.
 
@@ -68,6 +71,7 @@ The Civilopedia's search is the game's `Search` API. `PopulateSearchData` indexe
    - Check the `CONTENT` paragraph keys of `MOVEMENT_1`.
    - Count page IDs that repeat across sections.
 3. Build a context named `SentientSystemsProbe` from every page, with its body text as the description. Search for `settler`, `setler`, `movement`, `move`, `amenities`, `flanking`, `zone of control`, and `UNIT_SETTLER`, and print each result's 4 values. Destroy the context.
+4. Send `SentientSystemsCore_Civilopedia.lua` to `SentientSystemsCore_UI` without its `include` lines, and count the pages whose `text` is `nil`, by section and layout.
 
 ## Results
 

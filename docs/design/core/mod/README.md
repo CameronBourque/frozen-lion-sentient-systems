@@ -17,7 +17,21 @@ A gameplay script writes the checkpoint ID described in [memory.md](../../memory
 
 ## Civilopedia lookup
 
-It queries the `GameInfo` tables and localized text at runtime, so DLC and other mods are included. It also reads the Civilopedia's Concepts section for general rules such as movement, combat, and terrain.
+It reads the Civilopedia's own tables, the `GameInfo` tables, and localized text at runtime, so DLC and other mods are included, and the Concepts section gives the general rules, such as movement, combat, and terrain. [findings/civilopedia.md](../../../findings/civilopedia.md) has the calls.
+
+`SentientSystemsCore_Civilopedia.lua` builds the index on the first call after a load. It reads each section and page as `CivilopediaSupport.lua` does, with the same excludes, and drops a page whose section is missing. Each page keeps its title, its `GameInfo` row, its search terms, and its text.
+
+The text is the row's `Description`, then each chapter of the page's layout except `HISTORY`, `CAPSULE`, and `DETAILED`, with the icons named by the text helpers. A page with neither has no text.
+
+`SentientSystems_Lookup(query)` in `SentientSystemsCore_CivilopediaSearch.lua` returns up to 10 pages, each once, from these lists in order:
+
+1. Exact page IDs, in any case.
+2. Titles that start with the query.
+3. Titles that hold the query.
+4. The game's `Search` results, from a context named `SentientSystemsLookup` that holds each page's title, text, and search terms.
+5. Page IDs that hold the query.
+
+Each result has its section, page ID, title, and a snippet. A `Search` result's snippet is the game's excerpt around the match, and any other result's is the first sentence of its text, cut to 200 characters. Without `Search`, the lookup prints one `ERROR` line and uses the other lists.
 
 ## Popups
 
@@ -56,6 +70,10 @@ The zod schemas in `packages/core/bridge/src/` are the only home of the JSON sha
 | Decision | Reason |
 | --- | --- |
 | Game facts come from the Civilopedia at runtime | It includes DLC and mods with no upkeep |
+| The lookup lists pages from the Civilopedia's own tables, not from a list of `GameInfo` tables | Mods add their pages there, the page IDs match the game's Civilopedia, and the Concepts pages come with no extra code |
+| The lookup leaves out the history chapters | They hold history, not rules, and cost tokens |
+| Titles rank before the game's `Search` results, and substring matches fill in after them | `Search` matches word stems and text, but no misspellings or type names, and ranked "+1 Movement" promotions above Naval Movement |
+| The index is built on the first lookup after a load | A load builds a new UI state. The build takes about 1 s, which a load that no agent looks anything up in doesn't pay |
 | The core mod has no gameplay script until checkpoint IDs need one | Nothing else needs a gameplay state yet |
 | Each mod file name starts with the mod's prefix, such as `SentientSystemsCore_` | `include` finds a file by name among every enabled mod's imported files, so a generic name can load another mod's file |
 | The zod schemas are the only home of the JSON shapes, and no reference is generated from them | The shapes were once in up to five places, and a copy that drifted misled the next reader. Each schema file is 13 to 85 lines, so an agent reads the one it needs. A generated file would be large |
