@@ -35,9 +35,7 @@ The calls the spy choice uses, as the escape screen shows them. The other choice
   Reading the choices with no spy escaping crashed it too, the first time the spy file ran with no escape, which points at `GetNextEscapingSpyID()` with none to give.
 
   The screen calls it only from a blocker's notification, so the choice checks for `ENDTURN_BLOCKING_SPY_CHOOSE_ESCAPE_ROUTE` or `_DRAGNET_PRIORITY` first, with `SentientSystems_HasBlocker` in `SentientSystemsCore_Common.lua`. Confirmed on Windows on 2026-10-27.
-- **Left out.** The choice leaves out spies travelling to a city, which are off the map and found with `GetNumSpiesOffMap()` and `GetNthOffMapSpy(i)`, each with `XLocation`, `YLocation`, `ReturnTurn`, `Name`, and `Level`, and the missions of spies in cities.
-
-  Phase 4 adds spies to the state. Confirmed on Windows on 2026-10-27.
+- **Left out.** The choice leaves out spies travelling to a city, which are off the map and found with `GetNumSpiesOffMap()` and `GetNthOffMapSpy(i)`, each with `XLocation`, `YLocation`, `ReturnTurn`, `Name`, and `Level`, and the missions of spies in cities. Confirmed on Windows on 2026-10-27.
 
 ## Method
 
