@@ -21,7 +21,9 @@ Expose the state, the action API, and the lookup as MCP tools. Every action tool
    The tools are `move_unit`, `unit_action`, `set_production`, `purchase`, `purchase_tile`, `set_research`, `set_civic`, `set_policies`, one tool for each other blocker, `respond_to_deal`, `respond_to_session`, `declare_war`, `propose_peace`, and `end_turn`.
 
    A failed action returns its reason as the tool result, not as an MCP error. Commit: `feat(core): add the action tools`.
-6. **`reason` field.** Make `reason` a required string on every action tool, and log it at the decisions level with the call. Test that a call without it fails. Commit: `feat(core): require a reason on every action`.
+6. **`reason` field.** Make `reason` a required string on every action tool, and log it at the decisions level with the call.
+
+   Add it through one helper that wraps every action tool's schema and handler, so [optional-reason.md](../../tech-debt/optional-reason.md) can make it optional in one place. Test that a call without it fails. Commit: `feat(core): require a reason on every action`.
 7. **Claude Code.** Add `.mcp.json` at the repo root, which starts the stdio server from `npm run mcp`. Live tests in Claude Code then call the same tools as the agent loop, in place of probe scripts. Commit: `chore(core): connect Claude Code to the MCP server`.
 8. **Remove the gate script.** Delete `packages/core/bridge/scripts/gate.ts` and the `gate` script in the bridge's `package.json`. Commit: `chore(core): remove the phase 0 gate script`.
 
