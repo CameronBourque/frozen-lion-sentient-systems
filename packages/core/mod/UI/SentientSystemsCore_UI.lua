@@ -12,6 +12,7 @@ SentientSystems_Include("SentientSystemsCore_Placement")
 SentientSystems_Include("SentientSystemsCore_TreesResearch")
 SentientSystems_Include("SentientSystemsCore_TreesGovernors")
 SentientSystems_Include("SentientSystemsCore_CivilopediaSearch")
+SentientSystems_Include("SentientSystemsCore_CivilopediaPage")
 
 -- The id attribute in SentientSystemsCore.modinfo.
 local MOD_ID = "5D4B5856-E71F-492C-A434-A0938AF49451"

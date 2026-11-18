@@ -2,7 +2,7 @@
 
 Status: confirmed. Read from the game's files and tested from the tuner in `SentientSystemsCore_UI`, in a single-player Gathering Storm game on Windows.
 
-How the game's Civilopedia builds its sections, pages, text, and search, and which of those calls the core mod's UI state can make. The lookup in [design/core/mod/](../design/core/mod/README.md#civilopedia-lookup) is built on them.
+How the game's Civilopedia builds its sections, pages, text, and search, and which of those calls the core mod's UI state can make. The lookup in [design/core/mod/civilopedia.md](../design/core/mod/civilopedia.md) is built on them.
 
 ## Questions
 
@@ -38,7 +38,7 @@ None open.
   The rules text of a unit, building, or other object is the `Description` column of its row, such as `LOC_UNIT_SETTLER_DESCRIPTION`. The page files show its stats from the row and from other tables. Confirmed.
 - **Pages with no rules text.** Of the 1,776 pages left after the missing-section drop, 486 have no `Description` column or chapter outside history, such as every tech, civic, leader, resource, terrain, government, and great person, and some buildings, such as `BUILDING_PALACE`.
 
-  Their page files build the page from other tables, such as unlocks, yields, and traits. Confirmed.
+  Their page files build the page from other tables, such as unlocks, yields, and traits. See [Page layouts](#page-layouts). Confirmed.
 - **Rows.** A `GameInfo` row also holds `Hash`, `Index`, `RowId`, `rowid`, and `PrimaryKey`, and many columns that are `0` or `false`. The settler's row has 57 columns, with `Cost=80` and `BaseMoves=2`. Confirmed.
 - **Tags in text.** The text holds font icons such as `[ICON_Movement]`. `Locale.StripTags` removes them. Confirmed.
 
@@ -57,6 +57,20 @@ The Civilopedia's search is the game's `Search` API. `PopulateSearchData` indexe
   It doesn't match misspellings, so `setler` finds nothing. It doesn't match type names, so `UNIT_SETTLER` finds nothing. Confirmed.
 - **Speed.** Indexing all 1,854 pages, with each Concepts page's paragraphs or each object's `Description` as its description, took about 1 s of CPU time and 232,628 characters. `os.clock` counts whole seconds here. Confirmed.
 
+### Page layouts
+
+Each `CivilopediaPage_*.lua` file adds one function to the global `PageLayouts`, by the `ScriptTemplate` of its `CivilopediaPageLayouts` row. `CivilopediaScreen.lua` loads them with `include("CivilopediaPage_", true)`, after `include("CivilopediaSupport")`. Confirmed in files.
+
+- **Calls.** A layout takes the page as a table with `SectionId`, `PageId`, `PageLayoutId`, and `Title`.
+
+  It draws only through globals of `CivilopediaSupport.lua`, such as `AddRightColumnStatBox(title, populate)`, `AddHeader`, `AddParagraph`, `AddHeaderBody`, and `AddChapter`, and never through `Controls`. Confirmed in files.
+- **Stat boxes.** `populate` gets a box with `AddSeparator`, `AddHeader(caption)`, `AddLabel(caption)`, `AddSmallLabel(caption)`, `AddIconLabel(icon, caption)`, `AddIconNumberLabel(icon, value, caption)`, and `AddIconList(...)`.
+
+  An icon is a list of the icon name, its text, and its type. Confirmed in files.
+- **Chapters.** The layouts read their chapters through `GetPageChapters(layoutID)`, `GetChapterHeader`, and `GetChapterBody`. These read caches that only `CacheData` in the Civilopedia screen fills, so in another state they return `nil` and the layout fails at its end. Confirmed.
+- **Loading in our state.** The two `include` calls work in `SentientSystemsCore_UI`. They load all 25 layouts, with the expansions' versions in place of the base game's. `include("CivilopediaPage_", true)` returns an empty list though it loads the files. Confirmed.
+- **Drawing as text.** With every drawing call and chapter call replaced by a function that writes lines, the layouts drew all 1,776 pages with no error, in about 4 s of CPU time. A page averaged 469 characters of JSON, and the largest, `ENVIRONMENTAL_EFFECTS`, was 7,274. Confirmed.
+
 ### Calls in the core mod's UI state
 
 `DB.Query`, every `Search` call above, `Locale.Lookup`, `Locale.HasTextKey`, `Locale.StripTags`, and the `GameInfo.Civilopedia*` tables all work in `SentientSystemsCore_UI`. Confirmed.
@@ -72,6 +86,7 @@ The Civilopedia's search is the game's `Search` API. `PopulateSearchData` indexe
    - Count page IDs that repeat across sections.
 3. Build a context named `SentientSystemsProbe` from every page, with its body text as the description. Search for `settler`, `setler`, `movement`, `move`, `amenities`, `flanking`, `zone of control`, and `UNIT_SETTLER`, and print each result's 4 values. Destroy the context.
 4. Send `SentientSystemsCore_Civilopedia.lua` to `SentientSystemsCore_UI` without its `include` lines, and count the pages whose `text` is `nil`, by section and layout.
+5. Send `SentientSystemsCore_Civilopedia.lua` and `SentientSystemsCore_CivilopediaPage.lua` the same way, keeping the `include` calls for the game's files. Call `SentientSystems_LookupPage` for every page, and count the `ERROR` lines and the characters.
 
 ## Results
 

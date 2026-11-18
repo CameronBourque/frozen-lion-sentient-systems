@@ -1,5 +1,5 @@
--- The Civilopedia's sections and pages, with each page's title and text, read
--- once per load from the tables CivilopediaSupport.lua reads. See
+-- The Civilopedia's sections and pages, with each page's title, chapters, and
+-- text, read once per load from the tables CivilopediaSupport.lua reads. See
 -- docs/findings/civilopedia.md.
 
 include("SentientSystemsCore_Common")
@@ -28,7 +28,7 @@ local function FindTextKey(keys)
 end
 
 -- Returns the text keys a page's text may have, with the suffix, in the order
--- FindPageTextKey and FindChapterTextKey in CivilopediaSupport.lua try them.
+-- FindPageTextKey in CivilopediaSupport.lua tries them.
 local function GetPageKeys(page, suffix)
 	local keys = {}
 
@@ -43,16 +43,32 @@ local function GetPageKeys(page, suffix)
 	return keys
 end
 
--- Returns the text keys of a chapter's paragraphs, as GetChapterBody does.
-local function GetChapterKeys(page, chapterID, paragraphs)
-	local listed = paragraphs[PageKey(page.sectionID, page.pageID) .. "|" .. chapterID]
+-- Returns the first text key a chapter's text has with the tag, or nil, in the
+-- order FindChapterTextKey in CivilopediaSupport.lua tries them.
+local function FindChapterKey(page, chapterID, tag)
+	local suffix = "_CHAPTER_" .. chapterID .. "_" .. tag
+	local keys = {}
 
-	if listed ~= nil then
-		return listed
+	if page.prefix ~= nil then
+		keys[#keys + 1] = page.prefix .. "_" .. page.pageID .. suffix
+		keys[#keys + 1] = page.prefix .. suffix
 	end
 
-	local suffix = "_CHAPTER_" .. chapterID .. "_"
-	local body = FindTextKey(GetPageKeys(page, suffix .. "BODY"))
+	keys[#keys + 1] = "LOC_PEDIA_" .. page.sectionID .. "_PAGE_" .. page.pageID .. suffix
+	keys[#keys + 1] = "LOC_PEDIA_" .. page.sectionID .. "_PAGE" .. suffix
+	keys[#keys + 1] = "LOC_PEDIA_PAGE_" .. page.pageID .. suffix
+	keys[#keys + 1] = "LOC_PEDIA_PAGE" .. suffix
+
+	return FindTextKey(keys)
+end
+
+-- Returns the text keys of a chapter's paragraphs, as GetChapterBody does.
+local function GetChapterKeys(page, chapterID, listed)
+	if listed ~= nil and listed.paragraphs ~= nil then
+		return listed.paragraphs
+	end
+
+	local body = FindChapterKey(page, chapterID, "BODY")
 
 	if body ~= nil then
 		return { body }
@@ -61,7 +77,7 @@ local function GetChapterKeys(page, chapterID, paragraphs)
 	local keys = {}
 
 	repeat
-		local key = FindTextKey(GetPageKeys(page, suffix .. "PARA_" .. #keys + 1))
+		local key = FindChapterKey(page, chapterID, "PARA_" .. #keys + 1)
 
 		keys[#keys + 1] = key
 	until key == nil
@@ -69,20 +85,39 @@ local function GetChapterKeys(page, chapterID, paragraphs)
 	return keys
 end
 
--- Returns a page's rules text: the Description of its row, then each chapter
--- that isn't history, or nil for none.
-local function GetPageText(page, row, chapters, paragraphs)
+-- Returns the chapters of a page's layout that aren't history, each with its
+-- header's text key, or nil, and its paragraphs' text keys, as
+-- GetChapterHeader and GetChapterBody give them.
+local function GetRulesChapters(page, layoutChapters, overrides)
+	local chapters = {}
+
+	for _, chapterID in ipairs(layoutChapters[page.layout] or {}) do
+		if not HISTORY_CHAPTERS[chapterID] then
+			local override = overrides[PageKey(page.sectionID, page.pageID) .. "|" .. chapterID] or {}
+
+			chapters[#chapters + 1] = {
+				chapterID = chapterID,
+				header = override.header or FindChapterKey(page, chapterID, "TITLE"),
+				paragraphs = GetChapterKeys(page, chapterID, override),
+			}
+		end
+	end
+
+	return chapters
+end
+
+-- Returns a page's rules text: the Description of its row, then the paragraphs
+-- of its chapters, or nil for none.
+local function GetPageText(row, chapters)
 	local parts = {}
 
 	if row ~= nil and row.Description ~= nil then
 		parts[#parts + 1] = SentientSystems_LookupText(row.Description)
 	end
 
-	for _, chapterID in ipairs(chapters[page.layout] or {}) do
-		if not HISTORY_CHAPTERS[chapterID] then
-			for _, key in ipairs(GetChapterKeys(page, chapterID, paragraphs)) do
-				parts[#parts + 1] = SentientSystems_LookupText(key)
-			end
+	for _, chapter in ipairs(chapters) do
+		for _, key in ipairs(chapter.paragraphs) do
+			parts[#parts + 1] = SentientSystems_LookupText(key)
 		end
 	end
 
@@ -115,9 +150,24 @@ local function GetLayoutChapters()
 	return chapters
 end
 
--- Returns the paragraph text keys that CivilopediaPageChapterParagraphs gives
--- a chapter, in order, by section, page, and chapter.
-local function GetListedParagraphs()
+-- Returns the header text key and the paragraph text keys, in order, that
+-- CivilopediaPageChapterHeaders and CivilopediaPageChapterParagraphs give a
+-- chapter, by section, page, and chapter.
+local function GetChapterOverrides()
+	local overrides = {}
+
+	local function GetOverride(row)
+		local key = PageKey(row.SectionId, row.PageId) .. "|" .. row.ChapterId
+
+		overrides[key] = overrides[key] or {}
+
+		return overrides[key]
+	end
+
+	for row in GameInfo.CivilopediaPageChapterHeaders() do
+		GetOverride(row).header = row.Header
+	end
+
 	local rows = {}
 
 	for row in GameInfo.CivilopediaPageChapterParagraphs() do
@@ -128,17 +178,14 @@ local function GetListedParagraphs()
 		return a.SortIndex < b.SortIndex
 	end)
 
-	local paragraphs = {}
-
 	for _, row in ipairs(rows) do
-		local key = PageKey(row.SectionId, row.PageId) .. "|" .. row.ChapterId
-		local list = paragraphs[key] or {}
+		local override = GetOverride(row)
 
-		list[#list + 1] = row.Paragraph
-		paragraphs[key] = list
+		override.paragraphs = override.paragraphs or {}
+		override.paragraphs[#override.paragraphs + 1] = row.Paragraph
 	end
 
-	return paragraphs
+	return overrides
 end
 
 -- Returns the sections and the hidden sections and pages, from the excludes.
@@ -230,9 +277,9 @@ local function GetSearchTerms()
 	return terms
 end
 
--- Fills each page's title, row, text, and search words.
+-- Fills each page's title, row, chapters, text, and search words.
 local function FillPages(pages)
-	local chapters, paragraphs, terms = GetLayoutChapters(), GetListedParagraphs(), GetSearchTerms()
+	local layoutChapters, overrides, terms = GetLayoutChapters(), GetChapterOverrides(), GetSearchTerms()
 
 	for _, page in ipairs(pages) do
 		local titleKey = FindTextKey(GetPageKeys(page, "_TITLE")) or page.name or page.pageID
@@ -240,7 +287,8 @@ local function FillPages(pages)
 
 		page.title = SentientSystems_LookupText(titleKey)
 		page.row = rows and rows[page.pageID]
-		page.text = GetPageText(page, page.row, chapters, paragraphs)
+		page.chapters = GetRulesChapters(page, layoutChapters, overrides)
+		page.text = GetPageText(page.row, page.chapters)
 		page.terms = terms[PageKey(page.sectionID, page.pageID)] or {}
 	end
 end

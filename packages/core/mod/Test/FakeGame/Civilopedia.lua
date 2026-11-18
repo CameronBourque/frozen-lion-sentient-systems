@@ -47,13 +47,17 @@ local function FakeSearch()
 end
 
 -- world.civilopedia holds the rows of each table: sections, sectionExcludes,
--- pageExcludes, pages, layoutChapters, paragraphs, and searchTerms. Its queries
--- and searchTermQueries are rows of CivilopediaPageQueries and
--- CivilopediaPageSearchTermQueries, and each one's rows are what DB.Query gives
--- for its SQL. Its tables give rows by page ID for the GameInfo table of each
--- name. Set its noSearch to leave the game without Search.
+-- pageExcludes, pages, layouts, layoutChapters, chapterHeaders, paragraphs,
+-- and searchTerms. Its queries and searchTermQueries are rows of
+-- CivilopediaPageQueries and CivilopediaPageSearchTermQueries, and each one's
+-- rows are what DB.Query gives for its SQL. Its tables give rows by page ID
+-- for the GameInfo table of each name. Its pageLayouts(env) returns the game's
+-- page layout functions, by template, which call the drawing calls in env.
+-- Set its noSearch to leave the game without Search.
 return function(env, world, ctx)
 	local data = world.civilopedia or {}
+
+	env.PageLayouts = data.pageLayouts and data.pageLayouts(env)
 
 	for name, field in pairs({
 		CivilopediaSections = "sections",
@@ -63,6 +67,8 @@ return function(env, world, ctx)
 		CivilopediaPageQueries = "queries",
 		CivilopediaPageLayoutChapters = "layoutChapters",
 		CivilopediaPageChapterParagraphs = "paragraphs",
+		CivilopediaPageChapterHeaders = "chapterHeaders",
+		CivilopediaPageLayouts = "layouts",
 		CivilopediaPageSearchTerms = "searchTerms",
 		CivilopediaPageSearchTermQueries = "searchTermQueries",
 	}) do
