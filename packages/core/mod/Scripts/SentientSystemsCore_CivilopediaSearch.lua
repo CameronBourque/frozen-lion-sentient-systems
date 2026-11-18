@@ -115,7 +115,7 @@ end
 -- Returns the Civilopedia pages that match the query as JSON, at most 10, best
 -- first. Each has its section, page ID, title, and a snippet: the game's
 -- excerpt around a match in the text, or the page's first sentence. An empty
--- query matches nothing. Shape: bridge/src/lookup.ts*.
+-- query matches nothing. Shape: bridge/src/lookup/lookup.ts.
 function SentientSystems_Lookup(query)
 	query = tostring(query or ""):match("^%s*(.-)%s*$")
 

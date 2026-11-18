@@ -74,7 +74,7 @@ local function GetSortedSections()
 end
 
 -- Returns the Civilopedia's sections as JSON, in the game's order, each with
--- its ID, title, and how many pages it has. Shape: bridge/src/lookup.ts*.
+-- its ID, title, and how many pages it has. Shape: bridge/src/lookup/lookup.ts.
 function SentientSystems_LookupSections()
 	local counts = {}
 
@@ -94,7 +94,7 @@ end
 -- Returns one section's pages as JSON, in the game's order, in its groups.
 -- Each group has its title, which pages with no group don't have, and the ID
 -- and title of each of its pages. A section that isn't found gives an error.
--- Shape: bridge/src/lookup.ts*.
+-- Shape: bridge/src/lookup/lookup.ts.
 function SentientSystems_LookupSection(sectionID)
 	local section = FindSection(tostring(sectionID or ""))
 

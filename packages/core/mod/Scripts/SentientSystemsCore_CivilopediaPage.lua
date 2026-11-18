@@ -307,7 +307,7 @@ end
 -- Returns one Civilopedia page as JSON, with its section, page ID, title, and
 -- its text as the game's page shows it. sectionID is needed only for a page ID
 -- that more than one section has, such as INTRO. A page that isn't found
--- gives an error. Shape: bridge/src/lookup.ts*.
+-- gives an error. Shape: bridge/src/lookup/lookup.ts.
 function SentientSystems_LookupPage(pageID, sectionID)
 	local pages = FindPages(tostring(pageID or ""), sectionID)
 

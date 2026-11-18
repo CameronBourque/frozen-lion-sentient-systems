@@ -54,6 +54,12 @@ The stats leave out `Hash`, `Index`, `RowId`, `rowid`, `PrimaryKey`, `Name`, `De
 
 The index keeps each page's group, with the group's title and sort index, and leaves out the pages of a group that `CivilopediaPageGroupExcludes` hides.
 
+## Bridge
+
+`packages/core/bridge/src/lookup/lookup.ts` has `lookup`, `lookupPage`, `lookupSections`, and `lookupSection`, which read each call's JSON through the stash and check it with its zod schema.
+
+A query or an ID goes into the Lua call as a string literal, with each quote, backslash, and control character escaped. A not-found reply becomes a failed read with the core mod's error, so it reaches the agent as a reason.
+
 ## Decisions
 
 | Decision | Reason |
