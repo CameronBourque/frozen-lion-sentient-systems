@@ -1,6 +1,6 @@
 # Metrics line
 
-Write a metrics line for each player after each agent turn, so the MVP gate game is the baseline that phase 3 changes are measured against. The design is in [evaluation.md](../../design/evaluation.md#metrics-line). Part of [phase 1](README.md).
+Write a metrics line for each player after each agent turn, so the MVP gate game is the baseline that phase 4 changes are measured against. The design is in [evaluation.md](../../design/evaluation.md#metrics-line). Part of [phase 1](README.md).
 
 ## Tasks
 

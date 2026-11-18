@@ -1,24 +1,31 @@
-# Phase 4: Setup screen, spectating, and release
+# Phase 4: Personalities and play quality
 
-This phase makes the mods usable by a nontechnical user and ships the first release. It adds setup screen options, spectator mode, the launcher, first-run setup, and self-update.
+This phase makes agents distinct and better. It adds personalities, all sweat levels, civ notes, fuller memory, deep reviews, and the narrator and messaging panels.
 
-**Gate.** A nontechnical user installs the mods and the bridge, sets them up, and watches an agent-only game without editing a file.
+**Gate.** In playtests, agents with different sweat levels and personalities play visibly different games. Compare the victory type pursued, wars declared, and districts built.
 
 ## Scope
 
-- **Agent** option in the player-type dropdown
-- Personality and sweat level dropdowns per slot
-- Spectator mode setup option, pacing, and camera, including the camera moves that closed popups still start, such as the jump to a natural wonder and its fly-around, and the timeline, great work gallery, and leader screens, which the core mod closes when a spectator opens them in an agent's game
-- Map reveal toggle, rendering only. Test the observer view in question 1 of [state/tile-visibility.md](../../findings/state/tile-visibility.md#questions) first
-- Relabel **Difficulty** as **AI Difficulty**
-- Launcher shortcut that starts the bridge and the game
-- First-run `EnableTuner` setup, with permission
-- In-game API key setting
-- A stop button and spending limit settings in the game, so a user without the bridge's console can [stop an agent](../../design/agents/turn-loop.md#stopping)
-- Missing-bridge message and bridge self-update
-- Bridge release on GitHub and mod upload to the Workshop
+- Personality files and concept guides
+- Descriptions for all three sweat levels
+- Civ notes for Gathering Storm civs, generation and cache for other civs, and the `overrides/` folder
+- Relationships memory and journal compaction
+- Deep strategic reviews with a stronger model
+- Fill `models.yaml` from testing
+- The decision support parts that the smoke test and MVP gate records point to, and the scenario tests that measure them. See [decision-support/](../../design/decision-support/README.md) and [testing.md](../../design/testing.md#scenario-tests)
+- A tool that puts each policy in a slot of the right type, so the agent can call `setPolicies` without matching every slot itself
+- Citizen focus and worked tiles in the state, with an action that changes them
+- Each city's next border expansion in the state
+- Trade routes in the state, and an action that sends a trader
+- Gossip, spies, and climate and disasters in the state, with the climate stage
+- Game mode actions and state: the Apocalypse mode's soothsayer, the Heroes and Legends mode's heroes, the Barbarian Clans mode's clans, the Zombie Defense mode's barricades and traps, and the Monopolies and Corporations mode's corporations, which a great merchant with a charge left founds
+- Diplomacy actions beyond answering a proposed deal, declaring war, and proposing peace, such as proposing other deals and sending gifts
+- Messaging panel and `send_message`
+- Narrator panel in the game UI
+- Run the test matrix
+- An action that joins or rejects an emergency, for `ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION`, tested with Rise and Fall alone once the test matrix adds it. See [choices/emergencies.md](../../findings/choices/emergencies.md#questions)
 
-Design: [agents/slot-type.md](../../design/agents/slot-type.md), [agents/cover-and-spectator.md](../../design/agents/cover-and-spectator.md), [distribution.md](../../design/distribution.md), [versioning.md](../../design/versioning.md).
+Design: [knowledge-files.md](../../design/knowledge-files.md), [agents/sweat-level.md](../../design/agents/sweat-level.md), [agents/narration-and-messaging.md](../../design/agents/narration-and-messaging.md) (includes an open question for this phase), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md#test-matrix).
 
 ## Steps
 
