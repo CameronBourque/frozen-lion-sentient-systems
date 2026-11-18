@@ -16,8 +16,7 @@ This phase makes agents distinct and better. It adds personalities, all sweat le
 - A tool that puts each policy in a slot of the right type, so the agent can call `setPolicies` without matching every slot itself
 - Citizen focus and worked tiles in the state, with an action that changes them
 - Each city's next border expansion in the state
-- Trade routes in the state, and an action that sends a trader
-- Gossip, spies, and climate and disasters in the state, with the climate stage
+- Gossip, and climate and disasters in the state, with the climate stage
 - Game mode actions and state: the Apocalypse mode's soothsayer, the Heroes and Legends mode's heroes, the Barbarian Clans mode's clans, the Zombie Defense mode's barricades and traps, and the Monopolies and Corporations mode's corporations, which a great merchant with a charge left founds
 - Diplomacy actions beyond answering a proposed deal, declaring war, and proposing peace, such as proposing other deals and sending gifts
 - Messaging panel and `send_message`

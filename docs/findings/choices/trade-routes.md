@@ -2,7 +2,7 @@
 
 Status: confirmed. The `tradeRoutes` key of `SentientSystems_GetChoices`, the destinations of each idle trader in a city, is confirmed in a running game, with the file sent through the tuner.
 
-Its yields match the game's own `GetYieldsForRoute` for every destination checked, and the open route chooser lists the same number of destinations in the same order. The trade route action isn't built yet.
+Its yields match the game's own `GetYieldsForRoute` for every destination checked, and the open route chooser lists the same number of destinations in the same order.
 
 The calls the trade route choice uses, as the route chooser lists them. The other choices are in the [choices index](README.md). See [design/core/mod/choices.md](../../design/core/mod/choices.md).
 
