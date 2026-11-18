@@ -188,7 +188,13 @@ local function GetChapterOverrides()
 	return overrides
 end
 
--- Returns the sections and the hidden sections and pages, from the excludes.
+-- Returns the key of a page group, as CivilopediaSupport.lua writes it.
+local function GroupKey(sectionID, groupID)
+	return sectionID .. "|:" .. groupID
+end
+
+-- Returns the sections and the hidden sections, pages, and page groups, from
+-- the excludes.
 local function GetSections()
 	local hidden = {}
 
@@ -198,6 +204,10 @@ local function GetSections()
 
 	for row in GameInfo.CivilopediaPageExcludes() do
 		hidden[PageKey(row.SectionId, row.PageId)] = true
+	end
+
+	for row in GameInfo.CivilopediaPageGroupExcludes() do
+		hidden[GroupKey(row.SectionId, row.PageGroupId)] = true
 	end
 
 	local sections, byID = {}, {}
@@ -215,20 +225,31 @@ local function GetSections()
 end
 
 -- Returns every page the Civilopedia shows, from CivilopediaPages and the
--- rows of each CivilopediaPageQueries query, without hidden pages or pages of a
--- section it doesn't have, as AddPage does. A query page keeps the table its
--- SQL reads, which holds its row.
+-- rows of each CivilopediaPageQueries query, without hidden pages, pages of a
+-- hidden group, or pages of a section it doesn't have, as AddPage does. A
+-- query page keeps the table its SQL reads, which holds its row, and each page
+-- keeps its group and sort index.
 local function GetPages(byID, hidden)
 	local pages = {}
 
 	local function AddPage(page)
-		if byID[page.sectionID] ~= nil and not hidden[PageKey(page.sectionID, page.pageID)] then
+		local inHiddenGroup = page.groupID ~= nil and hidden[GroupKey(page.sectionID, page.groupID)]
+
+		if byID[page.sectionID] ~= nil and not hidden[PageKey(page.sectionID, page.pageID)] and not inHiddenGroup then
 			pages[#pages + 1] = page
 		end
 	end
 
 	for row in GameInfo.CivilopediaPages() do
-		AddPage({ sectionID = row.SectionId, pageID = row.PageId, layout = row.PageLayoutId, name = row.Name, prefix = row.TextKeyPrefix })
+		AddPage({
+			sectionID = row.SectionId,
+			pageID = row.PageId,
+			groupID = row.PageGroupId,
+			sortIndex = row.SortIndex,
+			layout = row.PageLayoutId,
+			name = row.Name,
+			prefix = row.TextKeyPrefix,
+		})
 	end
 
 	for query in GameInfo.CivilopediaPageQueries() do
@@ -238,6 +259,8 @@ local function GetPages(byID, hidden)
 			AddPage({
 				sectionID = query.SectionId,
 				pageID = row[query.PageIdColumn],
+				groupID = query.PageGroupIdColumn and row[query.PageGroupIdColumn],
+				sortIndex = query.SortIndexColumn and row[query.SortIndexColumn] or query.SortIndex,
 				layout = row[query.PageLayoutIdColumn],
 				name = row[query.NameColumn],
 				prefix = query.TextKeyPrefixColumn and row[query.TextKeyPrefixColumn],
@@ -247,6 +270,36 @@ local function GetPages(byID, hidden)
 	end
 
 	return pages
+end
+
+-- Returns the page groups of each section, by section and group ID, each with
+-- its title and sort index, from CivilopediaPageGroups and the rows of each
+-- CivilopediaPageGroupQueries query. A group's title has the page keys with
+-- its ID as the page ID, as CacheData_ProcessData looks it up.
+local function GetPageGroups(byID, hidden)
+	local groups = {}
+
+	local function AddGroup(sectionID, groupID, name, sortIndex)
+		if byID[sectionID] ~= nil and groupID ~= nil and not hidden[GroupKey(sectionID, groupID)] then
+			local titleKey = FindTextKey(GetPageKeys({ sectionID = sectionID, pageID = groupID }, "_TAB_NAME")) or name or groupID
+
+			groups[GroupKey(sectionID, groupID)] = { title = SentientSystems_LookupText(titleKey), sortIndex = sortIndex }
+		end
+	end
+
+	for row in GameInfo.CivilopediaPageGroups() do
+		AddGroup(row.SectionId, row.PageGroupId, row.Name, row.SortIndex)
+	end
+
+	for query in GameInfo.CivilopediaPageGroupQueries() do
+		for _, row in ipairs(DB.Query(query.SQL)) do
+			local sortIndex = query.SortIndexColumn and row[query.SortIndexColumn] or query.SortIndex
+
+			AddGroup(query.SectionId, query.PageGroupIdColumn and row[query.PageGroupIdColumn], row[query.NameColumn], sortIndex)
+		end
+	end
+
+	return groups
 end
 
 -- Returns the extra search words of each page, by section and page, from
@@ -294,17 +347,20 @@ local function FillPages(pages)
 end
 
 -- Returns the Civilopedia's sections and pages, building them on the first
--- call. Pages are in table order, and byKey finds a page by section and page.
+-- call. Pages are in table order, each with its group's title and sort index,
+-- if it has a group, and byKey finds a page by section and page.
 function SentientSystems_GetCivilopedia()
 	if civilopedia == nil then
 		local sections, byID, hidden = GetSections()
 		local pages = GetPages(byID, hidden)
+		local groups = GetPageGroups(byID, hidden)
 		local byKey = {}
 
 		FillPages(pages)
 
 		for _, page in ipairs(pages) do
 			byKey[PageKey(page.sectionID, page.pageID)] = page
+			page.group = page.groupID and groups[GroupKey(page.sectionID, page.groupID)]
 		end
 
 		civilopedia = { sections = sections, pages = pages, byKey = byKey }

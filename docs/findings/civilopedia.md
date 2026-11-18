@@ -26,6 +26,11 @@ None open.
 - **Page IDs.** A query page's ID is its type name, such as `UNIT_SETTLER`, and `GameInfo.Types` has its kind, such as `KIND_UNIT`. A Concepts page has an ID such as `MOVEMENT_1`. Confirmed.
 - **Each query reads one table.** The `FROM` table of each query names the `GameInfo` table that holds the page's row, such as `Units` or `Policies`. `BUILDINGS` and `WONDERS` both read `Buildings`. Confirmed.
 - **Pages of a missing section are dropped.** The `LEADERS` query lists every leader, but `CivilopediaSections` has no `LEADERS` row, so `AddPage` drops those pages. After that, the only page ID in more than one section is `INTRO`, in 18 sections. Confirmed.
+- **Page groups.** `CivilopediaPageGroups`, `CivilopediaPageGroupQueries`, and `CivilopediaPageGroupExcludes` give each section's groups, such as Combat or Movement in Concepts, and a page names its group in `PageGroupId`. A group's title is its `TAB_NAME` key or its `Name`. Confirmed in files.
+
+  `CacheData_SortData` sorts sections by sort index, and a section's pages by group, then sort index, then title. It sorts groups by sort index, then title, then ID, and puts a missing group or sort index first.
+
+  Confirmed in files, and in a game, where Concepts listed its Gathering Storm group first.
 - **Count.** The game lists 1,854 pages after the excludes and before the missing-section drop. Gathering Storm pages such as `UNIT_SKIRMISHER` are among them. Confirmed.
 
 ### Titles and text

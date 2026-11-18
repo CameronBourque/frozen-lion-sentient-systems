@@ -45,6 +45,15 @@ When a page's layout is missing or fails, the text keeps what the layout drew. T
 
 The stats leave out `Hash`, `Index`, `RowId`, `rowid`, `PrimaryKey`, `Name`, `Description`, and each column that is `0` or `false`. A failed layout prints an `ERROR` line.
 
+## Browsing
+
+`SentientSystemsCore_CivilopediaBrowse.lua` lists what the Civilopedia holds, for an agent that doesn't know a page's name. Both calls sort as `CacheData_SortData` does, so the order matches the game's screen.
+
+- `SentientSystems_LookupSections()` returns each section's ID, title, and page count, by the section's sort index.
+- `SentientSystems_LookupSection(sectionID)` returns one section's pages in their page groups, such as Combat or Movement in Concepts, each with its page IDs and titles. Pages with no group come first. A section that isn't found returns an `error` that lists the section IDs.
+
+The index keeps each page's group, with the group's title and sort index, and leaves out the pages of a group that `CivilopediaPageGroupExcludes` hides.
+
 ## Decisions
 
 | Decision | Reason |
@@ -56,4 +65,5 @@ The stats leave out `Hash`, `Index`, `RowId`, `rowid`, `PrimaryKey`, `Name`, `De
 | The index is built on the first lookup after a load | A load builds a new UI state. The build takes about 1 s, which a load that no agent looks anything up in doesn't pay |
 | A page is drawn by the game's own page layout, with drawing calls that write lines | A tech, a leader, or a great person has no `Description`, and its layout reads up to 25 other tables. The layouts include the expansions' and other mods' versions, so no copy goes stale |
 | A page is text with headings, not JSON fields | It costs fewer tokens and reads as the page does |
+| A section lists its pages by page group, in the game's order | The groups say what a page is about, such as Movement in Concepts, so an agent can scan a section's titles by topic |
 | The row's stats appear only when the layout is missing or fails | The layouts already show the numbers a player reads, such as costs, strength, and movement |

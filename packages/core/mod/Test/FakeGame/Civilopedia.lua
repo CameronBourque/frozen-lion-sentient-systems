@@ -47,12 +47,14 @@ local function FakeSearch()
 end
 
 -- world.civilopedia holds the rows of each table: sections, sectionExcludes,
--- pageExcludes, pages, layouts, layoutChapters, chapterHeaders, paragraphs,
--- and searchTerms. Its queries and searchTermQueries are rows of
--- CivilopediaPageQueries and CivilopediaPageSearchTermQueries, and each one's
--- rows are what DB.Query gives for its SQL. Its tables give rows by page ID
--- for the GameInfo table of each name. Its pageLayouts(env) returns the game's
--- page layout functions, by template, which call the drawing calls in env.
+-- pageExcludes, pages, groups, groupExcludes, layouts, layoutChapters,
+-- chapterHeaders, paragraphs, and searchTerms. Its queries, groupQueries, and
+-- searchTermQueries are rows of CivilopediaPageQueries,
+-- CivilopediaPageGroupQueries, and CivilopediaPageSearchTermQueries, and each
+-- one's rows are what DB.Query gives for its SQL. Its tables give rows by page
+-- ID for the GameInfo table of each name. Its pageLayouts(env) returns the
+-- game's page layout functions, by template, which call the drawing calls in
+-- env.
 -- Set its noSearch to leave the game without Search.
 return function(env, world, ctx)
 	local data = world.civilopedia or {}
@@ -65,6 +67,9 @@ return function(env, world, ctx)
 		CivilopediaPageExcludes = "pageExcludes",
 		CivilopediaPages = "pages",
 		CivilopediaPageQueries = "queries",
+		CivilopediaPageGroups = "groups",
+		CivilopediaPageGroupExcludes = "groupExcludes",
+		CivilopediaPageGroupQueries = "groupQueries",
 		CivilopediaPageLayoutChapters = "layoutChapters",
 		CivilopediaPageChapterParagraphs = "paragraphs",
 		CivilopediaPageChapterHeaders = "chapterHeaders",
@@ -89,15 +94,11 @@ return function(env, world, ctx)
 
 	env.DB = {
 		Query = function(sql)
-			for _, query in ipairs(data.queries or {}) do
-				if query.SQL == sql then
-					return query.rows
-				end
-			end
-
-			for _, query in ipairs(data.searchTermQueries or {}) do
-				if query.SQL == sql then
-					return query.rows
+			for _, field in ipairs({ "queries", "groupQueries", "searchTermQueries" }) do
+				for _, query in ipairs(data[field] or {}) do
+					if query.SQL == sql then
+						return query.rows
+					end
 				end
 			end
 

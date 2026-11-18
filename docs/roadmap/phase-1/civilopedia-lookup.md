@@ -17,7 +17,9 @@ Add the core mod's lookup, which answers questions about game facts from the Civ
 3. **Page.** Add `SentientSystems_LookupPage(pageID, sectionID)`, which returns the page's title and its text as the game's page shows it. Run the game's own page layout with drawing calls that write lines, as [findings/civilopedia.md](../../findings/civilopedia.md#page-layouts) describes, and leave out the history chapters.
 
    When the layout is missing or fails, add the row's stats. `sectionID` is optional, and is needed only for a page ID that repeats across sections, such as `INTRO`. Commit: `feat(core): add Civilopedia pages`.
-4. **Browse.** Add `SentientSystems_LookupSections()`, which lists each section's ID and title. Add `SentientSystems_LookupSection(sectionID)`, which lists the page ID and title of each page in one section. Commit: `feat(core): add Civilopedia browsing`.
+4. **Browse.** Add `SentientSystems_LookupSections()`, which lists each section's ID, title, and page count. Add `SentientSystems_LookupSection(sectionID)`, which lists the page ID and title of each page in one section, in its page groups, in the game's order.
+
+   Commit: `feat(core): add Civilopedia browsing`.
 5. **Bridge.** Add `lookup`, `lookupPage`, `lookupSections`, and `lookupSection` to `src/actions.ts`, with zod schemas and tests. Commit: `feat(core): call the lookup from the bridge`.
 
 ## Done when

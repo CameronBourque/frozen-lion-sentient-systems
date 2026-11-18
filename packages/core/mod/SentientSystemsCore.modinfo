@@ -38,6 +38,7 @@
 			<File>Scripts/SentientSystemsCore_Civilopedia.lua</File>
 			<File>Scripts/SentientSystemsCore_CivilopediaSearch.lua</File>
 			<File>Scripts/SentientSystemsCore_CivilopediaPage.lua</File>
+			<File>Scripts/SentientSystemsCore_CivilopediaBrowse.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 			<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
@@ -143,6 +144,7 @@
 		<File>Scripts/SentientSystemsCore_Civilopedia.lua</File>
 		<File>Scripts/SentientSystemsCore_CivilopediaSearch.lua</File>
 		<File>Scripts/SentientSystemsCore_CivilopediaPage.lua</File>
+		<File>Scripts/SentientSystemsCore_CivilopediaBrowse.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_Actions.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnits.lua</File>
 		<File>Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua</File>
