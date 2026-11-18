@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.22.0...core-v0.23.0) (2026-11-18)
+
+
+### Features
+
+* **core:** add the Civilopedia lookup ([#97](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/97)) ([0ef7040](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/0ef7040a104a1c975a4ce6abfd54c3df21e6adf6))
+
 ## [0.22.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.21.0...core-v0.22.0) (2026-11-15)
 
 
