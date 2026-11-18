@@ -79,7 +79,7 @@ These helpers are candidates, grouped by how much judgment their scoring needs. 
 
 ## Build order
 
-We build a helper when decision records show agents losing on that decision. The [smoke test](../../roadmap/phase-1/smoke-test.md) and the [MVP gate](../../roadmap/phase-1/mvp-gate.md) give the first records. The low-judgment helpers come first among the decisions that fail, because they are mostly arithmetic on state the serializer already produces.
+We build a helper when decision records show agents losing on that decision. The [smoke test](../../roadmap/phase-2/smoke-test.md) and the [MVP gate](../../roadmap/phase-2/mvp-gate.md) give the first records. The low-judgment helpers come first among the decisions that fail, because they are mostly arithmetic on state the serializer already produces.
 
 ## Open questions
 

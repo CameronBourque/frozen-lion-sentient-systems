@@ -11,7 +11,7 @@ Tests use fixed presets with a fixed map seed, so a rerun shows whether a change
 
 ## Test matrix
 
-After phase 1, a test matrix changes one setting at a time: map size, player count, ruleset, optional game modes, and game mode.
+After phase 2, a test matrix changes one setting at a time: map size, player count, ruleset, optional game modes, and game mode.
 
 ## Scenario tests
 
@@ -49,7 +49,7 @@ Two checks cannot be automated. Agent players must be more fun to play against t
 
 ## State size
 
-Measurement sets the state size per turn. Phase 1 sends the full state, measures it, and trims. See the [risk](../risks.md).
+Measurement sets the state size per turn. Phase 2 sends the full state, measures it, and trims. See the [risk](../risks.md).
 
 `npm run state` prints the size in bytes of the state, the choices, and each tree, and under the state and the choices, the size and share of each section, largest first.
 
@@ -91,9 +91,9 @@ The tiles are the largest part of the state, at about two thirds on both turns, 
 | Decision | Reason |
 | --- | --- |
 | Tests use fixed presets with a fixed map seed | A rerun shows whether a change helped or the agent got lucky |
-| The test matrix starts after phase 1 and changes one setting at a time | A failure points at the one setting that changed |
+| The test matrix starts after phase 2 and changes one setting at a time | A failure points at the one setting that changed |
 | Scenario tests check an outcome with code, never the moves | Grading moves takes a person, and two people grade them differently |
 | Each scenario runs several times and reports a pass rate | A model does not give the same answer each time |
 | Only a few scenarios, run on demand | Each save needs upkeep, and each run needs the game and costs model calls |
 | Playtests judge fun and advice quality | These two checks cannot be automated |
-| Phase 1 sends the full state, measures it, and then trims it | The state size per turn is unknown until it is measured |
+| Phase 2 sends the full state, measures it, and then trims it | The state size per turn is unknown until it is measured |

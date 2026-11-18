@@ -1,6 +1,6 @@
 # Stopping and spending limits
 
-Add the stop key, the turn count, and the spending limits, so an agent never spends more than you allow. The design is in [turn-loop.md](../../design/agents/turn-loop.md#stopping). Part of [phase 1](README.md).
+Add the stop key, the turn count, and the spending limits, so an agent never spends more than you allow. The design is in [turn-loop.md](../../design/agents/turn-loop.md#stopping). Part of [phase 2](README.md).
 
 ## Tasks
 

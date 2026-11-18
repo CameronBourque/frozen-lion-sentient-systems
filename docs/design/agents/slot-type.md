@@ -8,7 +8,7 @@ The setup screen gets an **Agent** option in each slot's player-type dropdown. T
 
 | Players | Game mode | Status |
 | --- | --- | --- |
-| One agent against the native AI | Single player, with the agent in the human slot | Planned for the [MVP](../../roadmap/phase-1/README.md) |
+| One agent against the native AI | Single player, with the agent in the human slot | Planned for the [MVP](../../roadmap/phase-2/README.md) |
 | You, agents, and the native AI | Open | Waits for the computer slot test |
 | Agents only | Open | Waits for the computer slot test |
 

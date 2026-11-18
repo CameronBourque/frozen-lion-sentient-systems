@@ -1,6 +1,6 @@
 # Memory and decision records
 
-Add the plan and journal memory files, the tools that change them, and decision records. Phase 1 has no relationships file and no snapshots. This step doesn't need the game. Part of [phase 1](README.md).
+Add the plan and journal memory files, the tools that change them, and decision records. Phase 2 has no relationships file and no snapshots. This step doesn't need the game. Part of [phase 2](README.md).
 
 ## Tasks
 
