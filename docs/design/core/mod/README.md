@@ -10,14 +10,11 @@ The core mod is core's in-game Lua. It signals turns, builds each player's view 
 | [choices.md](choices.md) | The choices and the placement tiles |
 | [trees.md](trees.md) | The tech, civic, and governor trees |
 | [actions/](actions/README.md) | The action API |
+| [civilopedia.md](civilopedia.md) | The Civilopedia lookup: its index, search, and pages |
 
 ## Checkpoint ID
 
 A gameplay script writes the checkpoint ID described in [memory.md](../../memory.md#checkpoint-ids).
-
-## Civilopedia lookup
-
-It queries the `GameInfo` tables and localized text at runtime, so DLC and other mods are included. It also reads the Civilopedia's Concepts section for general rules such as movement, combat, and terrain.
 
 ## Popups
 
@@ -55,7 +52,6 @@ The zod schemas in `packages/core/bridge/src/` are the only home of the JSON sha
 
 | Decision | Reason |
 | --- | --- |
-| Game facts come from the Civilopedia at runtime | It includes DLC and mods with no upkeep |
 | The core mod has no gameplay script until checkpoint IDs need one | Nothing else needs a gameplay state yet |
 | Each mod file name starts with the mod's prefix, such as `SentientSystemsCore_` | `include` finds a file by name among every enabled mod's imported files, so a generic name can load another mod's file |
 | The zod schemas are the only home of the JSON shapes, and no reference is generated from them | The shapes were once in up to five places, and a copy that drifted misled the next reader. Each schema file is 13 to 85 lines, so an agent reads the one it needs. A generated file would be large |

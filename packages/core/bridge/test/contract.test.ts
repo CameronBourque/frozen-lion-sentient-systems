@@ -8,6 +8,7 @@ import { describe, expect, test } from "vitest";
 import type { z } from "zod";
 import { ACTION_RESULT } from "../src/actions/actions.js";
 import { CHOICES } from "../src/choices/choices.js";
+import { PAGE_REPLY, SEARCH, SECTION_REPLY, SECTIONS } from "../src/lookup/lookup.js";
 import { PLACEMENT } from "../src/placement/placement.js";
 import { STATE } from "../src/state/state.js";
 import { GOVERNOR_TREE } from "../src/trees/governors.js";
@@ -25,6 +26,10 @@ const CALLS: Record<string, z.ZodType> = {
 	GetGovernorTree: GOVERNOR_TREE,
 	GetPlacement: PLACEMENT,
 	MoveUnit: ACTION_RESULT,
+	Lookup: SEARCH,
+	LookupPage: PAGE_REPLY,
+	LookupSections: SECTIONS,
+	LookupSection: SECTION_REPLY,
 };
 
 function fixtureNames(call: string): string[] {
