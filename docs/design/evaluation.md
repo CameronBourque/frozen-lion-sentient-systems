@@ -26,7 +26,7 @@ The scoreboard gives the leader panel's numbers only for players the agent has m
 
 The metrics include players the agent has not met. The agent never reads the metrics file during the game, so the file leaks nothing to the agent's play.
 
-The checkpoint ID lets the review follow only the lines of the branch that finished the game, because turns repeat after a reload. Phase 1 has no checkpoint IDs, so its lines carry the turn only.
+The checkpoint ID lets the review follow only the lines of the branch that finished the game, because turns repeat after a reload. Phase 2 has no checkpoint IDs, so its lines carry the turn only.
 
 ## Agent numbers
 

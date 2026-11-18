@@ -9,7 +9,7 @@ This file lists the game calls the bridge needs, apart from the actions, which a
 ## Questions
 
 1. Can a script write a game property that saves keep, for checkpoint IDs?
-2. Can UI Lua dismiss the hotseat pass screen, so agent turns start without a click? Test in phase 2.
+2. Can UI Lua dismiss the hotseat pass screen, so agent turns start without a click? Test in phase 3.
 
 ## What we know now
 
@@ -58,7 +58,7 @@ See [lua/contexts.md](lua/contexts.md). The gameplay event is `GameEvents.Player
 
 - `Game:SetProperty(key, value)` and `Game:GetProperty(key)` appear in `DLC/CivRoyaleScenario/Scripts/CivRoyaleScenario_StartScript.lua`, lines 158 and 173. That file is a gameplay script. Confirmed in files.
 - Players have the same methods. `pPlayer:SetProperty` appears in `DLC/BlackDeathScenario/Scripts/BlackDeathScenario.lua`, line 373.
-- Unconfirmed: whether the value survives a save and reload, and whether a UI script can call `SetProperty` or only `GetProperty`. Test both in phase 2.
+- Unconfirmed: whether the value survives a save and reload, and whether a UI script can call `SetProperty` or only `GetProperty`. Test both in phase 3.
 
 ### Mod metadata
 

@@ -14,7 +14,7 @@ The calls the emergency choice uses, as the emergency popup shows them. The othe
 
    With Gathering Storm, `Expansion2_Congress.xml` makes each of Rise and Fall's emergencies a World Congress proposal, a `Discussions` row with its `EmergencyType`: military, city-state, religious, nuclear, and backstab. So the player votes on an emergency there, and it begins when it passes.
 
-   The blocker is most likely Rise and Fall's own way to join, in a game without Gathering Storm. The emergency action waits for that ruleset in [phase 3](../../roadmap/phase-3/README.md). Confirmed in files on 2026-11-11.
+   The blocker is most likely Rise and Fall's own way to join, in a game without Gathering Storm. The emergency action waits for that ruleset in [phase 4](../../roadmap/phase-4/README.md). Confirmed in files on 2026-11-11.
 2. Does a player who is the target see the same blocker and popup as a member? The popup has an **OK** button for the target's case in the files, with no **Join** or **Reject**.
 
 ## What we know now

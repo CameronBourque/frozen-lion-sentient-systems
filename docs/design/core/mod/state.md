@@ -21,7 +21,6 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The unit panel and the missile silo banner.** For each device the player has, the units and silos that can launch it now.
 - **The Yields tab of Reports.** Income by source, building and unit upkeep, deal payments, and net income per turn.
 - **The Resources tab of Reports.** Strategic and luxury resources, and, with Gathering Storm, strategic stockpiles.
-- **The Gossip tab of Reports.** What the player has heard about met players.
 - **The Era Progress panel.** The era, era score, current age, the thresholds for the next age, turns until the next era, and the active effects.
 - **The Great People screen.** Each candidate's era and effect, each met player's recruit progress, points per turn, and the gold and faith patronage costs.
 - **The City-States screen.** Envoy tokens, the bonuses of each kind of city-state, and each city-state's envoys, suzerain, suzerain bonus, resources, quests, and the players with envoys there.
@@ -45,7 +44,6 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The Appeal lens.** On each revealed land tile and natural wonder: its appeal, as the tooltip and the lens show it, left out when 0.
 - **The plot tooltip.** On each revealed tile with nuclear fallout: the turns it has left.
 - **The Continent lens.** The index of each tile's continent, and a list of the continents the player has revealed with their types and names, as the lens and the tooltip show them.
-- **Their own screens.** Climate and disasters.
 - **The popups the core mod closes.** A unit the player lost to a capture or captured, and a rock band's concert result, as the unit captured and rock band popups word them. Each stays until the end of the next turn, and is lost when the game loads.
 
   The spy mission popup needs no entry, since the Espionage screen's mission history has the result.

@@ -34,7 +34,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Marker wrapper | The Lua the tuner client puts around each command. It prints `@@ss:begin:<id>` and `@@ss:end:<id>:<result>`, so the bridge knows which output belongs to which command | [tuner/commands.md](findings/tuner/commands.md#probe-results) |
 | Metrics line | One line of numbers, such as score, yields, and victory progress, that the bridge writes for each player after each agent turn | [evaluation.md](design/evaluation.md#metrics-line) |
 | Model tier | One of three levels of model, light, standard, and strong, that model routing picks for a model turn. Each tier is an operation in `models.yaml` | [model-routing.md](design/decision-support/model-routing.md#tiers) |
-| MVP | The minimum viable product: one agent finishes a full single-player game against the native AI. It is phase 1 | [phase-1/](roadmap/phase-1/README.md) |
+| MVP | The minimum viable product: one agent finishes a full single-player game against the native AI. It is phase 2 | [phase-2/](roadmap/phase-2/README.md) |
 | Native AI | The game's built-in computer players | [slot-type.md](design/agents/slot-type.md) |
 | Opening book | A tree of plans for the first turns of a game. The agent picks an opening that fits its personality and start, and the opening branches as it learns more | [opening-books.md](design/decision-support/opening-books.md) |
 | Personality | A file that sets an agent's priorities, behavior rules, and narrator voice | [knowledge-files.md](design/knowledge-files.md#layers) |

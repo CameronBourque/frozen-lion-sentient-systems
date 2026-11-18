@@ -1,6 +1,6 @@
 # Smoke test
 
-Run one agent through the smoke test preset to find the bugs that stop a game before the MVP gate costs a full game. Part of [phase 1](README.md).
+Run one agent through the smoke test preset to find the bugs that stop a game before the MVP gate costs a full game. Part of [phase 2](README.md).
 
 ## Tasks
 
@@ -16,6 +16,6 @@ The agent plays the smoke test preset to turn 100 or later with no manual help, 
 
 ## Record
 
-- The run's numbers, in a new finding, `docs/findings/agent-runs.md*`. Add it to the [findings index](../../findings/README.md).
+- The run's numbers, in `docs/findings/agent-runs.md*`.
 - Any new limit defaults, in [turn-loop.md](../../design/agents/turn-loop.md).
 - The spending limit defaults from the measured cost per turn, in [settings.md](../../design/core/settings.md).

@@ -8,7 +8,7 @@ The setup screen gets an **Agent** option in each slot's player-type dropdown. T
 
 | Players | Game mode | Status |
 | --- | --- | --- |
-| One agent against the native AI | Single player, with the agent in the human slot | Planned for the [MVP](../../roadmap/phase-1/README.md) |
+| One agent against the native AI | Single player, with the agent in the human slot | Planned for the [MVP](../../roadmap/phase-2/README.md) |
 | You, agents, and the native AI | Open | Waits for the computer slot test |
 | Agents only | Open | Waits for the computer slot test |
 
@@ -16,7 +16,7 @@ The first plan put the last two rows in hotseat, with each agent in a human slot
 
 ## Computer slot test
 
-Before [phase 2](../../roadmap/phase-2/README.md), a test puts an agent in a computer slot in a single-player game, where the tuner stays open. If it works, **Agent** shows in the dropdown of both human and computer slots. The test answers these questions:
+Before [phase 3](../../roadmap/phase-3/README.md), a test puts an agent in a computer slot in a single-player game, where the tuner stays open. If it works, **Agent** shows in the dropdown of both human and computer slots. The test answers these questions:
 
 1. Can the native AI be held back for that one civ? Otherwise it fights the agent for the same units.
 2. Can the request functions act for a player who isn't the local player?

@@ -1,6 +1,6 @@
 # Agent loop
 
-Run an agent's turn when its turn signal arrives: resolve the end-turn blockers, take the agent's other actions, and end the turn within the retry, action, and time limits. Plain code handles idle units and scouts. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 1](README.md).
+Run an agent's turn when its turn signal arrives: resolve the end-turn blockers, take the agent's other actions, and end the turn within the retry, action, and time limits. Plain code handles idle units and scouts. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 2](README.md).
 
 ## Tasks
 

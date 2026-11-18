@@ -1,8 +1,8 @@
-# Phase 1: MVP, one agent finishes a game
+# Phase 1: Agent tools over MCP
 
-The minimum viable product is the full agent loop playing a whole single-player game. Every later phase builds on it.
+Core reads the game, runs every action a player can take, and serves both as MCP tools. An outside MCP client, such as Claude Code, can then play the game, with you prompting each turn. The [agent loop](../phase-2/README.md) in phase 2 calls the same tools.
 
-**Gate.** One agent plays a full single-player game against the native AI with no manual help.
+**Gate.** From Claude Code, play 10 turns of a single-player game through the MCP server, with a `reason` on every action.
 
 ## Starting point
 
@@ -10,7 +10,7 @@ Phase 0 is done. The bridge connects to the tuner, runs Lua in a named state, re
 
 Requests from `SentientSystemsCore_UI` take effect, so the action API runs there. See [phase 0](../phase-0/done.md). `packages/core/bridge/scripts/gate.ts` is throwaway code that the [MCP server](mcp-server.md) step deletes.
 
-Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design/agents/turn-loop.md), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md), [knowledge-files.md](../../design/knowledge-files.md).
+Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design/agents/turn-loop.md#tools).
 
 ## Steps
 
@@ -42,18 +42,8 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 22 | Civilopedia lookup | Search, pages, and browsing over the Civilopedia's tables, `GameInfo`, and localized text, Concepts included | `feat(core): add the Civilopedia lookup` | Done. See [lookup.md](done/lookup.md#civilopedia-lookup) |
 | 23 | [MCP server](mcp-server.md) | State, on-demand state, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | |
 | 24 | [Tool reference](tool-reference.md) | `docs/reference/tools.md*` and the workflow that updates it | `ci: generate the tool reference` | |
-| 25 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
-| 26 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
-| 27 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
-| 28 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 29 | [Stopping and spending limits](stopping.md) | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | |
-| 30 | [Metrics line](metrics-line.md) | One line of numbers for each player after each agent turn, for the baseline | `feat(core): add the metrics line` | |
-| 31 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 32 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 33 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 1 results` | |
-| 34 | [Close out phase 1](close-out.md) | Update the docs and release core | `docs: record phase 1 results` | |
-
-The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the action API and lookup steps.
+| 25 | [Claude Code gate](claude-code-gate.md) | Play 10 turns from Claude Code through the MCP server | `docs: record phase 1 results` | |
+| 26 | [Close out phase 1](close-out.md) | Update the docs. No release | `docs: record phase 1 results` | |
 
 ## Commits and pull requests
 
@@ -63,6 +53,4 @@ A commit that finds a fact also updates the finding or design file in the step's
 
 Pull requests are squash-merged, so each PR title becomes one commit on `main`. Titles follow [rules/commits.md](../../rules/commits.md).
 
-In the smoke test and MVP gate steps, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump.
-
-The personality and sweat level PR touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
+In the Claude Code gate step, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump.
