@@ -74,3 +74,31 @@ describe("end_turn", () => {
 		expect(await callTool(mcp, "end_turn", { force: true })).toEqual(DONE);
 	});
 });
+
+describe("the city tools", () => {
+	test("set_production replaces, or queues with queue, with or without a tile", async () => {
+		answerStash(game, {
+			"SentientSystems_SetProduction(3, 65536, \"UNIT_BUILDER\")": OK,
+			"SentientSystems_SetProduction(3, 65536, \"DISTRICT_CAMPUS\", 4, 5)": OK,
+			"SentientSystems_SetProduction(3, 65536, \"UNIT_BUILDER\", nil, nil, true)": OK,
+		});
+
+		expect(await callTool(mcp, "set_production", { cityID: 65536, item: "UNIT_BUILDER" })).toEqual(DONE);
+		expect(await callTool(mcp, "set_production", { cityID: 65536, item: "DISTRICT_CAMPUS", x: 4, y: 5 })).toEqual(DONE);
+		expect(await callTool(mcp, "set_production", { cityID: 65536, item: "UNIT_BUILDER", queue: true })).toEqual(DONE);
+	});
+
+	test("set_production refuses y without x", async () => {
+		expect(await callTool(mcp, "set_production", { cityID: 65536, item: "DISTRICT_CAMPUS", y: 5 })).toEqual({ text: "Give both x and y, or neither.", isError: true });
+	});
+
+	test("purchase and purchase_tile pass the city, the item, the yield, and the tile", async () => {
+		answerStash(game, {
+			"SentientSystems_Purchase(3, 65536, \"UNIT_BUILDER\", \"faith\")": OK,
+			"SentientSystems_PurchaseTile(3, 65536, 4, 5)": OK,
+		});
+
+		expect(await callTool(mcp, "purchase", { cityID: 65536, item: "UNIT_BUILDER", yield: "faith" })).toEqual(DONE);
+		expect(await callTool(mcp, "purchase_tile", { cityID: 65536, x: 4, y: 5 })).toEqual(DONE);
+	});
+});

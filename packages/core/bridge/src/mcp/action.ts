@@ -5,6 +5,7 @@
 import type { CallToolResult, McpServer, ToolCallback } from "@modelcontextprotocol/server";
 import type { z } from "zod";
 import type { ActionResult } from "../actions/actions.js";
+import type { Position } from "../schemas.js";
 import type { ToolContext } from "./context.js";
 import { errorResult, forPlayer, textResult } from "./results.js";
 
@@ -14,6 +15,16 @@ export const TOOK_REQUEST = "The game took the request.";
 
 export function actionResult(result: ActionResult): CallToolResult {
 	return result.ok ? textResult(TOOK_REQUEST) : errorResult(result.reason);
+}
+
+// Returns the tile from an action's optional x and y, no tile when both are
+// left out, or a failure when only one is given.
+export function optionalTile(x: number | undefined, y: number | undefined): { tile?: Position } | { ok: false; reason: string } {
+	if (x === undefined || y === undefined) {
+		return x === y ? {} : { ok: false, reason: "Give both x and y, or neither." };
+	}
+
+	return { tile: { x, y } };
 }
 
 // Every action tool goes through here, so a field that every action has, such

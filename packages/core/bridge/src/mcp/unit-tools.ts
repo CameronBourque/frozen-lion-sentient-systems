@@ -4,7 +4,7 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { moveUnit, unitAction, type UnitOrder } from "../actions/units.js";
-import { registerAction } from "./action.js";
+import { optionalTile, registerAction } from "./action.js";
 import type { ToolContext } from "./context.js";
 
 type OrderAction = UnitOrder["action"];
@@ -87,12 +87,14 @@ export function registerUnitTools(server: McpServer, context: ToolContext): void
 		route: z.string().optional().describe("For build_road, such as ROUTE_MODERN_ROAD."),
 		device: z.string().optional().describe("For wmd_strike, such as WMD_NUCLEAR_DEVICE."),
 	}), (playerID, { unitID, x, y, ...order }) => {
-		if ((x === undefined) !== (y === undefined)) {
-			return Promise.resolve({ ok: false, reason: "Give both x and y, or neither." });
+		const tile = optionalTile(x, y);
+
+		if ("reason" in tile) {
+			return Promise.resolve(tile);
 		}
 
 		// The core mod checks that the order has the fields it needs, and
 		// says which are missing.
-		return unitAction(client, playerID, unitID, { ...order, ...(x === undefined ? {} : { x, y }) } as UnitOrder);
+		return unitAction(client, playerID, unitID, { ...order, ...tile.tile } as UnitOrder);
 	});
 }
