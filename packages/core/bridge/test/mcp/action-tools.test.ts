@@ -142,3 +142,21 @@ describe("the research and government tools", () => {
 		expect(await callTool(mcp, "set_government", { government: "GOVERNMENT_AUTOCRACY" })).toEqual(DONE);
 	});
 });
+
+describe("the policy and dedication tools", () => {
+	test("set_policies lists every slot, with false for an empty one", async () => {
+		answerStash(game, { "SentientSystems_SetPolicies(3, {[0] = \"POLICY_DISCIPLINE\", [1] = false})": OK });
+
+		expect(await callTool(mcp, "set_policies", { slots: ["POLICY_DISCIPLINE", null] })).toEqual(DONE);
+	});
+
+	test("unlock_policies and choose_dedications send their calls", async () => {
+		answerStash(game, {
+			"SentientSystems_UnlockPolicies(3)": OK,
+			"SentientSystems_ChooseDedications(3, {\"COMMEMORATION_SCIENTIFIC\"})": OK,
+		});
+
+		expect(await callTool(mcp, "unlock_policies")).toEqual(DONE);
+		expect(await callTool(mcp, "choose_dedications", { dedications: ["COMMEMORATION_SCIENTIFIC"] })).toEqual(DONE);
+	});
+});
