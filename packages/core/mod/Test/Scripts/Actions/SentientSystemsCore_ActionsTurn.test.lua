@@ -72,6 +72,16 @@ describe("SentientSystems_EndTurn", function()
 		assert.equal(1, #env.requests)
 	end)
 
+	it("sends a request again after the turn starts again", function()
+		local env = Load()
+
+		env.SentientSystems_EndTurn(0)
+		env.SentientSystems_ForgetEndTurn()
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_EndTurn(0))
+		assert.equal(2, #env.requests)
+	end)
+
 	it("fails while a leader screen is open, even with force", function()
 		local env = Load({ sessions = { [4] = { id = 7 } }, blockers = { "ENDTURN_BLOCKING_RESEARCH" } })
 		local open = "Player 4 has a leader screen open with you. Answer it with the session response first."

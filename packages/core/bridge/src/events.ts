@@ -6,7 +6,9 @@ import type { LogFields, Logger, LogLevel } from "./log.js";
 export const TAG = "[SENTIENTSYSTEMS]";
 
 export type CoreEvent =
-	| { type: "turn"; playerId: number }
+	// again is true when the game starts a turn that already started, as it
+	// does when it cancels the end of the turn.
+	| { type: "turn"; playerId: number; again: boolean }
 	| { type: "version"; version: string }
 	| { type: "loaded"; context: string }
 	// The loading screen shows its button. Commands don't run until the click.
@@ -84,9 +86,9 @@ export const KINDS: Kind[] = [
 	{
 		name: "AGENT_TURN",
 		example: "[SENTIENTSYSTEMS] AGENT_TURN 0",
-		parse: (args) => args.length === 1 && PLAYER_ID.test(args[0])
-			? { type: "turn", playerId: Number(args[0]) }
-			: `AGENT_TURN needs one player ID, and got "${args.join(" ")}"`,
+		parse: (args) => PLAYER_ID.test(args[0] ?? "") && (args.length === 1 || (args.length === 2 && args[1] === "again"))
+			? { type: "turn", playerId: Number(args[0]), again: args.length === 2 }
+			: `AGENT_TURN needs one player ID and an optional "again", and got "${args.join(" ")}"`,
 	},
 	{
 		name: "CORE_VERSION",
@@ -145,7 +147,9 @@ export interface EventLog {
 export function describeEvent(event: CoreEvent): EventLog {
 	switch (event.type) {
 		case "turn":
-			return { level: "info", event: "turn", msg: `Player ${event.playerId}'s turn started`, fields: { playerId: event.playerId } };
+			return event.again
+				? { level: "info", event: "turn", msg: `Player ${event.playerId}'s turn started again, because the game cancelled its end`, fields: { playerId: event.playerId, again: true } }
+				: { level: "info", event: "turn", msg: `Player ${event.playerId}'s turn started`, fields: { playerId: event.playerId } };
 		case "version":
 			return { level: "info", event: "core_version", msg: `Core mod version is ${event.version}`, fields: { version: event.version } };
 		case "loaded":
