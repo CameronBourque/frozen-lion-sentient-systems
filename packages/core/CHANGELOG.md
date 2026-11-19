@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.1](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.0...core-v0.24.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **core:** allow end turn after the game cancels it ([#106](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/106)) ([e9c11dc](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/e9c11dc30968a9ad8d58516bd6f1687e4c68e0b3))
+
 ## [0.24.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.23.0...core-v0.24.0) (2026-11-19)
 
 
