@@ -261,11 +261,11 @@ local function GetProjectOptions(city)
 end
 
 -- Returns a list with what each of the player's cities can produce, in the
--- game's order of cities.
-function SentientSystems_GetProductionChoices(player)
+-- game's order of cities, or only the city with ID cityID when it is given.
+function SentientSystems_GetProductionChoices(player, cityID)
 	local production = {}
 
-	for _, city in player:GetCities():Members() do
+	for _, city in SentientSystems_GetChosenCities(player, cityID) do
 		local purchasable = SentientSystems_GetPurchasablePlots(city)
 		local buildings, wonders = GetBuildingAndWonderOptions(city, purchasable)
 

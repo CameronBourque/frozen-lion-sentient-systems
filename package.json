@@ -13,6 +13,7 @@
     "coverage": "npm run coverage:lua && vitest run --coverage",
     "coverage:lua": "node scripts/clean-lua-fixtures/src/index.mjs && node scripts/lua-coverage/src/index.mjs",
     "dev": "npm run dev --workspace packages/core/bridge",
+    "mcp": "npm run mcp --workspace packages/core/bridge",
     "link-mod": "node scripts/link-mod/src/index.mjs",
     "state": "npm run state --workspace packages/core/bridge --",
     "lint": "eslint . && node scripts/lua-comments/src/index.mjs && node scripts/yml-comments/src/index.mjs",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/client": "^2.4.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.1.0",

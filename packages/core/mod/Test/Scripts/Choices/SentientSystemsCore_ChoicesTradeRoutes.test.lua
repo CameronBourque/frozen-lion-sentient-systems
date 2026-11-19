@@ -104,7 +104,7 @@ describe("SentientSystems_GetTradeRouteChoices", function()
 end)
 
 describe("SentientSystems_GetCityRoutes", function()
-	-- Returns the routes of player 0's city 1, or nil, with no trader needed.
+	-- Returns the routes JSON of player 0's city, with no trader needed.
 	local function CityRoutes(cityID, routes)
 		local env = Game.new()
 
@@ -115,9 +115,7 @@ describe("SentientSystems_GetCityRoutes", function()
 		})
 		Game.run(env, "Scripts/Choices/SentientSystemsCore_Choices.lua")
 
-		local result = env.SentientSystems_GetCityRoutes(env.Players[0], cityID)
-
-		return result and env.SentientSystems_EncodeJson(result)
+		return env.SentientSystems_GetCityRoutes(0, cityID)
 	end
 
 	it("lists the cities the game lets a route go to, the player's own first, with no trader", function()
@@ -136,7 +134,9 @@ describe("SentientSystems_GetCityRoutes", function()
 		assert.truthy(CityRoutes(1, {}):find("\"destinations\":[]", 1, true))
 	end)
 
-	it("is nil for a city the player doesn't have", function()
-		assert.is_nil(CityRoutes(99, {}))
+	it("raises an error that names a city the player doesn't have", function()
+		assert.has_error(function()
+			CityRoutes(99, {})
+		end, "Player 0 has no city 99.")
 	end)
 end)

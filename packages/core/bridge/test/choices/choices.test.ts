@@ -55,6 +55,12 @@ describe("readChoices", () => {
 		expect((await readChoices(client, 3)).ok).toBe(true);
 	});
 
+	test("asks for one city's choices when given a city", async () => {
+		answer({ "SentientSystems_Stash(SentientSystems_GetChoices(3, 65536))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON_TEXT] } });
+
+		expect((await readChoices(client, 3, 65536)).ok).toBe(true);
+	});
+
 	test("fails when the choices are a list", async () => {
 		stash("[]");
 

@@ -228,17 +228,18 @@ function SentientSystems_GetGreatWorkState(player)
 	return { slots = slots, buildings = buildings, works = works, spaces = spaces, provides = provides }
 end
 
--- Returns where the great work with the game's index can move, as the screen
--- lights up the slots when the work is picked up, or nil when the player has no
--- such work. Moves is empty when the work can't be moved at all. A move into a
--- filled slot swaps the two works. See OnClickGreatWork.
-function SentientSystems_GetGreatWorkMoves(player, workIndex)
-	local slots = SentientSystems_GetAllGreatWorkSlots(player)
+-- Returns, as JSON, where the great work with the game's index can move, as
+-- the screen lights up the slots when the work is picked up. Raises an error
+-- when the player has no such work. Moves is empty when the work can't be
+-- moved at all. A move into a filled slot swaps the two works. See
+-- OnClickGreatWork.
+function SentientSystems_GetGreatWorkMoves(playerID, workIndex)
+	local slots = SentientSystems_GetAllGreatWorkSlots(SentientSystems_GetPlayer(playerID))
 
 	local source = SentientSystems_FindGreatWork(slots, workIndex)
 
 	if source == nil then
-		return nil
+		error("Player " .. tostring(playerID) .. " has no great work " .. tostring(workIndex) .. ".", 0)
 	end
 
 	local moves = {}
@@ -254,9 +255,9 @@ function SentientSystems_GetGreatWorkMoves(player, workIndex)
 		end
 	end
 
-	return {
+	return SentientSystems_EncodeJson({
 		work = { index = workIndex, name = source.work.name },
 		from = { city = source.city, building = source.building, slot = source.slot },
 		moves = moves,
-	}
+	})
 end

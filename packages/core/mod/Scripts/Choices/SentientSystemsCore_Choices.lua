@@ -24,15 +24,35 @@ SentientSystems_Include("SentientSystemsCore_ChoicesDedications")
 SentientSystems_Include("SentientSystemsCore_ChoicesEmergencies")
 SentientSystems_Include("SentientSystemsCore_ChoicesWorldCongress")
 
--- Returns the choices of the player with ID playerID as JSON. Raises an error
--- for an ID with no player. The bridge reads it through the stash, as
--- SentientSystems_Stash(SentientSystems_GetChoices(playerID)).
-function SentientSystems_GetChoices(playerID)
+-- Iterates over the player's cities, in the game's order, or over only the
+-- city with ID cityID when it is given. The choices with an entry for each
+-- city, production and purchases, list only that city.
+function SentientSystems_GetChosenCities(player, cityID)
+	if cityID == nil then
+		return player:GetCities():Members()
+	end
+
+	return ipairs({ player:GetCities():FindID(cityID) })
+end
+
+-- Returns the choices of the player with ID playerID as JSON. With cityID,
+-- production and purchases hold only that city. Raises an error for an ID with
+-- no player, or a city the player doesn't have. The bridge reads it through
+-- the stash, as SentientSystems_Stash(SentientSystems_GetChoices(playerID)).
+function SentientSystems_GetChoices(playerID, cityID)
 	local player = SentientSystems_GetPlayer(playerID)
 
+	if cityID ~= nil then
+		local _, failure = SentientSystems_FindCity(playerID, cityID)
+
+		if failure ~= nil then
+			error(failure, 0)
+		end
+	end
+
 	return SentientSystems_EncodeJson({
-		production = SentientSystems_GetProductionChoices(player),
-		purchases = SentientSystems_GetPurchaseChoices(player),
+		production = SentientSystems_GetProductionChoices(player, cityID),
+		purchases = SentientSystems_GetPurchaseChoices(player, cityID),
 		techs = SentientSystems_GetTechChoices(player),
 		civics = SentientSystems_GetCivicChoices(player),
 		government = SentientSystems_GetGovernmentChoices(player),

@@ -13,7 +13,7 @@ Agents learn the game from files and the Civilopedia, not from web research. The
 | Sweat levels | The mindset for each level. See [agents/sweat-level.md](agents/sweat-level.md) | Hand-written, tuned from logs and playtests |
 | Model table | The model for each provider and operation | `models.yaml`, filled by testing |
 
-When the agent needs a stat, a requirement, or a rule, it calls the Civilopedia `lookup` tool.
+When the agent needs a stat, a requirement, or a rule, it calls the `search_civilopedia` and `read_civilopedia` tools.
 
 Concept guides hold judgment, and [decision helpers](decision-support/helpers.md#helpers-and-knowledge-files) hold arithmetic. A guide says when to call a helper and what the helper cannot judge.
 

@@ -46,7 +46,7 @@ When a load ends, `SentientSystemsCore_UI.lua` fires the tutorial's `LuaEvents.T
 
 The zod schemas in `packages/core/bridge/src/` are the only home of the JSON shapes. A field whose name doesn't say what it means gets a `.describe()` note.
 
-`z.toJSONSchema()` carries the `.describe()` notes, so the [MCP server step](../../../roadmap/phase-1/mcp-server.md) can give them to the model if it adds output schemas to the tools. That step decides it, because output schemas add tokens to every request.
+`z.toJSONSchema()` carries the `.describe()` notes, so the tools could give them to the model through output schemas. The [MCP server](../mcp-server.md#decisions) leaves them out for now, because output schemas add tokens to every request.
 
 ## Decisions
 

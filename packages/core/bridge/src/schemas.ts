@@ -9,6 +9,18 @@ export const CITY_ID = z.object({ owner: z.number(), id: z.number() });
 // A city named by its owner and ID, with its name.
 export const CITY_REF = CITY_ID.extend({ name: z.string().describe("In the game's language.") });
 
+// One of the player's own cities, by ID and name. It has no owner, because the
+// player is the owner.
+export const OWN_CITY_REF = CITY_REF.omit({ owner: true });
+
+// A great work slot, by its city, building, and index, as the great works
+// state and the great work moves name it.
+export const GREAT_WORK_SLOT_REF = z.object({
+	city: OWN_CITY_REF,
+	building: z.string().describe("The type of the building that holds the slot."),
+	slot: z.number().describe("The slot's index in its building."),
+});
+
 // A tile's position. A schema spreads its shape, so x and y stay flat in the
 // JSON.
 export const POSITION = z.object({ x: z.number(), y: z.number() });

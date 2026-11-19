@@ -53,6 +53,9 @@ export const CHOICES = z.object({
 
 export type Choices = z.infer<typeof CHOICES>;
 
-export function readChoices(client: TunerClient, playerID: number): Promise<StashResult<Choices>> {
-	return readStash(client, `SentientSystems_GetChoices(${playerID})`, CHOICES, "choices");
+// With cityID, production and purchases hold only that city.
+export function readChoices(client: TunerClient, playerID: number, cityID?: number): Promise<StashResult<Choices>> {
+	const args = cityID === undefined ? `${playerID}` : `${playerID}, ${cityID}`;
+
+	return readStash(client, `SentientSystems_GetChoices(${args})`, CHOICES, "choices");
 }

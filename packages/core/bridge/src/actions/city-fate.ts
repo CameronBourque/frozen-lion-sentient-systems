@@ -6,7 +6,9 @@ import { type ActionResult, sendAction } from "./actions.js";
 
 // What to do with a captured or rebelled city: the type of an option of the
 // cityFates choice.
-export type CityDirective = "LIBERATE_FOUNDER" | "LIBERATE_PREVIOUS_OWNER" | "KEEP" | "RAZE" | "REJECT";
+export const CITY_DIRECTIVES = ["LIBERATE_FOUNDER", "LIBERATE_PREVIOUS_OWNER", "KEEP", "RAZE", "REJECT"] as const;
+
+export type CityDirective = (typeof CITY_DIRECTIVES)[number];
 
 // Decides the fate of a captured or rebelled city from the cityFates choice.
 // An ok result means the game took the request.

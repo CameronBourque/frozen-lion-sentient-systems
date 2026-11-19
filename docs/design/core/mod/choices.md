@@ -6,6 +6,8 @@ The calls that list the legal options for each choice, and the tiles where a dis
 
 `SentientSystems_GetChoices(playerID)` returns the legal options for each discrete choice as JSON, in a call of its own, so the agent reads them only when it decides.
 
+`SentientSystems_GetChoices(playerID, cityID)` lists only that city in `production` and `purchases`, the two choices with an entry for each city. They are the largest part of the choices. It raises an error for a city the player doesn't have.
+
 The options include production and gold, faith, and tile purchases for each city, techs, civics, policies, the destinations of each idle trader, and the options for each other end-turn blocker. Each blocker in the state names the choice that resolves it.
 
 An option lists what its screen shows, such as turns to complete, boost status or the boost requirement, resource requirements, and prerequisites. Tile purchases list the tiles to buy, and the tiles where a district or a wonder can go come from the [placement call](#placement).

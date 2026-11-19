@@ -39,7 +39,7 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 - **State.** `readState(client, playerID)` in `src/state/state.ts` reads one player's [state](mod/state.md) through the stash reader, with the call `SentientSystems_GetState(<playerID>)`.
 
   The schema isn't strict, so a field from a newer core mod is dropped instead of failing the whole state. Each section's schema has its own file in `src/state/`, such as `cities.ts`, to match the core mod's file for that section in `Scripts/State/`.
-- **Choices.** `readChoices(client, playerID)` in `src/choices/choices.ts` reads one player's [choices](mod/choices.md) through the stash reader, with the call `SentientSystems_GetChoices(<playerID>)`.
+- **Choices.** `readChoices(client, playerID, cityID?)` in `src/choices/choices.ts` reads one player's [choices](mod/choices.md) through the stash reader, with the call `SentientSystems_GetChoices(<playerID>[, <cityID>])`.
 
   Its schema drops unknown fields in the same way, and each choice's schema has its own file in `src/choices/`, such as `production.ts`, to match the core mod's file for that choice in `Scripts/Choices/`.
 - **Trees.** `readTechTree(client, playerID)` and `readCivicTree(client, playerID)` in `src/trees/research.ts` read one player's [tech tree and civic tree](mod/trees.md) through the stash reader, with the calls `SentientSystems_GetTechTree(<playerID>)` and `SentientSystems_GetCivicTree(<playerID>)`.
@@ -50,7 +50,7 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 - **Placement.** `readPlacement(client, playerID, cityID, type)` in `src/placement/placement.ts` reads where a city can place one district or wonder, through the stash reader, with the call `SentientSystems_GetPlacement(<playerID>, <cityID>, "<type>")`.
 
   It refuses a type with anything but capital letters, digits, and `_`, such as `DISTRICT_CAMPUS`, without sending a command, because the type goes into the Lua call as a string.
-- **MCP server.** It exposes the action API and lookup as tools to the agent loop.
+- **MCP server.** It serves the action API and lookup as tools. See [mcp-server.md](mcp-server.md).
 - **Model client.** It calls the configured provider through one interface, the Vercel AI SDK, so any provider works. `models.yaml` maps each provider and operation to a model. Testing fills that table.
 - **Memory store.** It reads and writes each agent's memory files and snapshots them under the current checkpoint ID. See [memory.md](../memory.md).
 

@@ -3,9 +3,7 @@
 // Scripts/State/SentientSystemsCore_StateGreatWorks.lua.
 
 import { z } from "zod";
-import { YIELD_AMOUNT } from "../schemas.js";
-
-const CITY = z.object({ id: z.number(), name: z.string().describe("In the game's language.") });
+import { GREAT_WORK_SLOT_REF, OWN_CITY_REF, YIELD_AMOUNT } from "../schemas.js";
 
 const WORK = z.object({
 	index: z.number().describe("The game's index of this work, which a move names."),
@@ -23,10 +21,7 @@ const WORK = z.object({
 	),
 });
 
-const SLOT = z.object({
-	city: CITY,
-	building: z.string().describe("The type of the building that holds the slot."),
-	slot: z.number().describe("The slot's index in its building."),
+const SLOT = GREAT_WORK_SLOT_REF.extend({
 	kind: z.string().describe("The kind of slot, such as GREATWORKSLOT_ART."),
 	accepts: z.array(z.string()).describe(
 		"The object types of works the slot takes, such as GREATWORKOBJECT_SCULPTURE, as the empty slot's tooltip lists them. A palace slot takes every type.",
@@ -58,7 +53,7 @@ const THEME = z.object({
 });
 
 const BUILDING = z.object({
-	city: CITY,
+	city: OWN_CITY_REF,
 	type: z.string(),
 	name: z.string().describe("In the game's language."),
 	spaces: z.number().describe("The number of slots."),

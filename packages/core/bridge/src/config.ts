@@ -1,6 +1,6 @@
-// The bridge's config file, sentient-systems.yaml: the log level and each
-// provider's API key. Agent slots and personalities live in the save.
-// docs/design/core/settings.md has the design.
+// The bridge's config file, sentient-systems.yaml: the log level, each
+// provider's API key, and the MCP port. Agent slots and personalities live in
+// the save. docs/design/core/settings.md has the design.
 
 import { parseDocument } from "yaml";
 import { z } from "zod";
@@ -11,6 +11,9 @@ import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 export const SCHEMA_VERSION = 1;
 
 export const PROVIDERS = ["anthropic", "openai"] as const;
+
+// The first port after the two the game listens on, 4318 and 4319.
+export const DEFAULT_MCP_PORT = 4320;
 
 const PROVIDER = z.strictObject({
 	// Empty until the user fills it in. The bridge warns about an empty key
@@ -25,6 +28,8 @@ const CONFIG = z.strictObject({
 	// Only the providers the user has a key for. A model from any listed
 	// provider can be used.
 	providers: z.partialRecord(z.enum(PROVIDERS), PROVIDER).default({}),
+	// Where --mcp serves the MCP tools.
+	mcpPort: z.int().min(1).max(65535).default(DEFAULT_MCP_PORT),
 });
 
 export type Config = z.infer<typeof CONFIG>;

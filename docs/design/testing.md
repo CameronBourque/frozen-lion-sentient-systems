@@ -43,6 +43,16 @@ We keep only a few scenarios. Each one needs a save, and a save made for one ver
 
 Scenarios run on demand, not in CI, because they need the game and cost model calls.
 
+## Live tests
+
+A live test checks a tool or the core mod in a running game. Claude Code calls the bridge's [MCP tools](core/mcp-server.md), the same tools the agent loop calls, in place of a probe script.
+
+1. Load a game with the tuner on.
+2. Run `npm run mcp` at the repo root.
+3. Open Claude Code at the repo root. `.mcp.json` points it at `http://127.0.0.1:4320/mcp`, the default `mcpPort`. Claude Code asks once before it uses the server.
+
+With another `mcpPort` in the [config file](core/settings.md), change the URL in `.mcp.json` too. A probe script is still the way to test Lua that no tool runs yet.
+
 ## Playtests
 
 Two checks cannot be automated. Agent players must be more fun to play against than the native AI. Advisors must give advice that a player can follow and then judge as good or bad. Playtests with short notes after each game answer both.
@@ -95,5 +105,6 @@ The tiles are the largest part of the state, at about two thirds on both turns, 
 | Scenario tests check an outcome with code, never the moves | Grading moves takes a person, and two people grade them differently |
 | Each scenario runs several times and reports a pass rate | A model does not give the same answer each time |
 | Only a few scenarios, run on demand | Each save needs upkeep, and each run needs the game and costs model calls |
+| Live tests call the MCP tools from Claude Code, not probe scripts | They test the path the agent loop uses, and a tool needs no script of its own |
 | Playtests judge fun and advice quality | These two checks cannot be automated |
 | Phase 2 sends the full state, measures it, and then trims it | The state size per turn is unknown until it is measured |

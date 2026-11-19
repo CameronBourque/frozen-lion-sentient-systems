@@ -11,3 +11,4 @@ The steps of [phase 1](../README.md) that are done, each with the pull request i
 | [turn-actions.md](turn-actions.md) | The Action API steps that clear the last blockers, answer deals and leader screens, and end the turn, and the diplomacy sessions |
 | [popups.md](popups.md) | Popups for agent players |
 | [lookup.md](lookup.md) | The Civilopedia lookup |
+| [mcp-server.md](mcp-server.md) | The MCP server |

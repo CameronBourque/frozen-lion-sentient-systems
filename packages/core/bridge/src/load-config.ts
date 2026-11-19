@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, PROVIDERS, SCHEMA_VERSION, parseConfig } from "./config.js";
+import { type Config, DEFAULT_MCP_PORT, PROVIDERS, SCHEMA_VERSION, parseConfig } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
@@ -28,6 +28,10 @@ logLevel: ${DEFAULT_LOG_LEVEL}
 # you don't use.
 providers:
 ${PROVIDERS.map((provider) => `  ${provider}:\n    apiKey: ""`).join("\n")}
+
+# The port where the bridge serves its MCP tools when it starts with --mcp, for Claude Code and
+# the MCP Inspector. Change it if another program uses it.
+mcpPort: ${DEFAULT_MCP_PORT}
 `;
 
 // Where the bridge runs from. In development, tsx runs the bridge with
@@ -40,17 +44,18 @@ export interface Runtime {
 }
 
 export type FindResult =
-	| { ok: true; path: string }
+	| { ok: true; path: string; mcp: boolean }
 	| { ok: false; error: string };
 
 // Returns the config file's path from --config, or the default for how the
 // bridge runs: next to the executable, or in the current folder when tsx runs
-// it.
+// it. Also says whether --mcp is set.
 export function findConfigPath(runtime: Runtime): FindResult {
 	let config: string | undefined;
+	let mcp: boolean | undefined;
 
 	try {
-		({ values: { config } } = parseArgs({ args: runtime.args, options: { config: { type: "string" } } }));
+		({ values: { config, mcp } } = parseArgs({ args: runtime.args, options: { config: { type: "string" }, mcp: { type: "boolean" } } }));
 	} catch (error) {
 		// parseArgs throws for an unknown or incomplete option, such as a
 		// misspelled "--confg".
@@ -58,12 +63,12 @@ export function findConfigPath(runtime: Runtime): FindResult {
 	}
 
 	if (config !== undefined) {
-		return { ok: true, path: path.resolve(runtime.cwd, config) };
+		return { ok: true, path: path.resolve(runtime.cwd, config), mcp: mcp ?? false };
 	}
 
 	const folder = runtime.isExecutable ? path.dirname(runtime.execPath) : runtime.cwd;
 
-	return { ok: true, path: path.join(folder, CONFIG_NAME) };
+	return { ok: true, path: path.join(folder, CONFIG_NAME), mcp: mcp ?? false };
 }
 
 export type LoadResult =
@@ -97,7 +102,7 @@ export function keyWarning(config: Config, file: string): string | undefined {
 // What the bridge does with its config when it starts: run with the config and
 // print the warnings, or print the error and exit.
 export type StartResult =
-	| { ok: true; config: Config; path: string; warnings: string[] }
+	| { ok: true; config: Config; path: string; mcp: boolean; warnings: string[] }
 	| { ok: false; error: string };
 
 // Finds and loads the config file, and says what the user should do about each
@@ -106,7 +111,7 @@ export function startConfig(runtime: Runtime): StartResult {
 	const found = findConfigPath(runtime);
 
 	if (!found.ok) {
-		return { ok: false, error: `${found.error}. The only option is --config <path>` };
+		return { ok: false, error: `${found.error}. The options are --config <path> and --mcp` };
 	}
 
 	const loaded = loadConfig(found.path);
@@ -121,5 +126,5 @@ export function startConfig(runtime: Runtime): StartResult {
 
 	const missingKey = keyWarning(loaded.config, found.path);
 
-	return { ok: true, config: loaded.config, path: found.path, warnings: missingKey ? [missingKey] : [] };
+	return { ok: true, config: loaded.config, path: found.path, mcp: found.mcp, warnings: missingKey ? [missingKey] : [] };
 }

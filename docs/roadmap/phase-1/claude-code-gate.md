@@ -4,7 +4,7 @@ Pass the gate: Claude Code plays 10 turns of a single-player game through the MC
 
 ## Tasks
 
-1. **Play.** Start a single-player game with the settings of the smoke test preset in [testing.md](../../design/testing.md#presets), and open Claude Code at the repo root, so it starts the server from `.mcp.json`.
+1. **Play.** Start a single-player game with the settings of the smoke test preset in [testing.md](../../design/testing.md#presets), and start the bridge with `npm run mcp`. Open Claude Code at the repo root, so it connects to the bridge through `.mcp.json`.
 
    At the start of each turn, tell Claude Code that it's its turn. It reads the state, acts, and calls `end_turn`. Play 10 turns. Commit nothing yet.
 2. **Fix.** For each tool call that fails when it should work, each `ERROR` line, and each popup that needs a click, fix the cause in its own `fix:` PR. Play again from the save before the bug. Commit: `fix(core): <the bug>`, one per bug.

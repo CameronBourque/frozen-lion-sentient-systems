@@ -31,7 +31,9 @@ None open.
 
 `AddRoute` shows the same yields as the other tabs. The number beside the clock is `Map.GetPlotDistance` between the cities, not a trip time. Confirmed in files.
 
-The list was 305 routes and 119 KB in one game, with at most 8 KB for one origin city. The state doesn't hold it. `SentientSystems_GetCityRoutes(player, cityID)` returns one city's destinations, the player's own first, in the shape of the trade route choice.
+The list was 305 routes and 119 KB in one game, with at most 8 KB for one origin city. The state doesn't hold it. `SentientSystems_GetCityRoutes(playerID, cityID)` returns one city's destinations as JSON, the player's own first, in the shape of the trade route choice.
+
+The `get_trade_routes` tool reads it.
 
 ### Player headers
 

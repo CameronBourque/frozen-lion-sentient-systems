@@ -8,12 +8,14 @@
   },
   "scripts": {
     "dev": "tsx src/main.ts --config ../../../tmp/sentient-systems.yaml",
+    "mcp": "tsx src/main.ts --config ../../../tmp/sentient-systems.yaml --mcp",
     "state": "tsx scripts/state.ts",
-    "gate": "tsx scripts/gate.ts",
     "typecheck": "tsc",
     "build:exe": "node scripts/build-exe.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/node": "^2.1.2",
+    "@modelcontextprotocol/server": "^2.4.0",
     "yaml": "^2.9.1",
     "zod": "^4.6.7"
   }
