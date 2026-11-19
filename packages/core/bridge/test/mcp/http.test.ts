@@ -7,8 +7,12 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Logger } from "../../src/log.js";
 import { MCP_HOST, type McpHttp, mcpUrl, startMcpHttp } from "../../src/mcp/http.js";
 import { SERVER_NAME } from "../../src/mcp/server.js";
+import type { ToolContext } from "../../src/mcp/state-tools.js";
+import type { TunerClient } from "../../src/tuner/client.js";
 
 const logger = new Logger("debug");
+// No test here calls a tool, so the context needs no game.
+const context: ToolContext = { client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }) };
 
 beforeEach(() => {
 	vi.spyOn(console, "log").mockImplementation(() => {});
@@ -27,7 +31,7 @@ describe("startMcpHttp", () => {
 	let http: McpHttp | undefined;
 
 	beforeEach(async () => {
-		http = await startMcpHttp(0, logger);
+		http = await startMcpHttp(0, context, logger);
 	});
 
 	afterEach(async () => {
@@ -77,7 +81,7 @@ test("warns and returns undefined when the port is taken", async () => {
 
 	const port = (taken.address() as AddressInfo).port;
 
-	await expect(startMcpHttp(port, logger)).resolves.toBeUndefined();
+	await expect(startMcpHttp(port, context, logger)).resolves.toBeUndefined();
 	expect(console.warn).toHaveBeenCalledWith(expect.stringContaining(`port ${port}`));
 
 	await new Promise((done) => taken.close(done));

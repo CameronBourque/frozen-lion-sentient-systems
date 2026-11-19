@@ -120,6 +120,12 @@ export class TunerClient extends EventEmitter<ClientEvents> {
 		this.connection.connect();
 	}
 
+	// True between the handshake and the next disconnect. A request sent while
+	// it is false waits for the game.
+	get isConnected(): boolean {
+		return this.ready;
+	}
+
 	close(): void {
 		this.connection.close();
 	}

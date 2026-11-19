@@ -9,9 +9,11 @@ Expose the state, the action API, and the lookup as MCP tools. Every action tool
    Add a `--mcp` flag that also serves the same tools over the SDK's Streamable HTTP transport, for Claude Code and the MCP Inspector. The bridge keeps its tuner connection and its console logs, so one bridge serves every client.
 
    Listen on `127.0.0.1` only, with the SDK's DNS rebinding check. Add `mcpPort` to the config file, with a fixed default. Add `npm run mcp`, which runs `npm run dev` with `--mcp`. Commit: `feat(core): add the MCP server`.
-2. **State tools.** Add `get_state`, `get_choices`, `get_placement`, `get_tech_tree`, `get_civic_tree`, and `lookup`. `get_placement` takes a city and a district or wonder, and returns its tiles.
+2. **State tools.** Add `get_state`, `get_choices`, `get_placement`, `get_tech_tree`, `get_civic_tree`, `search_civilopedia`, and `read_civilopedia`. `get_placement` takes a city and a district or wonder, and returns its tiles.
 
-   Write each tool's description for the model, because the [tool reference](tool-reference.md) reuses it. Commit: `feat(core): add the state and lookup tools`.
+   `search_civilopedia` takes a query. `read_civilopedia` takes a page ID, a section ID, or both. With neither, it lists the sections.
+
+   Write each tool's description for the model, because the [tool reference](tool-reference.md) reuses it. Commit: `feat(core): add the state and Civilopedia tools`.
 3. **On-demand state tools.** Add `get_trade_routes`, which takes a city ID and returns the routes that city could start.
 
    Add `get_great_work_moves`, which takes a great work's index and returns the slots it can move to. Each calls its function, `SentientSystems_GetCityRoutes` or `SentientSystems_GetGreatWorkMoves`, through the stash.

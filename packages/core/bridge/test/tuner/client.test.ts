@@ -32,9 +32,12 @@ describe("TunerClient", () => {
 	}
 
 	test("sends APP: first, and is connected once the game answers", async () => {
+		expect(client.isConnected).toBe(false);
+
 		await connect();
 
 		expect(game.received).toEqual([{ tag: Tag.App, strings: ["APP:"] }]);
+		expect(client.isConnected).toBe(true);
 	});
 
 	test("lists the states", async () => {

@@ -3,7 +3,7 @@
 // Exits with code 1 if any can't be read.
 
 import { readChoices } from "../src/choices/choices.js";
-import { CORE_STATE } from "../src/connect.js";
+import { localPlayer, type PlayerResult } from "../src/mcp/player.js";
 import { formatSectionSizes, sectionSizes } from "../src/state/sizes.js";
 import { readState } from "../src/state/state.js";
 import { readCivicTree, readTechTree } from "../src/trees/research.js";
@@ -12,19 +12,11 @@ import { TunerClient } from "../src/tuner/client.js";
 const client = new TunerClient({});
 
 // Returns the player in the argument, or the local player, the human at the
-// screen, or an error. See docs/findings/game-api.md.
-async function pickPlayer(): Promise<{ playerID: number } | { error: string }> {
+// screen, or an error.
+function pickPlayer(): Promise<PlayerResult> {
 	const argument = process.argv[2];
 
-	if (argument !== undefined) {
-		return { playerID: Number(argument) };
-	}
-
-	try {
-		return { playerID: Number((await client.run(CORE_STATE, "print(Game.GetLocalPlayer())")).lines[0]) };
-	} catch (error) {
-		return { error: `Asking for the local player failed: ${(error as Error).message}` };
-	}
+	return argument === undefined ? localPlayer(client)() : Promise.resolve({ ok: true, playerID: Number(argument) });
 }
 
 // Reads the state, the choices, and the trees, and prints each with its size,
@@ -32,7 +24,7 @@ async function pickPlayer(): Promise<{ playerID: number } | { error: string }> {
 async function main(): Promise<void> {
 	const player = await pickPlayer();
 
-	if ("error" in player) {
+	if (!player.ok) {
 		console.error(player.error);
 		process.exitCode = 1;
 

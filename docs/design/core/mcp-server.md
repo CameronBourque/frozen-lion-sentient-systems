@@ -2,8 +2,19 @@
 
 How the bridge serves its tools over MCP: one server, reached in process by the agent loop and over local HTTP by outside clients. Part of the [bridge](bridge.md).
 
-`createServer()` in `src/mcp/server.ts` builds the server with `@modelcontextprotocol/server`, the v2 MCP SDK. The server's name is `sentient-systems`, and its version is the bridge's.
+`createServer(context)` in `src/mcp/server.ts` builds the server with `@modelcontextprotocol/server`, the v2 MCP SDK. The server's name is `sentient-systems`, and its version is the bridge's. The context holds the tuner client and the player source.
 
+- **Player.** Every tool acts for the player that the context's `player` function returns. No tool takes a player ID, so a model can't read or act for another civ.
+
+  Over HTTP, `localPlayer(client)` in `src/mcp/player.ts` asks the game for `Game.GetLocalPlayer()` on each call, so a load of another save needs nothing more.
+
+  In single player the agent plays the human slot, as [slot-type.md](../agents/slot-type.md) says. For agents in computer slots, the agent loop builds one in-process server per agent, each with a source that returns that agent's player.
+- **State tools.** `src/mcp/state-tools.ts` registers `get_state`, `get_choices`, `get_placement`, `get_tech_tree`, `get_civic_tree`, `search_civilopedia`, and `read_civilopedia`. `read_civilopedia` opens a page by `pageID`, lists a section's pages by `sectionID`, or lists the sections with neither.
+- **Results.** `src/mcp/results.ts` returns a read as compact JSON text. A failed read, or a missing player, is a result marked `isError` with the error text, not a protocol error, so the model reads why.
+
+  While the bridge isn't connected to the game, every tool answers at once that it isn't. A request would otherwise wait for the game's handshake, and the tool would never answer.
+
+  Each tool's description names the fields whose meaning the JSON doesn't show, because the schemas' `.describe()` notes don't reach the model.
 - **In process.** The agent loop connects to the server through the SDK's `InMemoryTransport`, so the loop needs no port.
 - **Over HTTP.** With `--mcp`, `src/mcp/http.ts` also serves the server over Streamable HTTP at `http://127.0.0.1:<mcpPort>/mcp`, for Claude Code and the MCP Inspector. `npm run mcp` starts the bridge this way, and `mcpPort` is in the [config file](settings.md).
 
@@ -18,4 +29,7 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
 | The agent loop reaches the server through the in-memory transport | The loop runs in the bridge, so it needs no port, and it calls the same tools as an outside client |
 | Outside clients reach the server over Streamable HTTP, not stdio | The game takes one tuner client at a time ([protocol.md](../../findings/tuner/protocol.md)). A stdio server would be a second bridge that Claude Code starts and stops. Over HTTP, the bridge you start keeps the tuner connection and its console logs |
 | The v2 MCP SDK, with its Node adapter | The v2 server package depends only on `zod`. The adapter turns `node:http` requests into the web requests the SDK reads, and has the localhost Host and Origin checks |
+| The server, not each tool, holds the player | A model can't name another player, and the calls cost no tokens for a player ID. An agent per computer slot gets its own server with the same tools |
+| Two Civilopedia tools: `search_civilopedia` and `read_civilopedia` | One tool with four modes chosen by its fields lets a model mix them, such as a query with a page ID. Search and open-by-ID are two ideas a model tells apart |
+| Results are compact JSON text, with field notes in the descriptions | An `outputSchema` would carry the notes, but a client may not show it to the model, and the state's schema would add several KB to each turn. The Claude Code gate shows which notes are missing |
 | A taken port warns, and the bridge runs without HTTP | The tuner connection and the logs still work, and the warning names the port to change |

@@ -1,6 +1,6 @@
 // Serves the MCP server over Streamable HTTP for --mcp, so Claude Code and the
 // MCP Inspector share the bridge's one tuner connection.
-// docs/design/core/bridge.md has the design.
+// docs/design/core/mcp-server.md has the design.
 
 import { createServer as createHttpServer } from "node:http";
 import type { AddressInfo } from "node:net";
@@ -8,6 +8,7 @@ import { localhostHostValidation, localhostOriginValidation, toNodeHandler } fro
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import type { Logger } from "../log.js";
 import { createServer } from "./server.js";
+import type { ToolContext } from "./state-tools.js";
 
 // Loopback only, so no other machine can call the tools.
 export const MCP_HOST = "127.0.0.1";
@@ -25,9 +26,9 @@ export function mcpUrl(port: number): string {
 // Starts the HTTP server on a port, or on a free one for port 0. If the port
 // can't be used, warns and returns undefined, and the bridge keeps running
 // without it.
-export function startMcpHttp(port: number, logger: Logger): Promise<McpHttp | undefined> {
+export function startMcpHttp(port: number, context: ToolContext, logger: Logger): Promise<McpHttp | undefined> {
 	const onerror = (error: Error): void => logger.warn("mcp_request_failed", `An MCP request failed: ${error.message}`, { reason: error.message });
-	const mcp = createMcpHandler(createServer, { onerror });
+	const mcp = createMcpHandler(() => createServer(context), { onerror });
 	const handle = toNodeHandler(mcp, { onerror });
 	// The Host and Origin checks stop a web page from reaching the tools
 	// through DNS rebinding.

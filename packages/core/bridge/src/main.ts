@@ -9,6 +9,7 @@ import { onLoadEvent } from "./game-load.js";
 import { startConfig } from "./load-config.js";
 import { logFilePath, Logger } from "./log.js";
 import { type McpHttp, startMcpHttp } from "./mcp/http.js";
+import { localPlayer } from "./mcp/player.js";
 import { TunerClient } from "./tuner/client.js";
 
 // The default level until the config file sets one. Lines before then go to the
@@ -54,7 +55,7 @@ client.connect();
 
 // No top-level await, because the executable's bundle is CommonJS.
 if (started.mcp) {
-	void startMcpHttp(started.config.mcpPort, logger).then((http) => {
+	void startMcpHttp(started.config.mcpPort, { client, player: localPlayer(client) }, logger).then((http) => {
 		mcp = http;
 	});
 }
