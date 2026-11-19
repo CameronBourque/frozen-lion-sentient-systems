@@ -25,6 +25,10 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
 
   Each area has its own file, such as `src/mcp/unit-tools.ts`, `src/mcp/city-tools.ts`, and `src/mcp/turn-tools.ts`. Each goes through `registerAction` in `src/mcp/action.ts`, so a field that every action has is added in one place.
 
+  Every action tool requires `reason`, one sentence of at most 200 characters, first in its schema so a model gives it before the action's fields.
+
+  `registerAction` adds it, and logs each action at the `decisions` level as an `action` record with the tool, the player, the reason, the fields, and the result.
+
   A success returns "The game took the request.", because an ok result means the game took the request, not that it is done. The model reads the state for the effect. A failed action returns its reason as a result marked `isError`.
 
   `unit_action` takes every order of the action API's `UnitOrder`, and its description lists them from one table, which TypeScript checks against the type. The core mod checks that an order has the fields it needs.
@@ -48,5 +52,6 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
 | Two Civilopedia tools: `search_civilopedia` and `read_civilopedia` | One tool with four modes chosen by its fields lets a model mix them, such as a query with a page ID. Search and open-by-ID are two ideas a model tells apart |
 | Results are compact JSON text, with field notes in the descriptions | An `outputSchema` would carry the notes, but a client may not show it to the model, and the state's schema would add several KB to each turn. The Claude Code gate shows which notes are missing |
 | One action tool per verb, with set and queue in one tool | Each tool's schema holds only its own fields, so a model can't mix the fields of two actions. The tools cost more tokens in the tool list than one tool per area would |
+| `reason` is first in every action's schema, with a 200 character cap | A model writes the fields in schema order, so it gives the reason before it picks the action's fields. The narrator panel shows one sentence, as [narration-and-messaging.md](../agents/narration-and-messaging.md) says |
 | An action's success says the game took the request | The game finishes some actions after the call returns, such as a move. [state-sections.md](../../tech-debt/state-sections.md) and [action-changes.md](../../tech-debt/action-changes.md) cut the cost of reading the effect |
 | A taken port warns, and the bridge runs without HTTP | The tuner connection and the logs still work, and the warning names the port to change |

@@ -5,11 +5,11 @@ import { expect, test } from "vitest";
 import packageJson from "../../package.json" with { type: "json" };
 import { SERVER_NAME, createServer } from "../../src/mcp/server.js";
 import type { TunerClient } from "../../src/tuner/client.js";
-import { connectTools } from "./tools.js";
+import { QUIET, connectTools } from "./tools.js";
 
 test("an in-process client connects and reads the bridge's name and version", async () => {
 	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-	const server = createServer({ client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }) });
+	const server = createServer({ client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }), logger: QUIET });
 	const client = new Client({ name: "test", version: "1.0.0" });
 
 	await server.connect(serverSide);

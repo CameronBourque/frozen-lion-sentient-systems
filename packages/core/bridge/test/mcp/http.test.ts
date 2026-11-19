@@ -12,7 +12,7 @@ import type { TunerClient } from "../../src/tuner/client.js";
 
 const logger = new Logger("debug");
 // No test here calls a tool, so the context needs no game.
-const context: ToolContext = { client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }) };
+const context: ToolContext = { client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }), logger };
 
 beforeEach(() => {
 	vi.spyOn(console, "log").mockImplementation(() => {});
@@ -31,7 +31,7 @@ describe("startMcpHttp", () => {
 	let http: McpHttp | undefined;
 
 	beforeEach(async () => {
-		http = await startMcpHttp(0, context, logger);
+		http = await startMcpHttp(0, context);
 	});
 
 	afterEach(async () => {
@@ -81,7 +81,7 @@ test("warns and returns undefined when the port is taken", async () => {
 
 	const port = (taken.address() as AddressInfo).port;
 
-	await expect(startMcpHttp(port, context, logger)).resolves.toBeUndefined();
+	await expect(startMcpHttp(port, context)).resolves.toBeUndefined();
 	expect(console.warn).toHaveBeenCalledWith(expect.stringContaining(`port ${port}`));
 
 	await new Promise((done) => taken.close(done));

@@ -6,7 +6,6 @@ import { createServer as createHttpServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { localhostHostValidation, localhostOriginValidation, toNodeHandler } from "@modelcontextprotocol/node";
 import { createMcpHandler } from "@modelcontextprotocol/server";
-import type { Logger } from "../log.js";
 import { createServer } from "./server.js";
 import type { ToolContext } from "./context.js";
 
@@ -26,7 +25,8 @@ export function mcpUrl(port: number): string {
 // Starts the HTTP server on a port, or on a free one for port 0. If the port
 // can't be used, warns and returns undefined, and the bridge keeps running
 // without it.
-export function startMcpHttp(port: number, context: ToolContext, logger: Logger): Promise<McpHttp | undefined> {
+export function startMcpHttp(port: number, context: ToolContext): Promise<McpHttp | undefined> {
+	const { logger } = context;
 	const onerror = (error: Error): void => logger.warn("mcp_request_failed", `An MCP request failed: ${error.message}`, { reason: error.message });
 	const mcp = createMcpHandler(() => createServer(context), { onerror });
 	const handle = toNodeHandler(mcp, { onerror });

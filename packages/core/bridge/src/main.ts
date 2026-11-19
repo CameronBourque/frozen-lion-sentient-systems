@@ -55,7 +55,7 @@ client.connect();
 
 // No top-level await, because the executable's bundle is CommonJS.
 if (started.mcp) {
-	void startMcpHttp(started.config.mcpPort, { client, player: localPlayer(client) }, logger).then((http) => {
+	void startMcpHttp(started.config.mcpPort, { client, player: localPlayer(client), logger }).then((http) => {
 		mcp = http;
 	});
 }

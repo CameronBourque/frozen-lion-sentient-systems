@@ -6,7 +6,7 @@ This debt blocks no phase or step. Pick it up when the token cost of `reason` ma
 
 ## Now
 
-- Task 17 of the [MCP server](../roadmap/phase-1/mcp-server.md) step makes `reason` a required string on every action tool, in `registerAction`, the helper that every action tool goes through.
+- `registerAction` in `packages/core/bridge/src/mcp/action.ts` makes `reason` a required string of at most 200 characters on every action tool, through its `REASON` schema.
 - The [narrator panel](../design/agents/narration-and-messaging.md) shows the `reason` for each action, and the decisions level of the [logs](../design/core/logs.md) records it.
 - A reason is one sentence. At an estimated 20 to 40 output tokens for each action and 10 to 30 actions a turn, `reason` costs about 1,000 output tokens a turn.
 
