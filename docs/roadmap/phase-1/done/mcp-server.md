@@ -1,6 +1,6 @@
 # Phase 1: MCP server
 
-The finished step of [phase 1](../README.md) that serves the state, the action API, and the Civilopedia as MCP tools. The index is in [README.md](README.md).
+The finished steps of [phase 1](../README.md) that serve the state, the action API, and the Civilopedia as MCP tools, and generate their reference page. The index is in [README.md](README.md).
 
 ## MCP server
 
@@ -24,3 +24,18 @@ The bridge serves 44 tools from one MCP server, built with the v2 MCP SDK. The a
 - `mcpPort`, in [design/core/settings.md](../../../design/core/settings.md), and the `action` record, in [design/core/logs.md](../../../design/core/logs.md).
 - How live tests reach the tools, in [design/testing.md](../../../design/testing.md#live-tests).
 - Four debts the step found, in [tech-debt/](../../../tech-debt/README.md): an optional `reason`, state sections, action changes, and the move refusal at a river.
+
+## Tool reference
+
+Pull request: ci: generate the tool reference.
+
+`docs/reference/tools.md` lists the 44 tools with the descriptions and fields the model reads, and a workflow keeps it current on every pull request.
+
+- **Script.** `npm run tool-reference` lists the tools from an in-process server, with no game, and writes one section per tool: its description and a table of its fields. Nested fields get their own rows, and an enum of up to 8 values lists them as its type.
+- **Check.** `check-docs` skips the writing and length rules for generated pages in `docs/reference/`, and still checks their links.
+- **Workflow.** One job generates the page with no token. A second job commits it with the release app token through the contents API, only when it changed, and never runs PR code.
+
+  The [Claude Code gate](../claude-code-gate.md) makes the first live run of that commit.
+
+- The script and the workflow, in [design/core/toolchain.md](../../../design/core/toolchain.md).
+- The `docs/reference/` exception, in [rules/docs.md](../../../rules/docs.md#automated-check).
