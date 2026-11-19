@@ -19,6 +19,7 @@
     "lint": "eslint . && node scripts/lua-comments/src/index.mjs && node scripts/yml-comments/src/index.mjs",
     "test": "vitest run",
     "test:lua": "node scripts/clean-lua-fixtures/src/index.mjs && busted",
+    "tool-reference": "npm run tool-reference --workspace packages/core/bridge",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {
