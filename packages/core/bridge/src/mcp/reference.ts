@@ -1,4 +1,4 @@
-// Writes the tool reference, docs/reference/tools.md*, from the tools the MCP
+// Writes the tool reference, docs/reference/tools.md, from the tools the MCP
 // server lists. scripts/tool-reference.ts lists them and writes the file.
 
 // The parts of a tool's JSON Schema that the reference shows.

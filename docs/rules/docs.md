@@ -31,6 +31,7 @@ Where each kind of fact lives:
 | How to test a finding | That finding's `## Method` section |
 | What to do next, and in what order | [roadmap/](../roadmap/README.md) |
 | Known debt in the code and docs, and the proposed fix | [tech-debt/](../tech-debt/README.md) |
+| What an MCP tool does and the fields it takes | The tool's code. [reference/](../reference/README.md) has the generated page |
 | What could go wrong, and the fallback | [risks.md](../risks.md) |
 | Rules | [rules/](README.md) |
 | What a term means | [glossary.md](../glossary.md) |

@@ -1,4 +1,4 @@
-// Writes docs/reference/tools.md* from the tools the MCP server lists. Run it
+// Writes docs/reference/tools.md from the tools the MCP server lists. Run it
 // with `npm run tool-reference`. It needs no game, because listing the tools
 // calls none of them.
 
