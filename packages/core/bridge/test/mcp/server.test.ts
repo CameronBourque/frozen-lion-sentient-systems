@@ -28,7 +28,7 @@ test("the server lists every tool, each with a description", async () => {
 		"get_state", "get_choices", "get_placement", "get_tech_tree", "get_civic_tree", "get_trade_routes", "get_great_work_moves",
 		"search_civilopedia", "read_civilopedia",
 		"move_unit", "unit_action",
-		"set_production", "purchase", "purchase_tile",
+		"set_production", "purchase", "purchase_tile", "city_attack", "silo_strike", "decide_city",
 		"end_turn",
 	]);
 	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);

@@ -102,3 +102,21 @@ describe("the city tools", () => {
 		expect(await callTool(mcp, "purchase_tile", { cityID: 65536, x: 4, y: 5 })).toEqual(DONE);
 	});
 });
+
+describe("the strike and city fate tools", () => {
+	test("city_attack, silo_strike, and decide_city pass their fields", async () => {
+		answerStash(game, {
+			"SentientSystems_CityAttack(3, 65536, 4, 5)": OK,
+			"SentientSystems_SiloStrike(3, 10, 11, 4, 5, \"WMD_NUCLEAR_DEVICE\")": OK,
+			"SentientSystems_DecideCity(3, 131072, \"RAZE\")": OK,
+		});
+
+		expect(await callTool(mcp, "city_attack", { cityID: 65536, x: 4, y: 5 })).toEqual(DONE);
+		expect(await callTool(mcp, "silo_strike", { siloX: 10, siloY: 11, x: 4, y: 5, device: "WMD_NUCLEAR_DEVICE" })).toEqual(DONE);
+		expect(await callTool(mcp, "decide_city", { cityID: 131072, directive: "RAZE" })).toEqual(DONE);
+	});
+
+	test("decide_city refuses a directive the game doesn't have", async () => {
+		expect(await callTool(mcp, "decide_city", { cityID: 131072, directive: "SELL" })).toMatchObject({ isError: true });
+	});
+});

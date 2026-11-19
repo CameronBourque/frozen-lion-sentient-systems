@@ -1,10 +1,12 @@
-// The MCP tools that act on a city: its production and its purchases. Each
-// description is written for the model. docs/design/core/mod/actions/cities.md
-// has the actions.
+// The MCP tools that act on a city: its production, its purchases, its shot,
+// a silo's strike, and a captured city's fate. Each description is written for
+// the model. docs/design/core/mod/actions/ has the actions.
 
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
-import { purchase, purchaseTile, queueProduction, setProduction } from "../actions/cities.js";
+import { cityAttack, purchase, purchaseTile, queueProduction, setProduction } from "../actions/cities.js";
+import { CITY_DIRECTIVES, decideCity } from "../actions/city-fate.js";
+import { siloStrike } from "../actions/wmds.js";
 import { optionalTile, registerAction } from "./action.js";
 import type { ToolContext } from "./context.js";
 
@@ -17,6 +19,16 @@ const PURCHASE = `Buy a unit or a building in one of your cities, from the type 
 A refusal gives the game's reasons, such as gold that falls short.`;
 
 const PURCHASE_TILE = `Buy a tile for one of your cities with gold, from the tiles in get_choices' purchases.gold for that city.`;
+
+const CITY_ATTACK = `Have one of your cities shoot at the tile at x and y in its range. Ok means the game took the order, not that the shot landed.`;
+
+const SILO_STRIKE = `Launch a nuclear device from one of your missile silos at the tile at x and y. get_state's wmdLaunchers lists, for each device, the silos that can launch it now.
+
+It checks the device and your stockpile, the silo, the tile, the range, and the war check, in that order. A refusal gives how many tiles the silo can hit and how far, not the list.`;
+
+const DECIDE_CITY = `Decide the fate of a captured or rebelled city, from get_choices' cityFates. The game offers one city at a time.
+
+directive is the type of one of that city's options: KEEP, RAZE, LIBERATE_FOUNDER, or LIBERATE_PREVIOUS_OWNER for a captured city, and KEEP or REJECT for a rebelled one. A refusal lists the city's options.`;
 
 const CITY_ID = z.int().describe("The city's id, from get_state.");
 
@@ -48,4 +60,20 @@ export function registerCityTools(server: McpServer, context: ToolContext): void
 		x: z.int(),
 		y: z.int(),
 	}), (playerID, { cityID, x, y }) => purchaseTile(client, playerID, cityID, { x, y }));
+	registerAction(server, context, "city_attack", CITY_ATTACK, z.object({
+		cityID: CITY_ID,
+		x: z.int(),
+		y: z.int(),
+	}), (playerID, { cityID, x, y }) => cityAttack(client, playerID, cityID, { x, y }));
+	registerAction(server, context, "silo_strike", SILO_STRIKE, z.object({
+		siloX: z.int().describe("The silo's tile, from get_state's wmdLaunchers."),
+		siloY: z.int(),
+		x: z.int().describe("The target tile."),
+		y: z.int(),
+		device: z.string().describe("Such as WMD_NUCLEAR_DEVICE or WMD_THERMONUCLEAR_DEVICE."),
+	}), (playerID, { siloX, siloY, x, y, device }) => siloStrike(client, playerID, { x: siloX, y: siloY }, { x, y }, device));
+	registerAction(server, context, "decide_city", DECIDE_CITY, z.object({
+		cityID: z.int().describe("The city in cityFates."),
+		directive: z.enum(CITY_DIRECTIVES),
+	}), (playerID, { cityID, directive }) => decideCity(client, playerID, cityID, directive));
 }
