@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.3](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.2...core-v0.24.3) (2026-11-19)
+
+
+### Bug Fixes
+
+* **core:** cancel moves whose destination can't be reached ([#112](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/112)) ([3cca664](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/3cca664f246eb6237935af0d0158a231a1487ae3))
+
 ## [0.24.2](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.1...core-v0.24.2) (2026-11-19)
 
 
