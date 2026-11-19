@@ -50,7 +50,7 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 - **Placement.** `readPlacement(client, playerID, cityID, type)` in `src/placement/placement.ts` reads where a city can place one district or wonder, through the stash reader, with the call `SentientSystems_GetPlacement(<playerID>, <cityID>, "<type>")`.
 
   It refuses a type with anything but capital letters, digits, and `_`, such as `DISTRICT_CAMPUS`, without sending a command, because the type goes into the Lua call as a string.
-- **MCP server.** It exposes the action API and lookup as tools to the agent loop.
+- **MCP server.** It serves the action API and lookup as tools. See [mcp-server.md](mcp-server.md).
 - **Model client.** It calls the configured provider through one interface, the Vercel AI SDK, so any provider works. `models.yaml` maps each provider and operation to a model. Testing fills that table.
 - **Memory store.** It reads and writes each agent's memory files and snapshots them under the current checkpoint ID. See [memory.md](../memory.md).
 

@@ -1,5 +1,6 @@
-// Starts the bridge: reads the config, connects to the tuner, and logs each
-// event the core mod prints, with a log file per game, until Ctrl+C.
+// Starts the bridge: reads the config, connects to the tuner, logs each event
+// the core mod prints, with a log file per game, and serves the MCP tools with
+// --mcp, until Ctrl+C.
 
 import { isSea } from "node:sea";
 import { onConnect } from "./connect.js";
@@ -7,6 +8,7 @@ import { readLine } from "./events.js";
 import { onLoadEvent } from "./game-load.js";
 import { startConfig } from "./load-config.js";
 import { logFilePath, Logger } from "./log.js";
+import { type McpHttp, startMcpHttp } from "./mcp/http.js";
 import { TunerClient } from "./tuner/client.js";
 
 // The default level until the config file sets one. Lines before then go to the
@@ -37,11 +39,22 @@ client.on("connected", () => {
 client.on("disconnected", () => logger.info("disconnected", "Disconnected from the game's tuner"));
 // Each load starts a new log file.
 client.on("output", (line) => readLine(line, logger, (event) => onLoadEvent(event, client, logger, () => logFilePath(started.path, new Date()))));
+// Undefined until the MCP server starts, and without --mcp.
+let mcp: McpHttp | undefined;
+
 process.on("SIGINT", () => {
 	client.close();
 	logger.closeFile();
-	process.exit(0);
+	// Exits after the MCP server closes, so no request is cut off mid-reply.
+	void (mcp?.close() ?? Promise.resolve()).finally(() => process.exit(0));
 });
 
 logger.info("started", "Sentient Systems bridge. Waiting for the game's tuner. Press Ctrl+C to stop.");
 client.connect();
+
+// No top-level await, because the executable's bundle is CommonJS.
+if (started.mcp) {
+	void startMcpHttp(started.config.mcpPort, logger).then((http) => {
+		mcp = http;
+	});
+}

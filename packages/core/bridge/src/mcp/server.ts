@@ -1,0 +1,14 @@
+// The bridge's MCP server. The agent loop connects to it in process, and
+// --mcp serves it over HTTP (src/mcp/http.ts). docs/design/core/bridge.md has
+// the design.
+
+import { McpServer } from "@modelcontextprotocol/server";
+import packageJson from "../../package.json" with { type: "json" };
+
+export const SERVER_NAME = "sentient-systems";
+
+// The HTTP handler builds a server for each request, so a server holds no
+// state of its own.
+export function createServer(): McpServer {
+	return new McpServer({ name: SERVER_NAME, version: packageJson.version });
+}

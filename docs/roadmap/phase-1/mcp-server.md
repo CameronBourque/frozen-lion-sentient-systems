@@ -39,8 +39,7 @@ The bridge executable, built with `npm run build:exe` and started with `--mcp`, 
 
 ## Record
 
-- The MCP server and its transports, in [bridge.md](../../design/core/bridge.md). Add a `## Decisions` row for the in-memory transport.
-- Add a `## Decisions` row for Streamable HTTP over stdio. The game takes one tuner client at a time ([protocol.md](../../findings/tuner/protocol.md)), and a stdio server would be a second bridge that Claude Code starts and stops.
+- The MCP server and its transports, in [mcp-server.md](../../design/core/mcp-server.md), with `## Decisions` rows for the in-memory transport and for Streamable HTTP over stdio.
 - `mcpPort`, in [settings.md](../../design/core/settings.md).
 - How live tests reach the tools through `.mcp.json`, in [testing.md](../../design/testing.md).
 - Remove the `gate.ts` mention from this phase's README.

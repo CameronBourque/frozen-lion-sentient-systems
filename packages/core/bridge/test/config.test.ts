@@ -1,7 +1,7 @@
 // Tests for config.ts.
 
 import { describe, expect, test } from "vitest";
-import { parseConfig } from "../src/config.js";
+import { DEFAULT_MCP_PORT, parseConfig } from "../src/config.js";
 
 // Returns the errors for a file the test expects to fail.
 function errorsFor(text: string): string[] {
@@ -24,6 +24,7 @@ describe("parseConfig", () => {
 			"    apiKey: key-a",
 			"  openai:",
 			"    apiKey: key-b",
+			"mcpPort: 5000",
 		].join("\n");
 
 		expect(parseConfig(text)).toEqual({
@@ -32,6 +33,7 @@ describe("parseConfig", () => {
 				schemaVersion: 1,
 				logLevel: "debug",
 				providers: { anthropic: { apiKey: "key-a" }, openai: { apiKey: "key-b" } },
+				mcpPort: 5000,
 			},
 		});
 	});
@@ -39,7 +41,7 @@ describe("parseConfig", () => {
 	test("fills in the defaults for a file with only the schema version", () => {
 		expect(parseConfig("schemaVersion: 1")).toEqual({
 			ok: true,
-			config: { schemaVersion: 1, logLevel: "decisions", providers: {} },
+			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, mcpPort: DEFAULT_MCP_PORT },
 		});
 	});
 
@@ -63,6 +65,11 @@ describe("parseConfig", () => {
 
 	test("names schemaVersion when it is from another version", () => {
 		expect(errorsFor("schemaVersion: 2")[0]).toMatch(/^schemaVersion: /);
+	});
+
+	test("names mcpPort when it isn't a port", () => {
+		expect(errorsFor("schemaVersion: 1\nmcpPort: 70000")[0]).toMatch(/^mcpPort: /);
+		expect(errorsFor("schemaVersion: 1\nmcpPort: 43.5")[0]).toMatch(/^mcpPort: /);
 	});
 
 	test("names the full path of a provider's bad key", () => {
