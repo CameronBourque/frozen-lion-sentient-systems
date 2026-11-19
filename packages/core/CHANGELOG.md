@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.4](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.3...core-v0.24.4) (2026-11-19)
+
+
+### Bug Fixes
+
+* **core:** keep the characters of localized text ([#114](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/114)) ([50e8ac3](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/50e8ac3aa87531ae5a89770899eb27b9461ac07f))
+
 ## [0.24.3](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.2...core-v0.24.3) (2026-11-19)
 
 
