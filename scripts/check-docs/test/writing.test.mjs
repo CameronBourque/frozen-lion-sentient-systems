@@ -74,6 +74,13 @@ describe("writing", () => {
 		expect(() => checkWriting(buildRepo({ "docs/a.md": "# A\n" }))).toThrow("docs/rules/writing.md is missing");
 	});
 
+	test("generated pages are skipped, but not their index", () => {
+		const check = (path) => checkWriting(buildRepo({ "docs/rules/writing.md": writingRules, [path]: "One — two.\n" }));
+
+		expect(check("docs/reference/tools.md")).toEqual([]);
+		expect(check("docs/reference/README.md")).toHaveLength(1);
+	});
+
 	test("writing.md itself is skipped", () => {
 		expect(checkWriting(buildRepo({ "docs/rules/writing.md": `${writingRules}Robust — “x” →\n` }))).toEqual([]);
 	});

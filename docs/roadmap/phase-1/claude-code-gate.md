@@ -17,4 +17,4 @@ Claude Code plays 10 turns in a row with only a prompt at the start of each turn
 ## Record
 
 - The run, in a new finding, `docs/findings/agent-runs.md*`. Add it to the [findings index](../../findings/README.md).
-- Any tool description that misled Claude Code, fixed in its tool, so the [tool reference](tool-reference.md) updates.
+- Any tool description that misled Claude Code, fixed in its tool. The [tool reference](../../reference/README.md) workflow then commits the new `docs/reference/tools.md` to that PR. The first such PR is the first live run of that commit. Check that the release app's commit lands and that the required checks run again on it.

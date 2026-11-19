@@ -21,6 +21,11 @@ export function buildRepo(files) {
 	return repo;
 }
 
+// A page in docs/reference/ that a script writes from the code. Its text
+// follows the code, such as the tool descriptions the model reads, so the
+// writing and length rules skip it. The folder's index is written by hand.
+export const isGenerated = (doc) => doc.path.startsWith("docs/reference/") && posix.basename(doc.path) !== "README.md";
+
 export function parse(filePath, source) {
 	const lines = source.replace(/\r\n/g, "\n").replace(/\n$/, "").split("\n");
 	const text = blankCode(lines);

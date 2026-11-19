@@ -1,0 +1,67 @@
+name: Tool reference
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+# A newer push makes the older run's file stale.
+concurrency:
+  group: tool-reference-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      # The PR's own commit, not the merge with main, so the file matches the
+      # branch it is committed to.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run tool-reference
+      - uses: actions/upload-artifact@v7
+        with:
+          name: tool-reference
+          path: docs/reference/tools.md
+
+  # Holds the app token, so it runs no PR code: no checkout and no npm. It
+  # commits through the contents API. Dependabot and fork PRs can't read the
+  # app's secret.
+  commit:
+    needs: generate
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: tool-reference
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+      # A file's git blob hash is the sha the contents API gives, so equal
+      # hashes mean the branch already has this file.
+      - name: Commit the file if it changed
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          FILE: docs/reference/tools.md
+        run: |
+          current=$(gh api "repos/$GITHUB_REPOSITORY/contents/$FILE?ref=$BRANCH" --jq .sha 2>/dev/null || true)
+          if [ "$current" = "$(git hash-object tools.md)" ]; then
+            echo "The tool reference is current."
+            exit 0
+          fi
+          args=(-X PUT "repos/$GITHUB_REPOSITORY/contents/$FILE" -f message="docs: update the tool reference" -f branch="$BRANCH" -f content="$(base64 -w0 tools.md)")
+          if [ -n "$current" ]; then args+=(-f sha="$current"); fi
+          gh api "${args[@]}" --jq .commit.html_url

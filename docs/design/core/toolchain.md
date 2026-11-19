@@ -4,9 +4,11 @@ How the bridge is built, checked, and released, and the workflow that keeps its 
 
 The TypeScript setup is in [rules/code.md](../../rules/code.md#typescript), and [findings/build-tooling.md](../../findings/build-tooling.md) tracks the executable build.
 
-- **Tool reference.** A script generates `docs/reference/tools.md*` from the MCP tool schemas. A `pull_request` workflow keeps it current in two jobs. The first job installs packages, runs the script, and uploads the file as an artifact, with no app token.
+- **Tool reference.** `npm run tool-reference` runs `packages/core/bridge/scripts/tool-reference.ts`, which generates `docs/reference/tools.md` from the MCP tool schemas. The `pull_request` workflow `.github/workflows/tool-reference.yml` keeps it current in two jobs.
 
-  The second job commits the file to the PR branch with the release app token and never runs `npm`. Dependabot PRs skip the second job, because workflows that Dependabot triggers can't read repository secrets.
+  The first job checks out the PR's head commit, installs packages, runs the script, and uploads the file as an artifact, with no app token.
+
+  The second job commits the file to the PR branch with the release app token, through the contents API, and only when the file changed. It never checks out the PR or runs `npm`. Dependabot PRs and fork PRs skip it, because their workflows can't read repository secrets.
 
 ## Decisions
 

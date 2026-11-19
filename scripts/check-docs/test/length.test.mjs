@@ -77,4 +77,11 @@ describe("length", () => {
 	test("skips changelogs", () => {
 		expect(check({ "packages/a/CHANGELOG.md": lines("a".repeat(MAX_LINE_LENGTH + 1)) })).toEqual([]);
 	});
+
+	test("skips generated pages, but not their index", () => {
+		const long = lines("a".repeat(MAX_LINE_LENGTH + 1));
+
+		expect(check({ "docs/reference/tools.md": long })).toEqual([]);
+		expect(check({ "docs/reference/README.md": long })).toHaveLength(1);
+	});
 });

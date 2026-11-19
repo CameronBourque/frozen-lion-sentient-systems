@@ -31,6 +31,7 @@ Where each kind of fact lives:
 | How to test a finding | That finding's `## Method` section |
 | What to do next, and in what order | [roadmap/](../roadmap/README.md) |
 | Known debt in the code and docs, and the proposed fix | [tech-debt/](../tech-debt/README.md) |
+| What an MCP tool does and the fields it takes | The tool's code. [reference/](../reference/README.md) has the generated page |
 | What could go wrong, and the fallback | [risks.md](../risks.md) |
 | Rules | [rules/](README.md) |
 | What a term means | [glossary.md](../glossary.md) |
@@ -107,6 +108,8 @@ The check skips `writing.md` for the pattern rules, because that file quotes the
 A line over 300 characters or a file over 12,000 characters fails the check. A file over 150 lines gets a warning, not a failure.
 
 The line check skips fenced code, and leaves link targets out of a line's length, because a reader doesn't see them. The file check counts them, because an agent reads them. Both length checks skip changelogs, which release-please writes.
+
+The pattern and length checks skip the generated pages in `docs/reference/`, because their text comes from the code, such as the tool descriptions that the model reads. The link checks still run on them, and the folder's `README.md` gets every check.
 
 ## Local-only docs
 
