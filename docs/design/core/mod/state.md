@@ -35,11 +35,11 @@ The view holds what a player sees on these screens, grouped by screen. The list 
   No game call returns a screen's statement, so the core mod keeps it as it arrives. A screen queued behind another looks open to every game call, so while one has its statement up, the others are listed as queued. After a load it lists an open screen as unknown, which only the goodbye can close.
 - **The Trade Overview.** The player's routes, with the yields of both ends, the routes of other players that end in the player's cities, and the tourism bonus of a route.
 
-  Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes` returns it for one city on demand.
+  Its Available Routes tab is too large for the state, so `SentientSystems_GetCityRoutes(playerID, cityID)` returns it as JSON for one city on demand. It raises an error for a city the player doesn't have.
 - **The Espionage screen.** The spy capacity, each spy of the player: idle, on a mission, traveling, or captured, the districts and Gain Sources boosts of the other majors' cities, the last 10 missions with their outcomes and loot, and the other players' spies the player holds.
 - **The Great Works screen.** Every great work slot of the player's cities with its kind and work, each building's theming progress, and the totals: the works, the display spaces, and what they provide.
 
-  Where a work can move is too large for the state, so `SentientSystems_GetGreatWorkMoves` returns it for one work on demand.
+  Where a work can move is too large for the state, so `SentientSystems_GetGreatWorkMoves(playerID, workIndex)` returns it as JSON for one work on demand. It raises an error for a work the player doesn't have.
 - **The Tourism lens.** On each of the player's own tiles with tourism: the tourism each turn, the visiting tourists, what gives it, and the lifetime tourism, as the lens's banner and its tooltip show them.
 - **The Appeal lens.** On each revealed land tile and natural wonder: its appeal, as the tooltip and the lens show it, left out when 0.
 - **The plot tooltip.** On each revealed tile with nuclear fallout: the turns it has left.

@@ -168,15 +168,16 @@ function SentientSystems_GetTradeRouteChoices(player)
 	return #choices > 0 and choices or nil
 end
 
--- Returns the destinations a route from the player's city could go to, as the
--- Available Routes tab lists them for that origin, the player's own cities
--- first, or nil when the player has no such city. Unlike the choice, it needs
--- no trader. See ViewAvailableRoutes in TradeOverview.lua.
-function SentientSystems_GetCityRoutes(player, cityID)
-	local originCity = player:GetCities():FindID(cityID)
+-- Returns, as JSON, the destinations a route from the player's city could go
+-- to, as the Available Routes tab lists them for that origin, the player's own
+-- cities first. Raises an error when the player has no such city. Unlike the
+-- choice, it needs no trader. See ViewAvailableRoutes in TradeOverview.lua.
+function SentientSystems_GetCityRoutes(playerID, cityID)
+	local player = SentientSystems_GetPlayer(playerID)
+	local originCity, failure = SentientSystems_FindCity(playerID, cityID)
 
-	if originCity == nil then
-		return nil
+	if failure ~= nil then
+		error(failure, 0)
 	end
 
 	local manager = Game.GetTradeManager()
@@ -198,8 +199,8 @@ function SentientSystems_GetCityRoutes(player, cityID)
 		end
 	end
 
-	return {
+	return SentientSystems_EncodeJson({
 		city = { owner = originCity:GetOwner(), id = originCity:GetID(), name = Locale.Lookup(originCity:GetName()) },
 		destinations = destinations,
-	}
+	})
 end

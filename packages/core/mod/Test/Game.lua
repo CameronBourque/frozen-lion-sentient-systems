@@ -23,8 +23,19 @@ local FIXTURES = MOD_ROOT .. "../bridge/test/lua-fixtures/"
 
 -- The top-level calls to record.
 local RECORDED = {
-	"GetState", "GetChoices", "GetTechTree", "GetCivicTree", "GetGovernorTree", "GetPlacement", "MoveUnit",
-	"Lookup", "LookupPage", "LookupSections", "LookupSection",
+	"GetState",
+	"GetChoices",
+	"GetTechTree",
+	"GetCivicTree",
+	"GetGovernorTree",
+	"GetPlacement",
+	"GetCityRoutes",
+	"GetGreatWorkMoves",
+	"MoveUnit",
+	"Lookup",
+	"LookupPage",
+	"LookupSections",
+	"LookupSection",
 }
 
 -- How many JSON strings each test file has recorded for each call, by

@@ -9,7 +9,11 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
   Over HTTP, `localPlayer(client)` in `src/mcp/player.ts` asks the game for `Game.GetLocalPlayer()` on each call, so a load of another save needs nothing more.
 
   In single player the agent plays the human slot, as [slot-type.md](../agents/slot-type.md) says. For agents in computer slots, the agent loop builds one in-process server per agent, each with a source that returns that agent's player.
-- **State tools.** `src/mcp/state-tools.ts` registers `get_state`, `get_choices`, `get_placement`, `get_tech_tree`, `get_civic_tree`, `search_civilopedia`, and `read_civilopedia`. `read_civilopedia` opens a page by `pageID`, lists a section's pages by `sectionID`, or lists the sections with neither.
+- **State tools.** `src/mcp/state-tools.ts` registers `get_state`, `get_choices`, `get_placement`, `get_tech_tree`, `get_civic_tree`, `get_trade_routes`, `get_great_work_moves`, `search_civilopedia`, and `read_civilopedia`.
+
+  `get_trade_routes` and `get_great_work_moves` read one city's routes or one work's moves, which are too large for the state. Their schemas are in `src/state/city-routes.ts` and `src/state/great-work-moves.ts`.
+
+  `read_civilopedia` opens a page by `pageID`, lists a section's pages by `sectionID`, or lists the sections with neither.
 - **Results.** `src/mcp/results.ts` returns a read as compact JSON text. A failed read, or a missing player, is a result marked `isError` with the error text, not a protocol error, so the model reads why.
 
   While the bridge isn't connected to the game, every tool answers at once that it isn't. A request would otherwise wait for the game's handshake, and the tool would never answer.

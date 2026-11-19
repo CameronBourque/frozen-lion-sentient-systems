@@ -57,11 +57,12 @@ async function call(mcp: Client, name: string, args: Record<string, unknown> = {
 	return { text: content.text, isError: result.isError === true };
 }
 
-test("the server lists the seven tools, each with a description", async () => {
+test("the server lists the nine tools, each with a description", async () => {
 	const { tools } = await (await connect()).listTools();
 
 	expect(tools.map((tool) => tool.name)).toEqual([
-		"get_state", "get_choices", "get_placement", "get_tech_tree", "get_civic_tree", "search_civilopedia", "read_civilopedia",
+		"get_state", "get_choices", "get_placement", "get_tech_tree", "get_civic_tree", "get_trade_routes", "get_great_work_moves",
+		"search_civilopedia", "read_civilopedia",
 	]);
 	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);
 });
@@ -91,6 +92,18 @@ describe("the player tools", () => {
 		answer({ "SentientSystems_GetPlacement(3, 65536, \"DISTRICT_CAMPUS\")": placement });
 
 		expect(await call(await connect(), "get_placement", { cityID: 65536, type: "DISTRICT_CAMPUS" })).toEqual({ text: JSON.stringify(placement), isError: false });
+	});
+
+	test("get_trade_routes passes the city, and get_great_work_moves passes the work", async () => {
+		const routes = { city: { owner: 3, id: 65536, name: "Rome" }, destinations: [] };
+		const moves = { work: { index: 7, name: "Odyssey" }, from: { city: { id: 65536, name: "Rome" }, building: "BUILDING_AMPHITHEATER", slot: 0 }, moves: [] };
+
+		answer({ "SentientSystems_GetCityRoutes(3, 65536)": routes, "SentientSystems_GetGreatWorkMoves(3, 7)": moves });
+
+		const mcp = await connect();
+
+		expect(await call(mcp, "get_trade_routes", { cityID: 65536 })).toEqual({ text: JSON.stringify(routes), isError: false });
+		expect(await call(mcp, "get_great_work_moves", { workIndex: 7 })).toEqual({ text: JSON.stringify(moves), isError: false });
 	});
 
 	test("a tool with no player returns the source's error and sends nothing", async () => {

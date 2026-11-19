@@ -17,7 +17,8 @@ export const ROUTE_END = z.object({
 	),
 });
 
-const DESTINATION = z.object({
+// A city a route could go to. The city routes state reads it too.
+export const DESTINATION = z.object({
 	owner: z.number(),
 	id: z.number(),
 	name: z.string(),

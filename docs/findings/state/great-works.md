@@ -52,7 +52,9 @@ A destination takes the work when its slot kind accepts the work's object type i
 
 An empty destination takes any such work except an artifact. A filled one takes it when the source slot kind accepts the destination's work too, and the destination's work passes `CanMoveWorkAtAll`.
 
-The list was 191 destinations for the 22 movable works at first. With the 16 locked art works free it would be about 26 KB, which is more than the section, so the state doesn't hold it. `SentientSystems_GetGreatWorkMoves(player, workIndex)` returns it for one work, with `from`, and `moves`.
+The list was 191 destinations for the 22 movable works at first. With the 16 locked art works free it would be about 26 KB, which is more than the section, so the state doesn't hold it. `SentientSystems_GetGreatWorkMoves(playerID, workIndex)` returns it for one work as JSON, with `from` and `moves`.
+
+The `get_great_work_moves` tool reads it.
 
 Each move is the city, building, and slot of a destination, and `swap` names the work it would trade with.
 

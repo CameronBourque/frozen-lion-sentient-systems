@@ -235,8 +235,9 @@ describe("SentientSystems_GetGreatWorkMoves", function()
 	local WRITING = { objectType = "GREATWORKOBJECT_WRITING" }
 	local ARTIFACT = { objectType = "GREATWORKOBJECT_ARTIFACT", slotKind = "GREATWORKSLOT_ARTIFACT" }
 
-	-- Returns the moves JSON of the work by its type, or nil, for player 0 with
-	-- the cities given, each a list of buildings.
+	-- Returns the moves JSON of the work by its type, for player 0 with the
+	-- cities given, each a list of buildings. A type no building holds asks for
+	-- index -5.
 	local function MovesOf(cities, workType)
 		local env = Game.new()
 		local data = {}
@@ -258,13 +259,13 @@ describe("SentientSystems_GetGreatWorkMoves", function()
 					if work.type == workType then
 						local index = env.GameInfo.Buildings[building.type].Index * 100 + slot - 1
 
-						return env.SentientSystems_EncodeJson(env.SentientSystems_GetGreatWorkMoves(env.Players[0], index))
+						return env.SentientSystems_GetGreatWorkMoves(0, index)
 					end
 				end
 			end
 		end
 
-		return env.SentientSystems_GetGreatWorkMoves(env.Players[0], -5)
+		return env.SentientSystems_GetGreatWorkMoves(0, -5)
 	end
 
 	it("lists the slots of its kind, with the empty ones plain and the filled ones as swaps", function()
@@ -316,7 +317,9 @@ describe("SentientSystems_GetGreatWorkMoves", function()
 		assert.truthy(json:find("\"moves\":[]", 1, true))
 	end)
 
-	it("is nil for a work the player doesn't have", function()
-		assert.is_nil(MovesOf({ { { type = "BUILDING_AMPHITHEATER" } } }, "GREATWORK_NONE"))
+	it("raises an error that names a work the player doesn't have", function()
+		assert.has_error(function()
+			MovesOf({ { { type = "BUILDING_AMPHITHEATER" } } }, "GREATWORK_NONE")
+		end, "Player 0 has no great work -5.")
 	end)
 end)

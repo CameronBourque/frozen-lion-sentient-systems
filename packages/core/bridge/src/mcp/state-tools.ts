@@ -1,12 +1,14 @@
 // The MCP tools that read the game: the state, the choices, placement, the
-// tech and civic trees, and the Civilopedia. Each description is written for
-// the model, and the tool reference reuses it.
+// trees, one city's trade routes, one great work's moves, and the
+// Civilopedia. Each description is written for the model.
 
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { readChoices } from "../choices/choices.js";
 import { lookup, lookupPage, lookupSection, lookupSections } from "../lookup/lookup.js";
 import { readPlacement } from "../placement/placement.js";
+import { readCityRoutes } from "../state/city-routes.js";
+import { readGreatWorkMoves } from "../state/great-work-moves.js";
 import { readState } from "../state/state.js";
 import { readCivicTree, readTechTree } from "../trees/research.js";
 import type { TunerClient } from "../tuner/client.js";
@@ -47,6 +49,14 @@ const GET_CIVIC_TREE = `Read the whole civic tree as the tree screen shows it, a
 
 ${TREE_NOTES}`;
 
+const GET_TRADE_ROUTES = `Read every trade route one of your cities could start, as JSON, as the Trade Overview's Available Routes tab lists them. Use it to plan where to build or send a trader. It needs no trader in the city.
+
+Your own cities come first. Each destination has its distance, what the origin and the destination each receive, any religious pressure, and whether a city-state quest completes. get_choices lists the routes only for traders that stand idle in a city.`;
+
+const GET_GREAT_WORK_MOVES = `Read the slots one of your great works can move to, as JSON, as the Great Works screen lights them up when you pick the work up. Call it before you move a great work.
+
+from is the work's slot now. A move with swap trades places with the work already there. moves is empty when the work can't move, such as art that is still locked.`;
+
 const SEARCH_CIVILOPEDIA = `Search the Civilopedia for a rule, unit, building, district, improvement, civilization, leader, belief, policy, or concept, as JSON. Returns up to 10 pages, best match first, each with its sectionID, pageID, title, and a snippet.
 
 Open a result with read_civilopedia and its pageID. A game object's pageID is its type, such as UNIT_SETTLER, so you can also read a type from the state directly.`;
@@ -69,6 +79,14 @@ export function registerStateTools(server: McpServer, { client, player }: ToolCo
 	}, ({ cityID, type }) => readForPlayer(client, player, (playerID) => readPlacement(client, playerID, cityID, type)));
 	server.registerTool("get_tech_tree", { description: GET_TECH_TREE }, () => readForPlayer(client, player, (playerID) => readTechTree(client, playerID)));
 	server.registerTool("get_civic_tree", { description: GET_CIVIC_TREE }, () => readForPlayer(client, player, (playerID) => readCivicTree(client, playerID)));
+	server.registerTool("get_trade_routes", {
+		description: GET_TRADE_ROUTES,
+		inputSchema: z.object({ cityID: z.int().describe("The id of one of your cities, from get_state.") }),
+	}, ({ cityID }) => readForPlayer(client, player, (playerID) => readCityRoutes(client, playerID, cityID)));
+	server.registerTool("get_great_work_moves", {
+		description: GET_GREAT_WORK_MOVES,
+		inputSchema: z.object({ workIndex: z.int().describe("The work's index, from greatWorks.slots[].work.index in get_state.") }),
+	}, ({ workIndex }) => readForPlayer(client, player, (playerID) => readGreatWorkMoves(client, playerID, workIndex)));
 	server.registerTool("search_civilopedia", {
 		description: SEARCH_CIVILOPEDIA,
 		inputSchema: z.object({
