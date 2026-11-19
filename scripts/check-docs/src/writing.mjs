@@ -1,8 +1,8 @@
 // Check 4: the writing patterns from docs/rules/writing.md. The rules
 // themselves are in writing-rules.mjs. writing.md is skipped, because it quotes
-// the patterns, and so are generated pages.
+// the patterns, and so are generated pages and changelogs.
 
-import { isGenerated, problem } from "./parse.mjs";
+import { isChangelog, isGenerated, problem } from "./parse.mjs";
 import { buildLineRules } from "./writing-rules.mjs";
 
 export const WRITING_RULES_PATH = "docs/rules/writing.md";
@@ -17,7 +17,7 @@ export function checkWriting(repo) {
 	const problems = [];
 
 	for (const doc of repo.docs.values()) {
-		if (doc.path === WRITING_RULES_PATH || isGenerated(doc)) continue;
+		if (doc.path === WRITING_RULES_PATH || isGenerated(doc) || isChangelog(doc)) continue;
 
 		doc.text.forEach((line, i) => problems.push(...checkLine(doc.path, i + 1, line, rules)));
 

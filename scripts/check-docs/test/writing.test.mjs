@@ -81,6 +81,10 @@ describe("writing", () => {
 		expect(check("docs/reference/README.md")).toHaveLength(1);
 	});
 
+	test("changelogs are skipped", () => {
+		expect(checkWriting(buildRepo({ "docs/rules/writing.md": writingRules, "packages/a/CHANGELOG.md": "### Bug Fixes\n\nOne — two.\n" }))).toEqual([]);
+	});
+
 	test("writing.md itself is skipped", () => {
 		expect(checkWriting(buildRepo({ "docs/rules/writing.md": `${writingRules}Robust — “x” →\n` }))).toEqual([]);
 	});

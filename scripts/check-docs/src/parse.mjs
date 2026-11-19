@@ -26,6 +26,10 @@ export function buildRepo(files) {
 // writing and length rules skip it. The folder's index is written by hand.
 export const isGenerated = (doc) => doc.path.startsWith("docs/reference/") && posix.basename(doc.path) !== "README.md";
 
+// A changelog, which release-please writes from commit subjects, with its own
+// Title Case headings. The writing and length rules skip it.
+export const isChangelog = (doc) => posix.basename(doc.path) === "CHANGELOG.md";
+
 export function parse(filePath, source) {
 	const lines = source.replace(/\r\n/g, "\n").replace(/\n$/, "").split("\n");
 	const text = blankCode(lines);
