@@ -11,6 +11,8 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
   In single player the agent plays the human slot, as [slot-type.md](../agents/slot-type.md) says. For agents in computer slots, the agent loop builds one in-process server per agent, each with a source that returns that agent's player.
 - **State tools.** `src/mcp/state-tools.ts` registers `get_state`, `get_choices`, `get_placement`, `get_tech_tree`, `get_civic_tree`, `get_trade_routes`, `get_great_work_moves`, `search_civilopedia`, and `read_civilopedia`.
 
+  `get_choices` takes an optional `cityID`, which lists only that city in `production` and `purchases`.
+
   `get_trade_routes` and `get_great_work_moves` read one city's routes or one work's moves, which are too large for the state. Their schemas are in `src/state/city-routes.ts` and `src/state/great-work-moves.ts`.
 
   `read_civilopedia` opens a page by `pageID`, lists a section's pages by `sectionID`, or lists the sections with neither.

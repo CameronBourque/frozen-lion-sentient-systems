@@ -31,7 +31,9 @@ const GET_CHOICES = `Read the legal options for every decision you can make now,
 
 It covers what each city can produce or buy, techs and civics, policies and governments, pantheon and religion beliefs, envoys, great people, governor titles, spy missions, trade routes, artifacts, dedications, emergencies, city fates, and the World Congress.
 
-Pick from these options when you act. A key that a blocker in get_state names is the choice that resolves it. An option the game greys out has blocked, with the game's reasons.`;
+Pick from these options when you act. A key that a blocker in get_state names is the choice that resolves it. An option the game greys out has blocked, with the game's reasons.
+
+production and purchases have an entry for each city, which makes them the largest part. Give cityID to list only that city in them, such as when you choose one city's production.`;
 
 const GET_PLACEMENT = `Read where a city can place one district or wonder, as JSON. Call it before you build a district or wonder.
 
@@ -69,7 +71,12 @@ const READ_CIVILOPEDIA = `Open the Civilopedia by ID, as JSON. Use it for exact 
 
 export function registerStateTools(server: McpServer, { client, player }: ToolContext): void {
 	server.registerTool("get_state", { description: GET_STATE }, () => readForPlayer(client, player, (playerID) => readState(client, playerID)));
-	server.registerTool("get_choices", { description: GET_CHOICES }, () => readForPlayer(client, player, (playerID) => readChoices(client, playerID)));
+	server.registerTool("get_choices", {
+		description: GET_CHOICES,
+		inputSchema: z.object({
+			cityID: z.int().optional().describe("One of your cities' id, from get_state. Leave it out for every city."),
+		}),
+	}, ({ cityID }) => readForPlayer(client, player, (playerID) => readChoices(client, playerID, cityID)));
 	server.registerTool("get_placement", {
 		description: GET_PLACEMENT,
 		inputSchema: z.object({

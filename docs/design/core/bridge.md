@@ -39,7 +39,7 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 - **State.** `readState(client, playerID)` in `src/state/state.ts` reads one player's [state](mod/state.md) through the stash reader, with the call `SentientSystems_GetState(<playerID>)`.
 
   The schema isn't strict, so a field from a newer core mod is dropped instead of failing the whole state. Each section's schema has its own file in `src/state/`, such as `cities.ts`, to match the core mod's file for that section in `Scripts/State/`.
-- **Choices.** `readChoices(client, playerID)` in `src/choices/choices.ts` reads one player's [choices](mod/choices.md) through the stash reader, with the call `SentientSystems_GetChoices(<playerID>)`.
+- **Choices.** `readChoices(client, playerID, cityID?)` in `src/choices/choices.ts` reads one player's [choices](mod/choices.md) through the stash reader, with the call `SentientSystems_GetChoices(<playerID>[, <cityID>])`.
 
   Its schema drops unknown fields in the same way, and each choice's schema has its own file in `src/choices/`, such as `production.ts`, to match the core mod's file for that choice in `Scripts/Choices/`.
 - **Trees.** `readTechTree(client, playerID)` and `readCivicTree(client, playerID)` in `src/trees/research.ts` read one player's [tech tree and civic tree](mod/trees.md) through the stash reader, with the calls `SentientSystems_GetTechTree(<playerID>)` and `SentientSystems_GetCivicTree(<playerID>)`.

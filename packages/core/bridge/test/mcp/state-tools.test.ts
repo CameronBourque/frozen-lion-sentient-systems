@@ -86,6 +86,13 @@ describe("the player tools", () => {
 		expect(await call(mcp, "get_choices")).toMatchObject({ text: expect.stringContaining("choices JSON doesn't match") as unknown, isError: true });
 	});
 
+	test("get_choices passes the city when it is given", async () => {
+		answer({ "SentientSystems_GetChoices(3, 65536)": {} });
+
+		expect(await call(await connect(), "get_choices", { cityID: 65536 })).toMatchObject({ text: expect.stringContaining("choices JSON doesn't match") as unknown, isError: true });
+		expect(game.commands.some(({ lua }) => lua === "SentientSystems_Stash(SentientSystems_GetChoices(3, 65536))")).toBe(true);
+	});
+
 	test("get_placement passes the city and the type", async () => {
 		const placement = { tiles: [{ x: 1, y: 2, adjacency: { science: 2 } }], purchaseTiles: [] };
 

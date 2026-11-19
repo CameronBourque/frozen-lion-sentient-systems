@@ -167,12 +167,12 @@ local function GetTilePurchases(city)
 end
 
 -- Returns a list with what each of the player's cities can buy, by yield, in
--- the game's order of cities. The tiles to buy are under gold, the only yield
--- that buys them.
-function SentientSystems_GetPurchaseChoices(player)
+-- the game's order of cities, or only the city with ID cityID when it is
+-- given. The tiles to buy are under gold, the only yield that buys them.
+function SentientSystems_GetPurchaseChoices(player, cityID)
 	local purchases = {}
 
-	for _, city in player:GetCities():Members() do
+	for _, city in SentientSystems_GetChosenCities(player, cityID) do
 		local entry = { city = city:GetID(), name = Locale.Lookup(city:GetName()) }
 
 		for key, purchase in pairs(SENTIENTSYSTEMS_PURCHASE_YIELDS) do
