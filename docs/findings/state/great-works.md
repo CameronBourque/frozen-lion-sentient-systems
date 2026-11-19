@@ -87,7 +87,7 @@ A single-player game with Gathering Storm, in `SentientSystemsCore_UI`, with 22 
 | Check | Result |
 | --- | --- |
 | The display spaces | 50, the same as the screen's header |
-| The theme progress of the 3 art museums and 3 artifact museums | The same as each Theming label: 1 of 3 for most, 2 of 3 for the Bibrax art museum, and 3 of 3 with `complete` true for the themed Con Cuông museum |
+| The theme progress of the 3 art museums and 3 artifact museums | The same as each Theming label: 1 of 3 for most, 2 of 3 for the Bibrax art museum, and 3 of 3 with `complete` true for the themed Con CuÃ´ng museum |
 | The yields and tourism of each building | The same as the screenshots: 9 and 9 for an artifact museum, 18 and 18 for the themed one, 12 and 12 for the Hermitage, 12 and 20 for Broadway, 12 and 12 for the Sydney Opera House, 6 faith and 8 tourism for the temple |
 | The wonders and the palace | No `theme`, as the screen shows no label once they are filled. The palace slot accepts every object type except artifacts |
 | The locks | 16 art works with 7 or 9 turns left and `movable` false, as the pop-up said 9 turns for one |
