@@ -18,6 +18,16 @@ local TEXT = {
 	LOC_ROCK_CONCERT_RESULT_PROMOTION = "Promotion Available!",
 	LOC_ROCK_CONCERT_RESULT_LEVEL_UP = "Leveled Up!",
 	LOC_ROCK_CONCERT_RESULT_UNIT_LOST = "Unit Lost",
+	LOC_GOODYHUT_SMALL_GOLD_DESCRIPTION = "",
+	LOC_GOODYHUT_GRANT_SCOUT_DESCRIPTION = "[COLOR_FLOAT_MILITARY]You are granted a recon unit.[ENDCOLOR]",
+}
+
+-- Most reward sub-types have a description key with empty text, or no key, as
+-- the game's do.
+local GOODY_HUT_SUB_TYPES = {
+	{ SubTypeGoodyHut = "GOODYHUT_SMALL_GOLD", Description = "LOC_GOODYHUT_SMALL_GOLD_DESCRIPTION" },
+	{ SubTypeGoodyHut = "GOODYHUT_GRANT_SCOUT", Description = "LOC_GOODYHUT_GRANT_SCOUT_DESCRIPTION" },
+	{ SubTypeGoodyHut = "METEOR_GRANT_GOODIES" },
 }
 
 -- Returns an environment on turn 85 with the events script loaded, where
@@ -32,6 +42,7 @@ local function Load(rockBand)
 			[63] = { minor = { name = "LOC_BARBARIANS" } },
 		},
 		rockBandResults = RESULTS,
+		goodyHutSubTypes = GOODY_HUT_SUB_TYPES,
 		text = TEXT,
 	}
 
@@ -64,6 +75,41 @@ describe("SentientSystems_NoteMoveCancelled", function()
 		assert.same({
 			{ turn = 85, kind = "moveCancelled", text = "Unit 5 (UNIT_ROCK_BAND) at (1, 1) can't reach (9, 17), so its move was cancelled. Give it new orders." },
 		}, env.SentientSystems_GetEventMessages(0))
+	end)
+end)
+
+describe("SentientSystems_NoteVillageReward", function()
+	-- Returns the messages kept for the rewards with the sub-type names.
+	local function Rewards(unitID, ...)
+		local env = Load()
+
+		for _, name in ipairs({ ... }) do
+			env.SentientSystems_NoteVillageReward(0, unitID, env.DB.MakeHash(name))
+		end
+
+		local texts = {}
+
+		for _, message in ipairs(env.SentientSystems_GetEventMessages(0)) do
+			assert.equal("village", message.kind)
+			texts[#texts + 1] = message.text
+		end
+
+		return texts
+	end
+
+	it("names the tile and the kind of reward, with the game's text when it has some", function()
+		assert.same({
+			"A tribal village at (1, 1) gave small gold.",
+			"A tribal village at (1, 1) gave grant scout. You are granted a recon unit.",
+		}, Rewards(5, "GOODYHUT_SMALL_GOLD", "GOODYHUT_GRANT_SCOUT"))
+	end)
+
+	it("names a meteor site", function()
+		assert.same({ "A meteor site at (1, 1) gave meteor grant goodies." }, Rewards(5, "METEOR_GRANT_GOODIES"))
+	end)
+
+	it("leaves out the tile when the unit is gone, and says when it doesn't know the reward", function()
+		assert.same({ "A tribal village gave a reward the core mod doesn't know." }, Rewards(9, "GOODYHUT_UNKNOWN"))
 	end)
 end)
 

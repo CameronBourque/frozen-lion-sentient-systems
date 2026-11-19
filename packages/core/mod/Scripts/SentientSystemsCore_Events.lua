@@ -1,6 +1,6 @@
 -- What a popup that the core mod closes would have told the player, kept for
--- the agent's next turn, and the moves the core mod cancelled. See
--- docs/design/core/mod/state.md.
+-- the agent's next turn, the rewards of tribal villages, and the moves the core
+-- mod cancelled. See docs/design/core/mod/state.md.
 
 include("SentientSystemsCore_Common")
 SentientSystems_Include("SentientSystemsCore_Text")
@@ -66,6 +66,41 @@ function SentientSystems_NoteMoveCancelled(playerID, unit, x, y)
 	local text = string.format("Unit %d (%s) at (%d, %d) can't reach (%d, %d), so its move was cancelled. Give it new orders.", unit:GetID(), type, unit:GetX(), unit:GetY(), x, y)
 
 	AddEventMessage(playerID, "moveCancelled", text)
+end
+
+-- Returns the reward sub-type row whose name hashes to the hash, or nil.
+local function FindVillageReward(hash)
+	for row in GameInfo.GoodyHutSubTypes() do
+		if DB.MakeHash(row.SubTypeGoodyHut) == hash then
+			return row
+		end
+	end
+
+	return nil
+end
+
+-- Keeps the reward of a tribal village or a meteor site that the player's
+-- unit entered. The game shows it as floating text that no UI script builds,
+-- and most rewards have no text, so the message names the reward's sub-type in
+-- words, with its text when it has some. The amounts scale with the game's
+-- speed and turn, so the state shows them instead. See
+-- docs/findings/state/village-rewards.md.
+function SentientSystems_NoteVillageReward(playerID, unitID, subTypeHash)
+	local row = FindVillageReward(subTypeHash)
+	local unit = UnitManager.GetUnit(playerID, unitID)
+	local name = row and row.SubTypeGoodyHut or ""
+	local source = name:find("^METEOR_") and "A meteor site" or "A tribal village"
+	local place = unit and string.format(" at (%d, %d)", unit:GetX(), unit:GetY()) or ""
+	local reward = row and name:gsub("^GOODYHUT_", ""):gsub("_", " "):lower() or "a reward the core mod doesn't know"
+	local text = source .. place .. " gave " .. reward .. "."
+	-- Most descriptions have a key with empty text, or no key.
+	local description = row and row.Description and Locale.HasTextKey(row.Description) and SentientSystems_LookupText(row.Description) or ""
+
+	if description ~= "" then
+		text = text .. " " .. description
+	end
+
+	AddEventMessage(playerID, "village", text)
 end
 
 -- Keeps the result of a rock band's concert, as RockBandPopup.lua shows it.

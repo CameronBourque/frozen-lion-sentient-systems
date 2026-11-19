@@ -8,6 +8,8 @@ The game calls the move action wraps, with the Lua state each runs in and where 
 
 ## Questions
 
+None open.
+
 ## What we know now
 
 ### Moving a unit

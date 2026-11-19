@@ -24,4 +24,5 @@ The game calls the state serializer uses, and what a player can know about each 
 | [eras.md](eras.md) | The calls the era section of the state uses, as the Era Progress panel shows them |
 | [scoreboard.md](scoreboard.md) | The calls the scoreboard in the state uses, as the Score tab of World Rankings and the leader panel show them |
 | [victories.md](victories.md) | The calls the victories in the state use, as World Rankings shows each victory's progress |
+| [village-rewards.md](village-rewards.md) | The event that reports a tribal village's reward, and the text the game has for each reward |
 | [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
