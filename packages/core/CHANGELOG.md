@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.2](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.1...core-v0.24.2) (2026-11-19)
+
+
+### Bug Fixes
+
+* **core:** say when to retry a move with no route ([#110](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/110)) ([1ff8a7f](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/1ff8a7f05dc4a29bc968b0abc07027dd389062a8))
+
 ## [0.24.1](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.0...core-v0.24.1) (2026-11-19)
 
 
