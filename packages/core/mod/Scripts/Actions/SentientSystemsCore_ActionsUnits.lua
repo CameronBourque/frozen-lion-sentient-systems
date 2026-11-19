@@ -46,10 +46,14 @@ local function GetMoveFailure(playerID, unit, x, y)
 	end
 
 	local index = Map.GetPlot(x, y):GetIndex()
-	local plots = UnitManager.GetMoveToPathEx(unit, index).plots
+	-- Right after an action such as founding a city, the game sometimes returns
+	-- no path, or nothing at all, for a tile it can reach. See
+	-- docs/findings/actions/move-unit.md.
+	local path = UnitManager.GetMoveToPathEx(unit, index)
+	local plots = path and path.plots or {}
 
 	if plots[#plots] ~= index then
-		return "The unit has no route to that tile."
+		return "The unit has no route to that tile. If an action just changed the map, such as founding a city, the game may still be updating, so try again."
 	end
 
 	return nil

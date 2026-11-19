@@ -87,10 +87,19 @@ describe("SentientSystems_MoveUnit", function()
 		assert.equal("{\"ok\":true}", Load(SCOUT, { { 11, 10 } }).SentientSystems_MoveUnit(0, SCOUT.id, 11, 10))
 	end)
 
+	local NO_ROUTE = "The unit has no route to that tile. If an action just changed the map, such as founding a city, the game may still be updating, so try again."
+
 	it("fails for a tile with no route", function()
 		local env = Load(SCOUT)
 
-		assert.equal(Failed("The unit has no route to that tile."), env.SentientSystems_MoveUnit(0, SCOUT.id, 12, 10))
+		assert.equal(Failed(NO_ROUTE), env.SentientSystems_MoveUnit(0, SCOUT.id, 12, 10))
+		assert.same({}, env.requests)
+	end)
+
+	it("fails with no route when the game returns no path at all", function()
+		local env = Load(With(SCOUT, { noPath = true }))
+
+		assert.equal(Failed(NO_ROUTE), env.SentientSystems_MoveUnit(0, SCOUT.id, 11, 10))
 		assert.same({}, env.requests)
 	end)
 

@@ -12,7 +12,9 @@ Pass the gate: Claude Code plays 10 turns of a single-player game through the MC
    The first run, from the setup prompt on turn 1 to turn 11, needs these PRs:
 
    1. **End turn after a cancel.** When a queued move stops short, the game cancels the end of the turn and starts it again. `end_turn` then refuses every call as a turn already ended. Clear the request when the turn starts. Commit: `fix(core): allow end turn after the game cancels it`.
-   2. **River crossing.** Fix the refused move in [move-river-reason.md](../../tech-debt/move-river-reason.md), then delete that debt file. Commit: `fix(core): allow moves that start with a river crossing`.
+   2. **No route right after founding a city.** On turn 1, a move sent right after founding the capital was refused as having no route. For a short time the game sometimes returns no path for a tile it can reach.
+
+      Say in the reason to try again, and delete the river debt that this explains. Commit: `fix(core): say when to retry a move with no route`.
    3. **Moves into unrevealed tiles.** Check whether a move to an unrevealed ocean tile returns `{"ok":true}`, and whether the game drops the path once the tile is revealed. Record it in `docs/findings/actions/move-unit.md`.
 
       If so, say it in the `move_unit` description. Commit: `fix(core): say that moves into unrevealed tiles can stop`.
