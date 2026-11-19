@@ -7,7 +7,7 @@ This debt blocks no phase or step. Pick it up when the [Claude Code gate](../roa
 ## Now
 
 - `sendAction` in `packages/core/bridge/src/actions/actions.ts` reads `ACTION_RESULT`, which is `{ ok: true }` or `{ ok: false, reason }`.
-- Task 5 of the [MCP server](../roadmap/phase-1/mcp-server.md) step makes a success return "The game took the request." An ok result means the game took the request, as the comments in `src/actions/` say, and a move may finish after the call returns ([move-unit.md](../findings/actions/move-unit.md)).
+- `registerAction` in `packages/core/bridge/src/mcp/action.ts` makes a success return "The game took the request." An ok result means the game took the request, as the comments in `src/actions/` say, and a move may finish after the call returns ([move-unit.md](../findings/actions/move-unit.md)).
 - To see a unit's new position, a city's production, or the next blocker, the model calls `get_state`, which was 247,075 to 282,928 bytes in the [measured game](../design/testing.md#state-size).
 
 ## Proposal

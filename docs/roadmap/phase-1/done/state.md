@@ -67,5 +67,5 @@ It added three layers to the tiles: the tourism, visiting tourists, sources, and
 - The fields are under **State serializer** in [design/core/mod/state.md](../../../design/core/mod/state.md), and the shared split is in `packages/core/mod/Scripts/SentientSystemsCore_Text.lua`.
 - The calls are in [state/great-works.md](../../../findings/state/great-works.md), [state/tourism.md](../../../findings/state/tourism.md), [state/appeal.md](../../../findings/state/appeal.md), and [state/continents.md](../../../findings/state/continents.md).
 - The step added a `greatWorks` and a `continents` section. The [core README](../../../../packages/core/README.md#parts-of-a-state-section) lists the parts of a section.
-- The [MCP server](../mcp-server.md) step's `get_great_work_moves` tool calls `SentientSystems_GetGreatWorkMoves`.
+- The [MCP server](mcp-server.md#mcp-server) step's `get_great_work_moves` tool calls `SentientSystems_GetGreatWorkMoves`.
 - Auto theming wasn't checked, because it needs a game played as a civilization with that trait. See [state/great-works.md](../../../findings/state/great-works.md).
