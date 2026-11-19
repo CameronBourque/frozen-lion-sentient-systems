@@ -30,6 +30,9 @@ These conventions come from `scripts/check-docs/`, the first code in the repo. E
 - **Keep logic apart from input and output.** Functions take data and return results, so tests can pass in data without files or a network.
 - **Put rules in tables.** When code applies a list of similar rules, write each rule as one entry with a name, an example, and its logic. Then loop over the table.
 - **Name the parts of a long regex.** Build it from named strings, and test it with examples that it matches.
+- **Write the character sets of a Lua pattern from `SENTIENTSYSTEMS_CHARS`.** In the mods' Lua, a pattern never uses a class such as `%a` or `%s`. The game matches the classes by the Windows code page, which splits UTF-8 text, as [lua/patterns.md](../findings/lua/patterns.md) says.
+
+  The sets live in `Scripts/SentientSystemsCore_Common.lua`. Add a set there, even one that only one file uses.
 - **Split a line only when it helps.** Break up a line that does several steps. Keep a short chain that reads top to bottom, and comment it.
 
 ## Comments
@@ -70,6 +73,7 @@ The bridge's TypeScript setup. Why each choice was made is in [design/core/toolc
 - `npm run lint` runs ESLint with the rules in `eslint.config.js`. It checks tabs, trailing spaces, and blank lines: one after a run of definitions, one before and after each block, and one before `return`.
 
   It also runs `scripts/lua-comments/`, which fails on a full-line Lua comment over 80 columns, counting a tab as 4 and a character as 1. ESLint can't read Lua, and the CI `lint` job has no Lua tool.
+- It also runs `scripts/lua-patterns/`, which fails on a class such as `%a` in a pattern in the mods' Lua, outside their tests. It reads a string as a pattern when its line calls `find`, `match`, `gmatch`, or `gsub`, or sets a name with `pattern` in it.
 - Lint also checks these [comment rules](#comments), in Lua and in TypeScript, from the shared code in `scripts/comment-rules/`. A broken rule fails the build.
   - A file header over three lines. The header is the first comment before any code, up to the first blank line.
   - A comment block of two or more lines with no code on the line after it. A block sits directly above the code it describes, so a blank line after it fails, and so does a header that goes on in a second block. A one-line comment can stand alone.
