@@ -33,17 +33,17 @@ Expose the state, the action API, and the lookup as MCP tools. Every action tool
 11. **Governor tools.** Add `appoint_governor`, `promote_governor`, and `assign_governor`. Commit: `feat(core): add the governor action tools`.
 12. **Great people and great work tools.** Add `recruit_great_person`, which also passes or patronizes, `move_great_work`, and `choose_artifact`. `move_great_work` takes the `cityID`, `building`, and `slot` of a move from `get_great_work_moves`.
 
-   Commit: `feat(core): add the great people and great work action tools`.
+    Commit: `feat(core): add the great people and great work action tools`.
 13. **Trade route and envoy tools.** Add `start_trade_route` and `send_envoys`. Commit: `feat(core): add the trade route and envoy action tools`.
 14. **Espionage tools.** Add `spy_mission`, `spy_travel`, and `choose_escape_route`. Commit: `feat(core): add the espionage action tools`.
 15. **World Congress tools.** Add `vote_in_congress` and `propose_in_congress`. Commit: `feat(core): add the World Congress action tools`.
 16. **Diplomacy tools.** Add `respond_to_deal`, `respond_to_session`, `declare_war`, and `propose_peace`. Commit: `feat(core): add the diplomacy action tools`.
 17. **`reason` field.** Make `reason` a required string on every action tool, and log it at the decisions level with the call.
 
-   Add it in `registerAction`, so [optional-reason.md](../../tech-debt/optional-reason.md) can make it optional in one place. Test that a call without it fails. Commit: `feat(core): require a reason on every action`.
+    Add it in `registerAction`, so [optional-reason.md](../../tech-debt/optional-reason.md) can make it optional in one place. Test that a call without it fails. Commit: `feat(core): require a reason on every action`.
 18. **Claude Code.** Add `.mcp.json` at the repo root, which points Claude Code at the bridge's MCP URL.
 
-   Start the bridge with `npm run mcp` before you open Claude Code. Live tests in Claude Code then call the same tools as the agent loop, in place of probe scripts. Commit: `chore(core): connect Claude Code to the MCP server`.
+    Start the bridge with `npm run mcp` before you open Claude Code. Live tests in Claude Code then call the same tools as the agent loop, in place of probe scripts. Commit: `chore(core): connect Claude Code to the MCP server`.
 19. **Remove the gate script.** Delete `packages/core/bridge/scripts/gate.ts` and the `gate` script in the bridge's `package.json`. Commit: `chore(core): remove the phase 0 gate script`.
 
 ## Done when
