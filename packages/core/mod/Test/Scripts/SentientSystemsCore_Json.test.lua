@@ -52,6 +52,17 @@ describe("SentientSystems_EncodeJson", function()
 		assert.equal("\"Kraków\"", Encode("Kraków"))
 	end)
 
+	-- The game's Lua counts these bytes as control characters, and each is the
+	-- last byte of a character such as ā or í.
+	it("passes UTF-8 text through whose bytes the game's locale calls control characters", function()
+		assert.equal("\"Kamāl ud-Dīn Behzād, Bogotá\"", Encode("Kamāl ud-Dīn Behzād, Bogotá"))
+		assert.equal("\"\129\141\143\144\157\173\"", Encode("\129\141\143\144\157\173"))
+	end)
+
+	it("escapes byte 0", function()
+		assert.equal("\"a\\u0000b\"", Encode("a\0b"))
+	end)
+
 	it("encodes a table with keys 1 to n as a list", function()
 		assert.equal("[1,\"two\",true]", Encode({ 1, "two", true }))
 	end)
