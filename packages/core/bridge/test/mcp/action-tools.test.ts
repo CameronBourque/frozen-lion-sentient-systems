@@ -120,3 +120,25 @@ describe("the strike and city fate tools", () => {
 		expect(await callTool(mcp, "decide_city", { cityID: 131072, directive: "SELL" })).toMatchObject({ isError: true });
 	});
 });
+
+describe("the research and government tools", () => {
+	test("set_research and set_civic replace the queue, or add to it with queue", async () => {
+		answerStash(game, {
+			"SentientSystems_SetResearch(3, \"TECH_MINING\")": OK,
+			"SentientSystems_SetResearch(3, \"TECH_MINING\", true)": OK,
+			"SentientSystems_SetCivic(3, \"CIVIC_MYSTICISM\")": OK,
+			"SentientSystems_SetCivic(3, \"CIVIC_MYSTICISM\", true)": OK,
+		});
+
+		expect(await callTool(mcp, "set_research", { type: "TECH_MINING" })).toEqual(DONE);
+		expect(await callTool(mcp, "set_research", { type: "TECH_MINING", queue: true })).toEqual(DONE);
+		expect(await callTool(mcp, "set_civic", { type: "CIVIC_MYSTICISM" })).toEqual(DONE);
+		expect(await callTool(mcp, "set_civic", { type: "CIVIC_MYSTICISM", queue: true })).toEqual(DONE);
+	});
+
+	test("set_government passes the government", async () => {
+		answerStash(game, { "SentientSystems_SetGovernment(3, \"GOVERNMENT_AUTOCRACY\")": OK });
+
+		expect(await callTool(mcp, "set_government", { government: "GOVERNMENT_AUTOCRACY" })).toEqual(DONE);
+	});
+});
