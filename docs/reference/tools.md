@@ -106,6 +106,8 @@ Move one of your units to a tile at x and y, by the game's own path, over as man
 
 The game may finish a move after the call returns, so read get_state for the unit's new position.
 
+A path through unrevealed tiles assumes they can be crossed. If a revealed tile blocks the way, the move is cancelled, the events say so, and the unit needs new orders.
+
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `reason` | string | yes | One sentence, in your own voice, on why you take this action. The narrator panel shows it, and the log keeps it. |

@@ -15,9 +15,9 @@ Pass the gate: Claude Code plays 10 turns of a single-player game through the MC
    2. **No route right after founding a city.** On turn 1, a move sent right after founding the capital was refused as having no route. For a short time the game sometimes returns no path for a tile it can reach.
 
       Say in the reason to try again, and delete the river debt that this explains. Commit: `fix(core): say when to retry a move with no route`.
-   3. **Moves into unrevealed tiles.** Check whether a move to an unrevealed ocean tile returns `{"ok":true}`, and whether the game drops the path once the tile is revealed. Record it in `docs/findings/actions/move-unit.md`.
+   3. **Moves into unrevealed tiles.** A path through unrevealed tiles assumes they can be crossed. Once a revealed tile blocks it, the game keeps the move, and the unit stands still without needing orders.
 
-      If so, say it in the `move_unit` description. Commit: `fix(core): say that moves into unrevealed tiles can stop`.
+      Cancel such a move when the unit's move ends and when the turn starts, add an event, show each unit's destination, and say it in the `move_unit` description. Commit: `fix(core): cancel moves whose destination can't be reached`.
    4. **Broken characters in names.** The state showed the great artist Kamāl ud-Dīn Behzād with a replacement character for each `ā`, while `ī` came through. Find where the text breaks, and fix it. Commit: `fix(core): keep the characters of localized text`.
    5. **Tribal village rewards.** The state's `events` holds no tribal village reward, so the player can't tell what a village gave. Add the reward to `events`. Commit: `feat(core): add tribal village rewards to the events`.
 

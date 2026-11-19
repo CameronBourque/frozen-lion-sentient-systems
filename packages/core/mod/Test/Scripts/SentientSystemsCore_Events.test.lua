@@ -55,6 +55,18 @@ describe("the unit capture events", function()
 	end)
 end)
 
+describe("SentientSystems_NoteMoveCancelled", function()
+	it("keeps the unit, where it stands, and the destination it can't reach", function()
+		local env = Load()
+
+		env.SentientSystems_NoteMoveCancelled(0, env.Players[0]:GetUnits():FindID(5), 9, 17)
+
+		assert.same({
+			{ turn = 85, kind = "moveCancelled", text = "Unit 5 (UNIT_ROCK_BAND) at (1, 1) can't reach (9, 17), so its move was cancelled. Give it new orders." },
+		}, env.SentientSystems_GetEventMessages(0))
+	end)
+end)
+
 describe("SentientSystems_NoteConcert", function()
 	it("keeps the result, tourism, albums, and the promotion and level the band gained", function()
 		local env = Load()

@@ -51,12 +51,14 @@ local function IsAgentID(playerID)
 end
 
 -- Prints the turn signal, "[SENTIENTSYSTEMS] AGENT_TURN <playerID>", when an
--- agent player's turn starts, and forgets the end turn request. isFirstTime is
--- false when the event fires again for a turn that already started, as it does
--- when the game cancels the end of the turn. Then the line ends with "again".
+-- agent player's turn starts. It also forgets the end turn request, and
+-- cancels the moves that no path reaches. isFirstTime is false when the event
+-- fires again for a turn that already started, as it does when the game
+-- cancels the end of the turn. Then the line ends with "again".
 local function OnPlayerTurnActivated(playerID, isFirstTime)
 	if IsAgentID(playerID) then
 		SentientSystems_ForgetEndTurn()
+		SentientSystems_CancelDeadMoves(playerID)
 
 		if isFirstTime == false then
 			SentientSystems_Print("AGENT_TURN", playerID, "again")
@@ -67,6 +69,14 @@ local function OnPlayerTurnActivated(playerID, isFirstTime)
 end
 
 Events.PlayerTurnActivated.Add(SentientSystems_CatchErrors("OnPlayerTurnActivated", OnPlayerTurnActivated))
+
+local function OnUnitMoveComplete(playerID, unitID)
+	if IsAgentID(playerID) then
+		SentientSystems_CancelDeadMove(playerID, unitID)
+	end
+end
+
+Events.UnitMoveComplete.Add(SentientSystems_CatchErrors("OnUnitMoveComplete", OnUnitMoveComplete))
 
 -- Closes a session that offers an agent player only a goodbye, and remembers
 -- the statement of any other. The AI turns wait while a session is open, and

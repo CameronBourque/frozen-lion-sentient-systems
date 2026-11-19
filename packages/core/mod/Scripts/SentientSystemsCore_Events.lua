@@ -1,5 +1,5 @@
 -- What a popup that the core mod closes would have told the player, kept for
--- the agent's next turn: units captured and rock band concerts. See
+-- the agent's next turn, and the moves the core mod cancelled. See
 -- docs/design/core/mod/state.md.
 
 include("SentientSystemsCore_Common")
@@ -57,6 +57,15 @@ end
 -- Keeps the message of a unit the player captured from another player.
 function SentientSystems_NoteUnitCaptured(playerID, ownerID)
 	AddEventMessage(playerID, "unitCaptured", SentientSystems_LookupText("LOC_CAPTURE_UNIT", GetCivShortName(ownerID)))
+end
+
+-- Keeps the move of a unit that the core mod cancelled, because no path
+-- reaches its destination at x, y any more.
+function SentientSystems_NoteMoveCancelled(playerID, unit, x, y)
+	local type = GameInfo.Units[unit:GetType()].UnitType
+	local text = string.format("Unit %d (%s) at (%d, %d) can't reach (%d, %d), so its move was cancelled. Give it new orders.", unit:GetID(), type, unit:GetX(), unit:GetY(), x, y)
+
+	AddEventMessage(playerID, "moveCancelled", text)
 end
 
 -- Keeps the result of a rock band's concert, as RockBandPopup.lua shows it.

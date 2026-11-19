@@ -19,6 +19,7 @@ export const UNIT = z.object({
 	activity: z.enum(["awake", "sleep", "skip", "sentry", "heal", "intercept", "operation"]).optional().describe(
 		"What the unit is doing. Skip is skip turn. Sentry is fortified or on alert, and fortified says which. Operation is a fortify that hasn't taken yet, a trader on its route, or a spy on a mission. Left out for a unit with no activity.",
 	),
+	destination: POSITION.optional().describe("The tile of the unit's queued move, which it keeps moving to on later turns. Left out when it has none."),
 	fortified: z.literal(true).optional().describe("Left out unless the unit is not awake and has fortify turns, as the unit list marks it."),
 	attacksLeft: z.number().optional().describe("Left out for a unit that can't attack."),
 	buildCharges: z.number().optional().describe("The builder charges left. Left out at 0."),

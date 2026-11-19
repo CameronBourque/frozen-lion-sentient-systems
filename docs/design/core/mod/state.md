@@ -57,7 +57,7 @@ A feature that isn't in the ruleset, such as loyalty without the Rise and Fall e
 
 `SentientSystems_GetState(playerID)` in `Scripts/State/SentientSystemsCore_State.lua` returns the view as JSON, and the UI script loads it with `include`. The bridge reads it through the stash.
 
-The events come from `Scripts/SentientSystemsCore_Events.lua`, which the UI script fills from `Events.UnitCaptured` and `Events.PostTourismBomb`.
+The events come from `Scripts/SentientSystemsCore_Events.lua`, which the UI script fills from `Events.UnitCaptured` and `Events.PostTourismBomb`. The move actions add the moves they cancel, as [units.md](actions/units.md#moves) says.
 
 Each section of the view has its own file in `Scripts/State/`, such as `SentientSystemsCore_StateCities.lua`, which defines one global, such as `SentientSystems_GetCityStates(player)`. The state file loads each one and puts the sections together.
 

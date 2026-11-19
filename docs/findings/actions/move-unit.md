@@ -1,6 +1,6 @@
 # Moving a unit
 
-Status: open. Moving a unit, checking a move, checking a route, and the war dialog are confirmed in a running game. The civ6-mcp move path is not.
+Status: open. Moving a unit, checking a move, and the war dialog are confirmed in a running game. The civ6-mcp move path is not.
 
 The game calls the move action wraps, with the Lua state each runs in and where we found each call.
 
@@ -44,6 +44,8 @@ civ6-mcp moves a unit with a shorter path than the UI, in [`build_move_unit`](ht
 
 The game's Lua also uses these calls: `CanStartCommand` and `RequestCommand` for unit commands, `GetOperationTargets`, `GetCommandTargets`, `GetMoveToPathEx`, and `FinishMoves`. Confirmed in files, not tested.
 
+`UnitManager.GetUnit(playerID, unitID)` finds the unit, and a unit ID is only unique within a player: players 0 and 1 each had a unit 196608. Confirmed on Windows on 2026-11-04.
+
 ### Checking a move
 
 `CanStartOperation` for `MOVE_TO` doesn't check the target tile. For a land unit with moves left, it returned `true` for an adjacent tile outside the unit's reachable tiles, and for a deep-water tile 3 tiles away.
@@ -68,29 +70,9 @@ See these civ6-mcp functions:
 
 Unconfirmed, used by civ6-mcp.
 
-### Checking a route
+### Routes
 
-`UnitManager.GetMoveToPathEx(unit, plotIndex)` returns the route the game's cursor draws, as `WorldInput.lua` reads it. Confirmed in files.
-
-The table has `plots`, the plot indexes from the first step to the target, `turns`, the turn each step is reached, and `obstacles`, `exitPortals`, and `entrancePortals`.
-
-It is the only check we found that covers a move over more than one turn. Confirmed on Windows on 2026-11-04, with a scout on turn 55:
-
-- For a reachable tile the last plot is the target. A tile 9 away gave 10 plots and 4 turns.
-- For a tile with no route, such as an impassable mountain, `plots` is empty.
-- For the unit's own tile, `plots` is empty.
-- A scout that could embark got a route to an ocean tile, so the route follows what the unit can enter.
-- A path that crosses a river, or ends on a hill or forest that costs more than the moves left, still ends on the target. Its `turns` give the next turn for that step, and the game queues the move. Confirmed on Windows on 2026-11-19.
-
-Right after a city is founded, the call sometimes returns an empty `plots`, or nothing at all, for a tile the unit can reach. A few seconds later the path is back.
-
-It happened in 2 of 5 runs from the same turn 1 state, and we found no setting that triggers it: window focus, a fresh boot, and a reload made no difference.
-
-In the Claude Code gate run, the agent founded its capital and moved its warrior at once, and the move was refused. `CanStartOperation` passes a move to a mountain too, so it doesn't mark the tiles with no route. Confirmed on Windows on 2026-11-19.
-
-A `MOVE_TO` request for a far tile starts at once and uses the moves left. A scout with 3 moves, asked to move to a tile 2 away, moved one tile and stopped with 0 moves. A unit with 0 moves left is refused by our own check, because the request would only queue. Confirmed on Windows on 2026-11-04.
-
-`UnitManager.GetUnit(playerID, unitID)` finds the unit, and a unit ID is only unique within a player: players 0 and 1 each had a unit 196608. Confirmed on Windows on 2026-11-04.
+The route check and moves through unrevealed tiles are in [move-routes.md](move-routes.md).
 
 ### The war dialog
 
@@ -112,10 +94,7 @@ Run each step through the tuner, and record the Lua state you ran it in. Steps 1
    - print the result of `CanStartOperation`, then call `RequestOperation`,
    - read the unit's position again on the next call, because the move may complete asynchronously.
 2. **Negative test.** Check a move into deep water for a land unit. Record what `CanStartOperation` returns, with and without `true` as a fifth argument, and whether the tile is in `GetReachableMovement`.
-3. **Check a route.** Call `UnitManager.GetMoveToPathEx(unit, plotIndex)` for a tile 9 away, an impassable tile, the unit's own tile, and a hill across a river. Repeat it in the call after a `FOUND_CITY` request.
-
-   Compare the last plot with the target, then call `MoveUnit` for each and read the unit's position and moves.
-4. **Check the war test.** Call `CombatManager.IsAttackChangeWarState` for tiles in the borders of a player at peace.
+3. **Check the war test.** Call `CombatManager.IsAttackChangeWarState` for tiles in the borders of a player at peace.
 
 ## Results
 
@@ -128,12 +107,6 @@ The bridge ran these steps in a single-player game, with one city and one unit.
 
   In `GameCore_Tuner`, `FindID` read the unit at (41, 49) with 2 moves left, 5 times over 5 s after each request. Run in `SentientSystemsCore_UI`, then `InGame`, on 2026-10-23.
 - **`CanStartOperation`, then `RequestOperation`, for (42, 49), adjacent and reachable.** The check passed. The unit moved on the map. In `GameCore_Tuner`, `FindID` read it at (42, 49) with 1 move left, 1 s after the request. Run in `SentientSystemsCore_UI` on 2026-10-23.
-- **`GetMoveToPathEx` for a reachable tile 9 away, and for a mountain.** 10 plots ending at the target with 4 turns, and an empty `plots`. Run in `SentientSystemsCore_UI` on 2026-11-04.
-- **`GetMoveToPathEx` for a warrior with 2 moves, to a grass hill 2 tiles away across a river.** 3 plots ending at the target, with turns 1, 1, 2. With 1 move left, one tile closer: 2 plots ending at the target, with turns 1, 2, and the move queued. Run in `SentientSystemsCore_UI` on 2026-11-19.
-- **The same path in the next call after a `FOUND_CITY` request, on turn 1.** Run 1: empty `plots`, with the city not yet counted. Run 2: `GetReachableMovement` returned `nil`.
-
-  Runs 3 to 5, focused, unfocused, and after a fresh boot: the full path every 50 ms, and the city counted within 100 ms. Run in `SentientSystemsCore_UI` on 2026-11-19.
 - **`IsAttackChangeWarState` for a tile in the borders of a player at peace, and for the tiles around it.** `{1}`, and empty lists. Run in `SentientSystemsCore_UI` on 2026-11-04.
-- **`SentientSystems_MoveUnit` for a tile 2 away.** `ok`. The scout moved one tile and stopped with 0 moves. Run in `SentientSystemsCore_UI` on 2026-11-04.
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves on 2026-10-23, routes and the war test on 2026-11-04, and routes after founding a city on 2026-11-19.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: moves on 2026-10-23, and the war test on 2026-11-04.
