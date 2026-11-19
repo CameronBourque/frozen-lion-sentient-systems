@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Logger } from "../../src/log.js";
 import { MCP_HOST, type McpHttp, mcpUrl, startMcpHttp } from "../../src/mcp/http.js";
 import { SERVER_NAME } from "../../src/mcp/server.js";
-import type { ToolContext } from "../../src/mcp/state-tools.js";
+import type { ToolContext } from "../../src/mcp/context.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 
 const logger = new Logger("debug");

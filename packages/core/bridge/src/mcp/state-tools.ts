@@ -12,14 +12,8 @@ import { readGreatWorkMoves } from "../state/great-work-moves.js";
 import { readState } from "../state/state.js";
 import { readCivicTree, readTechTree } from "../trees/research.js";
 import type { TunerClient } from "../tuner/client.js";
-import type { PlayerSource } from "./player.js";
+import type { ToolContext } from "./context.js";
 import { readForPlayer, readFromGame } from "./results.js";
-
-// What a server's tools need: the game, and the player they act for.
-export interface ToolContext {
-	client: TunerClient;
-	player: PlayerSource;
-}
 
 const GET_STATE = `Read your empire and everything you can see, as JSON. Call it at the start of each turn and after actions that change the map.
 

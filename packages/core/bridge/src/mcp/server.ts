@@ -4,7 +4,10 @@
 
 import { McpServer } from "@modelcontextprotocol/server";
 import packageJson from "../../package.json" with { type: "json" };
-import { registerStateTools, type ToolContext } from "./state-tools.js";
+import type { ToolContext } from "./context.js";
+import { registerStateTools } from "./state-tools.js";
+import { registerTurnTools } from "./turn-tools.js";
+import { registerUnitTools } from "./unit-tools.js";
 
 export const SERVER_NAME = "sentient-systems";
 
@@ -14,6 +17,8 @@ export function createServer(context: ToolContext): McpServer {
 	const server = new McpServer({ name: SERVER_NAME, version: packageJson.version });
 
 	registerStateTools(server, context);
+	registerUnitTools(server, context);
+	registerTurnTools(server, context);
 
 	return server;
 }

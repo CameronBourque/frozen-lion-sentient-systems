@@ -8,7 +8,7 @@ import { localhostHostValidation, localhostOriginValidation, toNodeHandler } fro
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import type { Logger } from "../log.js";
 import { createServer } from "./server.js";
-import type { ToolContext } from "./state-tools.js";
+import type { ToolContext } from "./context.js";
 
 // Loopback only, so no other machine can call the tools.
 export const MCP_HOST = "127.0.0.1";

@@ -2,15 +2,13 @@
 // for the server's player, through an in-process client and the fake game.
 // The readers and their schemas have their own tests.
 
-import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import type { Client } from "@modelcontextprotocol/client";
 import { beforeEach, describe, expect, test } from "vitest";
-import type { PlayerSource } from "../../src/mcp/player.js";
 import { NOT_CONNECTED } from "../../src/mcp/results.js";
-import { createServer } from "../../src/mcp/server.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
+import { PLAYER_3, answerStash, callTool as call, connectTools } from "./tools.js";
 
-const PLAYER_3: PlayerSource = () => Promise.resolve({ ok: true, playerID: 3 });
 const TREE = { nodes: [], players: [{ player: 3, researched: 0 }] };
 
 let game: FakeGame;
@@ -20,52 +18,13 @@ beforeEach(async () => {
 	({ game, client } = await startGame());
 });
 
-// Connects an in-process client to a server for the player.
-async function connect(player = PLAYER_3, tuner = client): Promise<Client> {
-	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-	const mcp = new Client({ name: "test", version: "1.0.0" });
-
-	await createServer({ client: tuner, player }).connect(serverSide);
-	await mcp.connect(clientSide);
-
-	return mcp;
+function connect(player = PLAYER_3, tuner = client): Promise<Client> {
+	return connectTools(tuner, player);
 }
 
-// Answers the stash of each call in the table with its value as JSON. Other
-// Lua prints nothing.
 function answer(values: Record<string, unknown>): void {
-	let next: unknown;
-
-	game.onCommand = (_stateIndex, lua) => {
-		const call = /^SentientSystems_Stash\((.*)\)$/s.exec(lua)?.[1];
-
-		if (call !== undefined && call in values) {
-			next = values[call];
-
-			return { output: ["1"] };
-		}
-
-		return lua === "SentientSystems_PrintPiece(1)" ? { output: [JSON.stringify(next)] } : {};
-	};
+	answerStash(game, values);
 }
-
-// The tool's text, and whether it is an error.
-async function call(mcp: Client, name: string, args: Record<string, unknown> = {}): Promise<{ text: string; isError: boolean }> {
-	const result = await mcp.callTool({ name, arguments: args });
-	const [content] = result.content as { type: string; text: string }[];
-
-	return { text: content.text, isError: result.isError === true };
-}
-
-test("the server lists the nine tools, each with a description", async () => {
-	const { tools } = await (await connect()).listTools();
-
-	expect(tools.map((tool) => tool.name)).toEqual([
-		"get_state", "get_choices", "get_placement", "get_tech_tree", "get_civic_tree", "get_trade_routes", "get_great_work_moves",
-		"search_civilopedia", "read_civilopedia",
-	]);
-	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);
-});
 
 describe("the player tools", () => {
 	test("get_tech_tree and get_civic_tree return compact JSON for the server's player", async () => {

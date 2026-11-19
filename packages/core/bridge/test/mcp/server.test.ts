@@ -5,6 +5,7 @@ import { expect, test } from "vitest";
 import packageJson from "../../package.json" with { type: "json" };
 import { SERVER_NAME, createServer } from "../../src/mcp/server.js";
 import type { TunerClient } from "../../src/tuner/client.js";
+import { connectTools } from "./tools.js";
 
 test("an in-process client connects and reads the bridge's name and version", async () => {
 	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
@@ -18,4 +19,16 @@ test("an in-process client connects and reads the bridge's name and version", as
 
 	await client.close();
 	await server.close();
+});
+
+test("the server lists every tool, each with a description", async () => {
+	const { tools } = await (await connectTools({} as TunerClient)).listTools();
+
+	expect(tools.map((tool) => tool.name)).toEqual([
+		"get_state", "get_choices", "get_placement", "get_tech_tree", "get_civic_tree", "get_trade_routes", "get_great_work_moves",
+		"search_civilopedia", "read_civilopedia",
+		"move_unit", "unit_action",
+		"end_turn",
+	]);
+	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);
 });

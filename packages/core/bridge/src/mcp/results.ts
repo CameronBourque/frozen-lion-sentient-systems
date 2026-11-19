@@ -13,22 +13,36 @@ type ReadResult = StashResult<unknown> | { ok: false; error: string };
 // would never answer.
 export const NOT_CONNECTED = "The bridge isn't connected to the game. Load a game with the tuner on, then try again";
 
+export function textResult(text: string): CallToolResult {
+	return { content: [{ type: "text", text }] };
+}
+
+export function errorResult(text: string): CallToolResult {
+	return { ...textResult(text), isError: true };
+}
+
 export function toolResult(result: ReadResult): CallToolResult {
-	return result.ok
-		? { content: [{ type: "text", text: JSON.stringify(result.value) }] }
-		: { content: [{ type: "text", text: result.error }], isError: true };
+	return result.ok ? textResult(JSON.stringify(result.value)) : errorResult(result.error);
 }
 
 // Runs a read if the bridge is connected to the game.
 export async function readFromGame(client: TunerClient, read: () => Promise<ReadResult>): Promise<CallToolResult> {
-	return toolResult(client.isConnected ? await read() : { ok: false, error: NOT_CONNECTED });
+	return client.isConnected ? toolResult(await read()) : errorResult(NOT_CONNECTED);
 }
 
-// Runs a read for the server's player, or returns why there is no player.
-export function readForPlayer(client: TunerClient, player: PlayerSource, read: (playerID: number) => Promise<ReadResult>): Promise<CallToolResult> {
-	return readFromGame(client, async () => {
-		const found = await player();
+// Runs a tool for the server's player, or returns why it can't: the bridge
+// isn't connected, or there is no player.
+export async function forPlayer(client: TunerClient, player: PlayerSource, run: (playerID: number) => Promise<CallToolResult>): Promise<CallToolResult> {
+	if (!client.isConnected) {
+		return errorResult(NOT_CONNECTED);
+	}
 
-		return found.ok ? read(found.playerID) : found;
-	});
+	const found = await player();
+
+	return found.ok ? run(found.playerID) : errorResult(found.error);
+}
+
+// Runs a read for the server's player.
+export function readForPlayer(client: TunerClient, player: PlayerSource, read: (playerID: number) => Promise<ReadResult>): Promise<CallToolResult> {
+	return forPlayer(client, player, async (playerID) => toolResult(await read(playerID)));
 }
