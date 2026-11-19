@@ -133,7 +133,7 @@ describe("the turn event", function()
 		Fire("PlayerTurnActivated", 0, false)
 
 		assert.equal(1, forgot)
-		assert.same({ "[SENTIENTSYSTEMS] AGENT_TURN 0" }, env.printed)
+		assert.same({ "[SENTIENTSYSTEMS] AGENT_TURN 0 again" }, env.printed)
 	end)
 
 	it("prints nothing for an AI player's turn", function()

@@ -12,6 +12,8 @@ The tuner adds the state's name in front, so the bridge receives lines such as `
 
 The UI script listens for `Events.PlayerTurnActivated` and prints `AGENT_TURN <playerID>` when an agent player's turn starts. The tuner connection carries that line to the bridge.
 
+When the event's `isFirstTime` is false, the line is `AGENT_TURN <playerID> again`. The game fires the event again when it cancels the end of a turn, such as when a queued move stops short. The bridge logs that the turn started again. See [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-a-queued-move-that-stops-short).
+
 One function, `IsAgentPlayer`, decides which players are agent players. For now it picks the human players. When agents can play any slot, only that function changes.
 
 ## Resync

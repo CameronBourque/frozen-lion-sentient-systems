@@ -24,7 +24,16 @@ describe("stripState", () => {
 
 describe("describeEvent", () => {
 	test("names a turn by its player ID", () => {
-		expect(describeEvent({ type: "turn", playerId: 0 })).toEqual({ level: "info", event: "turn", msg: "Player 0's turn started", fields: { playerId: 0 } });
+		expect(describeEvent({ type: "turn", playerId: 0, again: false })).toEqual({ level: "info", event: "turn", msg: "Player 0's turn started", fields: { playerId: 0 } });
+	});
+
+	test("says when a turn starts again", () => {
+		expect(describeEvent({ type: "turn", playerId: 0, again: true })).toEqual({
+			level: "info",
+			event: "turn",
+			msg: "Player 0's turn started again, because the game cancelled its end",
+			fields: { playerId: 0, again: true },
+		});
 	});
 
 	test("names the core version", () => {
@@ -68,7 +77,11 @@ describe("parseLine", () => {
 	});
 
 	test("reads the player ID of a turn line", () => {
-		expect(parseLine("[SENTIENTSYSTEMS] AGENT_TURN 12")).toEqual({ result: "event", event: { type: "turn", playerId: 12 } });
+		expect(parseLine("[SENTIENTSYSTEMS] AGENT_TURN 12")).toEqual({ result: "event", event: { type: "turn", playerId: 12, again: false } });
+	});
+
+	test("reads a turn that starts again", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] AGENT_TURN 0 again")).toEqual({ result: "event", event: { type: "turn", playerId: 0, again: true } });
 	});
 
 	test.each(["0.1.0", "12.0.3", "1.0.0-beta.1"])("reads the version %s", (version) => {
@@ -175,10 +188,11 @@ describe("parseLine", () => {
 		{ name: "the tag alone", line: "[SENTIENTSYSTEMS]", reason: "The line has no kind" },
 		{ name: "the tag and a space", line: "[SENTIENTSYSTEMS] ", reason: "The line has no kind" },
 		{ name: "an unknown kind", line: "[SENTIENTSYSTEMS] STATE_READY", reason: "STATE_READY is not a known kind" },
-		{ name: "a turn with no player ID", line: "[SENTIENTSYSTEMS] AGENT_TURN", reason: "AGENT_TURN needs one player ID, and got \"\"" },
-		{ name: "a turn with nil", line: "[SENTIENTSYSTEMS] AGENT_TURN nil", reason: "AGENT_TURN needs one player ID, and got \"nil\"" },
-		{ name: "a negative player ID", line: "[SENTIENTSYSTEMS] AGENT_TURN -1", reason: "AGENT_TURN needs one player ID, and got \"-1\"" },
-		{ name: "two player IDs", line: "[SENTIENTSYSTEMS] AGENT_TURN 0 1", reason: "AGENT_TURN needs one player ID, and got \"0 1\"" },
+		{ name: "a turn with no player ID", line: "[SENTIENTSYSTEMS] AGENT_TURN", reason: "AGENT_TURN needs one player ID and an optional \"again\", and got \"\"" },
+		{ name: "a turn with nil", line: "[SENTIENTSYSTEMS] AGENT_TURN nil", reason: "AGENT_TURN needs one player ID and an optional \"again\", and got \"nil\"" },
+		{ name: "a negative player ID", line: "[SENTIENTSYSTEMS] AGENT_TURN -1", reason: "AGENT_TURN needs one player ID and an optional \"again\", and got \"-1\"" },
+		{ name: "a word other than again", line: "[SENTIENTSYSTEMS] AGENT_TURN 0 later", reason: "AGENT_TURN needs one player ID and an optional \"again\", and got \"0 later\"" },
+		{ name: "two player IDs", line: "[SENTIENTSYSTEMS] AGENT_TURN 0 1", reason: "AGENT_TURN needs one player ID and an optional \"again\", and got \"0 1\"" },
 		{ name: "a missing version", line: "[SENTIENTSYSTEMS] CORE_VERSION nil", reason: "CORE_VERSION needs one version, and got \"nil\"" },
 		{ name: "a version with two parts", line: "[SENTIENTSYSTEMS] CORE_VERSION 0.1", reason: "CORE_VERSION needs one version, and got \"0.1\"" },
 		{ name: "two versions", line: "[SENTIENTSYSTEMS] CORE_VERSION 0.1.0 0.2.0", reason: "CORE_VERSION needs one version, and got \"0.1.0 0.2.0\"" },
@@ -204,7 +218,7 @@ describe("readLine", () => {
 	test("logs and returns the event in a line with its state prefix", () => {
 		const print = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0", logger)).toEqual({ type: "turn", playerId: 0 });
+		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN 0", logger)).toEqual({ type: "turn", playerId: 0, again: false });
 		expect(print).toHaveBeenCalledWith(expect.stringMatching(/ {2}Player 0's turn started$/));
 	});
 
@@ -246,7 +260,7 @@ describe("readLine", () => {
 		const print = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 		expect(readLine("SentientSystemsCore_UI: [SENTIENTSYSTEMS] AGENT_TURN nil", logger)).toBeUndefined();
-		expect(print).toHaveBeenCalledWith(expect.stringMatching(/warning: AGENT_TURN needs one player ID, and got "nil": SentientSystemsCore_UI: \[SENTIENTSYSTEMS\] AGENT_TURN nil$/));
+		expect(print).toHaveBeenCalledWith(expect.stringMatching(/warning: AGENT_TURN needs one player ID and an optional "again", and got "nil": SentientSystemsCore_UI: \[SENTIENTSYSTEMS\] AGENT_TURN nil$/));
 	});
 
 	test("ignores an untagged line", () => {

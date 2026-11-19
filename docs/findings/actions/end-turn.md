@@ -85,6 +85,10 @@ The action had recorded the request, so it refused the next three calls as a tur
 
 The turn signal now clears the request. From the turn 5 save, the same end started the turn again 0.27 s later. A move east for the warrior and a second call then ended the turn, and turn 6 began with gold up from 25 to 31. Confirmed on Windows on 2026-11-19.
 
+`Events.PlayerTurnActivated` passes `isFirstTime` as false when it starts the cancelled turn again, and true for the next turn. The same replay printed `AGENT_TURN 0 again` 0.2 s after the end, then `AGENT_TURN 0` for turn 6.
+
+A load fires the event with `isFirstTime` true. In `Lua.log`, the event printed `AGENT_TURN 0` right after `GAME_READY 4`, and the resync printed it again. The bridge got only the resync's line, because the event fired during the socket reset. Confirmed on Windows on 2026-11-19.
+
 ## Method
 
 Run each step through the tuner, and record the Lua state you ran it in.
@@ -112,5 +116,6 @@ The bridge ran this step in a single-player game, with one city and one unit.
 | `FinishProgress()` on Lahore, building `BUILDING_RUHR_VALLEY`, with the core mod's button press | `GameCore_Tuner` | A lock, `WonderBuiltPopup_Shown`, then `WonderBuiltPopup_Closed` and the unlock, the context hidden, and `SELECTION` | 2026-11-15 |
 | `end_turn` on turn 5, with a warrior's queued move toward an ocean tile | `SentientSystemsCore_UI` | `{"ok":true}`, then `AGENT_TURN 0` 0.2 s later on turn 5. The next three calls failed with "You already ended turn 5." | 2026-11-19 |
 | The same end from the turn 5 save with the fix, then `move_unit` and `end_turn` | `SentientSystemsCore_UI` | The turn started again 0.27 s later. The second call ended it, and turn 6 began | 2026-11-19 |
+| A load of the turn 5 save, then the same end, `move_unit`, and `end_turn`, with the `isFirstTime` line | `SentientSystemsCore_UI` | In `Lua.log`, `AGENT_TURN 0` from the event and the resync after the load, `AGENT_TURN 0 again` after the first end, and `AGENT_TURN 0` for turn 6 | 2026-11-19 |
 
 Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, a leader screen on 2026-11-13, the wonder built popup on 2026-11-14, and a queued move that stops short on 2026-11-19.

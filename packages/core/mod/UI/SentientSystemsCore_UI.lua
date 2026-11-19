@@ -53,11 +53,16 @@ end
 -- Prints the turn signal, "[SENTIENTSYSTEMS] AGENT_TURN <playerID>", when an
 -- agent player's turn starts, and forgets the end turn request. isFirstTime is
 -- false when the event fires again for a turn that already started, as it does
--- when the game cancels the end of the turn.
+-- when the game cancels the end of the turn. Then the line ends with "again".
 local function OnPlayerTurnActivated(playerID, isFirstTime)
 	if IsAgentID(playerID) then
 		SentientSystems_ForgetEndTurn()
-		SentientSystems_Print("AGENT_TURN", playerID)
+
+		if isFirstTime == false then
+			SentientSystems_Print("AGENT_TURN", playerID, "again")
+		else
+			SentientSystems_Print("AGENT_TURN", playerID)
+		end
 	end
 end
 
