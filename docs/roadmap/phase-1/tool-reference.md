@@ -8,7 +8,9 @@ Generate `docs/reference/tools.md` from the MCP tool schemas, and add the workfl
 
    It lists the tools from the MCP server and writes one section per tool, with its description and a table of its fields. Test the output for one fake tool. Commit: `feat(core): generate the tool reference`.
 2. **Reference folder.** Run the script, and commit `docs/reference/tools.md` with a `docs/reference/README.md` index. Add the folder to the [docs map](../../README.md) and to the "Where each kind of fact lives" table in [rules/docs.md](../../rules/docs.md#no-repetition). Commit: `docs: add the tool reference`.
-3. **Check.** Make `check-docs` skip the pattern rules in `docs/reference/`, because tool descriptions follow the model's needs. Keep the link checks. Commit: `chore: skip the writing patterns in generated docs`.
+3. **Check.** Make `check-docs` skip the pattern and length rules for the generated pages in `docs/reference/`, because tool descriptions follow the model's needs and the page lists every tool.
+
+   Keep the link checks, and check the folder's index as usual. Commit: `chore: skip the writing and length rules in generated docs`.
 4. **Workflow.** Add `.github/workflows/tool-reference.yml` with the two jobs that [toolchain.md](../../design/core/toolchain.md) describes. The first job runs the script and uploads the file.
 
    The second job commits the file to the PR branch with the release app token and never runs `npm`. Skip the second job for Dependabot PRs. Commit: `ci: update the tool reference on pull requests`.

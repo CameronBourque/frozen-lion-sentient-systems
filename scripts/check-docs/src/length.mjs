@@ -3,7 +3,7 @@
 // lines.
 
 import path from "node:path";
-import { problem } from "./parse.mjs";
+import { isGenerated, problem } from "./parse.mjs";
 
 export const MAX_LINES = 150;
 export const MAX_LINE_LENGTH = 300;
@@ -18,7 +18,7 @@ const failure = (doc, line, message) => problem(doc.path, line, "length", messag
 const warning = (doc, line, message) => ({ ...failure(doc, line, message), warning: true });
 
 export function checkLength(repo) {
-	return [...repo.docs.values()].filter((doc) => !isChangelog(doc)).flatMap((doc) => [...fileProblems(doc), ...lineProblems(doc)]);
+	return [...repo.docs.values()].filter((doc) => !isChangelog(doc) && !isGenerated(doc)).flatMap((doc) => [...fileProblems(doc), ...lineProblems(doc)]);
 }
 
 function fileProblems(doc) {

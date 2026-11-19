@@ -109,6 +109,8 @@ A line over 300 characters or a file over 12,000 characters fails the check. A f
 
 The line check skips fenced code, and leaves link targets out of a line's length, because a reader doesn't see them. The file check counts them, because an agent reads them. Both length checks skip changelogs, which release-please writes.
 
+The pattern and length checks skip the generated pages in `docs/reference/`, because their text comes from the code, such as the tool descriptions that the model reads. The link checks still run on them, and the folder's `README.md` gets every check.
+
 ## Local-only docs
 
 - A doc that must not be committed gets a note at the top that says so.
