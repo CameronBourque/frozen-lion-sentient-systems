@@ -35,6 +35,7 @@ test("the server lists every tool, each with a description", async () => {
 		"recruit_great_person", "move_great_work", "choose_artifact",
 		"send_envoys",
 		"spy_mission", "spy_travel", "choose_escape_route",
+		"vote_in_congress", "propose_in_congress",
 		"end_turn",
 	]);
 	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);

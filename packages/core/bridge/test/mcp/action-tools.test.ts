@@ -250,3 +250,26 @@ describe("the espionage tools", () => {
 		expect(await callTool(mcp, "choose_escape_route", { route: "DISTRICT_HARBOR" })).toEqual(DONE);
 	});
 });
+
+describe("the World Congress tools", () => {
+	test("vote_in_congress sends a resolution vote by its option, and a proposal vote with against", async () => {
+		answerStash(game, {
+			"SentientSystems_VoteInCongress(3, {{ type = \"RESOLUTION_LUXURY_POLICY\", target = 1, votes = 2, option = \"B\" }, { type = \"WC_EMERGENCY_BACKSTAB\", target = 5, votes = 1, against = true }})": OK,
+		});
+
+		expect(await callTool(mcp, "vote_in_congress", { votes: [
+			{ type: "RESOLUTION_LUXURY_POLICY", option: "B", target: 1, votes: 2 },
+			{ type: "WC_EMERGENCY_BACKSTAB", target: 5, votes: 1, against: true },
+		] })).toEqual(DONE);
+	});
+
+	test("propose_in_congress sends the proposals, or an empty list to look", async () => {
+		answerStash(game, {
+			"SentientSystems_ProposeInCongress(3, {{ type = \"WC_EMERGENCY_BACKSTAB\", target = 5 }})": OK,
+			"SentientSystems_ProposeInCongress(3, {})": OK,
+		});
+
+		expect(await callTool(mcp, "propose_in_congress", { proposals: [{ type: "WC_EMERGENCY_BACKSTAB", target: 5 }] })).toEqual(DONE);
+		expect(await callTool(mcp, "propose_in_congress", { proposals: [] })).toEqual(DONE);
+	});
+});

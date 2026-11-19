@@ -5,6 +5,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import packageJson from "../../package.json" with { type: "json" };
 import { registerCityTools } from "./city-tools.js";
+import { registerCongressTools } from "./congress-tools.js";
 import type { ToolContext } from "./context.js";
 import { registerDiplomacyTools } from "./diplomacy-tools.js";
 import { registerEraTools } from "./era-tools.js";
@@ -36,6 +37,7 @@ export function createServer(context: ToolContext): McpServer {
 	registerGreatPeopleTools(server, context);
 	registerDiplomacyTools(server, context);
 	registerEspionageTools(server, context);
+	registerCongressTools(server, context);
 	registerTurnTools(server, context);
 
 	return server;
