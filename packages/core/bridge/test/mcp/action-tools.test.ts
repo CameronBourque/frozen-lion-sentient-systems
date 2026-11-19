@@ -273,3 +273,23 @@ describe("the World Congress tools", () => {
 		expect(await callTool(mcp, "propose_in_congress", { proposals: [] })).toEqual(DONE);
 	});
 });
+
+describe("the diplomacy tools", () => {
+	test("respond_to_deal, respond_to_session, and declare_war send their calls", async () => {
+		answerStash(game, {
+			"SentientSystems_RespondToDeal(3, 5, true)": OK,
+			"SentientSystems_RespondToSession(3, 5, \"CHOICE_POSITIVE\")": OK,
+			"SentientSystems_DeclareWar(3, 5)": OK,
+		});
+
+		expect(await callTool(mcp, "respond_to_deal", { player: 5, accept: true })).toEqual(DONE);
+		expect(await callTool(mcp, "respond_to_session", { player: 5, option: "CHOICE_POSITIVE" })).toEqual(DONE);
+		expect(await callTool(mcp, "declare_war", { player: 5 })).toEqual(DONE);
+	});
+
+	test("propose_peace proposes, then returns ok once the war has ended", async () => {
+		answerStash(game, { "SentientSystems_ProposePeace(3, 5)": OK, "SentientSystems_GetPeaceResult(3, 5)": OK });
+
+		expect(await callTool(mcp, "propose_peace", { player: 5 })).toEqual(DONE);
+	});
+});
