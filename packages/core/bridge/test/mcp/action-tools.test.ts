@@ -176,3 +176,17 @@ describe("the religion tools", () => {
 		expect(await callTool(mcp, "add_belief", { belief: "BELIEF_TITHE" })).toEqual(DONE);
 	});
 });
+
+describe("the governor tools", () => {
+	test("appoint_governor, promote_governor, and assign_governor send their calls", async () => {
+		answerStash(game, {
+			"SentientSystems_AppointGovernor(3, \"GOVERNOR_THE_DEFENDER\")": OK,
+			"SentientSystems_PromoteGovernor(3, \"GOVERNOR_THE_DEFENDER\", \"GOVERNOR_PROMOTION_EMBRASURE\")": OK,
+			"SentientSystems_AssignGovernor(3, \"GOVERNOR_THE_DEFENDER\", 12, 65536)": OK,
+		});
+
+		expect(await callTool(mcp, "appoint_governor", { governor: "GOVERNOR_THE_DEFENDER" })).toEqual(DONE);
+		expect(await callTool(mcp, "promote_governor", { governor: "GOVERNOR_THE_DEFENDER", promotion: "GOVERNOR_PROMOTION_EMBRASURE" })).toEqual(DONE);
+		expect(await callTool(mcp, "assign_governor", { governor: "GOVERNOR_THE_DEFENDER", owner: 12, cityID: 65536 })).toEqual(DONE);
+	});
+});

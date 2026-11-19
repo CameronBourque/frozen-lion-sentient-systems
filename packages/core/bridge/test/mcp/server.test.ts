@@ -31,6 +31,7 @@ test("the server lists every tool, each with a description", async () => {
 		"set_production", "purchase", "purchase_tile", "city_attack", "silo_strike", "decide_city",
 		"set_research", "set_civic", "set_policies", "unlock_policies", "set_government", "choose_dedications",
 		"found_pantheon", "found_religion", "add_belief",
+		"appoint_governor", "promote_governor", "assign_governor",
 		"end_turn",
 	]);
 	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);
