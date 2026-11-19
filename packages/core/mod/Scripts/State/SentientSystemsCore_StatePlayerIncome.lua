@@ -48,13 +48,13 @@ local YIELDS = {
 local MIN_REMAINDER = 0.5
 
 local function Escape(text)
-	return (text:gsub("%p", "%%%0"))
+	return (text:gsub("[" .. SENTIENTSYSTEMS_CHARS.magic .. "]", "%%%0"))
 end
 
 -- Returns the amount that one of the tooltip's lines gives for a label, or nil
 -- without one.
 local function ReadSource(lines, label)
-	local pattern = "^([%+%-]?[%d%.,]+) from " .. Escape(label) .. "$"
+	local pattern = "^([%+%-]?[" .. SENTIENTSYSTEMS_CHARS.digit .. "%.,]+) from " .. Escape(label) .. "$"
 
 	for _, line in ipairs(lines) do
 		local text = line:match(pattern)

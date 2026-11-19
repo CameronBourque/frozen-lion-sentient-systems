@@ -18,7 +18,9 @@ Pass the gate: Claude Code plays 10 turns of a single-player game through the MC
    3. **Moves into unrevealed tiles.** A path through unrevealed tiles assumes they can be crossed. Once a revealed tile blocks it, the game keeps the move, and the unit stands still without needing orders.
 
       Cancel such a move when the unit's move ends and when the turn starts, add an event, show each unit's destination, and say it in the `move_unit` description. Commit: `fix(core): cancel moves whose destination can't be reached`.
-   4. **Broken characters in names.** The state showed the great artist Kamāl ud-Dīn Behzād with a replacement character for each `ā`, while `ī` came through. Find where the text breaks, and fix it. Commit: `fix(core): keep the characters of localized text`.
+   4. **Broken characters in localized text.** The state showed the great artist Kamāl ud-Dīn Behzād with a replacement character for each `ā`. The game's Lua matches pattern classes by the Windows code page, so the JSON encoder's `%c` escaped part of the character.
+
+      Replace every class in the mods' patterns with shared sets, and add a lint check. Commit: `fix(core): keep the characters of localized text`.
    5. **Tribal village rewards.** The state's `events` holds no tribal village reward, so the player can't tell what a village gave. Add the reward to `events`. Commit: `feat(core): add tribal village rewards to the events`.
 
    Then play 10 turns again from a new game with the same seeds.

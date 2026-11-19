@@ -47,7 +47,7 @@ local function GetFirstSentence(text)
 		return nil
 	end
 
-	local sentence = text:match("^(.-[%.!?])%s") or text:match("^[^\n]*")
+	local sentence = text:match("^(.-[%.!?])[" .. SENTIENTSYSTEMS_CHARS.space .. "]") or text:match("^[^\n]*")
 
 	if #sentence > MAX_SNIPPET then
 		sentence = sentence:sub(1, MAX_SNIPPET) .. "..."
@@ -117,7 +117,7 @@ end
 -- excerpt around a match in the text, or the page's first sentence. An empty
 -- query matches nothing. Shape: bridge/src/lookup/lookup.ts.
 function SentientSystems_Lookup(query)
-	query = tostring(query or ""):match("^%s*(.-)%s*$")
+	query = tostring(query or ""):match("^[" .. SENTIENTSYSTEMS_CHARS.space .. "]*(.-)[" .. SENTIENTSYSTEMS_CHARS.space .. "]*$")
 
 	if indexed == nil and query ~= "" then
 		indexed = IndexPages()

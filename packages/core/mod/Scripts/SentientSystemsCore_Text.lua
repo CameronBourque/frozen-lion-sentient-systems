@@ -1,6 +1,12 @@
 -- Helpers for the game's own text, which carries markup that the agent has no
 -- use for.
 
+include("SentientSystemsCore_Common")
+
+local CHARS = SENTIENTSYSTEMS_CHARS
+local SPACE = "[" .. CHARS.space .. "]"
+local WORD = "[" .. CHARS.letter .. "]+"
+
 -- Icons that the game uses as list bullets. A tooltip's lines drop them, and
 -- cleaned text writes a dash for one at the start of a line.
 local LIST_MARKERS = { bullet = true, bolt = true }
@@ -53,7 +59,7 @@ local function GetCapitalsName(name)
 		return spelled
 	end
 
-	return (name:lower():gsub("_", " "):gsub("(%a)(%a*)", function(first, rest)
+	return (name:lower():gsub("_", " "):gsub("([" .. CHARS.alpha .. "])([" .. CHARS.alpha .. "]*)", function(first, rest)
 		return first:upper() .. rest
 	end))
 end
@@ -61,13 +67,13 @@ end
 -- Returns the words of a name, split at its capitals and underscores, without a
 -- Large size.
 local function SplitName(name)
-	if not name:find("%l") then
+	if not name:find("[" .. CHARS.lower .. "]") then
 		name = GetCapitalsName(name)
 	end
 
 	name = name:gsub("_?Large$", ""):gsub("_", " ")
 
-	return (name:gsub("(%l)(%u)", "%1 %2"))
+	return (name:gsub("([" .. CHARS.lower .. "])([" .. CHARS.upper .. "])", "%1 %2"))
 end
 
 -- Returns the words of an icon's name without its group prefix, and the words
@@ -102,8 +108,8 @@ end
 local function StartsWithWords(text, phrase)
 	local position = 1
 
-	for word in phrase:gmatch("%a+") do
-		local _, last, found = text:find("^%s*(%a+)", position)
+	for word in phrase:gmatch(WORD) do
+		local _, last, found = text:find("^" .. SPACE .. "*(" .. WORD .. ")", position)
 
 		if found == nil or Stem(found) ~= Stem(word) then
 			return false
@@ -119,12 +125,12 @@ end
 local function EndsWithWords(text, phrase)
 	local words = {}
 
-	for word in phrase:gmatch("%a+") do
+	for word in phrase:gmatch(WORD) do
 		words[#words + 1] = word
 	end
 
 	for i = #words, 1, -1 do
-		local before, found = text:match("^(.-)(%a+)%s*$")
+		local before, found = text:match("^(.-)(" .. WORD .. ")" .. SPACE .. "*$")
 
 		if found == nil or Stem(found) ~= Stem(words[i]) then
 			return false
@@ -151,7 +157,7 @@ end
 -- Returns whether the text that follows an icon already says what the icon
 -- shows, after an amount if it starts with one.
 local function IsFollowedByName(rest, phrases)
-	local named = rest:match("^[%+%-]?[%d%.,]+%s*(.*)$") or rest
+	local named = rest:match("^[%+%-]?[" .. CHARS.digit .. "%.,]+" .. SPACE .. "*(.*)$") or rest
 
 	for _, phrase in ipairs(phrases) do
 		if StartsWithWords(rest, phrase) or StartsWithWords(named, phrase) then
@@ -180,10 +186,10 @@ end
 local function CleanLine(line, keepMarkers)
 	local result, position = "", 1
 
-	line = line:gsub("%[COLOR[_:][%w_]+%]", ""):gsub("%[ENDCOLOR%]", ""):gsub("%[SIZE_%d+%]", "")
+	line = line:gsub("%[COLOR[_:][" .. CHARS.name .. "]+%]", ""):gsub("%[ENDCOLOR%]", ""):gsub("%[SIZE_[" .. CHARS.digit .. "]+%]", "")
 
 	while true do
-		local first, last, icon = line:find("%[ICON_([%w_]+)%]", position)
+		local first, last, icon = line:find("%[ICON_([" .. CHARS.name .. "]+)%]", position)
 
 		if first == nil then
 			return result .. line:sub(position)
@@ -194,7 +200,7 @@ local function CleanLine(line, keepMarkers)
 		local key = icon:lower()
 		local name, prefix = GetIconName(icon)
 		local rest = line:sub(last + 1)
-		local text = rest:match("^%s*(.*)$")
+		local text = rest:match("^" .. SPACE .. "*(.*)$")
 		local phrases = GetPhrases(key, name, prefix)
 		local replacement = name
 		local skipSpace = false
@@ -205,10 +211,10 @@ local function CleanLine(line, keepMarkers)
 			replacement, skipSpace = "", true
 
 			if text:match("^[%.,;:%)]") then
-				result = result:gsub("%s+$", "")
+				result = result:gsub(SPACE .. "+$", "")
 			end
 		elseif LIST_MARKERS[key] then
-			if keepMarkers and result:match("^%s*$") then
+			if keepMarkers and result:match("^" .. SPACE .. "*$") then
 				replacement = "-"
 			else
 				replacement, skipSpace = "", true
@@ -255,7 +261,7 @@ function SentientSystems_GetTooltipLines(tooltip)
 	local lines = {}
 
 	EachLine(tooltip, function(line)
-		line = CleanLine(line, false):match("^%s*(.-)%s*$")
+		line = CleanLine(line, false):match("^" .. SPACE .. "*(.-)" .. SPACE .. "*$")
 
 		if line ~= "" then
 			lines[#lines + 1] = line
