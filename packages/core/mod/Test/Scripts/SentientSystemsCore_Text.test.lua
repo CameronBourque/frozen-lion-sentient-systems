@@ -26,6 +26,11 @@ describe("SentientSystems_GetTooltipLines", function()
 	it("returns no lines for an empty tooltip", function()
 		assert.same({}, env.SentientSystems_GetTooltipLines(""))
 	end)
+
+	-- The game's Lua counts byte A0, the last byte of à and Р, as a space.
+	it("keeps a character at the end of a line whose last byte the game's locale calls a space", function()
+		assert.same({ "Hà", "Р" }, env.SentientSystems_GetTooltipLines(" Hà [NEWLINE]Р "))
+	end)
 end)
 
 describe("SentientSystems_CleanText", function()

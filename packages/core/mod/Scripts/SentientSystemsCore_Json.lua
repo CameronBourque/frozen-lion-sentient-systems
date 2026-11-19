@@ -1,6 +1,8 @@
 -- Encodes Lua values as JSON on one line, and keeps long text in pieces that
 -- the bridge reads one command at a time.
 
+include("SentientSystemsCore_Common")
+
 -- A command whose output is longer than about 2 MiB gets no reply from the
 -- tuner, so each piece stays well under it. See
 -- docs/findings/tuner/printing.md.
@@ -27,9 +29,10 @@ local ESCAPES = {
 -- and the percent sign. The game's log prints text as a printf format, so a raw
 -- % prints garbage, and a "% s" crashes the game, which it did for a governor's
 -- description. As \u0025 the bridge still reads a %. See
--- docs/findings/tuner/printing.md. Other bytes pass through.
+-- docs/findings/tuner/printing.md. Other bytes pass through, so UTF-8 text
+-- stays whole.
 local function EncodeString(text)
-	return "\"" .. text:gsub("[%c\"\\%%]", function(char)
+	return "\"" .. text:gsub("[" .. SENTIENTSYSTEMS_CHARS.control .. "\"\\%%]", function(char)
 		return ESCAPES[char] or string.format("\\u%04x", char:byte())
 	end) .. "\""
 end

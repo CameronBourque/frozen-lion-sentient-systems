@@ -253,7 +253,7 @@ local function GetPages(byID, hidden)
 	end
 
 	for query in GameInfo.CivilopediaPageQueries() do
-		local tableName = query.SQL:match("[Ff][Rr][Oo][Mm]%s+([%w_]+)")
+		local tableName = query.SQL:match("[Ff][Rr][Oo][Mm][" .. SENTIENTSYSTEMS_CHARS.space .. "]+([" .. SENTIENTSYSTEMS_CHARS.name .. "]+)")
 
 		for _, row in ipairs(DB.Query(query.SQL)) do
 			AddPage({

@@ -2,6 +2,8 @@
 
 Status: confirmed. The Lua version, numbers, library functions, and errors in the core mod's UI state are confirmed in a running game on Windows, against Lua 5.1.5.
 
+How the character classes of a pattern match UTF-8 text is in [lua/patterns.md](patterns.md).
+
 The Lua the game runs in the core mod's states, against Lua 5.1.5. Which states exist and what each one can call is in [lua/contexts.md](contexts.md).
 
 ## Questions

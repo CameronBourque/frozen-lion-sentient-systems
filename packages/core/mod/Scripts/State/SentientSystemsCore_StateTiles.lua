@@ -75,7 +75,7 @@ local function GetTourism(culture, index)
 			result.sources[#result.sources + 1] = lines[i]
 		end
 
-		local lifetime = (lines[#lines]:match("([%d,]+)%D*$") or ""):gsub(",", "")
+		local lifetime = (lines[#lines]:match("([" .. SENTIENTSYSTEMS_CHARS.digit .. ",]+)[^" .. SENTIENTSYSTEMS_CHARS.digit .. "]*$") or ""):gsub(",", "")
 
 		result.lifetime = tonumber(lifetime)
 	end

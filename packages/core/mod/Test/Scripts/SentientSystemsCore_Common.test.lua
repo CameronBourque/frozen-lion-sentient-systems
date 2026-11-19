@@ -27,6 +27,47 @@ describe("SentientSystems_Print", function()
 	end)
 end)
 
+describe("SENTIENTSYSTEMS_CHARS", function()
+	-- Returns the bytes from 0 to 255 that the set matches, as text.
+	local function Bytes(set)
+		local text = ""
+
+		for byte = 0, 255 do
+			if string.char(byte):find("[" .. set .. "]") then
+				text = text .. string.char(byte)
+			end
+		end
+
+		return text
+	end
+
+	-- Returns the bytes from first to last, as text.
+	local function Range(first, last)
+		local text = ""
+
+		for byte = first, last do
+			text = text .. string.char(byte)
+		end
+
+		return text
+	end
+
+	it("matches only ASCII bytes, apart from the letters of a word", function()
+		local chars = env.SENTIENTSYSTEMS_CHARS
+
+		assert.equal(Range(0, 31) .. "\127", Bytes(chars.control))
+		assert.equal("\t\n\v\f\r ", Bytes(chars.space))
+		assert.equal("0123456789", Bytes(chars.digit))
+		assert.equal("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", Bytes(chars.alpha))
+		assert.equal("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", Bytes(chars.name))
+		assert.equal("$%()*+-.?[]^", Bytes(chars.magic))
+	end)
+
+	it("matches ASCII letters and every byte from 128 in the letters of a word", function()
+		assert.equal(Bytes("A-Za-z") .. Range(128, 255), Bytes(env.SENTIENTSYSTEMS_CHARS.letter))
+	end)
+end)
+
 describe("SentientSystems_CatchErrors", function()
 	it("passes the arguments to the handler and prints nothing when it succeeds", function()
 		local received

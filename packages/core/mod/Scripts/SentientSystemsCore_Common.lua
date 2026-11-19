@@ -1,8 +1,31 @@
 -- Helpers that every core mod script loads first: tagged lines for the bridge,
--- error catching for event handlers, and a checked include. Each tagged line
--- starts with the tag, so the bridge can tell it apart from other game output.
+-- character sets for patterns, error catching, and a checked include. Each
+-- tagged line starts with the tag, so the bridge can tell it from other output.
 
 SENTIENTSYSTEMS_TAG = "[SENTIENTSYSTEMS]"
+
+-- Character sets for Lua patterns, to write inside [ ] in place of the classes
+-- %a, %c, %d, %l, %p, %s, %u, %w, and %x. The game's Lua matches those by the
+-- Windows code page, so they match some bytes of UTF-8 text and not others.
+-- See docs/findings/lua/patterns.md.
+SENTIENTSYSTEMS_CHARS = {
+	-- Bytes 0 to 31 and 127. %z is byte 0 in a Lua 5.1 pattern.
+	control = "%z\1-\31\127",
+	space = " \t\n\r\f\v",
+	digit = "0-9",
+	lower = "a-z",
+	upper = "A-Z",
+	alpha = "A-Za-z",
+	-- The characters of a type or an icon name.
+	name = "A-Za-z0-9_",
+	-- The letters of a word in localized text: ASCII letters and each byte of a
+	-- character outside ASCII, so a word keeps its characters whole. A range of
+	-- bytes from 128 matches nothing in the game, so the set leaves out the
+	-- other ASCII bytes instead. Combine it with no other set.
+	letter = "^%z\1-\64\91-\96\123-\127",
+	-- The characters that have a meaning in a pattern.
+	magic = "%^%$%(%)%%%.%[%]%*%+%-%?",
+}
 
 function SentientSystems_Print(...)
 	local parts = { SENTIENTSYSTEMS_TAG }
