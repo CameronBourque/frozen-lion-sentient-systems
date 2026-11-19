@@ -18,6 +18,8 @@ The open session comes from `SentientSystems_FindOpenSession`, which the war and
 
 The action keeps the turn of its last request, and fails for a second call in that turn, with or without `force`. The turn is kept in the UI script's Lua state, so a reload clears it.
 
+The turn signal's handler also clears it, because the game can cancel the end of a turn and start the same turn again.
+
 Its reasons, in order, name a turn already ended, an open session, then the blockers, each with the choice that resolves it, and the IDs of the units that need orders.
 
 On the bridge, `endTurn` in `src/actions/turn.ts` sends the call.
@@ -30,3 +32,4 @@ On the bridge, `endTurn` in `src/actions/turn.ts` sends the call.
 | Units that need orders block the turn, from the units list | The **Next Turn** button waits for them too. The game updates the unit blockers only on its own events, so they can be stale |
 | An open session refuses the end turn, even with `force` | With a session open, the request only closes the leader screen, and the AI turns wait for the session. The action records the request, so a refusal keeps the next call from failing as a turn already ended |
 | One request at most in a turn, even with `force` | A second request while the first is in progress can skip a turn |
+| The turn signal clears the request | When the game cancels the end of a turn, it starts the turn again on the same turn number. The request no longer stands, so a new one can't skip a turn |

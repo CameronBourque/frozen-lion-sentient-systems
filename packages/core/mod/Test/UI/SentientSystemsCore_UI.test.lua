@@ -122,12 +122,32 @@ describe("the turn event", function()
 		assert.same({ "[SENTIENTSYSTEMS] AGENT_TURN 0" }, env.printed)
 	end)
 
+	it("forgets the end turn request when a human player's turn starts again", function()
+		local forgot = 0
+
+		env.SentientSystems_ForgetEndTurn = function()
+			forgot = forgot + 1
+		end
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		Fire("PlayerTurnActivated", 0, false)
+
+		assert.equal(1, forgot)
+		assert.same({ "[SENTIENTSYSTEMS] AGENT_TURN 0" }, env.printed)
+	end)
+
 	it("prints nothing for an AI player's turn", function()
+		local forgot = 0
+
+		env.SentientSystems_ForgetEndTurn = function()
+			forgot = forgot + 1
+		end
 		SetPlayers({ [5] = Player(5, false, true) })
 
 		Fire("PlayerTurnActivated", 5, true)
 
 		assert.same({}, env.printed)
+		assert.equal(0, forgot)
 	end)
 
 	it("prints nothing for a player that doesn't exist", function()

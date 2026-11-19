@@ -12,9 +12,17 @@ local UNIT_BLOCKERS = {
 	ENDTURN_BLOCKING_STACKED_UNITS = true,
 }
 
--- The turn of the last end turn request, or nil before the first one. A
--- second request in one turn can skip a turn.
+-- The turn of the last end turn request, or nil before the first one and
+-- after the turn starts again. A second request in one turn can skip a turn.
 local requestedTurn = nil
+
+-- Forgets the last end turn request. Call it when the player's turn starts.
+-- The game cancels the end of a turn when a queued move stops short, and
+-- starts the same turn again, so the request no longer stands. See
+-- docs/findings/actions/end-turn.md.
+function SentientSystems_ForgetEndTurn()
+	requestedTurn = nil
+end
 
 -- Returns the blockers other than the unit blockers, as a reason lists them.
 local function ListBlockers(list)

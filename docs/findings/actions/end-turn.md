@@ -77,6 +77,14 @@ The action now refuses while a session is open. On turn 97, with Vietnam's promi
 
 During the AI turns that followed, a Cree deal held the turn. Confirmed on Windows on 2026-11-13.
 
+### With a queued move that stops short
+
+Ending the turn runs the units' queued moves first. On turn 5 of a duel map, a warrior's queued move toward an ocean tile stopped short, and the unit needed orders again. The game cancelled the end, and `AGENT_TURN 0` printed 0.2 s after the request, with the turn still at 5.
+
+The action had recorded the request, so it refused the next three calls as a turn already ended, and the player had to press **Next Turn**. Confirmed on Windows on 2026-11-19.
+
+The turn signal now clears the request. From the turn 5 save, the same end started the turn again 0.27 s later. A move east for the warrior and a second call then ended the turn, and turn 6 began with gold up from 25 to 31. Confirmed on Windows on 2026-11-19.
+
 ## Method
 
 Run each step through the tuner, and record the Lua state you ran it in.
@@ -102,5 +110,7 @@ The bridge ran this step in a single-player game, with one city and one unit.
 | `SentientSystems_MoveUnit` and `SentientSystems_EndTurn(0, true)` on turn 56, with the wonder built popup up | `SentientSystemsCore_UI` | `{"ok":true}` for both. The unit didn't move, and the turn didn't end | 2026-11-14 |
 | `UI.ReleaseEventID` with the lock's ID, and the other steps of `Close` | `SentientSystemsCore_UI` | The popup closed. The unit moved, and the AI turns ran | 2026-11-14 |
 | `FinishProgress()` on Lahore, building `BUILDING_RUHR_VALLEY`, with the core mod's button press | `GameCore_Tuner` | A lock, `WonderBuiltPopup_Shown`, then `WonderBuiltPopup_Closed` and the unlock, the context hidden, and `SELECTION` | 2026-11-15 |
+| `end_turn` on turn 5, with a warrior's queued move toward an ocean tile | `SentientSystemsCore_UI` | `{"ok":true}`, then `AGENT_TURN 0` 0.2 s later on turn 5. The next three calls failed with "You already ended turn 5." | 2026-11-19 |
+| The same end from the turn 5 save with the fix, then `move_unit` and `end_turn` | `SentientSystemsCore_UI` | The turn started again 0.27 s later. The second call ended it, and turn 6 began | 2026-11-19 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, a leader screen on 2026-11-13, and the wonder built popup on 2026-11-14.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, a leader screen on 2026-11-13, the wonder built popup on 2026-11-14, and a queued move that stops short on 2026-11-19.
