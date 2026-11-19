@@ -190,3 +190,33 @@ describe("the governor tools", () => {
 		expect(await callTool(mcp, "assign_governor", { governor: "GOVERNOR_THE_DEFENDER", owner: 12, cityID: 65536 })).toEqual(DONE);
 	});
 });
+
+describe("the great people and great work tools", () => {
+	const ARYABHATA = "GREAT_PERSON_INDIVIDUAL_ARYABHATA";
+
+	test("recruit_great_person recruits by default, and passes or patronizes", async () => {
+		answerStash(game, {
+			[`SentientSystems_RecruitGreatPerson(3, "${ARYABHATA}")`]: OK,
+			[`SentientSystems_PassGreatPerson(3, "${ARYABHATA}")`]: OK,
+			[`SentientSystems_PatronizeGreatPerson(3, "${ARYABHATA}", "faith")`]: OK,
+		});
+
+		expect(await callTool(mcp, "recruit_great_person", { greatPerson: ARYABHATA })).toEqual(DONE);
+		expect(await callTool(mcp, "recruit_great_person", { greatPerson: ARYABHATA, action: "pass" })).toEqual(DONE);
+		expect(await callTool(mcp, "recruit_great_person", { greatPerson: ARYABHATA, action: "patronize", yield: "faith" })).toEqual(DONE);
+	});
+
+	test("recruit_great_person refuses patronize without a yield", async () => {
+		expect(await callTool(mcp, "recruit_great_person", { greatPerson: ARYABHATA, action: "patronize" })).toEqual({ text: "Give patronize a yield, gold or faith.", isError: true });
+	});
+
+	test("move_great_work and choose_artifact send their calls", async () => {
+		answerStash(game, {
+			"SentientSystems_MoveGreatWork(3, 7, 65536, \"BUILDING_MUSEUM_ART\", 2)": OK,
+			"SentientSystems_ChooseArtifact(3, 5)": OK,
+		});
+
+		expect(await callTool(mcp, "move_great_work", { workIndex: 7, cityID: 65536, building: "BUILDING_MUSEUM_ART", slot: 2 })).toEqual(DONE);
+		expect(await callTool(mcp, "choose_artifact", { player: 5 })).toEqual(DONE);
+	});
+});
