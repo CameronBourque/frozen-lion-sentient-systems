@@ -16,6 +16,17 @@ function SentientSystems_GetWarFailure(playerID, unit, x, y, verb)
 	return nil
 end
 
+-- Returns whether the path the game's cursor draws for the unit ends on the
+-- plot. Right after an action such as founding a city, the game sometimes
+-- returns no path, or nothing at all, for a tile it can reach. See
+-- docs/findings/actions/move-routes.md.
+local function HasRoute(unit, index)
+	local path = UnitManager.GetMoveToPathEx(unit, index)
+	local plots = path and path.plots or {}
+
+	return plots[#plots] == index
+end
+
 -- Returns why the unit can't move to x, y, or nil when it can. The game's check
 -- for a move gives no reasons and passes any target, so each case is checked
 -- here, with the path the game's cursor draws.
@@ -46,13 +57,7 @@ local function GetMoveFailure(playerID, unit, x, y)
 	end
 
 	local index = Map.GetPlot(x, y):GetIndex()
-	-- Right after an action such as founding a city, the game sometimes returns
-	-- no path, or nothing at all, for a tile it can reach. See
-	-- docs/findings/actions/move-unit.md.
-	local path = UnitManager.GetMoveToPathEx(unit, index)
-	local plots = path and path.plots or {}
-
-	if plots[#plots] ~= index then
+	if not HasRoute(unit, index) then
 		return "The unit has no route to that tile. If an action just changed the map, such as founding a city, the game may still be updating, so try again."
 	end
 
@@ -85,6 +90,49 @@ end
 -- the unit has arrived.
 function SentientSystems_MoveUnit(playerID, unitID, x, y)
 	return SentientSystems_RunAction("MoveUnit", MoveUnit, playerID, unitID, x, y)
+end
+
+-- Cancels the unit's queued move when no path reaches its destination any
+-- more, and returns the destination's x and y, or nil. A path through
+-- unrevealed tiles can end in one that blocks it, and the game keeps that move,
+-- so the unit stands still without needing orders. See
+-- docs/findings/actions/move-routes.md.
+local function CancelDeadMove(unit)
+	local destination = UnitManager.GetQueuedDestination(unit)
+
+	if destination == nil or destination < 0 or HasRoute(unit, destination) then
+		return nil
+	end
+
+	UnitManager.RequestCommand(unit, UnitCommandTypes.CANCEL)
+
+	local plot = Map.GetPlotByIndex(destination)
+
+	return plot:GetX(), plot:GetY()
+end
+
+-- Cancels the move of the player's unit when no path reaches its destination,
+-- and keeps an event that says so. The UI script calls it when a move ends.
+function SentientSystems_CancelDeadMove(playerID, unitID)
+	local unit = UnitManager.GetUnit(playerID, unitID)
+	local x, y = nil, nil
+
+	if unit ~= nil then
+		x, y = CancelDeadMove(unit)
+	end
+
+	if x ~= nil then
+		SentientSystems_NoteMoveCancelled(playerID, unit, x, y)
+	end
+end
+
+-- Does the same for each of the player's units. The UI script calls it when
+-- the player's turn starts, since another unit can reveal a tile that blocks
+-- the way.
+function SentientSystems_CancelDeadMoves(playerID)
+	for _, unit in Players[playerID]:GetUnits():Members() do
+		SentientSystems_CancelDeadMove(playerID, unit:GetID())
+	end
 end
 
 -- The unit actions, by name. Each function takes the player ID, the unit, x, y,

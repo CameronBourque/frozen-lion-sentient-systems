@@ -111,6 +111,56 @@ describe("SentientSystems_MoveUnit", function()
 	end)
 end)
 
+describe("SentientSystems_CancelDeadMove", function()
+	-- Returns the environment with the note stubbed, and the notes it kept.
+	local function LoadNoting(unit)
+		local env = Load(unit)
+		local notes = {}
+
+		env.SentientSystems_NoteMoveCancelled = function(playerID, noted, x, y)
+			notes[#notes + 1] = { playerID, noted:GetID(), x, y }
+		end
+
+		return env, notes
+	end
+
+	it("cancels a move whose destination no path reaches, and notes it", function()
+		local env, notes = LoadNoting(With(SCOUT, { destination = { x = 12, y = 10 } }))
+
+		env.SentientSystems_CancelDeadMove(0, SCOUT.id)
+
+		assert.same({ { unit = SCOUT.id, command = env.UnitCommandTypes.CANCEL } }, env.requests)
+		assert.same({ { 0, SCOUT.id, 12, 10 } }, notes)
+	end)
+
+	it("keeps a move that a path still reaches", function()
+		local env, notes = LoadNoting(With(SCOUT, { destination = { x = 40, y = 40 } }))
+
+		env.SentientSystems_CancelDeadMove(0, SCOUT.id)
+
+		assert.same({}, env.requests)
+		assert.same({}, notes)
+	end)
+
+	it("does nothing for a unit with no move, or one the player doesn't have", function()
+		local env, notes = LoadNoting(SCOUT)
+
+		env.SentientSystems_CancelDeadMove(0, SCOUT.id)
+		env.SentientSystems_CancelDeadMove(0, 5)
+
+		assert.same({}, env.requests)
+		assert.same({}, notes)
+	end)
+
+	it("checks each of the player's units with SentientSystems_CancelDeadMoves", function()
+		local env, notes = LoadNoting(With(SCOUT, { destination = { x = 12, y = 10 } }))
+
+		env.SentientSystems_CancelDeadMoves(0)
+
+		assert.same({ { 0, SCOUT.id, 12, 10 } }, notes)
+	end)
+end)
+
 describe("SentientSystems_UnitAction", function()
 	local KNIGHT = { id = 6160397, type = "UNIT_KNIGHT", x = 10, y = 10, moves = 2 }
 

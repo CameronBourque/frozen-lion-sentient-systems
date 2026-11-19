@@ -80,6 +80,7 @@ before_each(function()
 	env.PlayerManager = {}
 	SetPlayers({})
 	Game.run(env, "UI/SentientSystemsCore_UI.lua")
+	env.SentientSystems_CancelDeadMoves = function() end
 	env.printed = {}
 end)
 
@@ -166,6 +167,37 @@ describe("the turn event", function()
 		Fire("PlayerTurnActivated", 0, true)
 
 		assert.same({ "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated no players" }, env.printed)
+	end)
+end)
+
+describe("the move checks", function()
+	it("checks a human player's units when their turn starts", function()
+		local checked = {}
+
+		env.SentientSystems_CancelDeadMoves = function(playerID)
+			checked[#checked + 1] = playerID
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		Fire("PlayerTurnActivated", 0, true)
+		Fire("PlayerTurnActivated", 0, false)
+		Fire("PlayerTurnActivated", 5, true)
+
+		assert.same({ 0, 0 }, checked)
+	end)
+
+	it("checks a human player's unit when its move ends", function()
+		local checked = {}
+
+		env.SentientSystems_CancelDeadMove = function(playerID, unitID)
+			checked[#checked + 1] = { playerID, unitID }
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		Fire("UnitMoveComplete", 0, 131073, 11, 17)
+		Fire("UnitMoveComplete", 5, 22, 1, 1)
+
+		assert.same({ { 0, 131073 } }, checked)
 	end)
 end)
 
