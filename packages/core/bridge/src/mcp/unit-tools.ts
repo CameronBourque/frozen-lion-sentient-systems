@@ -61,7 +61,9 @@ const ACTIONS = Object.keys(ORDERS) as [OrderAction, ...OrderAction[]];
 
 const MOVE_UNIT = `Move one of your units to a tile at x and y, by the game's own path, over as many turns as it takes. It never attacks and never declares war, so attack with unit_action.
 
-The game may finish a move after the call returns, so read get_state for the unit's new position.`;
+The game may finish a move after the call returns, so read get_state for the unit's new position.
+
+A path through unrevealed tiles assumes they can be crossed. If a revealed tile blocks the way, the move is cancelled, the events say so, and the unit needs new orders.`;
 
 const UNIT_ACTION = `Give one of your units an order. A failed order returns the game's reason, or the core mod's when the game gives none, such as which units can join a formation.
 
