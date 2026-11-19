@@ -6,7 +6,7 @@ import { EventEmitter } from "node:events";
 import net from "node:net";
 import { encodeFrame, type Frame, FrameDecoder } from "./framing.js";
 
-export const DEFAULT_PORT = 4318;
+const DEFAULT_PORT = 4318;
 
 export interface ConnectionOptions {
 	host?: string;

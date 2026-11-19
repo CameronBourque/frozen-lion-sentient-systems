@@ -45,7 +45,7 @@ Single player keeps one human, so it can't stand in for hotseat with the tuner o
 ## Method
 
 1. Set `EnableTuner 1` and host an online game.
-2. From `packages/core/bridge/`, run `npm run gate -- --read-only`. It prints the turn, your cities, and your units, and stops before any move. If it can't connect, the socket is closed, and the other questions can't be answered.
+2. Run `npm run state` at the repo root. It prints your state, choices, and trees, and sends no action. If it waits for the tuner and never connects, the socket is closed, and the other questions can't be answered.
 3. Start the bridge with `npm run dev`. It logs the core version and the turn when it connects.
 4. Play two or three turns. Watch the bridge for a `turn` line each turn, and the game for desync messages.
 

@@ -8,7 +8,7 @@ Core reads the game, runs every action a player can take, and serves both as MCP
 
 Phase 0 is done. The bridge connects to the tuner, runs Lua in a named state, reads tagged lines, and resyncs the turn on connect. The core mod prints the turn signal, the load line, and the version.
 
-Requests from `SentientSystemsCore_UI` take effect, so the action API runs there. See [phase 0](../phase-0/done.md). `packages/core/bridge/scripts/gate.ts` is throwaway code that the [MCP server](mcp-server.md) step deletes.
+Requests from `SentientSystemsCore_UI` take effect, so the action API runs there. See [phase 0](../phase-0/done.md).
 
 Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design/agents/turn-loop.md#tools).
 

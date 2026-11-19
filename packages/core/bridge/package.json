@@ -10,7 +10,6 @@
     "dev": "tsx src/main.ts --config ../../../tmp/sentient-systems.yaml",
     "mcp": "tsx src/main.ts --config ../../../tmp/sentient-systems.yaml --mcp",
     "state": "tsx scripts/state.ts",
-    "gate": "tsx scripts/gate.ts",
     "typecheck": "tsc",
     "build:exe": "node scripts/build-exe.mjs"
   },
