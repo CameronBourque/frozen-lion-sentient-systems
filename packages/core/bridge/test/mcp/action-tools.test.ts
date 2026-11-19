@@ -234,3 +234,19 @@ describe("the trade route and envoy tools", () => {
 		expect(await callTool(mcp, "send_envoys", { cityState: 20, count: 2 })).toEqual(DONE);
 	});
 });
+
+describe("the espionage tools", () => {
+	test("spy_mission with and without a district, spy_travel, and choose_escape_route send their calls", async () => {
+		answerStash(game, {
+			"SentientSystems_SpyMission(3, 7, \"UNITOPERATION_SPY_SIPHON_FUNDS\", nil)": OK,
+			"SentientSystems_SpyMission(3, 7, \"UNITOPERATION_SPY_COUNTERSPY\", \"DISTRICT_CAMPUS\")": OK,
+			"SentientSystems_SpyTravel(3, 7, 12, 65536)": OK,
+			"SentientSystems_ChooseEscapeRoute(3, \"DISTRICT_HARBOR\")": OK,
+		});
+
+		expect(await callTool(mcp, "spy_mission", { unitID: 7, mission: "UNITOPERATION_SPY_SIPHON_FUNDS" })).toEqual(DONE);
+		expect(await callTool(mcp, "spy_mission", { unitID: 7, mission: "UNITOPERATION_SPY_COUNTERSPY", district: "DISTRICT_CAMPUS" })).toEqual(DONE);
+		expect(await callTool(mcp, "spy_travel", { unitID: 7, owner: 12, cityID: 65536 })).toEqual(DONE);
+		expect(await callTool(mcp, "choose_escape_route", { route: "DISTRICT_HARBOR" })).toEqual(DONE);
+	});
+});
