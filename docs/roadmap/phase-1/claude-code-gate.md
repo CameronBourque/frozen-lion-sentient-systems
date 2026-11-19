@@ -8,6 +8,18 @@ Pass the gate: Claude Code plays 10 turns of a single-player game through the MC
 
    At the start of each turn, tell Claude Code that it's its turn. It reads the state, acts, and calls `end_turn`. Play 10 turns. Commit nothing yet.
 2. **Fix.** For each tool call that fails when it should work, each `ERROR` line, and each popup that needs a click, fix the cause in its own `fix:` PR. Play again from the save before the bug. Commit: `fix(core): <the bug>`, one per bug.
+
+   The first run, from the setup prompt on turn 1 to turn 11, needs these PRs:
+
+   1. **End turn after a cancel.** When a queued move stops short, the game cancels the end of the turn and starts it again. `end_turn` then refuses every call as a turn already ended. Clear the request when the turn starts. Commit: `fix(core): allow end turn after the game cancels it`.
+   2. **River crossing.** Fix the refused move in [move-river-reason.md](../../tech-debt/move-river-reason.md), then delete that debt file. Commit: `fix(core): allow moves that start with a river crossing`.
+   3. **Moves into unrevealed tiles.** Check whether a move to an unrevealed ocean tile returns `{"ok":true}`, and whether the game drops the path once the tile is revealed. Record it in `docs/findings/actions/move-unit.md`.
+
+      If so, say it in the `move_unit` description. Commit: `fix(core): say that moves into unrevealed tiles can stop`.
+   4. **Broken characters in names.** The state showed the great artist Kamāl ud-Dīn Behzād with a replacement character for each `ā`, while `ī` came through. Find where the text breaks, and fix it. Commit: `fix(core): keep the characters of localized text`.
+   5. **Tribal village rewards.** The state's `events` holds no tribal village reward, so the player can't tell what a village gave. Add the reward to `events`. Commit: `feat(core): add tribal village rewards to the events`.
+
+   Then play 10 turns again from a new game with the same seeds.
 3. **Results.** Record the run: the turns played, the tool calls per turn, the calls that failed and why, and what Claude Code had to ask or guess. Commit: `docs: record the Claude Code gate`.
 
 ## Done when
