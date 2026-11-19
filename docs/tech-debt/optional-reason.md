@@ -6,13 +6,13 @@ This debt blocks no phase or step. Pick it up when the token cost of `reason` ma
 
 ## Now
 
-- No action tool exists yet. Task 6 of the [MCP server](../roadmap/phase-1/mcp-server.md) step makes `reason` a required string on every action tool, through one helper that wraps each tool's schema and handler.
+- Task 17 of the [MCP server](../roadmap/phase-1/mcp-server.md) step makes `reason` a required string on every action tool, in `registerAction`, the helper that every action tool goes through.
 - The [narrator panel](../design/agents/narration-and-messaging.md) shows the `reason` for each action, and the decisions level of the [logs](../design/core/logs.md) records it.
 - A reason is one sentence. At an estimated 20 to 40 output tokens for each action and 10 to 30 actions a turn, `reason` costs about 1,000 output tokens a turn.
 
 ## Proposal
 
-Add a setting to the [config file](../design/core/settings.md) that makes `reason` optional. The helper from task 6 reads the setting, so the change is in one place. When `reason` is optional, the narrator panel and the decisions log show the action without a reason.
+Add a setting to the [config file](../design/core/settings.md) that makes `reason` optional. `registerAction` reads the setting, so the change is in one place. When `reason` is optional, the narrator panel and the decisions log show the action without a reason.
 
 ## Questions
 
