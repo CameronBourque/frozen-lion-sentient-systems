@@ -2,15 +2,11 @@
 // on files over 12,000 characters. Warn, without failing, on files over 150
 // lines.
 
-import path from "node:path";
-import { isGenerated, problem } from "./parse.mjs";
+import { isChangelog, isGenerated, problem } from "./parse.mjs";
 
 export const MAX_LINES = 150;
 export const MAX_LINE_LENGTH = 300;
 export const MAX_FILE_LENGTH = 12000;
-
-// release-please writes the changelogs from commit subjects.
-const isChangelog = (doc) => path.posix.basename(doc.path) === "CHANGELOG.md";
 
 const count = (n) => n.toLocaleString("en-US");
 
