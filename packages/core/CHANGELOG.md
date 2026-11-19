@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.23.0...core-v0.24.0) (2026-11-19)
+
+
+### Features
+
+* **core:** add the MCP server ([#103](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/103)) ([0fc9d72](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/0fc9d72149905baf5436ae3abfc94f38be20178d))
+
 ## [0.23.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.22.0...core-v0.23.0) (2026-11-18)
 
 
