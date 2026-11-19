@@ -8,6 +8,8 @@ How the core mod runs the unit orders that act on the unit or its tile: moves, s
 
 It checks the unit, the tile, the unit's moves, the war check, and the route, in that order, and returns the first failure as its reason. It never attacks and never declares war. Its reason for an air unit names rebase, deploy, and attack.
 
+Its reason for no route says to try again if an action just changed the map.
+
 ## Unit orders
 
 `SentientSystems_UnitAction(playerID, unitID, action, x, y, type)` in the same file runs the unit orders below. They are in `Scripts/Actions/SentientSystemsCore_ActionsUnitStances.lua`, `SentientSystemsCore_ActionsUnitTiles.lua`, and the files that each order names.
@@ -76,6 +78,7 @@ The game gives no other reasons, so the core mod says when the unit is of the wr
 | --- | --- |
 | An attack that would start a war returns a reason, and a separate action declares war | The UI asks for confirmation in a dialog that has no call to answer, and a surprise war is a decision on its own |
 | A WMD strike follows the unit panel, not only the game's check | `CanStartOperation` allows a strike from a unit with no moves left, which a human can't order. The agent plays by the same rules as a human |
+| A move with no route says to try again, and isn't sent | Right after a city is founded, the game sometimes returns no path for a tile it can reach. See [move-unit.md](../../../../findings/actions/move-unit.md#checking-a-route). An empty path also marks a tile the unit can't enter, and the move check passes for both, so the action can't tell them apart |
 | A silo strike is its own function, not a unit order | A silo is an improvement that fires through its city's command, with no unit ID to pass |
 | A move never attacks or declares war | The UI turns one click into a move, an attack, or a war confirmation. An agent needs each as its own deliberate action, so a move that would attack or start a war returns a reason instead |
 | The core mod gives its own reason where the game gives none, such as for a stance, an upgrade, or a formation | A refusal with no reason leaves the agent to repeat the mistake |

@@ -22,8 +22,13 @@ return function(env, world, ctx)
 		return env.Players[playerID] and env.Players[playerID]:GetUnits():FindID(unitID)
 	end
 
-	-- A route is the target alone, which is all the checks read.
+	-- A route is the target alone, which is all the checks read. A unit with
+	-- noPath gets nothing, as the game sometimes returns.
 	env.UnitManager.GetMoveToPathEx = function(unit, plotIndex)
+		if unit.noPath then
+			return nil
+		end
+
 		for _, tile in ipairs(unit.paths) do
 			if PlotIndex(tile.x, tile.y) == plotIndex then
 				return { plots = { plotIndex }, turns = { 1 } }
@@ -56,6 +61,7 @@ return function(env, world, ctx)
 	ctx.OnUnit(function(unit, data)
 		unit.paths = data.paths or {}
 		unit.blocked = data.blocked == true
+		unit.noPath = data.noPath == true
 		unit.startsWar = data.startsWar or {}
 
 		function unit.GetComponentID()
