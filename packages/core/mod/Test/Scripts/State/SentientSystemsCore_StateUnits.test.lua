@@ -71,6 +71,11 @@ describe("SentientSystems_GetUnitStates", function()
 		assert.is_nil(StateWith({ With(SCOUT, { activity = "AWAKE", fortifyTurns = 2 }) }):find("fortified", 1, true))
 	end)
 
+	it("gives the tile of a queued move, and none without one", function()
+		assert.truthy(StateWith({ With(SCOUT, { destination = { x = 9, y = 17 } }) }):find("\"destination\":{\"x\":9,\"y\":17}", 1, true))
+		assert.is_nil(StateWith({ SCOUT }):find("destination", 1, true))
+	end)
+
 	it("gives the attacks left of a unit that can attack, and none for a civilian", function()
 		assert.truthy(StateWith({ With(SCOUT, { combat = 20, attacks = 1 }) }):find("\"attacksLeft\":1", 1, true))
 		assert.truthy(StateWith({ With(SCOUT, { ranged = 25, attacks = 0 }) }):find("\"attacksLeft\":0", 1, true))

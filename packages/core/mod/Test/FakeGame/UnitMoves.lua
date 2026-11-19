@@ -1,5 +1,5 @@
--- Unit moves. Fakes the calls a move makes, and keeps each operation requested
--- in env.requests.
+-- Unit moves. Fakes the calls a move makes and a unit's queued destination, and
+-- keeps each operation requested in env.requests.
 
 return function(env, world, ctx)
 	local PlotIndex, MAP_WIDTH = ctx.PlotIndex, ctx.MAP_WIDTH
@@ -38,6 +38,12 @@ return function(env, world, ctx)
 		return { plots = {}, turns = {} }
 	end
 
+	env.UnitCommandTypes.CANCEL = 150
+
+	env.UnitManager.GetQueuedDestination = function(unit)
+		return unit.destination and PlotIndex(unit.destination.x, unit.destination.y)
+	end
+
 	env.UnitManager.CanStartOperation = function(unit)
 		return not unit.blocked
 	end
@@ -62,6 +68,7 @@ return function(env, world, ctx)
 		unit.paths = data.paths or {}
 		unit.blocked = data.blocked == true
 		unit.noPath = data.noPath == true
+		unit.destination = data.destination
 		unit.startsWar = data.startsWar or {}
 
 		function unit.GetComponentID()

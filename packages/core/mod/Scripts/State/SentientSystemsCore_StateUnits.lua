@@ -173,6 +173,17 @@ local function AddGreatPerson(unit, state)
 	}
 end
 
+-- Adds the tile of the unit's queued move, if it has one.
+local function AddDestination(unit, state)
+	local destination = UnitManager.GetQueuedDestination(unit)
+
+	if destination ~= nil and destination >= 0 then
+		local plot = Map.GetPlotByIndex(destination)
+
+		state.destination = { x = plot:GetX(), y = plot:GetY() }
+	end
+end
+
 function SentientSystems_GetUnitStates(player)
 	local units = {}
 
@@ -188,6 +199,7 @@ function SentientSystems_GetUnitStates(player)
 			}
 
 			AddActivity(unit, state)
+			AddDestination(unit, state)
 			AddReligion(unit, state)
 			AddGreatPerson(unit, state)
 			AddPromotions(unit, state)
