@@ -1,8 +1,10 @@
-// The MCP tools that move units and give them orders. Each description is
-// written for the model. docs/design/core/mod/actions/units.md has the orders.
+// The MCP tools that move units, give them orders, and start a trader's route.
+// Each description is written for the model.
+// docs/design/core/mod/actions/units.md has the orders.
 
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
+import { tradeRoute } from "../actions/trade.js";
 import { moveUnit, unitAction, type UnitOrder } from "../actions/units.js";
 import { optionalTile, registerAction } from "./action.js";
 import type { ToolContext } from "./context.js";
@@ -65,6 +67,10 @@ const UNIT_ACTION = `Give one of your units an order. A failed order returns the
 
 ${ACTIONS.map((action) => `- ${action}: ${ORDERS[action]}`).join("\n")}`;
 
+const START_TRADE_ROUTE = `Start a trade route from the city a trader stands in, to a destination from get_choices' tradeRoutes for that trader. A destination is named by its owner and id. The trader then travels the route.
+
+get_trade_routes lists a city's destinations before a trader is there. A refusal names why, such as a trader that already has a route or no free route slot.`;
+
 const UNIT_ID = z.int().describe("The unit's id, from get_state.");
 const COORDINATE = z.int().optional();
 
@@ -97,4 +103,9 @@ export function registerUnitTools(server: McpServer, context: ToolContext): void
 		// says which are missing.
 		return unitAction(client, playerID, unitID, { ...order, ...tile.tile } as UnitOrder);
 	});
+	registerAction(server, context, "start_trade_route", START_TRADE_ROUTE, z.object({
+		unitID: UNIT_ID.describe("The trader's id, from tradeRoutes."),
+		owner: z.int().describe("The destination city's owner."),
+		cityID: z.int().describe("The destination city's id."),
+	}), (playerID, { unitID, owner, cityID }) => tradeRoute(client, playerID, unitID, owner, cityID));
 }

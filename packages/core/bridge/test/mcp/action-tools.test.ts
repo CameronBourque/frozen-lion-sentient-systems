@@ -220,3 +220,17 @@ describe("the great people and great work tools", () => {
 		expect(await callTool(mcp, "choose_artifact", { player: 5 })).toEqual(DONE);
 	});
 });
+
+describe("the trade route and envoy tools", () => {
+	test("start_trade_route and send_envoys send their calls, with 1 envoy by default", async () => {
+		answerStash(game, {
+			"SentientSystems_TradeRoute(3, 7, 12, 65536)": OK,
+			"SentientSystems_SendEnvoys(3, 20, 1)": OK,
+			"SentientSystems_SendEnvoys(3, 20, 2)": OK,
+		});
+
+		expect(await callTool(mcp, "start_trade_route", { unitID: 7, owner: 12, cityID: 65536 })).toEqual(DONE);
+		expect(await callTool(mcp, "send_envoys", { cityState: 20 })).toEqual(DONE);
+		expect(await callTool(mcp, "send_envoys", { cityState: 20, count: 2 })).toEqual(DONE);
+	});
+});

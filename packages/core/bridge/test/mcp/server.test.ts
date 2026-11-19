@@ -27,12 +27,13 @@ test("the server lists every tool, each with a description", async () => {
 	expect(tools.map((tool) => tool.name)).toEqual([
 		"get_state", "get_choices", "get_placement", "get_tech_tree", "get_civic_tree", "get_trade_routes", "get_great_work_moves",
 		"search_civilopedia", "read_civilopedia",
-		"move_unit", "unit_action",
+		"move_unit", "unit_action", "start_trade_route",
 		"set_production", "purchase", "purchase_tile", "city_attack", "silo_strike", "decide_city",
 		"set_research", "set_civic", "set_policies", "unlock_policies", "set_government", "choose_dedications",
 		"found_pantheon", "found_religion", "add_belief",
 		"appoint_governor", "promote_governor", "assign_governor",
 		"recruit_great_person", "move_great_work", "choose_artifact",
+		"send_envoys",
 		"end_turn",
 	]);
 	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);
