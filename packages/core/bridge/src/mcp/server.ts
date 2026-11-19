@@ -8,6 +8,7 @@ import { registerCityTools } from "./city-tools.js";
 import type { ToolContext } from "./context.js";
 import { registerEraTools } from "./era-tools.js";
 import { registerGovernmentTools } from "./government-tools.js";
+import { registerReligionTools } from "./religion-tools.js";
 import { registerResearchTools } from "./research-tools.js";
 import { registerStateTools } from "./state-tools.js";
 import { registerTurnTools } from "./turn-tools.js";
@@ -26,6 +27,7 @@ export function createServer(context: ToolContext): McpServer {
 	registerResearchTools(server, context);
 	registerGovernmentTools(server, context);
 	registerEraTools(server, context);
+	registerReligionTools(server, context);
 	registerTurnTools(server, context);
 
 	return server;

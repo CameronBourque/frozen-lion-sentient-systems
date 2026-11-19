@@ -160,3 +160,19 @@ describe("the policy and dedication tools", () => {
 		expect(await callTool(mcp, "choose_dedications", { dedications: ["COMMEMORATION_SCIENTIFIC"] })).toEqual(DONE);
 	});
 });
+
+describe("the religion tools", () => {
+	test("found_pantheon, found_religion with and without a name, and add_belief send their calls", async () => {
+		answerStash(game, {
+			"SentientSystems_FoundPantheon(3, \"BELIEF_RELIGIOUS_SETTLEMENTS\")": OK,
+			"SentientSystems_FoundReligion(3, \"RELIGION_BUDDHISM\", {\"BELIEF_CHORAL_MUSIC\", \"BELIEF_TITHE\"})": OK,
+			"SentientSystems_FoundReligion(3, \"RELIGION_CUSTOM\", {\"BELIEF_CHORAL_MUSIC\"}, \"Lionism\")": OK,
+			"SentientSystems_AddBelief(3, \"BELIEF_TITHE\")": OK,
+		});
+
+		expect(await callTool(mcp, "found_pantheon", { belief: "BELIEF_RELIGIOUS_SETTLEMENTS" })).toEqual(DONE);
+		expect(await callTool(mcp, "found_religion", { religion: "RELIGION_BUDDHISM", beliefs: ["BELIEF_CHORAL_MUSIC", "BELIEF_TITHE"] })).toEqual(DONE);
+		expect(await callTool(mcp, "found_religion", { religion: "RELIGION_CUSTOM", beliefs: ["BELIEF_CHORAL_MUSIC"], name: "Lionism" })).toEqual(DONE);
+		expect(await callTool(mcp, "add_belief", { belief: "BELIEF_TITHE" })).toEqual(DONE);
+	});
+});
