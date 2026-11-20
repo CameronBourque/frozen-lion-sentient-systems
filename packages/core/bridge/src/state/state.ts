@@ -30,6 +30,7 @@ import { WMD_LAUNCHERS } from "./wmd-launchers.js";
 // Not strict, so a field from a newer core mod is dropped instead of failing
 // the whole state.
 export const STATE = z.object({
+	turn: z.number().describe("The current turn. It stays the same when the game cancels the end of the turn and starts it again."),
 	blockers: BLOCKERS,
 	cities: z.array(CITY),
 	diplomacy: DIPLOMACY,

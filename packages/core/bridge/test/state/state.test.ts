@@ -10,6 +10,7 @@ import { type CommandResult, type FakeGame, startGame } from "../tuner/fake-game
 // with one blocker so the text has a name to cut in the middle. The schemas are
 // checked in contract.test.ts.
 const STATE: State = {
+	turn: 1,
 	blockers: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH" }], units: [] },
 	cities: [],
 	units: [],

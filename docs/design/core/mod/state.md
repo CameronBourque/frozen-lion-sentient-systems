@@ -16,7 +16,7 @@ The view holds what a player sees on these screens, grouped by screen. The list 
 - **The city panel, and the City Status tab of Reports.** Each city's yields, growth, housing, amenities, loyalty, defense, districts, production, growth rate status, war weariness, governor, power, and religion.
 
   A city's power is its status, the usable and required power, and what gives it power and needs it, with Gathering Storm. A city's religion is its majority, the pressure it exerts, the religion it will convert to and when, and the followers and pressure of each religion present.
-- **The Next Turn button.** What blocks the end of the turn.
+- **The Next Turn button and the turn counter.** The current turn, and what blocks the end of the turn. The turn stays the same when the game cancels the end of the turn, so the agent can tell its turn started again.
 - **The top bar.** The gold and faith balances, the science, culture, faith, gold, and tourism per turn, the trade route capacity, the nuclear and thermonuclear devices, and, with Gathering Storm, diplomatic favor.
 - **The unit panel and the missile silo banner.** For each device the player has, the units and silos that can launch it now.
 - **The Yields tab of Reports.** Income by source, building and unit upkeep, deal payments, and net income per turn.

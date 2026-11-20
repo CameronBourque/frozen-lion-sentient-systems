@@ -10,6 +10,8 @@ It holds your cities, units, revealed tiles, rivals you can see, diplomacy, reli
 
 Positions are x and y on a hex map. x grows to the east and y grows to the north, so a bigger y is farther north. Odd rows sit half a tile east of even rows, so a tile's neighbours in the rows above and below are at x and x + 1 on an odd row, and at x - 1 and x on an even row.
 
+turn is the current turn. When it hasn't changed since your last end_turn, the game cancelled the end of your turn, such as when a unit's move stopped short, so finish the turn and end it again.
+
 blockers.list holds what stops the turn from ending, first one first. Each has choice, the key in get_choices that resolves it. blockers.units holds the IDs of units that still need orders.
 
 It takes no fields.

@@ -55,6 +55,7 @@ function SentientSystems_GetState(playerID)
 		governors = SentientSystems_GetGovernorState(player),
 		player = SentientSystems_GetPlayerState(player),
 		trade = SentientSystems_GetTradeState(player),
+		turn = Game.GetCurrentGameTurn(),
 		wmdLaunchers = SentientSystems_GetWmdLauncherState(player),
 		proposals = SentientSystems_GetProposalState(player),
 		sessions = SentientSystems_GetSessionState(player),
