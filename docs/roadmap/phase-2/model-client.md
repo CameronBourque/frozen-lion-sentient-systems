@@ -19,5 +19,5 @@ Add the model client, which calls the configured provider through the Vercel AI 
 
 ## Record
 
-- The client, the providers, and the model table, in [bridge.md](../../design/core/bridge.md).
+- The client, the providers, and the model table, in [model-client.md](../../design/core/model-client.md).
 - The `models.yaml` location, in [knowledge-files.md](../../design/knowledge-files.md#file-layout).
