@@ -17,7 +17,9 @@ import { readForPlayer, readFromGame } from "./results.js";
 
 const GET_STATE = `Read your empire and everything you can see, as JSON. Call it at the start of each turn and after actions that change the map.
 
-It holds your cities, units, revealed tiles, rivals you can see, diplomacy, religion, great people, governors, trade, espionage, the scoreboard, and victory progress. Positions are x and y. Fog of war applies: rivals' units are only those you see now, and tiles are only those you have revealed.
+It holds your cities, units, revealed tiles, rivals you can see, diplomacy, religion, great people, governors, trade, espionage, the scoreboard, and victory progress. Fog of war applies: rivals' units are only those you see now, and tiles are only those you have revealed.
+
+Positions are x and y on a hex map. x grows to the east and y grows to the north, so a bigger y is farther north. Odd rows sit half a tile east of even rows, so a tile's neighbours in the rows above and below are at x and x + 1 on an odd row, and at x - 1 and x on an even row.
 
 blockers.list holds what stops the turn from ending, first one first. Each has choice, the key in get_choices that resolves it. blockers.units holds the IDs of units that still need orders.`;
 
