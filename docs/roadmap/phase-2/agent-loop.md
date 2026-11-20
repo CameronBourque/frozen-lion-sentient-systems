@@ -1,28 +1,17 @@
 # Agent loop
 
-Run an agent's turn when its turn signal arrives: resolve the end-turn blockers, take the agent's other actions, and end the turn within the retry, action, and time limits. Plain code handles idle units and scouts. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 2](README.md).
+Run an agent's turn when its turn signal arrives: read the state, give the model the MCP tools, and pass its tool calls to the MCP server until it calls `end_turn`. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 2](README.md).
 
 ## Tasks
 
-1. **Loop.** Add `src/agents/loop.ts`. On `AGENT_TURN` for a configured agent, it reads the state, builds the prompt, and passes the model's tool calls to the MCP server until the model calls `end_turn`. Test it with a mock model and a fake client. Commit: `feat(core): add the agent loop`.
-2. **Limits.** Add the three limits from [failure handling](../../design/agents/turn-loop.md#failure-handling), with defaults in `limits` in the config file: retries per action, actions per turn, and time per turn. When the loop hits a limit, it logs a warning and ends the turn. Commit: `feat(core): add turn limits`.
-3. **Blockers.** When the model calls `end_turn` with a blocker left, the tool result names the blocker, and the model gets another try.
-
-   When the loop hits a limit, it ends the turn with `force`, which skips any blockers left, and logs each skipped blocker as a warning. Commit: `feat(core): force the end turn at the turn limit`.
-4. **Idle units and scouts.** Before the model call, fortify idle military units that stand in a city or on a fort, and set scouts to auto-explore. Leave other units to the model. Commit: `feat(core): handle idle units and scouts in plain code`.
-5. **End turn.** After `end_turn`, wait for the turn number to change before the loop accepts the next `AGENT_TURN`. Never send a second end-turn request for one turn.
-
-   An `AGENT_TURN` that ends with `again` means the game cancelled the end of the turn, such as for a queued move that stopped short. Tell the model, and let it finish the turn and end it again, as [agent-runs.md](../../findings/agent-runs.md#second-run) shows a model can't tell on its own.
-
-   A `GAME_READY` from the [load signal](../../design/core/mod/lines.md#load-signal) cancels the turn. Commit: `feat(core): wait for the turn to change after end turn`.
-6. **Game options.** Check that quick movement and quick combat are on when an agent turn starts, and log a warning when one is off. Commit: `feat(core): warn when quick movement or quick combat is off`.
+1. **MCP tools.** Connect the loop to the MCP server in the same process, and turn the server's tools into the [model client](model-client.md)'s tool definitions, with each tool's description and input schema. Test it with a fake client. Commit: `feat(core): give the model the MCP tools`.
+2. **Turn.** Add `src/agents/loop.ts`. It reads the state, builds the prompt, and passes the model's tool calls to the MCP server and their results back to the model, until the model calls `end_turn`. Test it with a mock model and a fake client. Commit: `feat(core): run an agent's turn`.
+3. **Turn signal.** On `AGENT_TURN` for a configured agent, start that agent's turn. Ignore `AGENT_TURN` for a player with no agent in the config. Commit: `feat(core): start an agent's turn on its turn signal`.
 
 ## Done when
 
-In a running game, the bridge executable plays 10 turns in a row with no manual help. The log shows each tool call with its `reason`, and no turn hits a limit.
+In a running game, the bridge executable plays one agent turn with no manual help, and the log shows each tool call with its `reason`.
 
 ## Record
 
-- The loop, the limits and their defaults, and the plain-code rules, in [turn-loop.md](../../design/agents/turn-loop.md).
-- The forced end turn at the limit, as a `## Decisions` row in [turn-loop.md](../../design/agents/turn-loop.md).
-- Which blockers a forced end turn skips, in [actions/end-turn.md](../../findings/actions/end-turn.md#ending-the-turn).
+- The loop, in [turn-loop.md](../../design/agents/turn-loop.md).

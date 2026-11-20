@@ -12,7 +12,7 @@ Close the phase in the docs, and release core and the agent players mod. Part of
 
 All of these hold, and core and the agent players mod each have a release:
 
-- The released executable passes the "Done when" check of [agent loop step](agent-loop.md).
+- In a running game, the released executable plays 10 turns in a row with no manual help. The log shows each tool call with its `reason`, and no turn hits a limit.
 - Every step's status is Done.
 
 ## Record
