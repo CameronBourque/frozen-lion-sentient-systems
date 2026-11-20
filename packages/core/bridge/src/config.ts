@@ -10,7 +10,9 @@ import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 // Bump this when the format changes, and migrate older files when they load.
 export const SCHEMA_VERSION = 1;
 
-export const PROVIDERS = ["anthropic", "openai"] as const;
+export const PROVIDERS = ["anthropic", "openai", "google"] as const;
+
+export type Provider = typeof PROVIDERS[number];
 
 // The first port after the two the game listens on, 4318 and 4319.
 export const DEFAULT_MCP_PORT = 4320;

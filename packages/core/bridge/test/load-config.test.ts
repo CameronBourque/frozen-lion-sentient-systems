@@ -92,7 +92,7 @@ describe("EXAMPLE_CONFIG", () => {
 	test("is a valid config with every provider and no keys", () => {
 		expect(parseConfig(EXAMPLE_CONFIG)).toEqual({
 			ok: true,
-			config: { schemaVersion: 1, logLevel: "decisions", providers: { anthropic: { apiKey: "" }, openai: { apiKey: "" } }, mcpPort: DEFAULT_MCP_PORT },
+			config: { schemaVersion: 1, logLevel: "decisions", providers: { anthropic: { apiKey: "" }, openai: { apiKey: "" }, google: { apiKey: "" } }, mcpPort: DEFAULT_MCP_PORT },
 		});
 	});
 });
