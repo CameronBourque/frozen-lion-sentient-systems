@@ -6,6 +6,8 @@ How the game's Lua matches the character classes of a pattern, such as `%a` and 
 
 ## Questions
 
+None open.
+
 ## What we know now
 
 The classes `%a`, `%c`, `%d`, `%l`, `%p`, `%s`, `%u`, `%w`, and their capital forms follow the C locale, and in the game's UI state they classify bytes by Windows code page 1252. `os` is `nil`, so a script can't change the locale. Confirmed on Windows on 2026-11-19.

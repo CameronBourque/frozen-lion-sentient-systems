@@ -306,6 +306,20 @@ describe("the popups", function()
 		assert.same({ { "lost", 0, 5 }, { "captured", 0, 5 } }, noted)
 	end)
 
+	it("keeps a village reward of a human player's only", function()
+		local noted = {}
+
+		env.SentientSystems_NoteVillageReward = function(...)
+			noted[#noted + 1] = { ... }
+		end
+		SetPlayers({ [0] = Player(0, true, true), [5] = Player(5, false, true) })
+
+		Fire("GoodyHutReward", 0, 196608, 11, 12)
+		Fire("GoodyHutReward", 5, 22, 11, 12)
+
+		assert.same({ { 0, 196608, 12 } }, noted)
+	end)
+
 	it("keeps a concert of a human player's only", function()
 		local noted = {}
 

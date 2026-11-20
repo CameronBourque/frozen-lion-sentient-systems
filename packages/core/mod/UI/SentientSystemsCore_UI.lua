@@ -139,6 +139,14 @@ end
 
 Events.PostTourismBomb.Add(SentientSystems_CatchErrors("OnPostTourismBomb", OnPostTourismBomb))
 
+local function OnGoodyHutReward(playerID, unitID, typeHash, subTypeHash)
+	if IsAgentID(playerID) then
+		SentientSystems_NoteVillageReward(playerID, unitID, subTypeHash)
+	end
+end
+
+Events.GoodyHutReward.Add(SentientSystems_CatchErrors("OnGoodyHutReward", OnGoodyHutReward))
+
 -- Turns off the tech, civic, and boost popups for an agent player, as the
 -- tutorial does. Each popup keeps the switch in its own Lua state, so each load
 -- turns them back on. They open only from notifications, after the load.
