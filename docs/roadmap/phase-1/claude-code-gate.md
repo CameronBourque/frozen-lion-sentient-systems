@@ -25,6 +25,10 @@ Pass the gate: Claude Code plays 10 turns of a single-player game through the MC
 
    6. **North and south.** Claude Code read a bigger y as south, so its reasons named the wrong direction. Say in the `get_state` description that y grows to the north, and which tiles are neighbours on the offset rows. Commit: `fix(core): say which way the map's coordinates run`.
 
+   7. **The current turn.** In the second run, the game cancelled the end of turn 9 when a queued move stopped at a tile the unit couldn't enter. The next prompt looked like a new turn, so Claude Code counted one turn too many. The state had no turn number to show it.
+
+      Add the turn to the state, and say in the `get_state` description what an unchanged turn means. Commit: `feat(core): add the current turn to the state`.
+
    Then play 10 turns again from a new game with the same seeds.
 3. **Results.** Record the run: the turns played, the tool calls per turn, the calls that failed and why, and what Claude Code had to ask or guess. Commit: `docs: record the Claude Code gate`.
 
