@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.25.1...core-v0.26.0) (2026-11-20)
+
+
+### Features
+
+* **core:** add the current turn to the state ([#120](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/120)) ([759a9a9](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/759a9a9e57bd8dea91afb0a1dccbad6a28317fb2))
+
 ## [0.25.1](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.25.0...core-v0.25.1) (2026-11-20)
 
 
