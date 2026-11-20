@@ -35,7 +35,7 @@ Pull request: ci: generate the tool reference.
 - **Check.** `check-docs` skips the writing and length rules for generated pages in `docs/reference/`, and still checks their links.
 - **Workflow.** One job generates the page with no token. A second job commits it with the release app token through the contents API, only when it changed, and never runs PR code.
 
-  The [Claude Code gate](../claude-code-gate.md) makes the first live run of that commit.
+  It hasn't committed yet, as [gate.md](gate.md#claude-code-gate) says.
 
 - The script and the workflow, in [design/core/toolchain.md](../../../design/core/toolchain.md).
 - The `docs/reference/` exception, in [rules/docs.md](../../../rules/docs.md#automated-check).

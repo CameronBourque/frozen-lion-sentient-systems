@@ -42,7 +42,7 @@ The `#` column sets the order, and a step's file has no number. Each finished st
 | 22 | Civilopedia lookup | Search, pages, and browsing over the Civilopedia's tables, `GameInfo`, and localized text, Concepts included | `feat(core): add the Civilopedia lookup` | Done. See [lookup.md](done/lookup.md#civilopedia-lookup) |
 | 23 | MCP server | State, on-demand state, action, and lookup tools, with a required `reason` | `feat(core): add the MCP server` | Done. See [mcp-server.md](done/mcp-server.md#mcp-server) |
 | 24 | Tool reference | `docs/reference/tools.md` and the workflow that updates it | `ci: generate the tool reference` | Done. See [mcp-server.md](done/mcp-server.md#tool-reference) |
-| 25 | [Claude Code gate](claude-code-gate.md) | Play 10 turns from Claude Code through the MCP server | `docs: record phase 1 results` | |
+| 25 | Claude Code gate | Play 10 turns from Claude Code through the MCP server | `docs: record phase 1 results` | Done. See [gate.md](done/gate.md#claude-code-gate) |
 | 26 | [Close out phase 1](close-out.md) | Update the docs. No release | `docs: record phase 1 results` | |
 
 ## Commits and pull requests
