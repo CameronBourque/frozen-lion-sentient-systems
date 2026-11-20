@@ -23,6 +23,8 @@ Pass the gate: Claude Code plays 10 turns of a single-player game through the MC
       Replace every class in the mods' patterns with shared sets, and add a lint check. Commit: `fix(core): keep the characters of localized text`.
    5. **Tribal village rewards.** The state's `events` holds no tribal village reward, so the player can't tell what a village gave. Add the reward to `events`. Commit: `feat(core): add tribal village rewards to the events`.
 
+   6. **North and south.** Claude Code read a bigger y as south, so its reasons named the wrong direction. Say in the `get_state` description that y grows to the north, and which tiles are neighbours on the offset rows. Commit: `fix(core): say which way the map's coordinates run`.
+
    Then play 10 turns again from a new game with the same seeds.
 3. **Results.** Record the run: the turns played, the tool calls per turn, the calls that failed and why, and what Claude Code had to ask or guess. Commit: `docs: record the Claude Code gate`.
 

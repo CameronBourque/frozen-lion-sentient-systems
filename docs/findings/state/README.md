@@ -25,4 +25,5 @@ The game calls the state serializer uses, and what a player can know about each 
 | [scoreboard.md](scoreboard.md) | The calls the scoreboard in the state uses, as the Score tab of World Rankings and the leader panel show them |
 | [victories.md](victories.md) | The calls the victories in the state use, as World Rankings shows each victory's progress |
 | [village-rewards.md](village-rewards.md) | The event that reports a tribal village's reward, and the text the game has for each reward |
+| [map-coordinates.md](map-coordinates.md) | Which way x and y run on the screen, and which tiles are a tile's neighbours |
 | [tile-visibility.md](tile-visibility.md) | What a player can know about each tile and the rivals on it, the visibility layers, and the map reveal |
