@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.1](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.25.0...core-v0.25.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* **core:** say which way the map's coordinates run ([#118](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/118)) ([6f4664e](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/6f4664e828bbdf6ef0ab3315d1ac067c2ca78d43))
+
 ## [0.25.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.4...core-v0.25.0) (2026-11-20)
 
 
