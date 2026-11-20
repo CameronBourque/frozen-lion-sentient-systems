@@ -4,7 +4,9 @@ What could go wrong, what it would cost, and the fallback. Open questions that a
 
 - **The FireTuner protocol is undocumented, slow, or unstable.** Impact: The whole bridge depends on it. Fallback or mitigation: Proven in single player in [phase 0](roadmap/phase-0/README.md).
 
-  The bridge lists cities, moves a unit, and gets the turn signal within about a second, and the released executable passes the same checks. Once, the game stopped listening on 4318 after a long session, so that question stays open.
+  The bridge lists cities, moves a unit, and gets the turn signal within about a second, and the released executable passes the same checks.
+
+  In [phase 1](roadmap/phase-1/README.md), Claude Code played 10 turns through it with no `ERROR` lines. Once, the game stopped listening on 4318 after a long session, so that question stays open.
 
   If the tuner fails later, a hook DLL, found through reverse engineering, adds a native socket. Tracked in: [tuner/protocol.md](findings/tuner/protocol.md#results), [game-api.md](findings/game-api.md#results), [build-tooling.md](findings/build-tooling.md#results).
 - **The bridge's state list goes stale while the tuner stays connected.** Impact: After a quit to the main menu, the socket stays open and `InGame` is gone. A later load may move states to new indexes.
