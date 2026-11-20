@@ -2,7 +2,7 @@
 
 An action tool returns only whether the game took the request, so the model reads the state again to learn what changed. The result could carry the part of the state that the action changed.
 
-This debt blocks no phase or step. Pick it up when the [Claude Code gate](../roadmap/phase-1/claude-code-gate.md) or the smoke test shows that state reads after actions cost too much. [state-sections.md](state-sections.md) cuts the same cost with less work, so measure after it first.
+This debt blocks no phase or step. Pick it up when the smoke test shows that state reads after actions cost too much. [state-sections.md](state-sections.md) cuts the same cost with less work, so measure after it first.
 
 ## Now
 

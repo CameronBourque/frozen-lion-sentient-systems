@@ -2,7 +2,7 @@
 
 `get_state` returns the whole state, so a model that only needs its units or cities again after an action reads every section. A section argument would let it read only what changed.
 
-This debt blocks no phase or step. Pick it up when the [Claude Code gate](../roadmap/phase-1/claude-code-gate.md) or the smoke test shows that state reads cost too much.
+This debt blocks no phase or step. Pick it up when the smoke test shows that state reads cost too much.
 
 ## Now
 

@@ -12,3 +12,4 @@ The steps of [phase 1](../README.md) that are done, each with the pull request i
 | [popups.md](popups.md) | Popups for agent players |
 | [lookup.md](lookup.md) | The Civilopedia lookup |
 | [mcp-server.md](mcp-server.md) | The MCP server and its tool reference |
+| [gate.md](gate.md) | The Claude Code gate |

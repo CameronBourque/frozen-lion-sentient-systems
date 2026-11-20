@@ -27,7 +27,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 9 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 2 results` | |
 | 10 | [Close out phase 2](close-out.md) | Update the docs, and release core and the agent players mod | `docs: record phase 2 results` | |
 
-The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the phase 1 steps.
+The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the steps that do.
 
 ## Commits and pull requests
 

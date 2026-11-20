@@ -7,7 +7,7 @@ Each phase is a folder. When work on a phase starts, we break it into step files
 | Phase | Gate | Status |
 | --- | --- | --- |
 | [0: Prove the bridge](phase-0/README.md) | From the bridge, list your cities and move one unit | Done |
-| [1: Agent tools over MCP](phase-1/README.md) | From Claude Code, play 10 turns of a single-player game through the MCP server, with a `reason` on every action | In progress |
+| [1: Agent tools over MCP](phase-1/README.md) | From Claude Code, play 10 turns of a single-player game through the MCP server, with a `reason` on every action | Done |
 | [2: MVP, one agent finishes a game](phase-2/README.md) | One agent plays a full single-player game against the native AI with no manual help | Not started |
 | [3: You and several agents](phase-3/README.md) | You play a game against two agents, with at least one reload to an earlier save | Not started |
 | [4: Personalities and play quality](phase-4/README.md) | Agents with different sweat levels and personalities play visibly different games | Not started |
