@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.4...core-v0.25.0) (2026-11-20)
+
+
+### Features
+
+* **core:** add tribal village rewards to the events ([#116](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/116)) ([ccb2552](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/ccb2552d20303daa36d4ed2e27825c71d97606b0))
+
 ## [0.24.4](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.24.3...core-v0.24.4) (2026-11-19)
 
 
