@@ -19,15 +19,25 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 1 | [Model client](model-client.md) | The Vercel AI SDK behind one interface, and `models.yaml` | `feat(core): add the model client` | |
 | 2 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
 | 3 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
-| 4 | [Agent loop](agent-loop.md) | The turn, its limits, and plain code for idle units and scouts | `feat(core): add the agent loop` | |
-| 5 | [Stopping and spending limits](stopping.md) | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | |
-| 6 | [Metrics line](metrics-line.md) | One line of numbers for each player after each agent turn, for the baseline | `feat(core): add the metrics line` | |
-| 7 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 8 | [Smoke test](smoke-test.md) | Pass the smoke test preset | `docs: record the smoke test` | |
-| 9 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size and the cost | `docs: record phase 2 results` | |
-| 10 | [Close out phase 2](close-out.md) | Update the docs, and release core and the agent players mod | `docs: record phase 2 results` | |
+| 4 | [Agent loop](agent-loop.md) | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | |
+| 5 | [End turn](end-turn.md) | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | |
+| 6 | [Turn limits](turn-limits.md) | Retries per action, actions per turn, and time per turn | `feat(core): add turn limits` | |
+| 7 | [Forced end turn](forced-end-turn.md) | Another try after a blocked end turn, and a forced end at a limit | `feat(core): force the end turn at the turn limit` | |
+| 8 | [Idle units and scouts](idle-units.md) | Fortify idle military units and set scouts to explore in plain code | `feat(core): handle idle units and scouts in plain code` | |
+| 9 | [Game options](game-options.md) | Warn when quick movement or quick combat is off | `feat(core): warn when quick movement or quick combat is off` | |
+| 10 | [Stopping and spending limits](stopping.md) | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | |
+| 11 | [Metrics line](metrics-line.md) | A line with each player's score after each agent turn, for the baseline | `feat(core): add the metrics line` | |
+| 12 | [Yield and empire metrics](metrics-yields.md) | Yields, military strength, cities, population, techs, and civics | `feat(core): add yields and empire counts to the metrics` | |
+| 13 | [Era and victory metrics](metrics-victories.md) | The era, era score, age, and progress toward each victory | `feat(core): add the era and victory progress to the metrics` | |
+| 14 | [Skill measure](skill-measure.md) | How strong and reliable the agent's play is, apart from the sweat level targets | `docs: add the skill measure` | |
+| 15 | [Evaluator](evaluator.md) | `npm run evaluate`, which writes the skill measure report for a game | `feat(core): add the evaluator` | |
+| 16 | [Front-end probe](front-end-probe.md) | How the front end starts a game, and whether the core mod can drive it | `feat(core): report the front-end screen` | |
+| 17 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
+| 18 | [Smoke test](smoke-test.md) | Pass the smoke test preset, and record the first baseline | `docs: record the smoke test` | |
+| 19 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size, the cost, and the baseline | `docs: record phase 2 results` | |
+| 20 | [Close out phase 2](close-out.md) | Update the docs, and release core and the agent players mod | `docs: record phase 2 results` | |
 
-The model client, personality and sweat level, and memory steps don't need the game, so they can run beside the steps that do.
+The model client, personality and sweat level, memory, and skill measure steps don't need the game, so they can run beside the steps that do.
 
 ## Commits and pull requests
 
