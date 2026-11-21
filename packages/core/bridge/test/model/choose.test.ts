@@ -57,15 +57,14 @@ describe("in a terminal", () => {
 		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: cancel, list: LIST, prices: PRICES })).toBe(false);
 	});
 
-	test("warns when the list fails, and when the kept model can't play", async () => {
+	test("returns false when the user quits after the list fails", async () => {
 		const warn = vi.spyOn(logger, "warn");
 		const failing: ChooseIo["list"] = () => Promise.resolve({ ok: false, error: "offline" });
+		// Try again and Quit, since no model is saved.
+		const quit: ChooseIo["ask"] = () => Promise.resolve(1);
 
-		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: FIRST_ROWS, list: failing, prices: PRICES })).toBe(true);
-		expect(warn.mock.calls.map(([, text]) => text)).toEqual([
-			"offline, so the bridge keeps the saved model",
-			expect.stringMatching(/^No model is picked/),
-		]);
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: quit, list: failing, prices: PRICES })).toBe(false);
+		expect(warn).toHaveBeenCalledWith("model_warning", "offline");
 	});
 
 	test("warns when it can't save the choice", async () => {

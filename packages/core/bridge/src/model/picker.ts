@@ -50,6 +50,24 @@ async function askFor<T>(io: PickerIo, title: string, choices: readonly T[], lab
 	return row === undefined ? undefined : choices[row];
 }
 
+type AfterFailure = "again" | "use" | "quit";
+
+// After a failed model list, the user decides. The first row is never the
+// saved model, so Enter never spends money on a model the user didn't pick.
+// Use appears only when the saved model can play.
+async function askAfterFailure(io: PickerIo, config: Config, keyed: Provider[]): Promise<AfterFailure> {
+	const { provider, id } = config.model;
+	const choices: AfterFailure[] = ["again", ...(canPlay(config) ? ["use" as const] : []), "quit"];
+	const labels: Record<AfterFailure, string> = {
+		again: keyed.length > 1 ? "Pick another provider" : "Try again",
+		use: `Use ${id} (${provider})`,
+		quit: "Quit",
+	};
+	const row = await io.ask("What now?", choices.map((choice) => labels[choice]), 0);
+
+	return row === undefined ? "quit" : choices[row];
+}
+
 export async function pickModel(config: Config, io: PickerIo): Promise<PickResult> {
 	const saved = config.model;
 	const keyed = keyedProviders(config);
@@ -67,19 +85,32 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 
 	const [listed, priced] = await Promise.all([io.list(provider, config.providers[provider]?.apiKey ?? ""), io.prices()]);
 
-	if (!listed.ok || listed.models.length === 0) {
-		io.warn(`${listed.ok ? `${provider} listed no models` : listed.error}, so the bridge keeps the saved model`);
-
-		return { result: "kept", model: saved };
+	if (listed.ok && listed.models.length > 0) {
+		return pickFromList(config, io, provider, listed.models, priced);
 	}
+
+	io.warn(listed.ok ? `${provider} listed no models` : listed.error);
+
+	const next = await askAfterFailure(io, config, keyed);
+
+	if (next === "again") {
+		return pickModel(config, io);
+	}
+
+	return next === "use" ? { result: "kept", model: saved } : { result: "cancelled" };
+}
+
+// Asks for the model and the effort from a provider's list.
+async function pickFromList(config: Config, io: PickerIo, provider: Provider, models: ModelInfo[], priced: PricesResult): Promise<PickResult> {
+	const saved = config.model;
 
 	if (!priced.ok) {
 		io.warn(`${priced.error}, so the models show no price`);
 	}
 
 	const prices = priced.ok ? priced.prices : {};
-	const ids = listed.models.map(({ id }) => id);
-	const labels = listed.models.map((model) => modelLabel(model, provider, prices));
+	const ids = models.map(({ id }) => id);
+	const labels = models.map((model) => modelLabel(model, provider, prices));
 	const id = await askFor(io, `${provider} model`, ids, labels, saved.id);
 
 	if (id === undefined) {
@@ -101,15 +132,22 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 	return { result: "picked", model: { provider, id, effort, price } };
 }
 
+// A saved model can play when it is picked and its provider has a key.
+function canPlay(config: Config): boolean {
+	const { provider, id } = config.model;
+
+	return provider !== "" && id !== "" && keyedProviders(config).includes(provider);
+}
+
 // Says why the saved choice can't play, or nothing when it can.
 export function savedModelWarning(config: Config, file: string): string | undefined {
 	const { provider, id } = config.model;
 
-	if (provider === "" || id === "") {
-		return `No model is picked, so agents can't play. Start the bridge in a terminal to pick one, or set model in ${file}`;
+	if (canPlay(config)) {
+		return undefined;
 	}
 
-	return keyedProviders(config).includes(provider)
-		? undefined
+	return provider === "" || id === ""
+		? `No model is picked, so agents can't play. Start the bridge in a terminal to pick one, or set model in ${file}`
 		: `The picked model is from ${provider}, which has no API key, so agents can't play. Add one in ${file}, or start the bridge in a terminal to pick another model`;
 }

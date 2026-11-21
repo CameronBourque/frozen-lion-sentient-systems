@@ -30,7 +30,9 @@ interface Asked {
 
 // Answers each menu with the next row in the script, and records what it
 // asked and warned.
-function scriptedIo(rows: (number | undefined)[], list: ListResult = MODELS, prices: PricesResult = { ok: true, prices: {} }) {
+// A list of results answers each list call in turn, and repeats the last.
+function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[] = MODELS, prices: PricesResult = { ok: true, prices: {} }) {
+	const lists = Array.isArray(list) ? [...list] : [list];
 	const asked: Asked[] = [];
 	const warnings: string[] = [];
 	const listed: string[] = [];
@@ -43,7 +45,7 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult = MODELS, pri
 		list: (provider, apiKey) => {
 			listed.push(`${provider} ${apiKey}`);
 
-			return Promise.resolve(list);
+			return Promise.resolve(lists.length > 1 ? lists.shift() as ListResult : lists[0]);
 		},
 		prices: () => Promise.resolve(prices),
 		warn: (text) => warnings.push(text),
@@ -150,18 +152,60 @@ describe("pickModel", () => {
 		expect(asked).toEqual([]);
 	});
 
-	test("warns and keeps the saved model when the list fails", async () => {
-		const { io, warnings } = scriptedIo([], { ok: false, error: "openai answered the model list with 401: invalid x-api-key" });
+	describe("after a failed list", () => {
+		const REFUSED: ListResult = { ok: false, error: "openai answered the model list with 401: invalid x-api-key" };
+		const SAVED: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
-		expect(await pickModel(configWith(["openai"]), io)).toEqual({ result: "kept", model: NO_MODEL });
-		expect(warnings).toEqual(["openai answered the model list with 401: invalid x-api-key, so the bridge keeps the saved model"]);
-	});
+		test("warns, then asks, starting on trying again", async () => {
+			const { io, asked, warnings } = scriptedIo([2], REFUSED);
 
-	test("warns and keeps the saved model when the list is empty", async () => {
-		const { io, warnings } = scriptedIo([], { ok: true, models: [] });
+			await pickModel(configWith(["openai"], SAVED), io);
 
-		expect(await pickModel(configWith(["google"]), io)).toEqual({ result: "kept", model: NO_MODEL });
-		expect(warnings).toEqual(["google listed no models, so the bridge keeps the saved model"]);
+			expect(warnings).toEqual(["openai answered the model list with 401: invalid x-api-key"]);
+			expect(asked).toEqual([{ title: "What now?", labels: ["Try again", "Use model-a (openai)", "Quit"], start: 0 }]);
+		});
+
+		test("uses the saved model only when the user picks it", async () => {
+			const { io } = scriptedIo([1], REFUSED);
+
+			expect(await pickModel(configWith(["openai"], SAVED), io)).toEqual({ result: "kept", model: SAVED });
+		});
+
+		test("tries the list again", async () => {
+			const { io, listed } = scriptedIo([0, 1, 0], [REFUSED, MODELS]);
+
+			expect(await pickModel(configWith(["openai"], SAVED), io)).toMatchObject({ result: "picked", model: { id: "model-b" } });
+			expect(listed).toHaveLength(2);
+		});
+
+		test("picks another provider when several have a key", async () => {
+			const { io, asked, listed } = scriptedIo([1, 0, 0, 0, 0], [REFUSED, MODELS]);
+
+			expect(await pickModel(configWith(["anthropic", "openai"], SAVED), io)).toMatchObject({ result: "picked", model: { provider: "anthropic" } });
+			expect(asked[1].labels[0]).toBe("Pick another provider");
+			expect(listed).toEqual(["openai openai-key", "anthropic anthropic-key"]);
+		});
+
+		test("leaves out the saved model when it can't play", async () => {
+			const { io, asked } = scriptedIo([1], REFUSED);
+
+			expect(await pickModel(configWith(["openai"]), io)).toEqual({ result: "cancelled" });
+			expect(asked[0].labels).toEqual(["Try again", "Quit"]);
+		});
+
+		test("quits on Ctrl+C", async () => {
+			const { io } = scriptedIo([undefined], REFUSED);
+
+			expect(await pickModel(configWith(["openai"], SAVED), io)).toEqual({ result: "cancelled" });
+		});
+
+		test("names an empty list", async () => {
+			const { io, warnings } = scriptedIo([1], { ok: true, models: [] });
+
+			await pickModel(configWith(["google"]), io);
+
+			expect(warnings).toEqual(["google listed no models"]);
+		});
 	});
 
 	test.each([

@@ -50,7 +50,9 @@ The bridge keeps the file in `cache/prices.json` in the config file's folder, an
 
 The picked model gets the list's price, unless you saved a price for the same model. When the file can't be read, or has no price for the model, the picker warns and the price stays blank.
 
-The bridge saves the choice to `model` in the config file with `saveModel`, which keeps the file's comments. Ctrl+C in a menu exits the bridge. When the list fails, the picker logs a warning and keeps the saved model.
+The bridge saves the choice to `model` in the config file with `saveModel`, which keeps the file's comments. Ctrl+C in a menu exits the bridge.
+
+When the list fails, the picker logs a warning and asks what to do: pick another provider, or try again when only one has a key, use the saved model, or quit. The first row is never the saved model, and the saved model is a row only when it can play.
 
 `askMenu` in `src/model/menu.ts` draws a menu that the arrow keys and Enter answer. Page Up, Page Down, Home, and End jump. A list longer than 5 rows scrolls in a window, with a marker when there are more rows above or below.
 
@@ -85,4 +87,5 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | Retries use the SDK's own retry, with `maxRetries` set to 3 | It already backs off, honors `Retry-After`, and knows which status codes are worth a retry |
 | A failed call returns a failure instead of throwing | A failed call is an ordinary event for the agent loop, which decides what to do. An auth failure stops the turn, because every retry would fail the same way |
+| After a failed list, the user chooses the saved model, and Enter never does | The saved model may cost more than the user meant to spend. A switch the user didn't see could run it for a whole game |
 | The model client returns tool calls and doesn't run them | The agent loop runs each call through the MCP server, so it can count actions and stop at a turn limit |
