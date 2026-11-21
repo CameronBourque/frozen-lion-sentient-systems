@@ -1,9 +1,9 @@
 // Asks the user for the provider, the model, and the effort when the bridge
 // starts in a terminal. docs/design/core/model-client.md has the design.
 
-import { type Config, EFFORTS, type ModelSetting, NO_PRICE, PROVIDERS, type Price, type Provider } from "../config.js";
+import { type Config, type Effort, type ModelSetting, NO_PRICE, PROVIDERS, type Price, type Provider } from "../config.js";
 import type { ListResult, ModelInfo } from "./list-models.js";
-import { type Facts, type FactsResult, callsTools, priceFor, priceLabel } from "./model-facts.js";
+import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
@@ -26,6 +26,11 @@ export function keyedProviders(config: Config): Provider[] {
 
 function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts): string {
 	return `${name === id ? id : `${name} (${id})`}, ${priceLabel(priceFor(facts, provider, id))}`;
+}
+
+// Names the level that provider-default means, when OpenRouter says.
+function effortLabel(effort: Effort, defaultEffort: string | undefined): string {
+	return effort === "provider-default" && defaultEffort !== undefined ? `${effort} (${defaultEffort})` : effort;
 }
 
 function isPriced(price: Price): boolean {
@@ -124,7 +129,9 @@ async function pickFromList(config: Config, io: PickerIo, provider: Provider, mo
 		return { result: "cancelled" };
 	}
 
-	const effort = await askFor(io, "Effort", EFFORTS, [...EFFORTS], saved.effort);
+	const { efforts, defaultEffort } = effortsFor(facts, provider, id);
+	const effortLabels = efforts.map((effort) => effortLabel(effort, defaultEffort));
+	const effort = await askFor(io, "Effort", efforts, effortLabels, saved.effort);
 
 	if (effort === undefined) {
 		return { result: "cancelled" };

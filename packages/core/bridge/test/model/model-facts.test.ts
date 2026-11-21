@@ -5,9 +5,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { NO_PRICE } from "../../src/config.js";
+import { EFFORTS, NO_PRICE } from "../../src/config.js";
 import type { Fetch } from "../../src/model/list-models.js";
-import { MODELS_URL, cachedFacts, callsTools, factsCachePath, fetchFacts, priceFor, priceLabel } from "../../src/model/model-facts.js";
+import { MODELS_URL, cachedFacts, callsTools, effortsFor, factsCachePath, fetchFacts, priceFor, priceLabel } from "../../src/model/model-facts.js";
 
 const CLAUDE = { id: "anthropic/claude-a.5", pricing: { prompt: "0.000003", completion: "0.000015" } };
 const GEMINI = { id: "google/gemini-a", pricing: { prompt: "0.00000125", completion: "0.00001" } };
@@ -96,6 +96,42 @@ describe("callsTools", () => {
 		expect(callsTools(TOOL_FACTS, "openai", "gpt-image")).toBe(false);
 		expect(callsTools(TOOL_FACTS, "openai", "gpt-odd")).toBe(false);
 		expect(callsTools(TOOL_FACTS, "openai", "whisper-1")).toBe(false);
+	});
+});
+
+describe("effortsFor", () => {
+	const EFFORT_FACTS = {
+		"anthropic/claude-big": { reasoning: { mandatory: true, supported_efforts: ["max", "xhigh", "high", "medium", "low"], default_effort: "high" } },
+		"anthropic/claude-small": { reasoning: { mandatory: false, supported_efforts: ["max", "high", "low", "none", "turbo"] } },
+		"openai/gpt-plain": { reasoning: null },
+		"openai/gpt-quiet": {},
+		"google/gemini-open": { reasoning: { mandatory: false } },
+		"google/gemini-always": { reasoning: { mandatory: true } },
+	};
+
+	test("offers provider-default and the listed levels, in the usual order, with the default", () => {
+		expect(effortsFor(EFFORT_FACTS, "anthropic", "claude-big")).toEqual({
+			efforts: ["provider-default", "low", "medium", "high", "xhigh", "max"],
+			defaultEffort: "high",
+		});
+	});
+
+	test("leaves out a listed level the SDK doesn't have", () => {
+		expect(effortsFor(EFFORT_FACTS, "anthropic", "claude-small").efforts).toEqual(["provider-default", "none", "low", "high", "max"]);
+	});
+
+	test("offers only provider-default for a model without reasoning", () => {
+		expect(effortsFor(EFFORT_FACTS, "openai", "gpt-plain")).toEqual({ efforts: ["provider-default"] });
+		expect(effortsFor(EFFORT_FACTS, "openai", "gpt-quiet")).toEqual({ efforts: ["provider-default"] });
+	});
+
+	test("offers every level when the levels aren't listed, but none only when reasoning can be off", () => {
+		expect(effortsFor(EFFORT_FACTS, "google", "gemini-open").efforts).toEqual(EFFORTS);
+		expect(effortsFor(EFFORT_FACTS, "google", "gemini-always").efforts).toEqual(EFFORTS.filter((effort) => effort !== "none"));
+	});
+
+	test("offers every level for a model OpenRouter doesn't list", () => {
+		expect(effortsFor(EFFORT_FACTS, "openai", "gpt-unknown")).toEqual({ efforts: EFFORTS });
 	});
 });
 

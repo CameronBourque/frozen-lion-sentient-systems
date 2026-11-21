@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import type { Price, Provider } from "../config.js";
+import { EFFORTS, type Effort, type Price, type Provider } from "../config.js";
 import type { Fetch } from "./list-models.js";
 
 export const MODELS_URL = "https://openrouter.ai/api/v1/models";
@@ -146,6 +146,46 @@ export function callsTools(facts: Facts, provider: Provider, id: string): boolea
 	const entry = WITH_PARAMETERS.safeParse(entryFor(facts, provider, id));
 
 	return entry.success && entry.data.supported_parameters.includes("tools");
+}
+
+const WITH_REASONING = z.object({
+	reasoning: z.object({
+		mandatory: z.boolean().default(false),
+		supported_efforts: z.array(z.string()).optional(),
+		default_effort: z.string().optional(),
+	}).nullish(),
+});
+
+export interface EffortChoices {
+	efforts: Effort[];
+	// The level the provider uses for provider-default, when OpenRouter says.
+	defaultEffort?: string;
+}
+
+// The effort levels to offer, in the order of EFFORTS:
+// - every level for a model OpenRouter doesn't list,
+// - only provider-default for a model without reasoning,
+// - provider-default and the model's levels, when OpenRouter lists them,
+// - otherwise every level, but none when reasoning can't be turned off.
+export function effortsFor(facts: Facts, provider: Provider, id: string): EffortChoices {
+	const entry = WITH_REASONING.safeParse(entryFor(facts, provider, id));
+
+	if (!entry.success) {
+		return { efforts: EFFORTS };
+	}
+
+	const { reasoning } = entry.data;
+
+	if (reasoning === undefined || reasoning === null) {
+		return { efforts: ["provider-default"] };
+	}
+
+	const listed = reasoning.supported_efforts;
+	const offered = EFFORTS.filter((effort) => listed === undefined
+		? !(effort === "none" && reasoning.mandatory)
+		: effort === "provider-default" || listed.includes(effort));
+
+	return { efforts: offered, defaultEffort: reasoning.default_effort };
 }
 
 export function priceLabel(price: Price | undefined): string {

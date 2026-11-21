@@ -12,8 +12,9 @@ const MODELS: ListResult = {
 	models: [{ id: "model-a", name: "Model A" }, { id: "model-b", name: "model-b" }],
 };
 
-// Both models call tools at every provider, and neither has a price.
-const TOOLS = { supported_parameters: ["tools"] };
+// Both models call tools and reason at every provider, with every effort
+// level, and neither has a price.
+const TOOLS = { supported_parameters: ["tools"], reasoning: {} };
 const TOOL_FACTS: FactsResult = {
 	ok: true,
 	facts: Object.fromEntries(["anthropic", "openai", "google"].flatMap((provider) => [[`${provider}/model-a`, TOOLS], [`${provider}/model-b`, TOOLS]])),
@@ -160,6 +161,26 @@ describe("pickModel", () => {
 
 		expect(await pickModel(configWith([]), io)).toEqual({ result: "kept", model: NO_MODEL });
 		expect(asked).toEqual([]);
+	});
+
+	describe("effort", () => {
+		test("offers the model's levels, and names the default", async () => {
+			const reasoning = { supported_efforts: ["high", "low"], default_effort: "high" };
+			const facts: FactsResult = { ok: true, facts: { "openai/model-a": { ...TOOLS, reasoning } } };
+			const { io, asked } = scriptedIo([0, 2], MODELS, facts);
+
+			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { effort: "high" } });
+			expect(asked[1].labels).toEqual(["provider-default (high)", "low", "high"]);
+		});
+
+		test("starts on the first level when the saved one isn't offered", async () => {
+			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "minimal", price: NO_PRICE };
+			const facts: FactsResult = { ok: true, facts: { "openai/model-a": { ...TOOLS, reasoning: { supported_efforts: ["low"] } } } };
+			const { io, asked } = scriptedIo([0, 0], MODELS, facts);
+
+			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { effort: "provider-default" } });
+			expect(asked[1].start).toBe(0);
+		});
 	});
 
 	describe("tool support", () => {

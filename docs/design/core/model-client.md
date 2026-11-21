@@ -40,7 +40,11 @@ When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker i
 
 1. **Provider**, from the providers with a key. With only one, the picker skips this menu.
 2. **Model**, from the provider's list, by name, ID, and price.
-3. **Effort**, from the SDK's reasoning levels, with `provider-default` first.
+3. **Effort**, from the levels the model supports, with `provider-default` first. `effortsFor` in `src/model/model-facts.ts` reads them from OpenRouter's list:
+   - every level for a model OpenRouter doesn't list,
+   - only `provider-default` for a model without reasoning,
+   - `provider-default` and the model's levels, when OpenRouter lists them, with the level that `provider-default` means, such as `provider-default (high)`,
+   - otherwise every level, but `none` only when reasoning can be turned off.
 
 `cachedFacts` and `priceFor` in `src/model/model-facts.ts` look up facts about each model, such as its price, in OpenRouter's public model list, while the picker lists the models. The list gives each provider's own price, with no markup.
 
@@ -90,4 +94,5 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | Retries use the SDK's own retry, with `maxRetries` set to 3 | It already backs off, honors `Retry-After`, and knows which status codes are worth a retry |
 | A failed call returns a failure instead of throwing | A failed call is an ordinary event for the agent loop, which decides what to do. An auth failure stops the turn, because every retry would fail the same way |
 | After a failed list, the user chooses the saved model, and Enter never does | The saved model may cost more than the user meant to spend. A switch the user didn't see could run it for a whole game |
+| The effort menu offers only the model's own levels | The SDK swaps an unsupported level for another without asking, so a pick of `minimal` can run at `low`. OpenRouter lists each model's levels |
 | The model client returns tool calls and doesn't run them | The agent loop runs each call through the MCP server, so it can count actions and stop at a turn limit |
