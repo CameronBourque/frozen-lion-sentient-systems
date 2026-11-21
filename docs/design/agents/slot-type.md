@@ -4,6 +4,8 @@ How the setup screen marks a player as an agent, and which game mode each mix of
 
 The setup screen gets an **Agent** option in each slot's player-type dropdown. The engine's slot types are fixed enums, so **Agent** is a label over one of them. Each **Agent** slot also gets two dropdowns, one for personality and one for [sweat level](sweat-level.md).
 
+The personality dropdown has a **Random** option. The game picks a personality for it when the game starts, and the pick saves with the game, so the agent keeps it for the whole game. The bridge always gets a named personality.
+
 ## Game modes
 
 | Players | Game mode | Status |
@@ -35,5 +37,6 @@ If the test fails, the backups are in [risks.md](../../risks.md).
 | Decision | Reason |
 | --- | --- |
 | **Agent** is a label over the engine's slot types | The engine's slot types are fixed enums |
+| **Random** resolves to a personality when the game starts, not in the bridge | A personality stays the same for the whole game, through bridge restarts and reloads, as a random leader does |
 | One agent against the native AI runs in single player, with the agent in the human slot | The tuner stays open in single player |
 | No LAN games with separate clients | Simultaneous turns cost a game copy per agent |
