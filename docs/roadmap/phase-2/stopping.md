@@ -8,7 +8,9 @@ Add the stop key, the turn count, and the spending limits, so an agent never spe
 
    A second Ctrl+C exits at once. Test it with a mock model that never answers. Commit: `feat(core): stop the agent on Ctrl+C`.
 2. **Turn count.** Add `--turns <n>`, which stops the bridge the same way after the agent ends its n-th turn. Commit: `feat(core): stop after a number of agent turns`.
-3. **Spending limits.** Add `costPerTurn` and `costPerRun` to `limits` in the config file, with starting defaults of 0.50 and 5.00 US dollars. Sum each call's cost from the [model client](model-client.md) usage.
+3. **Spending limits.** Add `tokensPerTurn`, `tokensPerRun`, `costPerTurn`, and `costPerRun` to `limits` in the config file, all blank to start, so there is no limit until you set one. A token limit counts input and output tokens. Sum each call's tokens and cost from the [model client](model-client.md) usage.
+
+   A cost limit needs `model.price`, so a cost limit with no price logs a warning when the bridge starts. With no spending limit set, the bridge logs a warning when it starts.
 
    A turn at its limit ends with `force`, as the other turn limits do. A run at its limit stops as the stop key does, and logs the run's total cost. Commit: `feat(core): add spending limits`.
 
@@ -19,7 +21,8 @@ All of these hold in a running game:
 - Ctrl+C during a model call exits within 5 seconds and sends no end turn.
 - A restart of the bridge after that stop resumes the same turn.
 - `--turns 2` exits after the second agent turn ends.
-- With `costPerRun: 0.01`, the bridge stops after the first model call and logs the total cost.
+- With `tokensPerRun: 1000`, the bridge stops after the first model call and logs the total tokens.
+- With `costPerRun: 0.01` and a price set, the bridge stops after the first model call and logs the total cost.
 
 ## Record
 

@@ -2,7 +2,7 @@
 
 How the bridge calls a model: one interface over every provider, through the Vercel AI SDK. Part of the [bridge](bridge.md).
 
-`models.yaml` maps each provider and operation to a model. Testing fills that table.
+You pick the model and its effort in `model` in the [config file](settings.md), through a picker when the bridge starts. The picker lists each provider's models from its own API.
 
 `callModel(model, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools, and returns the model's text and tool calls. Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
 
@@ -15,4 +15,5 @@ How the bridge calls a model: one interface over every provider, through the Ver
 | Any LLM provider, through the Vercel AI SDK | Users bring their own provider. Testing decides which models are good enough |
 | Anthropic, OpenAI, and Google first | Three providers give testing a choice of models from the start. Another provider is one package and one line |
 | An empty key fails before the SDK sees it | The SDK falls back to an environment variable, such as `ANTHROPIC_API_KEY`, when the key is empty. The config file stays the only place keys come from |
+| You pick the model, with no model table in the repo | Models change faster than releases. The providers' own lists are current, and no one has to keep a table up to date |
 | The model client returns tool calls and doesn't run them | The agent loop runs each call through the MCP server, so it can count actions and stop at a turn limit |

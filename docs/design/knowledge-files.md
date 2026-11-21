@@ -11,7 +11,6 @@ Agents learn the game from files and the Civilopedia, not from web research. The
 | Opening books | Plans for the first turns of a game, as trees that branch. See [decision-support/opening-books.md](decision-support/opening-books.md) | Hand-written, tuned from decision records |
 | Personalities | Priorities, behavior rules, narrator voice | Hand-written. The game's leader agendas are a starting point |
 | Sweat levels | The mindset for each level. See [agents/sweat-level.md](agents/sweat-level.md) | Hand-written, tuned from logs and playtests |
-| Model table | The model for each provider and operation | `models.yaml`, filled by testing |
 
 When the agent needs a stat, a requirement, or a rule, it calls the `search_civilopedia` and `read_civilopedia` tools.
 
@@ -46,7 +45,6 @@ sweat/
 	no-sweat.md
 	balanced.md
 	super-sweat.md
-models.yaml
 ```
 
 An agent at runtime is a slot ID, a personality file, a sweat level, and a memory folder. There are no separate agent definitions and no subagents for strategy, tactics, or narration. A deep strategic review with a stronger model is a mode inside the same agent loop, and it uses the same memory.
