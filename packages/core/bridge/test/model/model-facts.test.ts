@@ -7,9 +7,9 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { NO_PRICE } from "../../src/config.js";
 import type { Fetch } from "../../src/model/list-models.js";
-import { MODELS_URL, cachedFacts, factsCachePath, fetchFacts, priceFor, priceLabel } from "../../src/model/model-facts.js";
+import { MODELS_URL, cachedFacts, callsTools, factsCachePath, fetchFacts, priceFor, priceLabel } from "../../src/model/model-facts.js";
 
-const CLAUDE = { id: "anthropic/claude-a.5", canonical_slug: "anthropic/claude-a.5-20260101", pricing: { prompt: "0.000003", completion: "0.000015" } };
+const CLAUDE = { id: "anthropic/claude-a.5", pricing: { prompt: "0.000003", completion: "0.000015" } };
 const GEMINI = { id: "google/gemini-a", pricing: { prompt: "0.00000125", completion: "0.00001" } };
 const VARIABLE = { id: "openai/gpt-router", pricing: { prompt: "-1", completion: "-1" } };
 const NO_PRICING = { id: "openai/gpt-a" };
@@ -20,7 +20,6 @@ const LIST = { data: [CLAUDE, GEMINI, VARIABLE, NO_PRICING, BATCH] };
 // The list's facts, as fetchFacts indexes them.
 const FACTS = {
 	"anthropic/claude-a-5": CLAUDE,
-	"anthropic/claude-a-5-20260101": CLAUDE,
 	"google/gemini-a": GEMINI,
 	"openai/gpt-router": VARIABLE,
 	"openai/gpt-a": NO_PRICING,
@@ -66,8 +65,9 @@ describe("priceFor", () => {
 		expect(priceFor(FACTS, "anthropic", "claude-a-5")).toEqual({ input: 3, output: 15 });
 	});
 
-	test("finds a model by its dated ID", () => {
+	test("finds a model by its ID without the release date", () => {
 		expect(priceFor(FACTS, "anthropic", "claude-a-5-20260101")).toEqual({ input: 3, output: 15 });
+		expect(priceFor(FACTS, "anthropic", "claude-a-5-2026")).toBeUndefined();
 	});
 
 	test("finds a Google model", () => {
@@ -78,6 +78,24 @@ describe("priceFor", () => {
 		expect(priceFor(FACTS, "openai", "gpt-b")).toBeUndefined();
 		expect(priceFor(FACTS, "openai", "gpt-a")).toBeUndefined();
 		expect(priceFor(FACTS, "openai", "gpt-router")).toBeUndefined();
+	});
+});
+
+describe("callsTools", () => {
+	const TOOL_FACTS = {
+		"openai/gpt-a": { supported_parameters: ["tools", "tool_choice"] },
+		"openai/gpt-image": { supported_parameters: ["response_format"] },
+		"openai/gpt-odd": {},
+	};
+
+	test("is true for a model that lists tools", () => {
+		expect(callsTools(TOOL_FACTS, "openai", "gpt-a")).toBe(true);
+	});
+
+	test("is false for a model without tools, without parameters, or not listed", () => {
+		expect(callsTools(TOOL_FACTS, "openai", "gpt-image")).toBe(false);
+		expect(callsTools(TOOL_FACTS, "openai", "gpt-odd")).toBe(false);
+		expect(callsTools(TOOL_FACTS, "openai", "whisper-1")).toBe(false);
 	});
 });
 

@@ -12,7 +12,7 @@ import { Logger } from "../../src/log.js";
 import { type ChooseIo, chooseModel } from "../../src/model/choose.js";
 
 const LIST: ChooseIo["list"] = () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] });
-const FACTS: ChooseIo["facts"] = () => Promise.resolve({ ok: true, facts: {} });
+const FACTS: ChooseIo["facts"] = () => Promise.resolve({ ok: true, facts: { "openai/model-a": { supported_parameters: ["tools"] } } });
 
 let folder: string;
 let file: string;

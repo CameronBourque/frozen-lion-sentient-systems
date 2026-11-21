@@ -3,7 +3,7 @@
 
 import { type Config, EFFORTS, type ModelSetting, NO_PRICE, PROVIDERS, type Price, type Provider } from "../config.js";
 import type { ListResult, ModelInfo } from "./list-models.js";
-import { type Facts, type FactsResult, priceFor, priceLabel } from "./model-facts.js";
+import { type Facts, type FactsResult, callsTools, priceFor, priceLabel } from "./model-facts.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
@@ -68,6 +68,12 @@ async function askAfterFailure(io: PickerIo, config: Config, keyed: Provider[]):
 	return row === undefined ? "quit" : choices[row];
 }
 
+// The models that call tools. Without OpenRouter's facts there is nothing to
+// go on, so every model stays.
+function usableModels(models: ModelInfo[], provider: Provider, fetched: FactsResult): ModelInfo[] {
+	return fetched.ok ? models.filter(({ id }) => callsTools(fetched.facts, provider, id)) : models;
+}
+
 export async function pickModel(config: Config, io: PickerIo): Promise<PickResult> {
 	const saved = config.model;
 	const keyed = keyedProviders(config);
@@ -85,11 +91,17 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 
 	const [listed, fetched] = await Promise.all([io.list(provider, config.providers[provider]?.apiKey ?? ""), io.facts()]);
 
-	if (listed.ok && listed.models.length > 0) {
-		return pickFromList(config, io, provider, listed.models, fetched);
+	if (!fetched.ok) {
+		io.warn(`${fetched.error}, so the menu lists every model ${provider} has, with no prices`);
 	}
 
-	io.warn(listed.ok ? `${provider} listed no models` : listed.error);
+	const models = listed.ok ? usableModels(listed.models, provider, fetched) : [];
+
+	if (models.length > 0) {
+		return pickFromList(config, io, provider, models, fetched);
+	}
+
+	io.warn(listed.ok ? `${provider} listed no models that call tools` : listed.error);
 
 	const next = await askAfterFailure(io, config, keyed);
 
@@ -103,11 +115,6 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 // Asks for the model and the effort from a provider's list.
 async function pickFromList(config: Config, io: PickerIo, provider: Provider, models: ModelInfo[], fetched: FactsResult): Promise<PickResult> {
 	const saved = config.model;
-
-	if (!fetched.ok) {
-		io.warn(`${fetched.error}, so the models show no price`);
-	}
-
 	const facts = fetched.ok ? fetched.facts : {};
 	const ids = models.map(({ id }) => id);
 	const labels = models.map((model) => modelLabel(model, provider, facts));

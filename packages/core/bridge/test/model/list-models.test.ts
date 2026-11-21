@@ -43,7 +43,7 @@ describe("anthropic", () => {
 describe("openai", () => {
 	const URL = "https://api.openai.com/v1/models";
 
-	test("keeps the chat models without a date, newest first", async () => {
+	test("keeps every model without a date, newest first", async () => {
 		const fetchPage = fakeFetch({
 			[URL]: {
 				data: [
@@ -66,6 +66,10 @@ describe("openai", () => {
 			ok: true,
 			models: [
 				{ id: "gpt-new", name: "gpt-new" },
+				{ id: "gpt-new-tts", name: "gpt-new-tts" },
+				{ id: "gpt-image-2", name: "gpt-image-2" },
+				{ id: "text-embedding-3-small", name: "text-embedding-3-small" },
+				{ id: "whisper-1", name: "whisper-1" },
 				{ id: "o9-mini", name: "o9-mini" },
 				{ id: "gpt-old", name: "gpt-old" },
 				{ id: "gpt-4.1-mini", name: "gpt-4.1-mini" },
@@ -85,26 +89,23 @@ describe("openai", () => {
 describe("google", () => {
 	const FIRST = "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000";
 	const SECOND = "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&pageToken=next";
-	const CHAT = ["generateContent", "countTokens"];
 
-	test("keeps the Gemini models that generate content, across pages", async () => {
+	test("lists every model across pages, without the models/ prefix", async () => {
 		const calls: Call[] = [];
 		const fetchPage = fakeFetch({
 			[FIRST]: {
 				models: [
-					{ name: "models/gemini-pro", displayName: "Gemini Pro", supportedGenerationMethods: CHAT },
-					{ name: "models/gemini-pro-tts", displayName: "Gemini TTS", supportedGenerationMethods: CHAT },
-					{ name: "models/gemma-3", displayName: "Gemma 3", supportedGenerationMethods: CHAT },
-					{ name: "models/gemini-embedding", displayName: "Embedding", supportedGenerationMethods: ["embedContent"] },
+					{ name: "models/gemini-pro", displayName: "Gemini Pro" },
+					{ name: "models/gemini-embedding", displayName: "Embedding" },
 				],
 				nextPageToken: "next",
 			},
-			[SECOND]: { models: [{ name: "models/gemini-flash", displayName: "Gemini Flash", supportedGenerationMethods: CHAT }] },
+			[SECOND]: { models: [{ name: "models/gemini-flash", displayName: "Gemini Flash" }] },
 		}, calls);
 
 		expect(await listModels("google", "key", fetchPage)).toEqual({
 			ok: true,
-			models: [{ id: "gemini-pro", name: "Gemini Pro" }, { id: "gemini-flash", name: "Gemini Flash" }],
+			models: [{ id: "gemini-pro", name: "Gemini Pro" }, { id: "gemini-embedding", name: "Embedding" }, { id: "gemini-flash", name: "Gemini Flash" }],
 		});
 		expect(calls[0].headers).toEqual({ "x-goog-api-key": "key" });
 	});

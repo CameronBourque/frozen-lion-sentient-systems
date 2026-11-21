@@ -13,7 +13,7 @@ export const MODELS_URL = "https://openrouter.ai/api/v1/models";
 // The list as OpenRouter sends it. Each entry is checked only when the picker
 // asks for it, so one odd entry can't spoil the rest.
 const MODEL_LIST = z.object({
-	data: z.array(z.object({ id: z.string(), canonical_slug: z.string().optional() }).loose()),
+	data: z.array(z.object({ id: z.string() }).loose()),
 });
 
 type ModelList = z.infer<typeof MODEL_LIST>;
@@ -41,19 +41,25 @@ function factKey(provider: string, id: string): string {
 	return `${provider}/${id.toLowerCase().replaceAll(".", "-")}`;
 }
 
-function keyOf(openRouterId: string): string {
-	const [provider, ...rest] = openRouterId.split("/");
+// Anthropic's list names older models with a release date, such as
+// claude-haiku-4-5-20251001, where OpenRouter names them without it.
+const RELEASE_DATE = /-\d{8}$/;
 
-	return factKey(provider, rest.join("/"));
+// A model's entry, by its ID, or by its ID without a release date.
+function entryFor(facts: Facts, provider: Provider, id: string): unknown {
+	return facts[factKey(provider, id)] ?? facts[factKey(provider, id.replace(RELEASE_DATE, ""))];
 }
 
-// Indexes each model by its ID, and by its dated slug, which a provider's own
-// list may use. Leaves out variants, whose IDs end in a colon and a tag, since
-// they name the same model.
+// Indexes each model by provider and ID. Leaves out variants, whose IDs end in
+// a colon and a tag, since they name the same model.
 function indexFacts(list: ModelList): Facts {
 	return Object.fromEntries(list.data
 		.filter(({ id }) => !id.includes(":"))
-		.flatMap((entry) => [entry.id, entry.canonical_slug ?? entry.id].map((name) => [keyOf(name), entry])));
+		.map((entry) => {
+			const [provider, ...rest] = entry.id.split("/");
+
+			return [factKey(provider, rest.join("/")), entry];
+		}));
 }
 
 export async function fetchFacts(fetchFile: Fetch = fetch): Promise<FactsResult> {
@@ -123,11 +129,23 @@ function perMillion(perToken: number): number {
 
 // Undefined when the list has no price for the model.
 export function priceFor(facts: Facts, provider: Provider, id: string): Price | undefined {
-	const entry = PRICED.safeParse(facts[factKey(provider, id)]);
+	const entry = PRICED.safeParse(entryFor(facts, provider, id));
 
 	return entry.success
 		? { input: perMillion(entry.data.pricing.prompt), output: perMillion(entry.data.pricing.completion) }
 		: undefined;
+}
+
+const WITH_PARAMETERS = z.object({
+	supported_parameters: z.array(z.string()),
+});
+
+// False for a model OpenRouter doesn't list, such as a speech or embedding
+// model, or one that it lists without tools, such as an image model.
+export function callsTools(facts: Facts, provider: Provider, id: string): boolean {
+	const entry = WITH_PARAMETERS.safeParse(entryFor(facts, provider, id));
+
+	return entry.success && entry.data.supported_parameters.includes("tools");
 }
 
 export function priceLabel(price: Price | undefined): string {

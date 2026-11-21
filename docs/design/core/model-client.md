@@ -12,13 +12,11 @@ Each tool has a name, a description, and a JSON Schema for its input, as the MCP
 
 It reads the API key from `providers` in the [config file](settings.md), which an environment variable fills when it is blank, and fails with the field to set when the key is empty or missing.
 
-`listModels(provider, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. It keeps only the models that write text and call tools:
+`listModels(provider, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. The provider's list shows the models the user's key can use. Anthropic lists the newest first, and the OpenAI list is sorted newest first.
 
-- **Anthropic** lists only chat models, newest first, so it keeps them all.
-- **OpenAI** lists every kind of model with no capabilities, so it keeps the IDs that start with `gpt-` or `o` and a digit. It drops speech, image, embedding, and search models by words in the ID, and dated snapshots, which repeat an alias. The newest comes first.
+OpenAI lists each dated snapshot beside its alias, so the list drops an ID that ends in a date: the full date, or in an older one, the month and day. Google's IDs lose their `models/` prefix, which the SDK doesn't take.
 
-  A snapshot ends in the full date, or in an older one, in the month and day.
-- **Google** keeps the `gemini-` models that support `generateContent`, and drops speech, image, and embedding models by words in the ID.
+The picker keeps only the models that OpenRouter lists with `tools`. That drops speech, image, embedding, and realtime models, which OpenRouter lists without tools or not at all. When OpenRouter's list can't be read and there is no cache, the menu lists every model, with a warning.
 
 A refused request, a network error, or an answer of the wrong shape fails the whole list, with a reason the picker can show.
 
@@ -46,7 +44,9 @@ When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker i
 
 `cachedFacts` and `priceFor` in `src/model/model-facts.ts` look up facts about each model, such as its price, in OpenRouter's public model list, while the picker lists the models. The list gives each provider's own price, with no markup.
 
-OpenRouter names a model `anthropic/claude-opus-5.5` where Anthropic's API says `claude-opus-5-5`, so the lookup counts a dot and a dash as the same. It also finds a model by its dated ID, and skips variants such as `:batch`.
+OpenRouter names a model `anthropic/claude-opus-5.5` where Anthropic's API says `claude-opus-5-5`, so the lookup counts a dot and a dash as the same.
+
+It also finds a model whose ID ends in a release date, which Anthropic uses for older models, by its ID without the date. It skips variants such as `:batch`.
 
 The bridge keeps the facts in `cache/models.json` in the config file's folder, and fetches it again once the copy is a day old. When the fetch fails, an older copy still serves.
 
@@ -78,7 +78,7 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | You pick the model, with no model table in the repo | Models change faster than releases. The providers' own lists are current, and no one has to keep a table up to date |
 | The effort levels are a record checked against the SDK's `reasoning` type | The SDK exports the levels only as a type. A record needs every level and allows no others, so typecheck fails when an SDK update adds or drops one |
 | The model lists come from each provider's API, with `fetch` | The SDK packages hold their model names only as types. `fetch` is in Node, so the lists need no package |
-| OpenAI's list is filtered by words in the ID | Its API gives no capabilities. A new kind of model may show in the menu until a word is added |
+| The model menu keeps the models OpenRouter lists with tools | The providers' lists say nothing about tools, or mix in speech, image, and embedding models. A brand-new model shows once OpenRouter lists it, usually the same day |
 | The picker asks on each start, from the saved choice | Enter three times keeps the model, and a new model is a few keys away. A choice made once and hidden in the file is easy to forget |
 | A long menu scrolls in a window of 5 rows, not pages | The newest models come first and the menu starts on the saved choice, so most picks need little scrolling. 10 rows didn't fit VS Code's default terminal panel |
 | The menu uses `node:readline`, with no prompt package | Raw mode and keypress events are in Node. The menu is short, and its logic is tested without a terminal |

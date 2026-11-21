@@ -1,5 +1,6 @@
-// Lists a provider's models through its own API, keeping the ones that write
-// text and call tools. docs/design/core/model-client.md has the design.
+// Lists a provider's models through its own API, which shows the models the
+// user's key can use. The picker keeps the ones that call tools.
+// docs/design/core/model-client.md has the design.
 
 import { z } from "zod";
 import type { Provider } from "../config.js";
@@ -27,10 +28,6 @@ interface Lister {
 	parse: (body: unknown, url: string) => Page;
 }
 
-// Words in the ID of a model that doesn't chat with tools, such as speech,
-// image, or embedding models.
-const NOT_CHAT = /audio|realtime|tts|transcribe|image|embedding|search|moderation|instruct|live|robotics|computer-use/;
-
 // OpenAI lists each dated snapshot beside its alias, which doubles the menu.
 // Newer snapshots end in the full date, and older ones in the month and day,
 // some with "-preview" after it.
@@ -52,7 +49,6 @@ const GOOGLE_PAGE = z.object({
 	models: z.array(z.object({
 		name: z.string(),
 		displayName: z.string(),
-		supportedGenerationMethods: z.array(z.string()).default([]),
 	})).default([]),
 	nextPageToken: z.string().optional(),
 });
@@ -67,7 +63,7 @@ function withParam(url: string, name: string, value: string): string {
 }
 
 const LISTERS: Record<Provider, Lister> = {
-	// Anthropic lists only chat models, newest first.
+	// Anthropic lists its models newest first.
 	anthropic: {
 		url: "https://api.anthropic.com/v1/models?limit=1000",
 		headers: (apiKey) => ({ "x-api-key": apiKey, "anthropic-version": "2023-06-01" }),
@@ -80,14 +76,13 @@ const LISTERS: Record<Provider, Lister> = {
 			};
 		},
 	},
-	// OpenAI lists every kind of model in one page, with no capabilities, so
-	// the ID is all there is to go on.
+	// OpenAI lists every model in one page.
 	openai: {
 		url: "https://api.openai.com/v1/models",
 		headers: (apiKey) => ({ Authorization: `Bearer ${apiKey}` }),
 		parse: (body) => ({
 			models: OPENAI_PAGE.parse(body).data
-				.filter(({ id }) => /^(gpt-|o\d)/.test(id) && !NOT_CHAT.test(id) && !DATED.test(id))
+				.filter(({ id }) => !DATED.test(id))
 				.sort((a, b) => b.created - a.created)
 				.map(({ id }) => ({ id, name: id })),
 		}),
@@ -100,11 +95,7 @@ const LISTERS: Record<Provider, Lister> = {
 			const page = GOOGLE_PAGE.parse(body);
 
 			return {
-				models: page.models
-					.map((model) => ({ ...model, id: model.name.replace(/^models\//, "") }))
-					.filter(({ id, supportedGenerationMethods }) =>
-						id.startsWith("gemini-") && !NOT_CHAT.test(id) && supportedGenerationMethods.includes("generateContent"))
-					.map(({ id, displayName }) => ({ id, name: displayName })),
+				models: page.models.map(({ name, displayName }) => ({ id: name.replace(/^models\//, ""), name: displayName })),
 				next: page.nextPageToken === undefined ? undefined : withParam(url, "pageToken", page.nextPageToken),
 			};
 		},

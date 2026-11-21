@@ -12,6 +12,13 @@ const MODELS: ListResult = {
 	models: [{ id: "model-a", name: "Model A" }, { id: "model-b", name: "model-b" }],
 };
 
+// Both models call tools at every provider, and neither has a price.
+const TOOLS = { supported_parameters: ["tools"] };
+const TOOL_FACTS: FactsResult = {
+	ok: true,
+	facts: Object.fromEntries(["anthropic", "openai", "google"].flatMap((provider) => [[`${provider}/model-a`, TOOLS], [`${provider}/model-b`, TOOLS]])),
+};
+
 function configWith(keys: string[], model: ModelSetting = NO_MODEL): Config {
 	return {
 		schemaVersion: 1,
@@ -31,7 +38,7 @@ interface Asked {
 // Answers each menu with the next row in the script, and records what it
 // asked and warned.
 // A list of results answers each list call in turn, and repeats the last.
-function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[] = MODELS, facts: FactsResult = { ok: true, facts: {} }) {
+function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[] = MODELS, facts: FactsResult = TOOL_FACTS) {
 	const lists = Array.isArray(list) ? [...list] : [list];
 	const asked: Asked[] = [];
 	const warnings: string[] = [];
@@ -97,7 +104,10 @@ describe("pickModel", () => {
 	});
 
 	describe("prices", () => {
-		const LISTED: FactsResult = { ok: true, facts: { "openai/model-a": { pricing: { prompt: "0.000003", completion: "0.000015" } } } };
+		const LISTED: FactsResult = {
+			ok: true,
+			facts: { "openai/model-a": { ...TOOLS, pricing: { prompt: "0.000003", completion: "0.000015" } }, "openai/model-b": TOOLS },
+		};
 
 		test("shows each model's price and saves the picked one's", async () => {
 			const { io, asked, warnings } = scriptedIo([0, 0], MODELS, LISTED);
@@ -132,7 +142,7 @@ describe("pickModel", () => {
 			const { io, warnings } = scriptedIo([0, 0], MODELS, { ok: false, error: "OpenRouter's model list answered with 503" });
 
 			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { price: NO_PRICE } });
-			expect(warnings).toEqual(["OpenRouter's model list answered with 503, so the models show no price"]);
+			expect(warnings).toEqual(["OpenRouter's model list answered with 503, so the menu lists every model openai has, with no prices"]);
 		});
 	});
 
@@ -150,6 +160,32 @@ describe("pickModel", () => {
 
 		expect(await pickModel(configWith([]), io)).toEqual({ result: "kept", model: NO_MODEL });
 		expect(asked).toEqual([]);
+	});
+
+	describe("tool support", () => {
+		test("offers only the models that call tools", async () => {
+			const facts: FactsResult = { ok: true, facts: { "openai/model-b": TOOLS, "openai/model-a": { supported_parameters: [] } } };
+			const { io, asked } = scriptedIo([0, 0], MODELS, facts);
+
+			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { id: "model-b" } });
+			expect(asked[0].labels).toEqual(["model-b, no price"]);
+		});
+
+		test("offers every model when OpenRouter's list can't be read", async () => {
+			const { io, asked } = scriptedIo([0, 0], MODELS, { ok: false, error: "offline" });
+
+			await pickModel(configWith(["openai"]), io);
+
+			expect(asked[0].labels).toHaveLength(2);
+		});
+
+		test("asks what to do when no model calls tools", async () => {
+			const { io, asked, warnings } = scriptedIo([1], MODELS, { ok: true, facts: {} });
+
+			expect(await pickModel(configWith(["openai"]), io)).toEqual({ result: "cancelled" });
+			expect(warnings).toEqual(["openai listed no models that call tools"]);
+			expect(asked[0].title).toBe("What now?");
+		});
 	});
 
 	describe("after a failed list", () => {
@@ -204,7 +240,7 @@ describe("pickModel", () => {
 
 			await pickModel(configWith(["google"]), io);
 
-			expect(warnings).toEqual(["google listed no models"]);
+			expect(warnings).toEqual(["google listed no models that call tools"]);
 		});
 	});
 
