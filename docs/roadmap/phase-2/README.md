@@ -33,9 +33,10 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 15 | [Evaluator](evaluator.md) | `npm run evaluate`, which writes the skill measure report for a game | `feat(core): add the evaluator` | |
 | 16 | [Front-end probe](front-end-probe.md) | How the front end starts a game, and whether the core mod can drive it | `feat(core): report the front-end screen` | |
 | 17 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 18 | [Smoke test](smoke-test.md) | Pass the smoke test preset, and record the first baseline | `docs: record the smoke test` | |
-| 19 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size, the cost, and the baseline | `docs: record phase 2 results` | |
-| 20 | [Close out phase 2](close-out.md) | Update the docs, and release core and the agent players mod | `docs: record phase 2 results` | |
+| 18 | [Action changes](action-changes.md) | Action results that carry the records the action changed | `feat(core): report what each action changed` | |
+| 19 | [Smoke test](smoke-test.md) | Pass the smoke test preset, and record the first baseline | `docs: record the smoke test` | |
+| 20 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size, the cost, and the baseline | `docs: record phase 2 results` | |
+| 21 | [Close out phase 2](close-out.md) | Update the docs, and release core and the agent players mod | `docs: record phase 2 results` | |
 
 The model client, personality and sweat level, memory, and skill measure steps don't need the game, so they can run beside the steps that do.
 
