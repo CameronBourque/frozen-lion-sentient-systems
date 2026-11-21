@@ -17,7 +17,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | # | Step | Covers | Pull request title | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Model client | The Vercel AI SDK behind one interface, and the model picker | `feat(core): add the model client` | Done. See [done.md](done.md#model-client) |
-| 2 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
+| 2 | [Personality and sweat level](personality-and-sweat.md) | The neutral personality, the balanced sweat level, and the prompt | `feat(core): add the neutral personality and the balanced sweat level` | |
 | 3 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
 | 4 | [Agent loop](agent-loop.md) | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | |
 | 5 | [End turn](end-turn.md) | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | |
@@ -48,5 +48,3 @@ A commit that finds a fact also updates the finding or design file in the step's
 Pull requests are squash-merged, so each PR title becomes one commit on `main`. Titles follow [rules/commits.md](../../rules/commits.md).
 
 In the smoke test and MVP gate steps, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump.
-
-The personality and sweat level PR touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.
