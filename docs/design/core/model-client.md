@@ -4,7 +4,9 @@ How the bridge calls a model: one interface over every provider, through the Ver
 
 You pick the model and its effort in `model` in the [config file](settings.md), through a picker when the bridge starts. The picker lists each provider's models from its own API.
 
-`callModel(model, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools, and returns the model's text and tool calls. Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
+`callModel(model, effort, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools, with the effort as the SDK's `reasoning` setting, and returns the model's text and tool calls.
+
+Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
 
 `providerModel(config, provider, modelId)` in `src/model/providers.ts` builds the model for one provider: Anthropic, OpenAI, or Google, each through its `@ai-sdk/` package. It reads the API key from `providers` in the [config file](settings.md), and fails with the field to set when the key is empty or missing.
 
@@ -16,4 +18,5 @@ You pick the model and its effort in `model` in the [config file](settings.md), 
 | Anthropic, OpenAI, and Google first | Three providers give testing a choice of models from the start. Another provider is one package and one line |
 | An empty key fails before the SDK sees it | The SDK falls back to an environment variable, such as `ANTHROPIC_API_KEY`, when the key is empty. The config file stays the only place keys come from |
 | You pick the model, with no model table in the repo | Models change faster than releases. The providers' own lists are current, and no one has to keep a table up to date |
+| The effort levels are a record checked against the SDK's `reasoning` type | The SDK exports the levels only as a type. A record needs every level and allows no others, so typecheck fails when an SDK update adds or drops one |
 | The model client returns tool calls and doesn't run them | The agent loop runs each call through the MCP server, so it can count actions and stop at a turn limit |

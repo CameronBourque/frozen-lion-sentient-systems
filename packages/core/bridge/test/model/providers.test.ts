@@ -2,11 +2,11 @@
 // the config, and an empty or missing key fails with the field to set.
 
 import { describe, expect, test } from "vitest";
-import { type Config, DEFAULT_MCP_PORT, PROVIDERS } from "../../src/config.js";
+import { type Config, DEFAULT_MCP_PORT, NO_MODEL, PROVIDERS } from "../../src/config.js";
 import { providerModel } from "../../src/model/providers.js";
 
 function configWith(providers: Config["providers"]): Config {
-	return { schemaVersion: 1, logLevel: "decisions", providers, mcpPort: DEFAULT_MCP_PORT };
+	return { schemaVersion: 1, logLevel: "decisions", providers, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT };
 }
 
 describe.each(PROVIDERS)("%s", (provider) => {

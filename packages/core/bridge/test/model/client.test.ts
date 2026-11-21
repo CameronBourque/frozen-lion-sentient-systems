@@ -39,7 +39,7 @@ function reply(content: GenerateResult["content"]): GenerateResult {
 test("sends the system prompt, the messages, and the tools", async () => {
 	const model = new MockLanguageModelV4({ doGenerate: reply([{ type: "text", text: "Done." }]) });
 
-	await callModel(model, REQUEST);
+	await callModel(model, "", REQUEST);
 
 	const [call] = model.doGenerateCalls;
 
@@ -55,10 +55,26 @@ test("sends the system prompt, the messages, and the tools", async () => {
 	})]);
 });
 
+test("leaves the provider's effort when the effort is blank", async () => {
+	const model = new MockLanguageModelV4({ doGenerate: reply([{ type: "text", text: "Done." }]) });
+
+	await callModel(model, "", REQUEST);
+
+	expect(model.doGenerateCalls[0].reasoning).toBeUndefined();
+});
+
+test("sends the effort", async () => {
+	const model = new MockLanguageModelV4({ doGenerate: reply([{ type: "text", text: "Done." }]) });
+
+	await callModel(model, "high", REQUEST);
+
+	expect(model.doGenerateCalls[0].reasoning).toBe("high");
+});
+
 test("returns the text and no tool calls when the model only writes", async () => {
 	const model = new MockLanguageModelV4({ doGenerate: reply([{ type: "text", text: "I'll wait." }]) });
 
-	expect(await callModel(model, REQUEST)).toEqual({ text: "I'll wait.", toolCalls: [] });
+	expect(await callModel(model, "", REQUEST)).toEqual({ text: "I'll wait.", toolCalls: [] });
 });
 
 test("returns the tool calls without running them", async () => {
@@ -69,7 +85,7 @@ test("returns the tool calls without running them", async () => {
 		]),
 	});
 
-	expect(await callModel(model, REQUEST)).toEqual({
+	expect(await callModel(model, "", REQUEST)).toEqual({
 		text: "Ending the turn.",
 		toolCalls: [{ id: "call-1", name: "end_turn", input: { reason: "Nothing left." } }],
 	});

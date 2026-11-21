@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { DEFAULT_MCP_PORT, parseConfig } from "../src/config.js";
+import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig } from "../src/config.js";
 import { CONFIG_NAME, EXAMPLE_CONFIG, findConfigPath, keyWarning, loadConfig, startConfig } from "../src/load-config.js";
 
 const EXECUTABLE = path.resolve("/games/bridge/sentient-systems-bridge.exe");
@@ -69,7 +69,7 @@ describe("loadConfig", () => {
 
 		fs.writeFileSync(file, "schemaVersion: 1\nlogLevel: debug");
 
-		expect(loadConfig(file)).toEqual({ result: "loaded", config: { schemaVersion: 1, logLevel: "debug", providers: {}, mcpPort: DEFAULT_MCP_PORT } });
+		expect(loadConfig(file)).toEqual({ result: "loaded", config: { schemaVersion: 1, logLevel: "debug", providers: {}, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT } });
 	});
 
 	test("returns the errors of a bad file", () => {
@@ -92,24 +92,24 @@ describe("EXAMPLE_CONFIG", () => {
 	test("is a valid config with every provider and no keys", () => {
 		expect(parseConfig(EXAMPLE_CONFIG)).toEqual({
 			ok: true,
-			config: { schemaVersion: 1, logLevel: "decisions", providers: { anthropic: { apiKey: "" }, openai: { apiKey: "" }, google: { apiKey: "" } }, mcpPort: DEFAULT_MCP_PORT },
+			config: { schemaVersion: 1, logLevel: "decisions", providers: { anthropic: { apiKey: "" }, openai: { apiKey: "" }, google: { apiKey: "" } }, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT },
 		});
 	});
 });
 
 describe("keyWarning", () => {
 	test("warns when no provider has a key, and names the file", () => {
-		const config = { schemaVersion: 1 as const, logLevel: "decisions" as const, providers: { anthropic: { apiKey: "" } }, mcpPort: DEFAULT_MCP_PORT };
+		const config = { schemaVersion: 1 as const, logLevel: "decisions" as const, providers: { anthropic: { apiKey: "" } }, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT };
 
 		expect(keyWarning(config, "C:/bridge/sentient-systems.yaml")).toContain("C:/bridge/sentient-systems.yaml");
 	});
 
 	test("warns when there are no providers", () => {
-		expect(keyWarning({ schemaVersion: 1, logLevel: "decisions", providers: {}, mcpPort: DEFAULT_MCP_PORT }, "x.yaml")).toBeDefined();
+		expect(keyWarning({ schemaVersion: 1, logLevel: "decisions", providers: {}, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT }, "x.yaml")).toBeDefined();
 	});
 
 	test("lets a config with one key through", () => {
-		const config = { schemaVersion: 1 as const, logLevel: "decisions" as const, providers: { anthropic: { apiKey: "" }, openai: { apiKey: "key" } }, mcpPort: DEFAULT_MCP_PORT };
+		const config = { schemaVersion: 1 as const, logLevel: "decisions" as const, providers: { anthropic: { apiKey: "" }, openai: { apiKey: "key" } }, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT };
 
 		expect(keyWarning(config, "x.yaml")).toBeUndefined();
 	});
@@ -136,7 +136,7 @@ describe("startConfig", () => {
 
 		expect(start()).toEqual({
 			ok: true,
-			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, mcpPort: DEFAULT_MCP_PORT },
+			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT },
 			path: path.join(folder, CONFIG_NAME),
 			mcp: false,
 			warnings: [expect.stringContaining("No provider has an API key") as unknown],

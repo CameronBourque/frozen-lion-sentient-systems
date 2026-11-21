@@ -2,6 +2,7 @@
 // The caller runs the tools. docs/design/core/model-client.md has the design.
 
 import { type JSONSchema7, type LanguageModel, type ModelMessage, type ToolSet, generateText, jsonSchema, tool } from "ai";
+import type { Effort } from "../config.js";
 
 // A tool the model may call. The input schema is JSON Schema, which the MCP
 // tools already have.
@@ -37,9 +38,11 @@ function toToolSet(tools: ToolDefinition[]): ToolSet {
 	]));
 }
 
-export async function callModel(model: LanguageModel, request: ModelRequest): Promise<ModelReply> {
+// A blank effort leaves the provider's default.
+export async function callModel(model: LanguageModel, effort: Effort | "", request: ModelRequest): Promise<ModelReply> {
 	const result = await generateText({
 		model,
+		reasoning: effort === "" ? undefined : effort,
 		instructions: request.system,
 		messages: request.messages,
 		tools: toToolSet(request.tools),

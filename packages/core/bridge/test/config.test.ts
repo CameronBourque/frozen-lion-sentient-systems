@@ -1,7 +1,7 @@
 // Tests for config.ts.
 
 import { describe, expect, test } from "vitest";
-import { DEFAULT_MCP_PORT, parseConfig } from "../src/config.js";
+import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig } from "../src/config.js";
 
 // Returns the errors for a file the test expects to fail.
 function errorsFor(text: string): string[] {
@@ -24,6 +24,10 @@ describe("parseConfig", () => {
 			"    apiKey: key-a",
 			"  openai:",
 			"    apiKey: key-b",
+			"model:",
+			"  provider: openai",
+			"  id: some-model",
+			"  effort: high",
 			"mcpPort: 5000",
 		].join("\n");
 
@@ -33,6 +37,7 @@ describe("parseConfig", () => {
 				schemaVersion: 1,
 				logLevel: "debug",
 				providers: { anthropic: { apiKey: "key-a" }, openai: { apiKey: "key-b" } },
+				model: { provider: "openai", id: "some-model", effort: "high" },
 				mcpPort: 5000,
 			},
 		});
@@ -41,7 +46,7 @@ describe("parseConfig", () => {
 	test("fills in the defaults for a file with only the schema version", () => {
 		expect(parseConfig("schemaVersion: 1")).toEqual({
 			ok: true,
-			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, mcpPort: DEFAULT_MCP_PORT },
+			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT },
 		});
 	});
 
@@ -65,6 +70,18 @@ describe("parseConfig", () => {
 
 	test("names schemaVersion when it is from another version", () => {
 		expect(errorsFor("schemaVersion: 2")[0]).toMatch(/^schemaVersion: /);
+	});
+
+	test("fills in a blank model for a partial model", () => {
+		expect(parseConfig("schemaVersion: 1\nmodel:\n  id: some-model")).toMatchObject({
+			ok: true,
+			config: { model: { provider: "", id: "some-model", effort: "" } },
+		});
+	});
+
+	test("names the model field when its value is wrong", () => {
+		expect(errorsFor("schemaVersion: 1\nmodel:\n  provider: acme")[0]).toMatch(/^model\.provider: /);
+		expect(errorsFor("schemaVersion: 1\nmodel:\n  effort: huge")[0]).toMatch(/^model\.effort: /);
 	});
 
 	test("names mcpPort when it isn't a port", () => {

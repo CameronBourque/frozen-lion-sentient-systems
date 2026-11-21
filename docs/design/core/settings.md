@@ -9,6 +9,7 @@ Git ignores `tmp/`. `src/config.ts` holds the `zod` schema, and `src/load-config
 - `schemaVersion`, which [versioning.md](../versioning.md#bump-rules) requires,
 - `logLevel`, one of the five log levels, with `decisions` as the default,
 - `providers`, an API key for each provider: `anthropic`, `openai`, or `google`, such as `anthropic: { apiKey: "..." }`,
+- `model`, the model the agents use: `provider`, `id`, and `effort`, all blank until you pick them. `effort` is one of the AI SDK's reasoning levels, and blank leaves the provider's default. See [model-client.md](model-client.md),
 - `mcpPort`, where `--mcp` serves the [MCP server](bridge.md), with `4320` as the default. The game listens on 4318 and 4319 ([protocol.md](../../findings/tuner/protocol.md)), so the default is the next port.
 
 The schema rejects unknown fields, so a misspelled field is an error instead of a silent default. If the file is missing, the bridge writes a commented example there, names its path, and exits. A bad file exits with one error per field, such as `logLevel: Invalid option`.
