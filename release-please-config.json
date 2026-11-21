@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "simple",
   "initial-version": "0.1.0",
+  "bootstrap-sha": "88a98267269a0bf4bfe8467e79290265617a73f2",
   "bump-minor-pre-major": true,
   "include-component-in-tag": true,
   "packages": {
@@ -14,12 +15,10 @@
       ]
     },
     "packages/agents": {
-      "component": "agents",
-      "exclude-paths": ["packages/agents/Scripts"]
+      "component": "agents"
     },
     "packages/advisors": {
-      "component": "advisors",
-      "exclude-paths": ["packages/advisors/Scripts"]
+      "component": "advisors"
     }
   }
 }
