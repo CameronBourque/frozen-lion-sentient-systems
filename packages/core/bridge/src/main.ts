@@ -2,11 +2,13 @@
 // tuner, logs each core mod event to a file per game, and serves the MCP tools
 // with --mcp, until Ctrl+C.
 
-import { isSea } from "node:sea";
+import path from "node:path";
+import { getAsset, getAssetKeys, isSea } from "node:sea";
 import { KEY_VARIABLES } from "./config.js";
 import { onConnect } from "./connect.js";
 import { readLine } from "./events.js";
 import { onLoadEvent } from "./game-load.js";
+import { KNOWLEDGE_FOLDER, knowledgeFromAssets, knowledgeFromFolder } from "./knowledge.js";
 import { startConfig } from "./load-config.js";
 import { logFilePath, Logger } from "./log.js";
 import { type McpHttp, startMcpHttp } from "./mcp/http.js";
@@ -35,6 +37,12 @@ logger.openFile(logFilePath(started.path, new Date()));
 logger.info("config_loaded", `Read the config file ${started.path}`, { path: started.path });
 started.warnings.forEach((warning) => logger.warn("config_warning", warning));
 started.environmentKeys.forEach((provider) => logger.info("environment_key", `Using the ${provider} API key from ${KEY_VARIABLES[provider]}`, { provider }));
+
+// The executable carries the knowledge files. In development, npm runs the
+// bridge in its own folder, as startConfig also assumes.
+const knowledge = isSea() ? knowledgeFromAssets(getAssetKeys(), (key) => getAsset(key, "utf8")) : knowledgeFromFolder(path.join(process.cwd(), KNOWLEDGE_FOLDER));
+
+logger.info("knowledge_loaded", `Read ${knowledge.size} knowledge files`, { count: knowledge.size });
 
 const client = new TunerClient();
 

@@ -4,6 +4,7 @@ How a nontechnical user gets and runs the project: three mods on the Steam Works
 
 - The three mods ship on the Steam Workshop.
 - The bridge ships as a single executable on GitHub releases. The Workshop description links to it. After the first install, the bridge [updates itself](core/bridge.md).
+- The executable carries the [knowledge files](knowledge-files.md#file-layout) as Node SEA assets, so the user installs no folder next to it. `scripts/build-exe.mjs` adds every file in `packages/core/bridge/knowledge/`. In development, npm runs the bridge in its own folder, where it reads `knowledge/`. See [build-tooling.md](../findings/build-tooling.md).
 - The mod detects a missing bridge and shows an in-game message with setup steps.
 - The bridge launches the game. The user runs a "Civ VI with agents" shortcut, and the bridge starts Civ VI through Steam and waits for the tuner connection. Civ VI Lua cannot start programs, so the mod cannot start the bridge.
 - On first run, the bridge asks permission and then sets `EnableTuner` to `1` in `AppOptions.txt`. The permission prompt and the Workshop description say that achievements are off while the tuner is on.
@@ -23,6 +24,7 @@ How a nontechnical user gets and runs the project: three mods on the Steam Works
 | --- | --- |
 | Build for the Steam Workshop and nontechnical users | The goal includes sharing the mods with friends |
 | Bridge on GitHub releases, linked from the Workshop | GitHub releases give versioning and bug reports, and users trust them more than an executable in a Workshop item |
+| The executable carries the knowledge files as SEA assets | One file to download, and the prompt text always matches the bridge's version |
 | The bridge launches the game and sets `EnableTuner` | The mod cannot start programs, and users should not edit files |
 | Tell users that achievements are off while the tuner is on | The toggle's label says so. Testing how long they stay off needs an account with achievements left to earn, and the warning is the same either way. See [tuner/setup.md](../findings/tuner/setup.md#results) |
 | The user enters the API key in game, and the bridge stores it | Saves and multiplayer games share game setup parameters |

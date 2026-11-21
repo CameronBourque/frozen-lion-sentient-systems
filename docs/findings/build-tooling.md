@@ -12,8 +12,12 @@ None open.
 
 ## What we know now
 
-- **Build command.** `node --build-sea sea-config.json` builds the executable in one command on Node 26. `packages/core/bridge/scripts/build-exe.mjs` runs it after esbuild. Confirmed on Node 26.12.0. Source: Local build, 2026-10-20.
+- **Build command.** `node --build-sea <config>` builds the executable in one command on Node 26. `packages/core/bridge/scripts/build-exe.mjs` runs it after esbuild, on a copy of `sea-config.json` in `build/` with the assets added. Confirmed on Node 26.12.0. Source: Local build, 2026-10-20.
 - **Bundling.** A SEA runs one script, so esbuild bundles `src/main.ts` and every dependency into one CommonJS file, `build/main.cjs`, first. Confirmed with esbuild 0.28.2. Source: Local build, 2026-10-20.
+
+  `import.meta` is empty in the CommonJS output, and esbuild warns where code uses it. Confirmed. Source: Local build, 2026-11-21.
+- **Assets.** The config's `assets` field maps a key to a file. Its paths resolve from the folder that `--build-sea` runs in, not from the config's folder. `node:sea` has `getAssetKeys()` on Node 26, so the bridge needs no list of its own. Confirmed on Node 26.12.0. Source: Local build, 2026-11-21.
+- **Assets at runtime.** The executable, copied alone to an empty folder, read both knowledge files and logged `Read 2 knowledge files`. Confirmed. Source: Local build, 2026-11-21.
 - **Output folder.** `--build-sea` does not create the output folder. It fails with "no such file or directory", so the build script creates `dist/` first. Confirmed. Source: Local build, 2026-10-20.
 - **Signature.** The output is unsigned. `--build-sea` needs no extra step for the signature of the Node binary, and it prints no warning about it. Confirmed. Source: `Get-AuthenticodeSignature` reports `NotSigned`, 2026-10-20.
 - **Size.** About 105 MB. Almost all of it is the Node runtime. The MCP SDK and the AI SDK add about 2 MB. Confirmed. Source: [Results](#results).
@@ -51,4 +55,4 @@ It started an MCP server and client over an in-memory transport, listed and call
 
   Started at the main menu, it warned that `SentientSystemsCore_UI` wasn't loaded, logged `core loaded` when a game loaded, reconnected when the load dropped the connection, and logged the version and `turn 0`.
 
-Date checked: 2026-10-20, on Windows 10 with Node 26.12.0. The `core-v0.1.0` download: 2026-10-21. The `core-v0.2.0` download, in Windows Sandbox and on the game machine: 2026-10-23.
+Date checked: 2026-10-20, on Windows 10 with Node 26.12.0. The `core-v0.1.0` download: 2026-10-21. The `core-v0.2.0` download, in Windows Sandbox and on the game machine: 2026-10-23. The assets: 2026-11-21.
