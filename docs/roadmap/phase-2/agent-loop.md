@@ -10,7 +10,7 @@ Run an agent's turn when its turn signal arrives: read the state, give the model
 
 ## Done when
 
-In a running game, the bridge executable plays one agent turn with no manual help, and the log shows each tool call with its `reason`.
+In a running game, the bridge executable plays one agent turn with no manual help, and the log shows each tool call with its `reason`. The executable runs with no `knowledge` folder next to it, and its prompt holds the personality, the sweat level, and the state.
 
 ## Record
 

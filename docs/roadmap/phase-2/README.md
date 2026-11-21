@@ -17,7 +17,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | # | Step | Covers | Pull request title | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Model client | The Vercel AI SDK behind one interface, and the model picker | `feat(core): add the model client` | Done. See [done.md](done.md#model-client) |
-| 2 | [Personality and sweat level](personality-and-sweat.md) | One default personality, the balanced sweat level, and the prompt | `feat: add the default personality and the balanced sweat level` | |
+| 2 | Personality and sweat level | The neutral personality, the balanced sweat level, and the prompt | `feat(core): add the neutral personality and the balanced sweat level` | Done. See [done.md](done.md#personality-and-sweat-level) |
 | 3 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
 | 4 | [Agent loop](agent-loop.md) | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | |
 | 5 | [End turn](end-turn.md) | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | |
@@ -33,9 +33,10 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 15 | [Evaluator](evaluator.md) | `npm run evaluate`, which writes the skill measure report for a game | `feat(core): add the evaluator` | |
 | 16 | [Front-end probe](front-end-probe.md) | How the front end starts a game, and whether the core mod can drive it | `feat(core): report the front-end screen` | |
 | 17 | [Preset launcher](preset-launcher.md) | A bridge tool that starts a test preset from the main menu | `feat(core): add the preset launcher` | |
-| 18 | [Smoke test](smoke-test.md) | Pass the smoke test preset, and record the first baseline | `docs: record the smoke test` | |
-| 19 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size, the cost, and the baseline | `docs: record phase 2 results` | |
-| 20 | [Close out phase 2](close-out.md) | Update the docs, and release core and the agent players mod | `docs: record phase 2 results` | |
+| 18 | [Action changes](action-changes.md) | Action results that carry the records the action changed | `feat(core): report what each action changed` | |
+| 19 | [Smoke test](smoke-test.md) | Pass the smoke test preset, and record the first baseline | `docs: record the smoke test` | |
+| 20 | [MVP gate](mvp-gate.md) | Pass the MVP gate preset, and measure the state size, the cost, and the baseline | `docs: record phase 2 results` | |
+| 21 | [Close out phase 2](close-out.md) | Update the docs, and release core and the agent players mod | `docs: record phase 2 results` | |
 
 The model client, personality and sweat level, memory, and skill measure steps don't need the game, so they can run beside the steps that do.
 
@@ -48,5 +49,3 @@ A commit that finds a fact also updates the finding or design file in the step's
 Pull requests are squash-merged, so each PR title becomes one commit on `main`. Titles follow [rules/commits.md](../../rules/commits.md).
 
 In the smoke test and MVP gate steps, each code change gets its own `fix:` or `feat:` PR before the step's results PR, because a `docs:` title would drop its version bump.
-
-The personality and sweat level PR touches `packages/core` and `packages/agents`, so its title has no scope, and both packages get a release.

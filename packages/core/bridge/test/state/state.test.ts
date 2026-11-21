@@ -2,52 +2,10 @@
 // contract.test.ts, against the JSON from the Lua tests.
 
 import { beforeEach, describe, expect, test } from "vitest";
-import { readState, type State } from "../../src/state/state.js";
+import { readState } from "../../src/state/state.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { type CommandResult, type FakeGame, startGame } from "../tuner/fake-game.js";
-
-// The smallest state the schema accepts: every section, empty where it can be,
-// with one blocker so the text has a name to cut in the middle. The schemas are
-// checked in contract.test.ts.
-const STATE: State = {
-	turn: 1,
-	blockers: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH" }], units: [] },
-	cities: [],
-	units: [],
-	tiles: [],
-	proposals: [],
-	sessions: [],
-	events: [],
-	scoreboard: [],
-	victories: {},
-	religion: {},
-	diplomacy: [],
-	envoys: { tokens: 0, influence: { points: 0, perTurn: 0, threshold: 0, envoys: 0 }, cityStates: [] },
-	espionage: { capacity: 0, operatives: [], cities: [], history: [], captives: [] },
-	greatPeople: [],
-	continents: [],
-	greatWorks: { slots: [], buildings: [], works: 0, spaces: 0, provides: [] },
-	trade: { outgoing: [], incoming: [], tourismBonus: 0 },
-	player: {
-		gold: { balance: 0, perTurn: 0 },
-		faith: { balance: 0, perTurn: 0 },
-		science: 0,
-		culture: 0,
-		tourism: 0,
-		resources: [],
-		income: {
-			gold: { total: 0 },
-			faith: { total: 0 },
-			science: { total: 0 },
-			culture: { total: 0 },
-			expenses: { total: 0, cities: 0, units: 0, deals: 0 },
-			cities: [],
-			unitUpkeep: [],
-			deals: [],
-		},
-	},
-	rivals: { cities: [], units: [] },
-};
+import { MINIMAL_STATE } from "./minimal-state.js";
 
 const STASH = "SentientSystems_Stash(SentientSystems_GetState(0))";
 
@@ -72,11 +30,11 @@ describe("readState", () => {
 	}
 
 	test("reads the state in one piece from the core mod's state", async () => {
-		const json = JSON.stringify(STATE);
+		const json = JSON.stringify(MINIMAL_STATE);
 
 		stash([json]);
 
-		expect(await readState(client, 0)).toEqual({ ok: true, value: STATE, bytes: Buffer.byteLength(json) });
+		expect(await readState(client, 0)).toEqual({ ok: true, value: MINIMAL_STATE, bytes: Buffer.byteLength(json) });
 		expect(game.commands.map(({ stateIndex, lua }) => ({ stateIndex, lua }))).toEqual([
 			{ stateIndex: 130, lua: STASH },
 			{ stateIndex: 130, lua: "SentientSystems_PrintPiece(1)" },
@@ -84,19 +42,19 @@ describe("readState", () => {
 	});
 
 	test("joins the pieces with nothing between them", async () => {
-		const json = JSON.stringify(STATE);
+		const json = JSON.stringify(MINIMAL_STATE);
 		const cut = json.indexOf("RESEARCH") + 3;
 
 		stash([json.slice(0, cut), json.slice(cut)]);
 
 		const result = await readState(client, 0);
 
-		expect(result).toEqual({ ok: true, value: STATE, bytes: Buffer.byteLength(json) });
+		expect(result).toEqual({ ok: true, value: MINIMAL_STATE, bytes: Buffer.byteLength(json) });
 		expect(game.commands.map(({ lua }) => lua)).toEqual([STASH, "SentientSystems_PrintPiece(1)", "SentientSystems_PrintPiece(2)"]);
 	});
 
 	test("asks for the given player's state", async () => {
-		answer({ "SentientSystems_Stash(SentientSystems_GetState(3))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify(STATE)] } });
+		answer({ "SentientSystems_Stash(SentientSystems_GetState(3))": { output: ["1"] }, "SentientSystems_PrintPiece(1)": { output: [JSON.stringify(MINIMAL_STATE)] } });
 
 		expect((await readState(client, 3)).ok).toBe(true);
 	});
@@ -123,7 +81,7 @@ describe("readState", () => {
 	});
 
 	test("fails with each field that doesn't match the schema", async () => {
-		stash([JSON.stringify({ ...STATE, cities: [{ name: 7 }], tiles: [{ x: 0, y: 0 }] })]);
+		stash([JSON.stringify({ ...MINIMAL_STATE, cities: [{ name: 7 }], tiles: [{ x: 0, y: 0 }] })]);
 
 		const result = await readState(client, 0);
 
