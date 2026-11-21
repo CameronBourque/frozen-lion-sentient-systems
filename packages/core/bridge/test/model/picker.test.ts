@@ -100,10 +100,10 @@ describe("pickModel", () => {
 	});
 
 	test("warns and keeps the saved model when the list fails", async () => {
-		const { io, warnings } = scriptedIo([], { ok: false, error: "openai answered the model list with 401 Unauthorized" });
+		const { io, warnings } = scriptedIo([], { ok: false, error: "openai answered the model list with 401: invalid x-api-key" });
 
 		expect(await pickModel(configWith(["openai"]), io)).toEqual({ result: "kept", model: NO_MODEL });
-		expect(warnings).toEqual(["openai answered the model list with 401 Unauthorized, so the bridge keeps the saved model"]);
+		expect(warnings).toEqual(["openai answered the model list with 401: invalid x-api-key, so the bridge keeps the saved model"]);
 	});
 
 	test("warns and keeps the saved model when the list is empty", async () => {

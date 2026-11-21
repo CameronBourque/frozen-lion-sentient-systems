@@ -111,6 +111,23 @@ const LISTERS: Record<Provider, Lister> = {
 	},
 };
 
+// All three providers answer a failure with an error message in this shape.
+const ERROR_BODY = z.object({ error: z.object({ message: z.string() }) });
+
+// Names the status, and the provider's reason when its answer has one. A
+// reply over HTTP/2 has no status text.
+async function describeFailure(provider: Provider, response: Response): Promise<string> {
+	let reason: string | undefined;
+
+	try {
+		reason = ERROR_BODY.parse(await response.json()).error.message;
+	} catch {
+		reason = response.statusText === "" ? undefined : response.statusText;
+	}
+
+	return `${provider} answered the model list with ${response.status}${reason === undefined ? "" : `: ${reason}`}`;
+}
+
 // Fetches every page. A failed request or an unexpected answer fails the
 // whole list, with a reason the picker can show.
 export async function listModels(provider: Provider, apiKey: string, fetchPage: Fetch = fetch): Promise<ListResult> {
@@ -123,7 +140,7 @@ export async function listModels(provider: Provider, apiKey: string, fetchPage: 
 			const response = await fetchPage(url, { headers: lister.headers(apiKey) });
 
 			if (!response.ok) {
-				return { ok: false, error: `${provider} answered the model list with ${response.status} ${response.statusText}` };
+				return { ok: false, error: await describeFailure(provider, response) };
 			}
 
 			const page = lister.parse(await response.json(), url);

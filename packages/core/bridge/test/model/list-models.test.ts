@@ -118,8 +118,26 @@ describe("failures", () => {
 	test("names the status when the provider refuses", async () => {
 		expect(await listModels("openai", "bad", fakeFetch({}))).toEqual({
 			ok: false,
-			error: "openai answered the model list with 404 Not Found",
+			error: "openai answered the model list with 404: Not Found",
 		});
+	});
+
+	test("gives the provider's own reason when its answer has one", async () => {
+		const refuse: Fetch = () => Promise.resolve(new Response(
+			JSON.stringify({ type: "error", error: { type: "authentication_error", message: "invalid x-api-key" } }),
+			{ status: 401 },
+		));
+
+		expect(await listModels("anthropic", "bad", refuse)).toEqual({
+			ok: false,
+			error: "anthropic answered the model list with 401: invalid x-api-key",
+		});
+	});
+
+	test("gives only the status when there is no reason", async () => {
+		const refuse: Fetch = () => Promise.resolve(new Response("", { status: 401 }));
+
+		expect(await listModels("anthropic", "bad", refuse)).toEqual({ ok: false, error: "anthropic answered the model list with 401" });
 	});
 
 	test("names the reason when the request fails", async () => {
