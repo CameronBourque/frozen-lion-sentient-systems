@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL } from "../../src/config.js";
+import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
 import { CONFIG_NAME, EXAMPLE_CONFIG, loadConfig } from "../../src/load-config.js";
 import { Logger } from "../../src/log.js";
 import { type ChooseIo, chooseModel } from "../../src/model/choose.js";
@@ -43,11 +43,11 @@ describe("in a terminal", () => {
 
 		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, list: LIST })).toBe(true);
 
-		const picked = { provider: "openai", id: "model-a", effort: "provider-default" };
+		const picked = { provider: "openai", id: "model-a", effort: "provider-default", price: NO_PRICE };
 
 		expect(config.model).toEqual(picked);
 		expect(loadConfig(file)).toMatchObject({ result: "loaded", config: { model: picked } });
-		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with provider-default effort", picked);
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with provider-default effort", { provider: "openai", id: "model-a", effort: "provider-default" });
 	});
 
 	test("returns false when the user cancels", async () => {
@@ -79,16 +79,16 @@ describe("in a terminal", () => {
 describe("without a terminal", () => {
 	test("logs the saved model, with the provider's default effort when it is blank", async () => {
 		const info = vi.spyOn(logger, "info");
-		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "" };
+		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
 		expect(await chooseModel(configWith(saved), file, logger, { list: LIST })).toBe(true);
-		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with the provider's default effort", saved);
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with the provider's default effort", { provider: "openai", id: "model-a", effort: "" });
 	});
 
 	test("logs nothing about the model when no provider has a key", async () => {
 		const info = vi.spyOn(logger, "info");
 		const warn = vi.spyOn(logger, "warn");
-		const config = { ...configWith({ provider: "openai", id: "model-a", effort: "" }), providers: {} };
+		const config = { ...configWith({ provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), providers: {} };
 
 		expect(await chooseModel(config, file, logger, { list: LIST })).toBe(true);
 		expect(info).not.toHaveBeenCalled();

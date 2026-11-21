@@ -37,6 +37,12 @@ model:
   provider: ""
   id: ""
   effort: ""
+  # The model's price in US dollars per million tokens, from the provider's pricing page. Leave
+  # it blank if you don't know it. With a price, the log shows each call's cost. Picking another
+  # model clears it.
+  price:
+    input: ""
+    output: ""
 
 # The port where the bridge serves its MCP tools when it starts with --mcp, for Claude Code and
 # the MCP Inspector. Change it if another program uses it.

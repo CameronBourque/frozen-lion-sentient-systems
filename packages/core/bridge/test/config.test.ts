@@ -1,7 +1,7 @@
 // Tests for config.ts.
 
 import { describe, expect, test } from "vitest";
-import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig, withEnvironmentKeys, withModel } from "../src/config.js";
+import { DEFAULT_MCP_PORT, NO_MODEL, NO_PRICE, parseConfig, withEnvironmentKeys, withModel } from "../src/config.js";
 
 // Returns the errors for a file the test expects to fail.
 function errorsFor(text: string): string[] {
@@ -37,7 +37,7 @@ describe("parseConfig", () => {
 				schemaVersion: 1,
 				logLevel: "debug",
 				providers: { anthropic: { apiKey: "key-a" }, openai: { apiKey: "key-b" } },
-				model: { provider: "openai", id: "some-model", effort: "high" },
+				model: { provider: "openai", id: "some-model", effort: "high", price: NO_PRICE },
 				mcpPort: 5000,
 			},
 		});
@@ -75,7 +75,7 @@ describe("parseConfig", () => {
 	test("fills in a blank model for a partial model", () => {
 		expect(parseConfig("schemaVersion: 1\nmodel:\n  id: some-model")).toMatchObject({
 			ok: true,
-			config: { model: { provider: "", id: "some-model", effort: "" } },
+			config: { model: { provider: "", id: "some-model", effort: "", price: NO_PRICE } },
 		});
 	});
 
@@ -120,13 +120,45 @@ describe("parseConfig", () => {
 });
 
 describe("withModel", () => {
-	const MODEL = { provider: "openai", id: "some-model", effort: "high" } as const;
+	const MODEL = { provider: "openai", id: "some-model", effort: "high", price: { input: 2.5, output: 10 } } as const;
 
-	// Each value keeps the quotes it had.
-	test("replaces the model and keeps the comments", () => {
-		const text = "# The model.\nmodel:\n  # Picked by the bridge.\n  provider: \"\"\n  id: \"\"\n  effort: \"\"\n";
+	// Each value keeps the quotes it had, and a number has none.
+	test("replaces the model and keeps the comments, in price too", () => {
+		const text = [
+			"# The model.",
+			"model:",
+			"  # Picked by the bridge.",
+			"  provider: \"\"",
+			"  id: \"\"",
+			"  effort: \"\"",
+			"  # Per million tokens.",
+			"  price:",
+			"    # Input first.",
+			"    input: \"\"",
+			"    output: \"\"",
+			"",
+		].join("\n");
 
-		expect(withModel(text, MODEL)).toBe("# The model.\nmodel:\n  # Picked by the bridge.\n  provider: \"openai\"\n  id: \"some-model\"\n  effort: \"high\"\n");
+		expect(withModel(text, MODEL)).toBe([
+			"# The model.",
+			"model:",
+			"  # Picked by the bridge.",
+			"  provider: \"openai\"",
+			"  id: \"some-model\"",
+			"  effort: \"high\"",
+			"  # Per million tokens.",
+			"  price:",
+			"    # Input first.",
+			"    input: 2.5",
+			"    output: 10",
+			"",
+		].join("\n"));
+	});
+
+	test("adds a price to a model without one", () => {
+		const text = withModel("schemaVersion: 1\nmodel:\n  id: old\n", { ...MODEL, price: NO_PRICE });
+
+		expect(parseConfig(text)).toMatchObject({ ok: true, config: { model: { id: "some-model", price: NO_PRICE } } });
 	});
 
 	test("adds the model to a file without one", () => {

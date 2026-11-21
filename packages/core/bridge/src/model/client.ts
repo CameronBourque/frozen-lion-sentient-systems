@@ -24,9 +24,15 @@ export interface ToolCall {
 	input: unknown;
 }
 
+export interface Usage {
+	inputTokens: number;
+	outputTokens: number;
+}
+
 export interface ModelReply {
 	text: string;
 	toolCalls: ToolCall[];
+	usage: Usage;
 }
 
 // Tools without an execute function, so the SDK returns their calls instead
@@ -51,5 +57,8 @@ export async function callModel(model: LanguageModel, effort: Effort | "", reque
 	return {
 		text: result.text,
 		toolCalls: result.toolCalls.map(({ toolCallId, toolName, input }): ToolCall => ({ id: toolCallId, name: toolName, input })),
+		// A provider that doesn't report a count counts as 0, so a sum still
+		// adds up.
+		usage: { inputTokens: result.usage.inputTokens ?? 0, outputTokens: result.usage.outputTokens ?? 0 },
 	};
 }

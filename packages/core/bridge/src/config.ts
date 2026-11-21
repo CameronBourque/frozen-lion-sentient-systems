@@ -49,16 +49,30 @@ const EFFORT_LEVELS: Record<Effort, true> = {
 
 export const EFFORTS = Object.keys(EFFORT_LEVELS) as Effort[];
 
+// US dollars per million tokens, blank when the user doesn't know it. No API
+// gives a price, so the user copies it from the provider's pricing page.
+const PER_MILLION = z.union([z.literal(""), z.number().nonnegative()]).default("");
+
+const PRICE = z.strictObject({
+	input: PER_MILLION,
+	output: PER_MILLION,
+});
+
+export type Price = z.infer<typeof PRICE>;
+
+export const NO_PRICE: Price = { input: "", output: "" };
+
 // Blank until the user picks, which the picker then asks for.
 const MODEL = z.strictObject({
 	provider: z.union([z.literal(""), z.enum(PROVIDERS)]).default(""),
 	id: z.string().default(""),
 	effort: z.union([z.literal(""), z.enum(EFFORTS)]).default(""),
+	price: PRICE.default(NO_PRICE),
 });
 
 export type ModelSetting = z.infer<typeof MODEL>;
 
-export const NO_MODEL: ModelSetting = { provider: "", id: "", effort: "" };
+export const NO_MODEL: ModelSetting = { provider: "", id: "", effort: "", price: NO_PRICE };
 
 // Strict objects, so a misspelled field is an error and not a silent default.
 const CONFIG = z.strictObject({
@@ -94,12 +108,18 @@ export function parseConfig(text: string): ConfigResult {
 }
 
 // Returns the file's text with a new model, keeping its comments and the rest
-// of its fields.
+// of its fields. Each price is set on its own, so the comments inside price
+// stay too.
 export function withModel(text: string, model: ModelSetting): string {
 	const document = parseDocument(text);
+	const { price, ...rest } = model;
 
-	for (const [field, value] of Object.entries(model)) {
+	for (const [field, value] of Object.entries(rest)) {
 		document.setIn(["model", field], value);
+	}
+
+	for (const [field, value] of Object.entries(price)) {
+		document.setIn(["model", "price", field], value);
 	}
 
 	return document.toString();

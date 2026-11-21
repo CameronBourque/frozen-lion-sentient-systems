@@ -2,7 +2,7 @@
 // a fake model list.
 
 import { describe, expect, test } from "vitest";
-import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL } from "../../src/config.js";
+import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
 import type { ListResult } from "../../src/model/list-models.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 
@@ -56,7 +56,7 @@ describe("pickModel", () => {
 
 		expect(await pickModel(configWith(["anthropic", "openai"]), io)).toEqual({
 			result: "picked",
-			model: { provider: "openai", id: "model-b", effort: "high" },
+			model: { provider: "openai", id: "model-b", effort: "high", price: NO_PRICE },
 		});
 		expect(asked.map(({ title }) => title)).toEqual(["Provider", "openai model", "Effort"]);
 		expect(asked[0].labels).toEqual(["anthropic", "openai"]);
@@ -69,13 +69,13 @@ describe("pickModel", () => {
 
 		expect(await pickModel(configWith(["google"]), io)).toEqual({
 			result: "picked",
-			model: { provider: "google", id: "model-a", effort: "provider-default" },
+			model: { provider: "google", id: "model-a", effort: "provider-default", price: NO_PRICE },
 		});
 		expect(asked.map(({ title }) => title)).toEqual(["google model", "Effort"]);
 	});
 
 	test("starts each menu on the saved choice", async () => {
-		const saved: ModelSetting = { provider: "openai", id: "model-b", effort: "low" };
+		const saved: ModelSetting = { provider: "openai", id: "model-b", effort: "low", price: NO_PRICE };
 		const { io, asked } = scriptedIo([1, 1, 3]);
 
 		await pickModel(configWith(["anthropic", "openai"], saved), io);
@@ -83,8 +83,17 @@ describe("pickModel", () => {
 		expect(asked.map(({ start }) => start)).toEqual([1, 1, 3]);
 	});
 
+	test("keeps the price when the model stays the same, and clears it when the model changes", async () => {
+		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2 } };
+		const same = scriptedIo([0, 0]);
+		const other = scriptedIo([1, 0]);
+
+		expect(await pickModel(configWith(["openai"], saved), same.io)).toMatchObject({ model: { id: "model-a", price: { input: 1, output: 2 } } });
+		expect(await pickModel(configWith(["openai"], saved), other.io)).toMatchObject({ model: { id: "model-b", price: NO_PRICE } });
+	});
+
 	test("starts on the first row when the saved choice isn't listed", async () => {
-		const saved: ModelSetting = { provider: "openai", id: "retired", effort: "" };
+		const saved: ModelSetting = { provider: "openai", id: "retired", effort: "", price: NO_PRICE };
 		const { io, asked } = scriptedIo([0, 0]);
 
 		await pickModel(configWith(["openai"], saved), io);
@@ -126,16 +135,16 @@ describe("pickModel", () => {
 
 describe("savedModelWarning", () => {
 	test("says nothing when the saved model can play", () => {
-		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "model-a", effort: "" }), "x.yaml")).toBeUndefined();
+		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml")).toBeUndefined();
 	});
 
 	test("warns when no model is picked", () => {
-		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "", effort: "" }), "x.yaml")).toMatch(/^No model is picked/);
+		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "", effort: "", price: NO_PRICE }), "x.yaml")).toMatch(/^No model is picked/);
 		expect(savedModelWarning(configWith(["openai"]), "x.yaml")).toMatch(/^No model is picked/);
 	});
 
 	test("warns when the model's provider has no key", () => {
-		expect(savedModelWarning(configWith(["anthropic"], { provider: "openai", id: "model-a", effort: "" }), "x.yaml"))
+		expect(savedModelWarning(configWith(["anthropic"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml"))
 			.toMatch(/^The picked model is from openai, which has no API key/);
 	});
 });

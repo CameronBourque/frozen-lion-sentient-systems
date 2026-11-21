@@ -1,7 +1,7 @@
 // Asks the user for the provider, the model, and the effort when the bridge
 // starts in a terminal. docs/design/core/model-client.md has the design.
 
-import { type Config, EFFORTS, type ModelSetting, PROVIDERS, type Provider } from "../config.js";
+import { type Config, EFFORTS, type ModelSetting, NO_PRICE, PROVIDERS, type Provider } from "../config.js";
 import type { ListResult, ModelInfo } from "./list-models.js";
 
 export interface PickerIo {
@@ -65,8 +65,10 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 	}
 
 	const effort = await askFor(io, "Effort", EFFORTS, [...EFFORTS], saved.effort);
+	// The saved price belongs to the saved model.
+	const price = provider === saved.provider && id === saved.id ? saved.price : NO_PRICE;
 
-	return effort === undefined ? { result: "cancelled" } : { result: "picked", model: { provider, id, effort } };
+	return effort === undefined ? { result: "cancelled" } : { result: "picked", model: { provider, id, effort, price } };
 }
 
 // Says why the saved choice can't play, or nothing when it can.

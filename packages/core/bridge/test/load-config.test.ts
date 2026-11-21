@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig } from "../src/config.js";
+import { DEFAULT_MCP_PORT, NO_MODEL, NO_PRICE, parseConfig } from "../src/config.js";
 import { CONFIG_NAME, EXAMPLE_CONFIG, findConfigPath, keyWarning, loadConfig, saveModel, startConfig } from "../src/load-config.js";
 
 const EXECUTABLE = path.resolve("/games/bridge/sentient-systems-bridge.exe");
@@ -177,7 +177,7 @@ describe("startConfig", () => {
 });
 
 describe("saveModel", () => {
-	const MODEL = { provider: "google", id: "gemini-pro", effort: "medium" } as const;
+	const MODEL = { provider: "google", id: "gemini-pro", effort: "medium", price: NO_PRICE } as const;
 	let folder: string;
 
 	beforeEach(() => {

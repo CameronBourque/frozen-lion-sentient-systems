@@ -74,7 +74,7 @@ test("sends the effort", async () => {
 test("returns the text and no tool calls when the model only writes", async () => {
 	const model = new MockLanguageModelV4({ doGenerate: reply([{ type: "text", text: "I'll wait." }]) });
 
-	expect(await callModel(model, "", REQUEST)).toEqual({ text: "I'll wait.", toolCalls: [] });
+	expect(await callModel(model, "", REQUEST)).toEqual({ text: "I'll wait.", toolCalls: [], usage: { inputTokens: 10, outputTokens: 5 } });
 });
 
 test("returns the tool calls without running them", async () => {
@@ -88,6 +88,20 @@ test("returns the tool calls without running them", async () => {
 	expect(await callModel(model, "", REQUEST)).toEqual({
 		text: "Ending the turn.",
 		toolCalls: [{ id: "call-1", name: "end_turn", input: { reason: "Nothing left." } }],
+		usage: { inputTokens: 10, outputTokens: 5 },
 	});
 	expect(model.doGenerateCalls).toHaveLength(1);
+});
+
+test("counts tokens the provider doesn't report as 0", async () => {
+	const unreported = reply([{ type: "text", text: "Done." }]);
+
+	unreported.usage = {
+		inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+		outputTokens: { total: undefined, text: undefined, reasoning: undefined },
+	};
+
+	const model = new MockLanguageModelV4({ doGenerate: unreported });
+
+	expect((await callModel(model, "", REQUEST)).usage).toEqual({ inputTokens: 0, outputTokens: 0 });
 });

@@ -22,6 +22,12 @@ It reads the API key from `providers` in the [config file](settings.md), which a
 
 A refused request, a network error, or an answer of the wrong shape fails the whole list, with a reason the picker can show.
 
+## Usage
+
+`callModel` returns each call's input and output tokens. A count the provider doesn't report is 0.
+
+`logModelCall` in `src/model/usage.ts` logs the tokens at the decisions level, as `model_call`. When `model.price` has both prices, the record also has the call's cost in US dollars. Cached input counts at the full input price, so the cost can run a little high.
+
 ## Picker
 
 When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. In a terminal, `pickModel(config, io)` in `src/model/picker.ts` asks three menus, each starting on the saved choice:
@@ -50,4 +56,6 @@ Without a terminal, the bridge uses the saved model. `savedModelWarning` warns w
 | The picker asks on each start, from the saved choice | Enter three times keeps the model, and a new model is a few keys away. A choice made once and hidden in the file is easy to forget |
 | A long menu scrolls in a window of 5 rows, not pages | The newest models come first and the menu starts on the saved choice, so most picks need little scrolling. 10 rows didn't fit VS Code's default terminal panel |
 | The menu uses `node:readline`, with no prompt package | Raw mode and keypress events are in Node. The menu is short, and its logic is tested without a terminal |
+| The user enters the price, which starts blank | No library or provider API gives a price. A wrong price is worse than none, so the log shows a cost only when both prices are set |
+| Picking another model clears the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | The model client returns tool calls and doesn't run them | The agent loop runs each call through the MCP server, so it can count actions and stop at a turn limit |
