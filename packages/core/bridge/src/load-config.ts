@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_MCP_PORT, EFFORTS, PROVIDERS, SCHEMA_VERSION, parseConfig } from "./config.js";
+import { type Config, DEFAULT_MCP_PORT, EFFORTS, type ModelSetting, PROVIDERS, SCHEMA_VERSION, parseConfig, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
@@ -97,6 +97,18 @@ export function loadConfig(file: string): LoadResult {
 	const parsed = parseConfig(fs.readFileSync(file, "utf8"));
 
 	return parsed.ok ? { result: "loaded", config: parsed.config } : { result: "invalid", errors: parsed.errors };
+}
+
+// Saves the picked model to the config file, or returns why it couldn't, such
+// as a file that is read-only.
+export function saveModel(file: string, model: ModelSetting): string | undefined {
+	try {
+		fs.writeFileSync(file, withModel(fs.readFileSync(file, "utf8"), model));
+
+		return undefined;
+	} catch (error) {
+		return `Couldn't save the model to ${file}, so the bridge will ask again next time: ${(error as Error).message}`;
+	}
 }
 
 // A warning when no provider has a key, since agents can't call a model without

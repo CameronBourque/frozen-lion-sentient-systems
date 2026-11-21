@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig } from "../src/config.js";
-import { CONFIG_NAME, EXAMPLE_CONFIG, findConfigPath, keyWarning, loadConfig, startConfig } from "../src/load-config.js";
+import { CONFIG_NAME, EXAMPLE_CONFIG, findConfigPath, keyWarning, loadConfig, saveModel, startConfig } from "../src/load-config.js";
 
 const EXECUTABLE = path.resolve("/games/bridge/sentient-systems-bridge.exe");
 const CWD = path.resolve("/work/bridge");
@@ -161,5 +161,34 @@ describe("startConfig", () => {
 
 	test("names the options after an unknown one", () => {
 		expect(start(["--confg", "x"])).toEqual({ ok: false, error: expect.stringContaining("The options are --config <path> and --mcp") as unknown });
+	});
+});
+
+describe("saveModel", () => {
+	const MODEL = { provider: "google", id: "gemini-pro", effort: "medium" } as const;
+	let folder: string;
+
+	beforeEach(() => {
+		folder = fs.mkdtempSync(path.join(os.tmpdir(), "sentient-systems-"));
+	});
+
+	afterEach(() => {
+		fs.rmSync(folder, { recursive: true, force: true });
+	});
+
+	test("saves the model into the example, which still loads", () => {
+		const file = path.join(folder, CONFIG_NAME);
+
+		fs.writeFileSync(file, EXAMPLE_CONFIG);
+
+		expect(saveModel(file, MODEL)).toBeUndefined();
+		expect(loadConfig(file)).toMatchObject({ result: "loaded", config: { model: MODEL } });
+		expect(fs.readFileSync(file, "utf8")).toContain("# The model the agents use");
+	});
+
+	test("says why it couldn't save", () => {
+		const file = path.join(folder, "missing", CONFIG_NAME);
+
+		expect(saveModel(file, MODEL)).toMatch(/^Couldn't save the model to .*, so the bridge will ask again next time: /);
 	});
 });

@@ -85,3 +85,15 @@ export function parseConfig(text: string): ConfigResult {
 		? { ok: true, config: parsed.data }
 		: { ok: false, errors: parsed.error.issues.flatMap((issue) => describeIssue(issue, "The file")) };
 }
+
+// Returns the file's text with a new model, keeping its comments and the rest
+// of its fields.
+export function withModel(text: string, model: ModelSetting): string {
+	const document = parseDocument(text);
+
+	for (const [field, value] of Object.entries(model)) {
+		document.setIn(["model", field], value);
+	}
+
+	return document.toString();
+}

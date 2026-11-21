@@ -1,7 +1,7 @@
 // Tests for config.ts.
 
 import { describe, expect, test } from "vitest";
-import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig } from "../src/config.js";
+import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig, withModel } from "../src/config.js";
 
 // Returns the errors for a file the test expects to fail.
 function errorsFor(text: string): string[] {
@@ -116,5 +116,22 @@ describe("parseConfig", () => {
 
 	test("says text that isn't YAML isn't valid", () => {
 		expect(errorsFor("schemaVersion: [1")[0]).toMatch(/^The file isn't valid YAML: /);
+	});
+});
+
+describe("withModel", () => {
+	const MODEL = { provider: "openai", id: "some-model", effort: "high" } as const;
+
+	// Each value keeps the quotes it had.
+	test("replaces the model and keeps the comments", () => {
+		const text = "# The model.\nmodel:\n  # Picked by the bridge.\n  provider: \"\"\n  id: \"\"\n  effort: \"\"\n";
+
+		expect(withModel(text, MODEL)).toBe("# The model.\nmodel:\n  # Picked by the bridge.\n  provider: \"openai\"\n  id: \"some-model\"\n  effort: \"high\"\n");
+	});
+
+	test("adds the model to a file without one", () => {
+		const text = withModel("schemaVersion: 1\n", MODEL);
+
+		expect(parseConfig(text)).toMatchObject({ ok: true, config: { schemaVersion: 1, model: MODEL } });
 	});
 });
