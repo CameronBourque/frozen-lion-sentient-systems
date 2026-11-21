@@ -17,7 +17,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | # | Step | Covers | Pull request title | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Model client | The Vercel AI SDK behind one interface, and the model picker | `feat(core): add the model client` | Done. See [done.md](done.md#model-client) |
-| 2 | [Personality and sweat level](personality-and-sweat.md) | The neutral personality, the balanced sweat level, and the prompt | `feat(core): add the neutral personality and the balanced sweat level` | |
+| 2 | Personality and sweat level | The neutral personality, the balanced sweat level, and the prompt | `feat(core): add the neutral personality and the balanced sweat level` | Done. See [done.md](done.md#personality-and-sweat-level) |
 | 3 | [Memory and decision records](memory-and-decisions.md) | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | |
 | 4 | [Agent loop](agent-loop.md) | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | |
 | 5 | [End turn](end-turn.md) | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | |
