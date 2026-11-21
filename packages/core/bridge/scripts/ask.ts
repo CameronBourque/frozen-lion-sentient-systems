@@ -9,7 +9,7 @@ import { chooseModel } from "../src/model/choose.js";
 import { type ModelRequest, callModel } from "../src/model/client.js";
 import { listModels } from "../src/model/list-models.js";
 import { askMenu } from "../src/model/menu.js";
-import { cachedPrices, pricesCachePath } from "../src/model/prices.js";
+import { cachedFacts, factsCachePath } from "../src/model/model-facts.js";
 import { providerModel } from "../src/model/providers.js";
 import { logModelCall } from "../src/model/usage.js";
 
@@ -48,7 +48,7 @@ async function main(): Promise<void> {
 	logger.level = config.logLevel;
 	started.warnings.forEach((warning) => logger.warn("config_warning", warning));
 
-	if (!await chooseModel(config, started.path, logger, { ask, list: listModels, prices: () => cachedPrices(pricesCachePath(started.path)) })) {
+	if (!await chooseModel(config, started.path, logger, { ask, list: listModels, facts: () => cachedFacts(factsCachePath(started.path)) })) {
 		return;
 	}
 

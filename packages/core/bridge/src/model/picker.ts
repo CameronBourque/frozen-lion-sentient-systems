@@ -3,13 +3,13 @@
 
 import { type Config, EFFORTS, type ModelSetting, NO_PRICE, PROVIDERS, type Price, type Provider } from "../config.js";
 import type { ListResult, ModelInfo } from "./list-models.js";
-import { type PriceList, type PricesResult, priceFor, priceLabel } from "./prices.js";
+import { type Facts, type FactsResult, priceFor, priceLabel } from "./model-facts.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
 	ask: (title: string, labels: string[], start: number) => Promise<number | undefined>;
 	list: (provider: Provider, apiKey: string) => Promise<ListResult>;
-	prices: () => Promise<PricesResult>;
+	facts: () => Promise<FactsResult>;
 	warn: (text: string) => void;
 }
 
@@ -24,8 +24,8 @@ export function keyedProviders(config: Config): Provider[] {
 	return PROVIDERS.filter((provider) => (config.providers[provider]?.apiKey ?? "") !== "");
 }
 
-function modelLabel({ id, name }: ModelInfo, provider: Provider, prices: PriceList): string {
-	return `${name === id ? id : `${name} (${id})`}, ${priceLabel(priceFor(prices, provider, id))}`;
+function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts): string {
+	return `${name === id ? id : `${name} (${id})`}, ${priceLabel(priceFor(facts, provider, id))}`;
 }
 
 function isPriced(price: Price): boolean {
@@ -33,13 +33,13 @@ function isPriced(price: Price): boolean {
 }
 
 // A price the user saved for the same model wins, since they may have entered
-// it themselves. Otherwise the price list's, or blank.
-function chosenPrice(saved: ModelSetting, provider: Provider, id: string, prices: PriceList): Price {
+// it themselves. Otherwise OpenRouter's, or blank.
+function chosenPrice(saved: ModelSetting, provider: Provider, id: string, facts: Facts): Price {
 	if (provider === saved.provider && id === saved.id && isPriced(saved.price)) {
 		return saved.price;
 	}
 
-	return priceFor(prices, provider, id) ?? NO_PRICE;
+	return priceFor(facts, provider, id) ?? NO_PRICE;
 }
 
 // Asks one menu, starting on the saved choice, or on the first row when the
@@ -83,10 +83,10 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 		return { result: "cancelled" };
 	}
 
-	const [listed, priced] = await Promise.all([io.list(provider, config.providers[provider]?.apiKey ?? ""), io.prices()]);
+	const [listed, fetched] = await Promise.all([io.list(provider, config.providers[provider]?.apiKey ?? ""), io.facts()]);
 
 	if (listed.ok && listed.models.length > 0) {
-		return pickFromList(config, io, provider, listed.models, priced);
+		return pickFromList(config, io, provider, listed.models, fetched);
 	}
 
 	io.warn(listed.ok ? `${provider} listed no models` : listed.error);
@@ -101,16 +101,16 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 }
 
 // Asks for the model and the effort from a provider's list.
-async function pickFromList(config: Config, io: PickerIo, provider: Provider, models: ModelInfo[], priced: PricesResult): Promise<PickResult> {
+async function pickFromList(config: Config, io: PickerIo, provider: Provider, models: ModelInfo[], fetched: FactsResult): Promise<PickResult> {
 	const saved = config.model;
 
-	if (!priced.ok) {
-		io.warn(`${priced.error}, so the models show no price`);
+	if (!fetched.ok) {
+		io.warn(`${fetched.error}, so the models show no price`);
 	}
 
-	const prices = priced.ok ? priced.prices : {};
+	const facts = fetched.ok ? fetched.facts : {};
 	const ids = models.map(({ id }) => id);
-	const labels = models.map((model) => modelLabel(model, provider, prices));
+	const labels = models.map((model) => modelLabel(model, provider, facts));
 	const id = await askFor(io, `${provider} model`, ids, labels, saved.id);
 
 	if (id === undefined) {
@@ -123,10 +123,10 @@ async function pickFromList(config: Config, io: PickerIo, provider: Provider, mo
 		return { result: "cancelled" };
 	}
 
-	const price = chosenPrice(saved, provider, id, prices);
+	const price = chosenPrice(saved, provider, id, facts);
 
-	if (priced.ok && !isPriced(price)) {
-		io.warn(`The price list has no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
+	if (fetched.ok && !isPriced(price)) {
+		io.warn(`OpenRouter lists no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
 	}
 
 	return { result: "picked", model: { provider, id, effort, price } };

@@ -44,9 +44,11 @@ When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker i
 2. **Model**, from the provider's list, by name, ID, and price.
 3. **Effort**, from the SDK's reasoning levels, with `provider-default` first.
 
-`fetchPrices` and `priceFor` in `src/model/prices.ts` look up each model's price in LiteLLM's public price file, while the picker lists the models. The file gives each provider's own list price, with no markup, and names Google's models with a `gemini/` prefix.
+`cachedFacts` and `priceFor` in `src/model/model-facts.ts` look up facts about each model, such as its price, in OpenRouter's public model list, while the picker lists the models. The list gives each provider's own price, with no markup.
 
-The bridge keeps the file in `cache/prices.json` in the config file's folder, and fetches it again once the copy is a day old. When the fetch fails, an older copy still serves.
+OpenRouter names a model `anthropic/claude-opus-5.5` where Anthropic's API says `claude-opus-5-5`, so the lookup counts a dot and a dash as the same. It also finds a model by its dated ID, and skips variants such as `:batch`.
+
+The bridge keeps the facts in `cache/models.json` in the config file's folder, and fetches it again once the copy is a day old. When the fetch fails, an older copy still serves.
 
 The picked model gets the list's price, unless you saved a price for the same model. When the file can't be read, or has no price for the model, the picker warns and the price stays blank.
 
@@ -80,8 +82,8 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | The picker asks on each start, from the saved choice | Enter three times keeps the model, and a new model is a few keys away. A choice made once and hidden in the file is easy to forget |
 | A long menu scrolls in a window of 5 rows, not pages | The newest models come first and the menu starts on the saved choice, so most picks need little scrolling. 10 rows didn't fit VS Code's default terminal panel |
 | The menu uses `node:readline`, with no prompt package | Raw mode and keypress events are in Node. The menu is short, and its logic is tested without a terminal |
-| Prices come from LiteLLM's public price file | No library or provider API gives a price. The file's prices match the providers' own, its model names match the provider IDs, and it needs no key |
-| The price file is cached for a day | It is a few megabytes, and prices change rarely. Without the cache, every start in a terminal waits for it |
+| Model facts come from OpenRouter's public model list | No library or provider API gives a price. Its prices match the providers' own, it needs no key, and it also lists each model's tool support and effort levels |
+| The model facts are cached for a day | The list is about a megabyte, and prices change rarely. Without the cache, every start in a terminal waits for it |
 | A price the user saved for the same model wins over the list | The user may have entered it, such as a discount the list doesn't know |
 | The log shows a cost only when both prices are set | A wrong price is worse than none |
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |

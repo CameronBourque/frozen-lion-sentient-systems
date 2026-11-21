@@ -4,7 +4,7 @@
 import { describe, expect, test } from "vitest";
 import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
 import type { ListResult } from "../../src/model/list-models.js";
-import type { PricesResult } from "../../src/model/prices.js";
+import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 
 const MODELS: ListResult = {
@@ -31,7 +31,7 @@ interface Asked {
 // Answers each menu with the next row in the script, and records what it
 // asked and warned.
 // A list of results answers each list call in turn, and repeats the last.
-function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[] = MODELS, prices: PricesResult = { ok: true, prices: {} }) {
+function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[] = MODELS, facts: FactsResult = { ok: true, facts: {} }) {
 	const lists = Array.isArray(list) ? [...list] : [list];
 	const asked: Asked[] = [];
 	const warnings: string[] = [];
@@ -47,7 +47,7 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[
 
 			return Promise.resolve(lists.length > 1 ? lists.shift() as ListResult : lists[0]);
 		},
-		prices: () => Promise.resolve(prices),
+		facts: () => Promise.resolve(facts),
 		warn: (text) => warnings.push(text),
 	};
 
@@ -97,7 +97,7 @@ describe("pickModel", () => {
 	});
 
 	describe("prices", () => {
-		const LISTED: PricesResult = { ok: true, prices: { "model-a": { input_cost_per_token: 0.000003, output_cost_per_token: 0.000015 } } };
+		const LISTED: FactsResult = { ok: true, facts: { "openai/model-a": { pricing: { prompt: "0.000003", completion: "0.000015" } } } };
 
 		test("shows each model's price and saves the picked one's", async () => {
 			const { io, asked, warnings } = scriptedIo([0, 0], MODELS, LISTED);
@@ -125,14 +125,14 @@ describe("pickModel", () => {
 			const { io, warnings } = scriptedIo([1, 0], MODELS, LISTED);
 
 			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { id: "model-b", price: NO_PRICE } });
-			expect(warnings).toEqual(["The price list has no price for model-b, so the log shows no cost. Set model.price in the config file to see it"]);
+			expect(warnings).toEqual(["OpenRouter lists no price for model-b, so the log shows no cost. Set model.price in the config file to see it"]);
 		});
 
 		test("warns once and picks with no price when the list fails", async () => {
-			const { io, warnings } = scriptedIo([0, 0], MODELS, { ok: false, error: "The price list answered with 503" });
+			const { io, warnings } = scriptedIo([0, 0], MODELS, { ok: false, error: "OpenRouter's model list answered with 503" });
 
 			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { price: NO_PRICE } });
-			expect(warnings).toEqual(["The price list answered with 503, so the models show no price"]);
+			expect(warnings).toEqual(["OpenRouter's model list answered with 503, so the models show no price"]);
 		});
 	});
 
