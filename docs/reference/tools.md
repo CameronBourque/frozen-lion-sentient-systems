@@ -4,7 +4,7 @@ The MCP tools that the bridge serves, with the descriptions and fields that the 
 
 ## `get_state`
 
-Read your empire and everything you can see, as JSON. Call it at the start of each turn and after actions that change the map.
+Read your empire and everything you can see, as JSON. It's large, so call it at the start of a turn, and again only when a decision needs something your actions changed.
 
 It holds your cities, units, revealed tiles, rivals you can see, diplomacy, religion, great people, governors, trade, espionage, the scoreboard, and victory progress. Fog of war applies: rivals' units are only those you see now, and tiles are only those you have revealed.
 
