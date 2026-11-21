@@ -2,7 +2,7 @@
 // the config, and an empty or missing key fails with the field to set.
 
 import { describe, expect, test } from "vitest";
-import { type Config, DEFAULT_MCP_PORT, NO_MODEL, PROVIDERS } from "../../src/config.js";
+import { type Config, DEFAULT_MCP_PORT, KEY_VARIABLES, NO_MODEL, PROVIDERS } from "../../src/config.js";
 import { providerModel } from "../../src/model/providers.js";
 
 function configWith(providers: Config["providers"]): Config {
@@ -19,7 +19,7 @@ describe.each(PROVIDERS)("%s", (provider) => {
 	test("fails with the field to set when the key is empty", () => {
 		expect(providerModel(configWith({ [provider]: { apiKey: "" } }), provider, "some-model")).toEqual({
 			ok: false,
-			error: `No API key for ${provider}. Set providers.${provider}.apiKey in the config file`,
+			error: `No API key for ${provider}. Set providers.${provider}.apiKey in the config file, or ${KEY_VARIABLES[provider]}`,
 		});
 	});
 

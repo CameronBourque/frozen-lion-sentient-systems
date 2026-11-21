@@ -56,6 +56,14 @@ The bridge saves the choice to `model` in the config file with `saveModel`, whic
 
 Without a terminal, the bridge uses the saved model. `savedModelWarning` warns when no model is picked, or when its provider has no key, because then agents can't play.
 
+## Checking a model
+
+`npm run ask` checks a model without the game. It reads `tmp/sentient-systems.yaml`, runs the picker in a terminal, and sends the chosen model one prompt with one fake tool, `report_civilization`.
+
+It prints the tool call, such as `report_civilization({"name":"Rome"})`, and logs the call's tokens and cost.
+
+It exits with code 1 when the config has errors, no model can be built, the call fails, or the model calls no tool. A model that writes text and calls no tool doesn't get tools through, and the script prints the text.
+
 ## Decisions
 
 | Decision | Reason |

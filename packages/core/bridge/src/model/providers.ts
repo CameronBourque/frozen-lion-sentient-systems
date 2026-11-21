@@ -6,7 +6,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogle } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { LanguageModel } from "ai";
-import type { Config, Provider } from "../config.js";
+import { type Config, KEY_VARIABLES, type Provider } from "../config.js";
 
 const FACTORIES: Record<Provider, (apiKey: string) => (modelId: string) => LanguageModel> = {
 	anthropic: (apiKey) => createAnthropic({ apiKey }),
@@ -24,6 +24,6 @@ export function providerModel(config: Config, provider: Provider, modelId: strin
 	const apiKey = config.providers[provider]?.apiKey ?? "";
 
 	return apiKey === ""
-		? { ok: false, error: `No API key for ${provider}. Set providers.${provider}.apiKey in the config file` }
+		? { ok: false, error: `No API key for ${provider}. Set providers.${provider}.apiKey in the config file, or ${KEY_VARIABLES[provider]}` }
 		: { ok: true, model: FACTORIES[provider](apiKey)(modelId) };
 }
