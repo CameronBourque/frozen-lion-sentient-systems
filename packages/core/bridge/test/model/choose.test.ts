@@ -12,6 +12,7 @@ import { Logger } from "../../src/log.js";
 import { type ChooseIo, chooseModel } from "../../src/model/choose.js";
 
 const LIST: ChooseIo["list"] = () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] });
+const PRICES: ChooseIo["prices"] = () => Promise.resolve({ ok: true, prices: {} });
 
 let folder: string;
 let file: string;
@@ -41,7 +42,7 @@ describe("in a terminal", () => {
 		const config = configWith(NO_MODEL);
 		const info = vi.spyOn(logger, "info");
 
-		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, list: LIST })).toBe(true);
+		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, list: LIST, prices: PRICES })).toBe(true);
 
 		const picked = { provider: "openai", id: "model-a", effort: "provider-default", price: NO_PRICE };
 
@@ -53,14 +54,14 @@ describe("in a terminal", () => {
 	test("returns false when the user cancels", async () => {
 		const cancel: ChooseIo["ask"] = () => Promise.resolve(undefined);
 
-		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: cancel, list: LIST })).toBe(false);
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: cancel, list: LIST, prices: PRICES })).toBe(false);
 	});
 
 	test("warns when the list fails, and when the kept model can't play", async () => {
 		const warn = vi.spyOn(logger, "warn");
 		const failing: ChooseIo["list"] = () => Promise.resolve({ ok: false, error: "offline" });
 
-		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: FIRST_ROWS, list: failing })).toBe(true);
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: FIRST_ROWS, list: failing, prices: PRICES })).toBe(true);
 		expect(warn.mock.calls.map(([, text]) => text)).toEqual([
 			"offline, so the bridge keeps the saved model",
 			expect.stringMatching(/^No model is picked/),
@@ -70,7 +71,7 @@ describe("in a terminal", () => {
 	test("warns when it can't save the choice", async () => {
 		const warn = vi.spyOn(logger, "warn");
 
-		await chooseModel(configWith(NO_MODEL), path.join(folder, "missing", CONFIG_NAME), logger, { ask: FIRST_ROWS, list: LIST });
+		await chooseModel(configWith(NO_MODEL), path.join(folder, "missing", CONFIG_NAME), logger, { ask: FIRST_ROWS, list: LIST, prices: PRICES });
 
 		expect(warn).toHaveBeenCalledWith("model_warning", expect.stringMatching(/^Couldn't save the model/));
 	});
@@ -81,7 +82,7 @@ describe("without a terminal", () => {
 		const info = vi.spyOn(logger, "info");
 		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
-		expect(await chooseModel(configWith(saved), file, logger, { list: LIST })).toBe(true);
+		expect(await chooseModel(configWith(saved), file, logger, { list: LIST, prices: PRICES })).toBe(true);
 		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with the provider's default effort", { provider: "openai", id: "model-a", effort: "" });
 	});
 
@@ -90,7 +91,7 @@ describe("without a terminal", () => {
 		const warn = vi.spyOn(logger, "warn");
 		const config = { ...configWith({ provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), providers: {} };
 
-		expect(await chooseModel(config, file, logger, { list: LIST })).toBe(true);
+		expect(await chooseModel(config, file, logger, { list: LIST, prices: PRICES })).toBe(true);
 		expect(info).not.toHaveBeenCalled();
 		expect(warn).not.toHaveBeenCalled();
 	});
@@ -98,7 +99,7 @@ describe("without a terminal", () => {
 	test("warns when no model is saved, and doesn't write the file", async () => {
 		const warn = vi.spyOn(logger, "warn");
 
-		await chooseModel(configWith(NO_MODEL), file, logger, { list: LIST });
+		await chooseModel(configWith(NO_MODEL), file, logger, { list: LIST, prices: PRICES });
 
 		expect(warn).toHaveBeenCalledWith("model_warning", expect.stringMatching(/^No model is picked/));
 		expect(fs.readFileSync(file, "utf8")).toBe(EXAMPLE_CONFIG);

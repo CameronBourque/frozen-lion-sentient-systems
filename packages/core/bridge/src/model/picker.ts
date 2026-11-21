@@ -1,13 +1,15 @@
 // Asks the user for the provider, the model, and the effort when the bridge
 // starts in a terminal. docs/design/core/model-client.md has the design.
 
-import { type Config, EFFORTS, type ModelSetting, NO_PRICE, PROVIDERS, type Provider } from "../config.js";
+import { type Config, EFFORTS, type ModelSetting, NO_PRICE, PROVIDERS, type Price, type Provider } from "../config.js";
 import type { ListResult, ModelInfo } from "./list-models.js";
+import { type PriceList, type PricesResult, priceFor, priceLabel } from "./prices.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
 	ask: (title: string, labels: string[], start: number) => Promise<number | undefined>;
 	list: (provider: Provider, apiKey: string) => Promise<ListResult>;
+	prices: () => Promise<PricesResult>;
 	warn: (text: string) => void;
 }
 
@@ -22,8 +24,22 @@ export function keyedProviders(config: Config): Provider[] {
 	return PROVIDERS.filter((provider) => (config.providers[provider]?.apiKey ?? "") !== "");
 }
 
-function modelLabel({ id, name }: ModelInfo): string {
-	return name === id ? id : `${name} (${id})`;
+function modelLabel({ id, name }: ModelInfo, provider: Provider, prices: PriceList): string {
+	return `${name === id ? id : `${name} (${id})`}, ${priceLabel(priceFor(prices, provider, id))}`;
+}
+
+function isPriced(price: Price): boolean {
+	return price.input !== "" && price.output !== "";
+}
+
+// A price the user saved for the same model wins, since they may have entered
+// it themselves. Otherwise the price list's, or blank.
+function chosenPrice(saved: ModelSetting, provider: Provider, id: string, prices: PriceList): Price {
+	if (provider === saved.provider && id === saved.id && isPriced(saved.price)) {
+		return saved.price;
+	}
+
+	return priceFor(prices, provider, id) ?? NO_PRICE;
 }
 
 // Asks one menu, starting on the saved choice, or on the first row when the
@@ -49,7 +65,7 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 		return { result: "cancelled" };
 	}
 
-	const listed = await io.list(provider, config.providers[provider]?.apiKey ?? "");
+	const [listed, priced] = await Promise.all([io.list(provider, config.providers[provider]?.apiKey ?? ""), io.prices()]);
 
 	if (!listed.ok || listed.models.length === 0) {
 		io.warn(`${listed.ok ? `${provider} listed no models` : listed.error}, so the bridge keeps the saved model`);
@@ -57,18 +73,32 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 		return { result: "kept", model: saved };
 	}
 
+	if (!priced.ok) {
+		io.warn(`${priced.error}, so the models show no price`);
+	}
+
+	const prices = priced.ok ? priced.prices : {};
 	const ids = listed.models.map(({ id }) => id);
-	const id = await askFor(io, `${provider} model`, ids, listed.models.map(modelLabel), saved.id);
+	const labels = listed.models.map((model) => modelLabel(model, provider, prices));
+	const id = await askFor(io, `${provider} model`, ids, labels, saved.id);
 
 	if (id === undefined) {
 		return { result: "cancelled" };
 	}
 
 	const effort = await askFor(io, "Effort", EFFORTS, [...EFFORTS], saved.effort);
-	// The saved price belongs to the saved model.
-	const price = provider === saved.provider && id === saved.id ? saved.price : NO_PRICE;
 
-	return effort === undefined ? { result: "cancelled" } : { result: "picked", model: { provider, id, effort, price } };
+	if (effort === undefined) {
+		return { result: "cancelled" };
+	}
+
+	const price = chosenPrice(saved, provider, id, prices);
+
+	if (priced.ok && !isPriced(price)) {
+		io.warn(`The price list has no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
+	}
+
+	return { result: "picked", model: { provider, id, effort, price } };
 }
 
 // Says why the saved choice can't play, or nothing when it can.

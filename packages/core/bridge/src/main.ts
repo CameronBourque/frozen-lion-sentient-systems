@@ -14,6 +14,7 @@ import { localPlayer } from "./mcp/player.js";
 import { chooseModel } from "./model/choose.js";
 import { listModels } from "./model/list-models.js";
 import { askMenu } from "./model/menu.js";
+import { fetchPrices } from "./model/prices.js";
 import { TunerClient } from "./tuner/client.js";
 
 // The default level until the config file sets one. Lines before then go to the
@@ -60,7 +61,7 @@ const terminal = { input: process.stdin, write: (text: string) => process.stdout
 const ask = process.stdin.isTTY ? (title: string, labels: string[], start: number) => askMenu(title, labels, start, terminal) : undefined;
 
 // No top-level await, because the executable's bundle is CommonJS.
-void chooseModel(started.config, started.path, logger, { ask, list: listModels }).then((chosen) => {
+void chooseModel(started.config, started.path, logger, { ask, list: listModels, prices: fetchPrices }).then((chosen) => {
 	if (!chosen) {
 		logger.closeFile();
 		process.exit(0);

@@ -37,9 +37,9 @@ model:
   provider: ""
   id: ""
   effort: ""
-  # The model's price in US dollars per million tokens, from the provider's pricing page. Leave
-  # it blank if you don't know it. With a price, the log shows each call's cost. Picking another
-  # model clears it.
+  # The model's price in US dollars per million tokens. The picker fills it from a public price
+  # list, and you can change it. With a price, the log shows each call's cost. Picking another
+  # model replaces it.
   price:
     input: ""
     output: ""

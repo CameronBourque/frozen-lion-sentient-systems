@@ -33,8 +33,12 @@ A refused request, a network error, or an answer of the wrong shape fails the wh
 When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. In a terminal, `pickModel(config, io)` in `src/model/picker.ts` asks three menus, each starting on the saved choice:
 
 1. **Provider**, from the providers with a key. With only one, the picker skips this menu.
-2. **Model**, from the provider's list, by name and ID.
+2. **Model**, from the provider's list, by name, ID, and price.
 3. **Effort**, from the SDK's reasoning levels, with `provider-default` first.
+
+`fetchPrices` and `priceFor` in `src/model/prices.ts` look up each model's price in LiteLLM's public price file, while the picker lists the models. The file gives each provider's own list price, with no markup, and names Google's models with a `gemini/` prefix.
+
+The picked model gets the list's price, unless you saved a price for the same model. When the file can't be read, or has no price for the model, the picker warns and the price stays blank.
 
 The bridge saves the choice to `model` in the config file with `saveModel`, which keeps the file's comments. Ctrl+C in a menu exits the bridge. When the list fails, the picker logs a warning and keeps the saved model.
 
@@ -56,6 +60,8 @@ Without a terminal, the bridge uses the saved model. `savedModelWarning` warns w
 | The picker asks on each start, from the saved choice | Enter three times keeps the model, and a new model is a few keys away. A choice made once and hidden in the file is easy to forget |
 | A long menu scrolls in a window of 5 rows, not pages | The newest models come first and the menu starts on the saved choice, so most picks need little scrolling. 10 rows didn't fit VS Code's default terminal panel |
 | The menu uses `node:readline`, with no prompt package | Raw mode and keypress events are in Node. The menu is short, and its logic is tested without a terminal |
-| The user enters the price, which starts blank | No library or provider API gives a price. A wrong price is worse than none, so the log shows a cost only when both prices are set |
-| Picking another model clears the price | The price belonged to the old model, and a stale price gives a wrong cost |
+| Prices come from LiteLLM's public price file | No library or provider API gives a price. The file's prices match the providers' own, its model names match the provider IDs, and it needs no key |
+| A price the user saved for the same model wins over the list | The user may have entered it, such as a discount the list doesn't know |
+| The log shows a cost only when both prices are set | A wrong price is worse than none |
+| Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | The model client returns tool calls and doesn't run them | The agent loop runs each call through the MCP server, so it can count actions and stop at a turn limit |

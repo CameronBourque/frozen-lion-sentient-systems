@@ -15,8 +15,9 @@ Add the model client, which calls the configured provider through the Vercel AI 
 7. **Usage.** Return the input and output tokens of each call, and log them at the decisions level. Add `price` to `model`, with `input` and `output` in US dollars per million tokens, blank to start.
 
    When the price is set, the log shows each call's cost. A new model in the picker clears the price, because the price belonged to the old model. Commit: `feat(core): log tokens and cost per model call`.
-8. **Errors.** Retry a rate limit or a server error with backoff, up to 3 times. On an auth error, log a warning that names the config field, and stop the turn. Commit: `feat(core): retry model calls`.
-9. **Script.** Add `npm run ask`, which sends one prompt with one fake tool to the chosen model and prints the tool call. Commit: `chore(core): add a script that tests the model`.
+8. **Prices.** Look up each model's price in LiteLLM's public price file when the picker lists the models, show it in the model menu, and save the picked model's price. A price the user saved for the same model wins. Commit: `feat(core): look up model prices`.
+9. **Errors.** Retry a rate limit or a server error with backoff, up to 3 times. On an auth error, log a warning that names the config field, and stop the turn. Commit: `feat(core): retry model calls`.
+10. **Script.** Add `npm run ask`, which sends one prompt with one fake tool to the chosen model and prints the tool call. Commit: `chore(core): add a script that tests the model`.
 
 ## Done when
 

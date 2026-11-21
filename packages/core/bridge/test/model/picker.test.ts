@@ -4,6 +4,7 @@
 import { describe, expect, test } from "vitest";
 import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
 import type { ListResult } from "../../src/model/list-models.js";
+import type { PricesResult } from "../../src/model/prices.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 
 const MODELS: ListResult = {
@@ -29,7 +30,7 @@ interface Asked {
 
 // Answers each menu with the next row in the script, and records what it
 // asked and warned.
-function scriptedIo(rows: (number | undefined)[], list: ListResult = MODELS) {
+function scriptedIo(rows: (number | undefined)[], list: ListResult = MODELS, prices: PricesResult = { ok: true, prices: {} }) {
 	const asked: Asked[] = [];
 	const warnings: string[] = [];
 	const listed: string[] = [];
@@ -44,6 +45,7 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult = MODELS) {
 
 			return Promise.resolve(list);
 		},
+		prices: () => Promise.resolve(prices),
 		warn: (text) => warnings.push(text),
 	};
 
@@ -60,7 +62,7 @@ describe("pickModel", () => {
 		});
 		expect(asked.map(({ title }) => title)).toEqual(["Provider", "openai model", "Effort"]);
 		expect(asked[0].labels).toEqual(["anthropic", "openai"]);
-		expect(asked[1].labels).toEqual(["Model A (model-a)", "model-b"]);
+		expect(asked[1].labels).toEqual(["Model A (model-a), no price", "model-b, no price"]);
 		expect(listed).toEqual(["openai openai-key"]);
 	});
 
@@ -90,6 +92,46 @@ describe("pickModel", () => {
 
 		expect(await pickModel(configWith(["openai"], saved), same.io)).toMatchObject({ model: { id: "model-a", price: { input: 1, output: 2 } } });
 		expect(await pickModel(configWith(["openai"], saved), other.io)).toMatchObject({ model: { id: "model-b", price: NO_PRICE } });
+	});
+
+	describe("prices", () => {
+		const LISTED: PricesResult = { ok: true, prices: { "model-a": { input_cost_per_token: 0.000003, output_cost_per_token: 0.000015 } } };
+
+		test("shows each model's price and saves the picked one's", async () => {
+			const { io, asked, warnings } = scriptedIo([0, 0], MODELS, LISTED);
+
+			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { id: "model-a", price: { input: 3, output: 15 } } });
+			expect(asked[0].labels).toEqual(["Model A (model-a), $3 in, $15 out per million tokens", "model-b, no price"]);
+			expect(warnings).toEqual([]);
+		});
+
+		test("keeps a price the user saved for the same model", async () => {
+			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2 } };
+			const { io } = scriptedIo([0, 0], MODELS, LISTED);
+
+			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 1, output: 2 } } });
+		});
+
+		test("fills a blank saved price for the same model from the list", async () => {
+			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
+			const { io } = scriptedIo([0, 0], MODELS, LISTED);
+
+			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 3, output: 15 } } });
+		});
+
+		test("warns when the list has no price for the picked model", async () => {
+			const { io, warnings } = scriptedIo([1, 0], MODELS, LISTED);
+
+			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { id: "model-b", price: NO_PRICE } });
+			expect(warnings).toEqual(["The price list has no price for model-b, so the log shows no cost. Set model.price in the config file to see it"]);
+		});
+
+		test("warns once and picks with no price when the list fails", async () => {
+			const { io, warnings } = scriptedIo([0, 0], MODELS, { ok: false, error: "The price list answered with 503" });
+
+			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ model: { price: NO_PRICE } });
+			expect(warnings).toEqual(["The price list answered with 503, so the models show no price"]);
+		});
 	});
 
 	test("starts on the first row when the saved choice isn't listed", async () => {

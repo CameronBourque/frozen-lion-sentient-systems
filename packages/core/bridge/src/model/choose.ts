@@ -10,13 +10,14 @@ import { type PickerIo, keyedProviders, pickModel, savedModelWarning } from "./p
 export interface ChooseIo {
 	ask?: PickerIo["ask"];
 	list: PickerIo["list"];
+	prices: PickerIo["prices"];
 }
 
 // Sets config.model to the choice, saves a new one, and logs the model agents
 // use, or why they can't play. Returns false when the user cancels.
-export async function chooseModel(config: Config, file: string, logger: Logger, { ask, list }: ChooseIo): Promise<boolean> {
+export async function chooseModel(config: Config, file: string, logger: Logger, { ask, list, prices }: ChooseIo): Promise<boolean> {
 	if (ask !== undefined) {
-		const picked = await pickModel(config, { ask, list, warn: (text) => logger.warn("model_warning", text) });
+		const picked = await pickModel(config, { ask, list, prices, warn: (text) => logger.warn("model_warning", text) });
 
 		if (picked.result === "cancelled") {
 			return false;
