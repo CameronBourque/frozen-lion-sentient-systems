@@ -43,6 +43,8 @@ model:
   price:
     input: ""
     output: ""
+    cacheRead: ""
+    cacheWrite: ""
 
 # The port where the bridge serves its MCP tools when it starts with --mcp, for Claude Code and
 # the MCP Inspector. Change it if another program uses it.

@@ -100,7 +100,7 @@ test("returns the text and no tool calls when the model only writes", async () =
 
 	expect(await callModel(target(model), REQUEST)).toEqual({
 		ok: true,
-		reply: { text: "I'll wait.", toolCalls: [], usage: { inputTokens: 10, outputTokens: 5 } },
+		reply: { text: "I'll wait.", toolCalls: [], usage: { inputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 5 } },
 	});
 });
 
@@ -117,7 +117,7 @@ test("returns the tool calls without running them", async () => {
 		reply: {
 			text: "Ending the turn.",
 			toolCalls: [{ id: "call-1", name: "end_turn", input: { reason: "Nothing left." } }],
-			usage: { inputTokens: 10, outputTokens: 5 },
+			usage: { inputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 5 },
 		},
 	});
 	expect(model.doGenerateCalls).toHaveLength(1);
@@ -133,7 +133,22 @@ test("counts tokens the provider doesn't report as 0", async () => {
 
 	const model = new MockLanguageModelV4({ doGenerate: unreported });
 
-	expect(await callModel(target(model), REQUEST)).toMatchObject({ reply: { usage: { inputTokens: 0, outputTokens: 0 } } });
+	expect(await callModel(target(model), REQUEST)).toMatchObject({ reply: { usage: { inputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 0 } } });
+});
+
+test("returns the tokens read from and written to the prompt cache", async () => {
+	const cached = reply([{ type: "text", text: "Done." }]);
+
+	cached.usage = {
+		inputTokens: { total: 100, noCache: 20, cacheRead: 70, cacheWrite: 10 },
+		outputTokens: { total: 5, text: 5, reasoning: undefined },
+	};
+
+	const model = new MockLanguageModelV4({ doGenerate: cached });
+
+	expect(await callModel(target(model), REQUEST)).toMatchObject({
+		reply: { usage: { inputTokens: 100, cacheReadTokens: 70, cacheWriteTokens: 10, outputTokens: 5 } },
+	});
 });
 
 describe("failures", () => {

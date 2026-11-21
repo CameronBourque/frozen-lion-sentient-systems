@@ -9,7 +9,10 @@ import { EFFORTS, NO_PRICE } from "../../src/config.js";
 import type { Fetch } from "../../src/model/list-models.js";
 import { MODELS_URL, cachedFacts, callsTools, effortsFor, factsCachePath, fetchFacts, priceFor, priceLabel } from "../../src/model/model-facts.js";
 
-const CLAUDE = { id: "anthropic/claude-a.5", pricing: { prompt: "0.000003", completion: "0.000015" } };
+const CLAUDE = {
+	id: "anthropic/claude-a.5",
+	pricing: { prompt: "0.000003", completion: "0.000015", input_cache_read: "0.0000003", input_cache_write: "0.00000375" },
+};
 const GEMINI = { id: "google/gemini-a", pricing: { prompt: "0.00000125", completion: "0.00001" } };
 const VARIABLE = { id: "openai/gpt-router", pricing: { prompt: "-1", completion: "-1" } };
 const NO_PRICING = { id: "openai/gpt-a" };
@@ -62,16 +65,16 @@ describe("fetchFacts", () => {
 
 describe("priceFor", () => {
 	test("converts the price per token to the price per million tokens", () => {
-		expect(priceFor(FACTS, "anthropic", "claude-a-5")).toEqual({ input: 3, output: 15 });
+		expect(priceFor(FACTS, "anthropic", "claude-a-5")).toEqual({ input: 3, output: 15, cacheRead: 0.3, cacheWrite: 3.75 });
 	});
 
 	test("finds a model by its ID without the release date", () => {
-		expect(priceFor(FACTS, "anthropic", "claude-a-5-20260101")).toEqual({ input: 3, output: 15 });
+		expect(priceFor(FACTS, "anthropic", "claude-a-5-20260101")).toMatchObject({ input: 3, output: 15 });
 		expect(priceFor(FACTS, "anthropic", "claude-a-5-2026")).toBeUndefined();
 	});
 
-	test("finds a Google model", () => {
-		expect(priceFor(FACTS, "google", "gemini-a")).toEqual({ input: 1.25, output: 10 });
+	test("finds a Google model, and leaves cache prices the list doesn't give blank", () => {
+		expect(priceFor(FACTS, "google", "gemini-a")).toEqual({ input: 1.25, output: 10, cacheRead: "", cacheWrite: "" });
 	});
 
 	test("has no price for a model that isn't listed, has no price, or has a price that varies", () => {
@@ -137,13 +140,13 @@ describe("effortsFor", () => {
 
 describe("priceLabel", () => {
 	test("names both prices", () => {
-		expect(priceLabel({ input: 1.25, output: 10 })).toBe("$1.25 in, $10 out per million tokens");
+		expect(priceLabel({ ...NO_PRICE, input: 1.25, output: 10 })).toBe("$1.25 in, $10 out per million tokens");
 	});
 
 	test("says there is no price when either is blank", () => {
 		expect(priceLabel(undefined)).toBe("no price");
 		expect(priceLabel(NO_PRICE)).toBe("no price");
-		expect(priceLabel({ input: 1, output: "" })).toBe("no price");
+		expect(priceLabel({ ...NO_PRICE, input: 1 })).toBe("no price");
 	});
 });
 

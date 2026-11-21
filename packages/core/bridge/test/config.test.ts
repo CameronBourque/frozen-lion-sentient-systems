@@ -120,7 +120,7 @@ describe("parseConfig", () => {
 });
 
 describe("withModel", () => {
-	const MODEL = { provider: "openai", id: "some-model", effort: "high", price: { input: 2.5, output: 10 } } as const;
+	const MODEL = { provider: "openai", id: "some-model", effort: "high", price: { input: 2.5, output: 10, cacheRead: 0.25, cacheWrite: "" } } as const;
 
 	// Each value keeps the quotes it had, and a number has none.
 	test("replaces the model and keeps the comments, in price too", () => {
@@ -136,6 +136,8 @@ describe("withModel", () => {
 			"    # Input first.",
 			"    input: \"\"",
 			"    output: \"\"",
+			"    cacheRead: \"\"",
+			"    cacheWrite: \"\"",
 			"",
 		].join("\n");
 
@@ -151,6 +153,8 @@ describe("withModel", () => {
 			"    # Input first.",
 			"    input: 2.5",
 			"    output: 10",
+			"    cacheRead: 0.25",
+			"    cacheWrite: \"\"",
 			"",
 		].join("\n"));
 	});

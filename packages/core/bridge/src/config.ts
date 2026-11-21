@@ -53,14 +53,18 @@ export const EFFORTS = Object.keys(EFFORT_LEVELS) as Effort[];
 // gives a price, so the user copies it from the provider's pricing page.
 const PER_MILLION = z.union([z.literal(""), z.number().nonnegative()]).default("");
 
+// Cached input is read from, or written to, the provider's prompt cache,
+// which has its own prices.
 const PRICE = z.strictObject({
 	input: PER_MILLION,
 	output: PER_MILLION,
+	cacheRead: PER_MILLION,
+	cacheWrite: PER_MILLION,
 });
 
 export type Price = z.infer<typeof PRICE>;
 
-export const NO_PRICE: Price = { input: "", output: "" };
+export const NO_PRICE: Price = { input: "", output: "", cacheRead: "", cacheWrite: "" };
 
 // Blank until the user picks, which the picker then asks for.
 const MODEL = z.strictObject({

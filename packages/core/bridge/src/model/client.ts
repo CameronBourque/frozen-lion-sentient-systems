@@ -27,8 +27,11 @@ export interface ToolCall {
 	input: unknown;
 }
 
+// inputTokens counts every input token, cached or not.
 export interface Usage {
 	inputTokens: number;
+	cacheReadTokens: number;
+	cacheWriteTokens: number;
 	outputTokens: number;
 }
 
@@ -97,7 +100,12 @@ export async function callModel({ model, provider, effort }: ModelTarget, reques
 				toolCalls: result.toolCalls.map(({ toolCallId, toolName, input }): ToolCall => ({ id: toolCallId, name: toolName, input })),
 				// A provider that doesn't report a count counts as 0, so a sum
 				// still adds up.
-				usage: { inputTokens: result.usage.inputTokens ?? 0, outputTokens: result.usage.outputTokens ?? 0 },
+				usage: {
+					inputTokens: result.usage.inputTokens ?? 0,
+					cacheReadTokens: result.usage.inputTokenDetails.cacheReadTokens ?? 0,
+					cacheWriteTokens: result.usage.inputTokenDetails.cacheWriteTokens ?? 0,
+					outputTokens: result.usage.outputTokens ?? 0,
+				},
 			},
 		};
 	} catch (error) {

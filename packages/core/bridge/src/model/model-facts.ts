@@ -28,8 +28,14 @@ export type FactsResult =
 // OpenRouter gives prices as strings of US dollars per token.
 const PER_TOKEN = z.string().transform(Number).pipe(z.number().nonnegative());
 
+// A model without prompt caching has no cache prices.
 const PRICED = z.object({
-	pricing: z.object({ prompt: PER_TOKEN, completion: PER_TOKEN }),
+	pricing: z.object({
+		prompt: PER_TOKEN,
+		completion: PER_TOKEN,
+		input_cache_read: PER_TOKEN.optional(),
+		input_cache_write: PER_TOKEN.optional(),
+	}),
 });
 
 // Prices change rarely, and the list is about a megabyte.
@@ -127,13 +133,27 @@ function perMillion(perToken: number): number {
 	return Number((perToken * 1_000_000).toFixed(6));
 }
 
-// Undefined when the list has no price for the model.
+function optionalPerMillion(perToken: number | undefined): number | "" {
+	return perToken === undefined ? "" : perMillion(perToken);
+}
+
+// Undefined when the list has no price for the model. A cache price the list
+// doesn't give stays blank.
 export function priceFor(facts: Facts, provider: Provider, id: string): Price | undefined {
 	const entry = PRICED.safeParse(entryFor(facts, provider, id));
 
-	return entry.success
-		? { input: perMillion(entry.data.pricing.prompt), output: perMillion(entry.data.pricing.completion) }
-		: undefined;
+	if (!entry.success) {
+		return undefined;
+	}
+
+	const { pricing } = entry.data;
+
+	return {
+		input: perMillion(pricing.prompt),
+		output: perMillion(pricing.completion),
+		cacheRead: optionalPerMillion(pricing.input_cache_read),
+		cacheWrite: optionalPerMillion(pricing.input_cache_write),
+	};
 }
 
 const WITH_PARAMETERS = z.object({

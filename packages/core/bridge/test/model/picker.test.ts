@@ -96,7 +96,7 @@ describe("pickModel", () => {
 	});
 
 	test("keeps the price when the model stays the same, and clears it when the model changes", async () => {
-		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2 } };
+		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
 		const same = scriptedIo([0, 0]);
 		const other = scriptedIo([1, 0]);
 
@@ -107,7 +107,7 @@ describe("pickModel", () => {
 	describe("prices", () => {
 		const LISTED: FactsResult = {
 			ok: true,
-			facts: { "openai/model-a": { ...TOOLS, pricing: { prompt: "0.000003", completion: "0.000015" } }, "openai/model-b": TOOLS },
+			facts: { "openai/model-a": { ...TOOLS, pricing: { prompt: "0.000003", completion: "0.000015", input_cache_read: "0.0000003" } }, "openai/model-b": TOOLS },
 		};
 
 		test("shows each model's price and saves the picked one's", async () => {
@@ -118,11 +118,11 @@ describe("pickModel", () => {
 			expect(warnings).toEqual([]);
 		});
 
-		test("keeps a price the user saved for the same model", async () => {
-			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2 } };
+		test("keeps each price the user saved for the same model, and fills the blank ones", async () => {
+			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
 			const { io } = scriptedIo([0, 0], MODELS, LISTED);
 
-			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 1, output: 2 } } });
+			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 1, output: 2, cacheRead: 0.3, cacheWrite: "" } } });
 		});
 
 		test("fills a blank saved price for the same model from the list", async () => {

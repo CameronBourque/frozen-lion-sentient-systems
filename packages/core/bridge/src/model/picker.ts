@@ -37,14 +37,19 @@ function isPriced(price: Price): boolean {
 	return price.input !== "" && price.output !== "";
 }
 
-// A price the user saved for the same model wins, since they may have entered
-// it themselves. Otherwise OpenRouter's, or blank.
+// Each price the user saved for the same model wins, since they may have
+// entered it themselves. A blank one takes OpenRouter's, so a price saved
+// before the cache prices existed gains them.
 function chosenPrice(saved: ModelSetting, provider: Provider, id: string, facts: Facts): Price {
-	if (provider === saved.provider && id === saved.id && isPriced(saved.price)) {
-		return saved.price;
+	const listed = priceFor(facts, provider, id) ?? NO_PRICE;
+
+	if (provider !== saved.provider || id !== saved.id) {
+		return listed;
 	}
 
-	return priceFor(facts, provider, id) ?? NO_PRICE;
+	const fields = Object.keys(listed) as (keyof Price)[];
+
+	return Object.fromEntries(fields.map((field) => [field, saved.price[field] === "" ? listed[field] : saved.price[field]])) as Price;
 }
 
 // Asks one menu, starting on the saved choice, or on the first row when the

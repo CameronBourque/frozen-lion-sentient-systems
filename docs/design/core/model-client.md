@@ -30,9 +30,11 @@ A refused request, a network error, or an answer of the wrong shape fails the wh
 
 ## Usage
 
-`callModel` returns each call's input and output tokens. A count the provider doesn't report is 0.
+`callModel` returns each call's input and output tokens, and how many input tokens it read from the provider's prompt cache or wrote to it. Each provider reports these counts itself. A count the provider doesn't report is 0.
 
-`logModelCall` in `src/model/usage.ts` logs the tokens at the decisions level, as `model_call`. When `model.price` has both prices, the record also has the call's cost in US dollars. Cached input counts at the full input price, so the cost can run a little high.
+`logModelCall` in `src/model/usage.ts` logs the tokens at the decisions level, as `model_call`. The record also has the call's cost in US dollars, with uncached input, cache reads, cache writes, and output each at its own price in `model.price`.
+
+A cache read or write with no cache price counts as plain input, at the input price. When the call used input or output with no price, the record has no cost.
 
 ## Picker
 
@@ -88,8 +90,8 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | The menu uses `node:readline`, with no prompt package | Raw mode and keypress events are in Node. The menu is short, and its logic is tested without a terminal |
 | Model facts come from OpenRouter's public model list | No library or provider API gives a price. Its prices match the providers' own, it needs no key, and it also lists each model's tool support and effort levels |
 | The model facts are cached for a day | The list is about a megabyte, and prices change rarely. Without the cache, every start in a terminal waits for it |
-| A price the user saved for the same model wins over the list | The user may have entered it, such as a discount the list doesn't know |
-| The log shows a cost only when both prices are set | A wrong price is worse than none |
+| Each price the user saved for the same model wins over the list, and a blank one takes the list's | The user may have entered it, such as a discount the list doesn't know. A price saved before the cache prices existed gains them |
+| Cached tokens with no cache price count as plain input, and the log shows a cost only when input and output have prices | Every cached token is still an input token, so the input price is a fair stand-in. Without an input or output price there is nothing to stand in |
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | Retries use the SDK's own retry, with `maxRetries` set to 3 | It already backs off, honors `Retry-After`, and knows which status codes are worth a retry |
 | A failed call returns a failure instead of throwing | A failed call is an ordinary event for the agent loop, which decides what to do. An auth failure stops the turn, because every retry would fail the same way |
