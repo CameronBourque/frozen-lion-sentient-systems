@@ -4,7 +4,7 @@ How the bridge calls a model: one interface over every provider, through the Ver
 
 You pick the model and its effort in `model` in the [config file](settings.md), through a picker when the bridge starts. The picker lists each provider's models from its own API.
 
-`callModel(model, effort, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools, with the effort as the SDK's `reasoning` setting, and returns the model's text and tool calls.
+`callModel(target, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools to the target's model, with the effort as the SDK's `reasoning` setting, and returns the model's text and tool calls. The target also names the provider, for the error messages.
 
 Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
 
@@ -21,6 +21,14 @@ It reads the API key from `providers` in the [config file](settings.md), which a
 - **Google** keeps the `gemini-` models that support `generateContent`, and drops speech, image, and embedding models by words in the ID.
 
 A refused request, a network error, or an answer of the wrong shape fails the whole list, with a reason the picker can show.
+
+## Failures
+
+`callModel` returns a failure instead of throwing:
+
+- **A rate limit or a server error**, such as 429, 500, or 529, retries up to 3 times through the SDK's own retry, with backoff from 2 seconds, or after the provider's `Retry-After`. After the last try, the failure gives the number of tries and the last error.
+- **A refused key**, 401 or 403, doesn't retry. The failure is marked `auth`, and its message names `providers.<provider>.apiKey` and the key's environment variable. The agent loop logs it as a warning and stops the turn.
+- **Any other error** gives its message.
 
 ## Usage
 
@@ -67,4 +75,6 @@ Without a terminal, the bridge uses the saved model. `savedModelWarning` warns w
 | A price the user saved for the same model wins over the list | The user may have entered it, such as a discount the list doesn't know |
 | The log shows a cost only when both prices are set | A wrong price is worse than none |
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
+| Retries use the SDK's own retry, with `maxRetries` set to 3 | It already backs off, honors `Retry-After`, and knows which status codes are worth a retry |
+| A failed call returns a failure instead of throwing | A failed call is an ordinary event for the agent loop, which decides what to do. An auth failure stops the turn, because every retry would fail the same way |
 | The model client returns tool calls and doesn't run them | The agent loop runs each call through the MCP server, so it can count actions and stop at a turn limit |
