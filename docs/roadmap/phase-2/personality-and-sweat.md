@@ -9,7 +9,7 @@ Write the neutral personality and the balanced sweat level, and build the prompt
 3. **Bundle.** Add the knowledge files to the executable as SEA assets in `scripts/build-exe.mjs`, and read them with `sea.getAsset` in the executable and from disk in development. Commit: `feat(core): bundle the knowledge files into the executable`.
 4. **Prompt.** Add `src/agents/prompt.ts`, which builds the system prompt from the rules of play, the personality, and the sweat level, and the turn message from the state and the blockers.
 
-   Each part is a named section in an ordered table. The system prompt holds only the parts that don't change between turns.
+   Export only `systemPrompt`, which takes no state, and `turnMessage`. The system prompt holds only the parts that don't change between turns.
 
    Add the rules of play as `knowledge/rules/play.md`. They say to look up game facts with `search_civilopedia` and `read_civilopedia` and to give a `reason` on each action. A test checks that each tool the file names exists.
 

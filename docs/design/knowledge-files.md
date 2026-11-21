@@ -36,13 +36,15 @@ The files live in `packages/core/bridge/knowledge/`, because the bridge reads th
 
 The game's Lua has no `io`, as [lua/dialect.md](../findings/lua/dialect.md) shows, so the agent players mod can't read the files. When the setup screen gets its personality and sweat level dropdowns, a script generates their options from these folders into the agent players mod.
 
-A personality or sweat level file is plain Markdown. Its body goes into the prompt as it is.
+A personality or sweat level file is plain Markdown. Its body goes into the prompt as it is. `rules/play.md` holds the rules of play that every agent gets. [prompt.md](agents/prompt.md) says how the files become the prompt.
 
 ```
 concepts/
 civ-notes/
 openings/
 overrides/
+rules/
+	play.md
 personalities/
 	neutral.md
 	warmonger.md
