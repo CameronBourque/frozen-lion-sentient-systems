@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.26.0...core-v0.27.0) (2026-11-21)
+
+
+### Features
+
+* **core:** add the model client ([#124](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/124)) ([fa95557](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/fa95557c3b874c80506dcd33ea303cd6a705cd57))
+
 ## [0.26.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.25.1...core-v0.26.0) (2026-11-20)
 
 
