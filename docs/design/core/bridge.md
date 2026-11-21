@@ -51,7 +51,7 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 
   It refuses a type with anything but capital letters, digits, and `_`, such as `DISTRICT_CAMPUS`, without sending a command, because the type goes into the Lua call as a string.
 - **MCP server.** It serves the action API and lookup as tools. See [mcp-server.md](mcp-server.md).
-- **Model client.** It calls the configured provider through one interface, the Vercel AI SDK, so any provider works. `models.yaml` maps each provider and operation to a model. Testing fills that table.
+- **Model client.** It calls the configured provider through one interface, the Vercel AI SDK, so any provider works. See [model-client.md](model-client.md).
 - **Memory store.** It reads and writes each agent's memory files and snapshots them under the current checkpoint ID. See [memory.md](../memory.md).
 
 The agent and advisor features are modules in the same codebase, not plugins. The logs are in [logs.md](logs.md), the config file is in [settings.md](settings.md), and the build and the tools that work on the code are in [toolchain.md](toolchain.md).
@@ -63,7 +63,6 @@ The agent and advisor features are modules in the same codebase, not plugins. Th
 | `readState` and `readChoices` return failures instead of throwing them | A state can fail for ordinary reasons, such as a game that is loading. The agent loop decides what to do, and a bad state never crashes the bridge |
 | The state and choices schemas drop unknown fields | The bridge and the core mod release together, but a user can update one first. Dropping a new field keeps the rest of the state usable |
 | The bridge is one TypeScript program, with no plugin system | TypeScript has the reference MCP SDK and builds a single executable. Two consumers do not justify plugins |
-| Any LLM provider, through one interface | Users bring their own provider. Testing decides which models are good enough |
 | Resync and version check when the bridge connects | A restart can miss events, and the mod and bridge update separately |
 | The bridge updates itself to the mod's version, after the user agrees | Nontechnical users should not install updates by hand. A matching version beats the latest one |
 | The tuner client has three layers: framing, connection, and client | Each layer is tested on its own. Framing does no input or output, and the connection knows framing but not the protocol |

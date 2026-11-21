@@ -10,7 +10,7 @@ How each part of the system works. Each file ends with a `## Decisions` table th
 | [advisors.md](advisors.md) | The read-only advisors mod (later project) |
 | [memory.md](memory.md) | Agent memory files and checkpoint IDs for reloads and branching saves |
 | [decision-support/](decision-support/README.md) | Code and formats that narrow an agent's choices and cut its token use |
-| [knowledge-files.md](knowledge-files.md) | Concept guides, civ notes, personalities, sweat files, and the model table |
+| [knowledge-files.md](knowledge-files.md) | Concept guides, civ notes, personalities, and sweat files |
 | [testing.md](testing.md) | Test presets, the test matrix, scenario tests, and playtests |
 | [evaluation.md](evaluation.md) | The metrics line, the agent numbers, relative measures, and the targets for each sweat level |
 | [distribution.md](distribution.md) | How users install, launch, and set up the mods and bridge |

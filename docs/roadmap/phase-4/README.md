@@ -11,7 +11,7 @@ This phase makes agents distinct and better. It adds personalities, all sweat le
 - Civ notes for Gathering Storm civs, generation and cache for other civs, and the `overrides/` folder
 - Relationships memory and journal compaction
 - Deep strategic reviews with a stronger model
-- Fill `models.yaml` from testing
+- Recommend models from testing in the model picker
 - The decision support parts that the smoke test and MVP gate records point to, and the scenario tests that measure them. See [decision-support/](../../design/decision-support/README.md) and [testing.md](../../design/testing.md#scenario-tests)
 - A tool that puts each policy in a slot of the right type, so the agent can call `setPolicies` without matching every slot itself
 - Citizen focus and worked tiles in the state, with an action that changes them

@@ -19,7 +19,7 @@ So code sets the tier at the start of the turn, and the agent can raise it withi
 
 ## Tiers
 
-Each tier is an operation in `models.yaml`, the model table in the [knowledge files](../knowledge-files.md#layers). The table maps each tier and provider to a model.
+Each tier is a model that the user picks in the [model picker](../core/model-client.md), as phase 2 picks one model for every turn.
 
 | Tier | Plays |
 | --- | --- |
@@ -78,5 +78,5 @@ The bridge logs each model turn's score, the triggers behind it, the tier, any e
 | Escalation has a budget | Without a limit, an agent may escalate on every turn |
 | The tier is set once at the start of the turn, and only escalation raises it | Each change of model starts a new prompt cache |
 | Permanent decisions always get the strong tier | The agent cannot undo them |
-| Each tier is an operation in `models.yaml` | The model table already maps operations to models for each provider |
+| Each tier is a model the user picks | The user already picks the model and its effort. Routing adds a pick for each tier |
 | A failed model falls back to the next tier down | A provider outage should slow the agent, not stop the game |

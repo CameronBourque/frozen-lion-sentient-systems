@@ -35,11 +35,13 @@ The bridge stops a run in three ways:
 
 - **Stop key.** Press Ctrl+C in the bridge's console. The bridge aborts the model call in progress, waits for the Lua command in progress, logs `stopped`, and exits. It sends no end turn, so the game waits on the agent's turn. A second Ctrl+C exits at once.
 - **Turn count.** `--turns <n>` stops the bridge the same way after the agent ends its n-th turn. Live tests use it to play a fixed number of turns.
-- **Spending limits.** `limits.costPerTurn` and `limits.costPerRun` in the [config file](../core/settings.md) cap the cost of model calls in dollars, from the price table in `models.yaml`. A turn that reaches its limit ends like a turn that hits any other limit. A run that reaches its limit stops as the stop key does.
+- **Spending limits.** `limits` in the [config file](../core/settings.md) caps the tokens of model calls, their cost in dollars, or both, for each turn and each run. A cost limit needs the model's price in the config file.
+
+  A turn that reaches its limit ends like a turn that hits any other limit. A run that reaches its limit stops as the stop key does.
 
 To resume, start the bridge again. [Resync on connect](../core/bridge.md) prints `AGENT_TURN` for the active turn, and the agent reads the state, which already holds the actions it took before the stop.
 
-The smoke test sets the defaults for the spending limits from its measured cost per turn.
+The limits start blank, so there is no limit until you set one, and the bridge warns when none is set. The smoke test's measured tokens and cost per turn are a guide.
 
 ## Decision records
 
@@ -55,5 +57,5 @@ The records are noisy, and that is acceptable. You review them over time and tur
 | Retry, action, and time limits per turn | One stuck turn cannot stop a game |
 | The stop key aborts the model call and sends no end turn | Stopping costs nothing more, and the turn resumes from the state when the bridge starts again |
 | The run spending limit counts one start of the bridge, not one game | A game outlives restarts, so a total per game needs stored totals. Each call's cost is already in the log |
-| Spending limits are in dollars, not tokens | Users pay in dollars, and the model tiers cost different amounts per token |
+| Spending limits in tokens, dollars, or both, blank to start | Users pay in dollars, but neither the AI SDK nor the providers' model lists give a price, so a dollar limit needs a price that the user enters. A token limit needs nothing |
 | Record decisions and their results during testing | Noisy records still show which patterns belong in knowledge files |
