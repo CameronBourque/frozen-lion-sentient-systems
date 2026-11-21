@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_MCP_PORT, EFFORTS, type ModelSetting, PROVIDERS, SCHEMA_VERSION, parseConfig, withModel } from "./config.js";
+import { type Config, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDERS, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
@@ -25,7 +25,8 @@ schemaVersion: ${SCHEMA_VERSION}
 logLevel: ${DEFAULT_LOG_LEVEL}
 
 # An API key for each provider whose models the agents use. Fill in at least one. Delete a provider
-# you don't use.
+# you don't use. A blank key comes from its environment variable instead, if it is set:
+# ${PROVIDERS.map((provider) => KEY_VARIABLES[provider]).join(", ")}.
 providers:
 ${PROVIDERS.map((provider) => `  ${provider}:\n    apiKey: ""`).join("\n")}
 
@@ -49,6 +50,7 @@ export interface Runtime {
 	cwd: string;
 	execPath: string;
 	isExecutable: boolean;
+	env: Record<string, string | undefined>;
 }
 
 export type FindResult =
@@ -116,13 +118,13 @@ export function saveModel(file: string, model: ModelSetting): string | undefined
 export function keyWarning(config: Config, file: string): string | undefined {
 	const hasKey = Object.values(config.providers).some((provider) => provider.apiKey !== "");
 
-	return hasKey ? undefined : `No provider has an API key, so agents can't play yet. Add one in ${file}`;
+	return hasKey ? undefined : `No provider has an API key, so agents can't play yet. Add one in ${file}, or set ${Object.values(KEY_VARIABLES).join(", ")}`;
 }
 
 // What the bridge does with its config when it starts: run with the config and
 // print the warnings, or print the error and exit.
 export type StartResult =
-	| { ok: true; config: Config; path: string; mcp: boolean; warnings: string[] }
+	| { ok: true; config: Config; path: string; mcp: boolean; warnings: string[]; environmentKeys: Provider[] }
 	| { ok: false; error: string };
 
 // Finds and loads the config file, and says what the user should do about each
@@ -144,7 +146,8 @@ export function startConfig(runtime: Runtime): StartResult {
 		return { ok: false, error: `The config file ${found.path} has errors:\n${loaded.errors.join("\n")}` };
 	}
 
-	const missingKey = keyWarning(loaded.config, found.path);
+	const { config, providers } = withEnvironmentKeys(loaded.config, runtime.env);
+	const missingKey = keyWarning(config, found.path);
 
-	return { ok: true, config: loaded.config, path: found.path, mcp: found.mcp, warnings: missingKey ? [missingKey] : [] };
+	return { ok: true, config, path: found.path, mcp: found.mcp, warnings: missingKey ? [missingKey] : [], environmentKeys: providers };
 }

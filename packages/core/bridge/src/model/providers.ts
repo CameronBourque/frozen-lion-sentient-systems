@@ -1,5 +1,5 @@
-// Builds a provider's model with the API key from the config file. The key
-// never comes from the game or the environment.
+// Builds a provider's model with the API key that startConfig filled in, from
+// the config file or the environment. The key never comes from the game.
 // docs/design/core/model-client.md has the design.
 
 import { createAnthropic } from "@ai-sdk/anthropic";
@@ -18,8 +18,8 @@ export type ModelResult =
 	| { ok: true; model: LanguageModel }
 	| { ok: false; error: string };
 
-// An empty key would let the SDK fall back to an environment variable, so it
-// fails here instead.
+// An empty key would let the SDK read an environment variable that
+// withEnvironmentKeys doesn't read, so it fails here instead.
 export function providerModel(config: Config, provider: Provider, modelId: string): ModelResult {
 	const apiKey = config.providers[provider]?.apiKey ?? "";
 

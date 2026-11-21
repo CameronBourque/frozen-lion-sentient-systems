@@ -15,6 +15,13 @@ export const PROVIDERS = ["anthropic", "openai", "google"] as const;
 
 export type Provider = typeof PROVIDERS[number];
 
+// Where a provider's key comes from when the config file leaves it blank.
+export const KEY_VARIABLES: Record<Provider, string> = {
+	anthropic: "ANTHROPIC_API_KEY",
+	openai: "OPENAI_API_KEY",
+	google: "GOOGLE_API_KEY",
+};
+
 // The first port after the two the game listens on, 4318 and 4319.
 export const DEFAULT_MCP_PORT = 4320;
 
@@ -96,4 +103,24 @@ export function withModel(text: string, model: ModelSetting): string {
 	}
 
 	return document.toString();
+}
+
+export interface EnvironmentKeys {
+	config: Config;
+	// The providers whose key came from the environment.
+	providers: Provider[];
+}
+
+function environmentKey(env: Record<string, string | undefined>, provider: Provider): string {
+	return env[KEY_VARIABLES[provider]]?.trim() ?? "";
+}
+
+// Fills each blank key from its environment variable. A key in the file wins,
+// and the file itself never gets the environment's key.
+export function withEnvironmentKeys(config: Config, env: Record<string, string | undefined>): EnvironmentKeys {
+	const fromEnvironment = PROVIDERS.filter((provider) =>
+		(config.providers[provider]?.apiKey ?? "") === "" && environmentKey(env, provider) !== "");
+	const filled = Object.fromEntries(fromEnvironment.map((provider) => [provider, { apiKey: environmentKey(env, provider) }]));
+
+	return { config: { ...config, providers: { ...config.providers, ...filled } }, providers: fromEnvironment };
 }

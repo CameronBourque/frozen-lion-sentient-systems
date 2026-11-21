@@ -3,6 +3,7 @@
 // with --mcp, until Ctrl+C.
 
 import { isSea } from "node:sea";
+import { KEY_VARIABLES } from "./config.js";
 import { onConnect } from "./connect.js";
 import { readLine } from "./events.js";
 import { onLoadEvent } from "./game-load.js";
@@ -20,7 +21,7 @@ import { TunerClient } from "./tuner/client.js";
 const logger = new Logger();
 
 // Start by loading the configuration.
-const started = startConfig({ args: process.argv.slice(2), cwd: process.cwd(), execPath: process.execPath, isExecutable: isSea() });
+const started = startConfig({ args: process.argv.slice(2), cwd: process.cwd(), execPath: process.execPath, isExecutable: isSea(), env: process.env });
 
 if (!started.ok) {
 	logger.error("config_failed", started.error);
@@ -32,6 +33,7 @@ logger.level = started.config.logLevel;
 logger.openFile(logFilePath(started.path, new Date()));
 logger.info("config_loaded", `Read the config file ${started.path}`, { path: started.path });
 started.warnings.forEach((warning) => logger.warn("config_warning", warning));
+started.environmentKeys.forEach((provider) => logger.info("environment_key", `Using the ${provider} API key from ${KEY_VARIABLES[provider]}`, { provider }));
 
 const client = new TunerClient();
 

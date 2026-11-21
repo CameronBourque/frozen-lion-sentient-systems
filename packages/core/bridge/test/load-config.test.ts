@@ -12,42 +12,42 @@ const CWD = path.resolve("/work/bridge");
 
 describe("findConfigPath", () => {
 	test("reads the path in --config, from the current folder", () => {
-		const found = findConfigPath({ args: ["--config", "../tmp/my.yaml"], cwd: CWD, execPath: EXECUTABLE, isExecutable: true });
+		const found = findConfigPath({ args: ["--config", "../tmp/my.yaml"], cwd: CWD, execPath: EXECUTABLE, isExecutable: true, env: {} });
 
 		expect(found).toEqual({ ok: true, path: path.resolve("/work/tmp/my.yaml"), mcp: false });
 	});
 
 	test("reads --config in its = form", () => {
-		const found = findConfigPath({ args: ["--config=my.yaml"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false });
+		const found = findConfigPath({ args: ["--config=my.yaml"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false, env: {} });
 
 		expect(found).toEqual({ ok: true, path: path.join(CWD, "my.yaml"), mcp: false });
 	});
 
 	test("looks next to the executable", () => {
-		const found = findConfigPath({ args: [], cwd: CWD, execPath: EXECUTABLE, isExecutable: true });
+		const found = findConfigPath({ args: [], cwd: CWD, execPath: EXECUTABLE, isExecutable: true, env: {} });
 
 		expect(found).toEqual({ ok: true, path: path.join(path.dirname(EXECUTABLE), CONFIG_NAME), mcp: false });
 	});
 
 	test("looks in the current folder when tsx runs the bridge", () => {
-		const found = findConfigPath({ args: [], cwd: CWD, execPath: EXECUTABLE, isExecutable: false });
+		const found = findConfigPath({ args: [], cwd: CWD, execPath: EXECUTABLE, isExecutable: false, env: {} });
 
 		expect(found).toEqual({ ok: true, path: path.join(CWD, CONFIG_NAME), mcp: false });
 	});
 
 	test("reads --mcp, with or without --config", () => {
-		expect(findConfigPath({ args: ["--mcp"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false })).toEqual({ ok: true, path: path.join(CWD, CONFIG_NAME), mcp: true });
-		expect(findConfigPath({ args: ["--config", "my.yaml", "--mcp"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false })).toEqual({ ok: true, path: path.join(CWD, "my.yaml"), mcp: true });
+		expect(findConfigPath({ args: ["--mcp"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false, env: {} })).toEqual({ ok: true, path: path.join(CWD, CONFIG_NAME), mcp: true });
+		expect(findConfigPath({ args: ["--config", "my.yaml", "--mcp"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false, env: {} })).toEqual({ ok: true, path: path.join(CWD, "my.yaml"), mcp: true });
 	});
 
 	test("fails on an unknown option", () => {
-		const found = findConfigPath({ args: ["--confg", "my.yaml"], cwd: CWD, execPath: EXECUTABLE, isExecutable: true });
+		const found = findConfigPath({ args: ["--confg", "my.yaml"], cwd: CWD, execPath: EXECUTABLE, isExecutable: true, env: {} });
 
 		expect(found).toMatchObject({ ok: false, error: expect.stringContaining("--confg") as unknown });
 	});
 
 	test("fails on --config with no path", () => {
-		const found = findConfigPath({ args: ["--config"], cwd: CWD, execPath: EXECUTABLE, isExecutable: true });
+		const found = findConfigPath({ args: ["--config"], cwd: CWD, execPath: EXECUTABLE, isExecutable: true, env: {} });
 
 		expect(found).toMatchObject({ ok: false, error: expect.stringContaining("--config") as unknown });
 	});
@@ -119,8 +119,8 @@ describe("startConfig", () => {
 	let folder: string;
 
 	// Runs startConfig the way tsx runs the bridge, in the test's folder.
-	function start(args: string[] = []): ReturnType<typeof startConfig> {
-		return startConfig({ args, cwd: folder, execPath: EXECUTABLE, isExecutable: false });
+	function start(args: string[] = [], env: Record<string, string> = {}): ReturnType<typeof startConfig> {
+		return startConfig({ args, cwd: folder, execPath: EXECUTABLE, isExecutable: false, env });
 	}
 
 	beforeEach(() => {
@@ -140,6 +140,18 @@ describe("startConfig", () => {
 			path: path.join(folder, CONFIG_NAME),
 			mcp: false,
 			warnings: [expect.stringContaining("No provider has an API key") as unknown],
+			environmentKeys: [],
+		});
+	});
+
+	test("takes a blank key from the environment, with no warning", () => {
+		fs.writeFileSync(path.join(folder, CONFIG_NAME), "schemaVersion: 1");
+
+		expect(start([], { ANTHROPIC_API_KEY: "env-key" })).toMatchObject({
+			ok: true,
+			config: { providers: { anthropic: { apiKey: "env-key" } } },
+			warnings: [],
+			environmentKeys: ["anthropic"],
 		});
 	});
 

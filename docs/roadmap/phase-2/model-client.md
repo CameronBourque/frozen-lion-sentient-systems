@@ -11,11 +11,12 @@ Add the model client, which calls the configured provider through the Vercel AI 
 5. **Picker.** When the bridge starts in a terminal, show three menus that the arrow keys and Enter answer: the provider, the model, and the effort. Each menu starts on the saved choice. The provider menu lists only the providers with a key, and is skipped when only one has a key.
 
    Save the choice to `model` in the config file, and keep the file's comments. With no terminal, use the saved choice and log it. A blank or stale choice with no terminal logs a warning, and agents can't play. Commit: `feat(core): pick the model when the bridge starts`.
-6. **Usage.** Return the input and output tokens of each call, and log them at the decisions level. Add `price` to `model`, with `input` and `output` in US dollars per million tokens, blank to start.
+6. **Environment keys.** Fill a blank key from `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GOOGLE_API_KEY`. A key in the config file wins, and the file never gets the environment's key. Commit: `feat(core): read API keys from environment variables`.
+7. **Usage.** Return the input and output tokens of each call, and log them at the decisions level. Add `price` to `model`, with `input` and `output` in US dollars per million tokens, blank to start.
 
    When the price is set, the log shows each call's cost. A new model in the picker clears the price, because the price belonged to the old model. Commit: `feat(core): log tokens and cost per model call`.
-7. **Errors.** Retry a rate limit or a server error with backoff, up to 3 times. On an auth error, log a warning that names the config field, and stop the turn. Commit: `feat(core): retry model calls`.
-8. **Script.** Add `npm run ask`, which sends one prompt with one fake tool to the chosen model and prints the tool call. Commit: `chore(core): add a script that tests the model`.
+8. **Errors.** Retry a rate limit or a server error with backoff, up to 3 times. On an auth error, log a warning that names the config field, and stop the turn. Commit: `feat(core): retry model calls`.
+9. **Script.** Add `npm run ask`, which sends one prompt with one fake tool to the chosen model and prints the tool call. Commit: `chore(core): add a script that tests the model`.
 
 ## Done when
 

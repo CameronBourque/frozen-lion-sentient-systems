@@ -1,7 +1,7 @@
 // Tests for config.ts.
 
 import { describe, expect, test } from "vitest";
-import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig, withModel } from "../src/config.js";
+import { DEFAULT_MCP_PORT, NO_MODEL, parseConfig, withEnvironmentKeys, withModel } from "../src/config.js";
 
 // Returns the errors for a file the test expects to fail.
 function errorsFor(text: string): string[] {
@@ -133,5 +133,30 @@ describe("withModel", () => {
 		const text = withModel("schemaVersion: 1\n", MODEL);
 
 		expect(parseConfig(text)).toMatchObject({ ok: true, config: { schemaVersion: 1, model: MODEL } });
+	});
+});
+
+describe("withEnvironmentKeys", () => {
+	const BASE = { schemaVersion: 1, logLevel: "decisions", model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT } as const;
+
+	test("fills a blank or missing key from its variable", () => {
+		const config = { ...BASE, providers: { anthropic: { apiKey: "" } } };
+
+		expect(withEnvironmentKeys(config, { ANTHROPIC_API_KEY: "env-a", GOOGLE_API_KEY: " env-g\n" })).toEqual({
+			config: { ...BASE, providers: { anthropic: { apiKey: "env-a" }, google: { apiKey: "env-g" } } },
+			providers: ["anthropic", "google"],
+		});
+	});
+
+	test("keeps a key from the file over the variable", () => {
+		const config = { ...BASE, providers: { openai: { apiKey: "file-key" } } };
+
+		expect(withEnvironmentKeys(config, { OPENAI_API_KEY: "env-key" })).toEqual({ config, providers: [] });
+	});
+
+	test("ignores a variable that is blank", () => {
+		const config = { ...BASE, providers: {} };
+
+		expect(withEnvironmentKeys(config, { OPENAI_API_KEY: "  " })).toEqual({ config, providers: [] });
 	});
 });
