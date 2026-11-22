@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { addJournalEntry, memoryFolder, readMemory, writePlan } from "../../src/memory/store.js";
+import { addJournalEntry, memoryFolder, readMemory, startMemory, writePlan } from "../../src/memory/store.js";
 
 const NOW = new Date("2026-11-21T10:20:30.456Z");
 const STAMP = "2026-11-21T10-20-30-456Z";
@@ -75,6 +75,55 @@ describe("readMemory", () => {
 
 		expect(fs.readFileSync(path.join(folder, `journal.md.unreadable-${STAMP}`), "utf8")).toBe("## Turn 4\n\nMet Rome.\n");
 		expect(readMemory(folder, NOW).memory.journal).toEqual([{ turn: 5, text: "Settled a second city." }]);
+	});
+});
+
+describe("startMemory", () => {
+	const aside = (): string => `${folder}.old-${STAMP}`;
+
+	test("starts a new agent with empty memory", () => {
+		expect(startMemory(folder, 1, NOW)).toEqual({ memory: { plan: "", journal: [] }, warnings: [] });
+		expect(fs.existsSync(aside())).toBe(false);
+	});
+
+	test("keeps memory from this turn and earlier ones", () => {
+		writePlan(folder, "Take the coast.");
+		addJournalEntry(folder, { turn: 4, text: "Met Rome." });
+		addJournalEntry(folder, { turn: 5, text: "Settled a second city." });
+
+		expect(startMemory(folder, 5, NOW)).toEqual({
+			memory: { plan: "Take the coast.", journal: [{ turn: 4, text: "Met Rome." }, { turn: 5, text: "Settled a second city." }] },
+			warnings: [],
+		});
+	});
+
+	test("moves aside memory from a later turn, and warns", () => {
+		writePlan(folder, "Take the coast.");
+		addJournalEntry(folder, { turn: 50, text: "Took Rome." });
+
+		const { memory, warnings } = startMemory(folder, 30, NOW);
+
+		expect(memory).toEqual({ plan: "", journal: [] });
+		expect(warnings).toEqual([expect.stringContaining(aside())]);
+		expect(fs.existsSync(folder)).toBe(false);
+		expect(readMemory(aside(), NOW).memory).toEqual({ plan: "Take the coast.", journal: [{ turn: 50, text: "Took Rome." }] });
+	});
+
+	test("moves aside a plan alone on turn 1, since a new game has none yet", () => {
+		writePlan(folder, "Take the coast.");
+
+		expect(startMemory(folder, 1, NOW).memory).toEqual({ plan: "", journal: [] });
+		expect(readMemory(aside(), NOW).memory.plan).toBe("Take the coast.");
+	});
+
+	test("keeps the warning about a file it couldn't read", () => {
+		writeFile("plan.md", "Take the coast.\n");
+		addJournalEntry(folder, { turn: 50, text: "Took Rome." });
+
+		const { warnings } = startMemory(folder, 30, NOW);
+
+		expect(warnings).toEqual([expect.stringContaining("no front matter"), expect.stringContaining(aside())]);
+		expect(fs.existsSync(path.join(aside(), `plan.md.unreadable-${STAMP}`))).toBe(true);
 	});
 });
 

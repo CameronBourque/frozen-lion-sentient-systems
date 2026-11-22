@@ -46,6 +46,25 @@ export function readMemory(folder: string, now: Date): { memory: Memory; warning
 	return { memory: { plan, journal }, warnings };
 }
 
+// Reads the memory for the agent's first turn after the bridge starts. Memory
+// from a turn after this one, or any memory on turn 1, belongs to another game
+// or a later save, so the folder moves aside and the agent starts empty. The
+// checkpoint IDs replace this, as docs/roadmap/phase-3/README.md says.
+export function startMemory(folder: string, turn: number, now: Date): { memory: Memory; warnings: string[] } {
+	const read = readMemory(folder, now);
+
+	if (!isStale(read.memory, turn)) {
+		return read;
+	}
+
+	const aside = `${folder}.old-${timeStamp(now)}`;
+
+	fs.renameSync(folder, aside);
+	read.warnings.push(`The memory in ${folder} is from another game or a later turn than ${turn}, so the agent starts with empty memory. The old memory is at ${aside}`);
+
+	return { memory: { plan: "", journal: [] }, warnings: read.warnings };
+}
+
 export function writePlan(folder: string, plan: string): void {
 	fs.mkdirSync(folder, { recursive: true });
 	fs.writeFileSync(path.join(folder, PLAN_FILE), withFrontMatter(`${plan.trim()}\n`));
@@ -80,13 +99,24 @@ function readFile(folder: string, name: string, now: Date, warnings: string[]): 
 		return result.body;
 	}
 
-	// toISOString gives colons, which Windows forbids in file names.
-	const aside = `${file}.unreadable-${now.toISOString().replace(/[:.]/g, "-")}`;
+	const aside = `${file}.unreadable-${timeStamp(now)}`;
 
 	fs.renameSync(file, aside);
 	warnings.push(`Couldn't read ${file}, because ${result.reason}. The agent starts with an empty ${name}, and the old file is at ${aside}`);
 
 	return "";
+}
+
+function isStale(memory: Memory, turn: number): boolean {
+	const empty = memory.plan === "" && memory.journal.length === 0;
+
+	return (turn === 1 && !empty) || memory.journal.some((entry) => entry.turn > turn);
+}
+
+// The time for a file or folder name. toISOString gives colons, which Windows
+// forbids in file names.
+function timeStamp(now: Date): string {
+	return now.toISOString().replace(/[:.]/g, "-");
 }
 
 function withFrontMatter(body: string): string {
