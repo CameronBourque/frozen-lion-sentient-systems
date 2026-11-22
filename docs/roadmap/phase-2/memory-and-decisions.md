@@ -4,12 +4,12 @@ Add the plan and journal memory files, the tools that change them, and decision 
 
 ## Tasks
 
-1. **Store.** Add `src/memory/store.ts`, which reads and writes `plan.md` and `journal.md` in `memory/<agent slot>/`, next to the config file. The caller passes the folder, so phase 3 can point the store at a restored snapshot.
+1. **Store.** Add `src/memory/store.ts`, which reads and writes `plan.md` and `journal.md` in `memory/player-<ID>/`, next to the config file. The caller passes the folder, so phase 3 can point the store at a restored snapshot.
 
    Each file starts with a schema version in YAML front matter, as [versioning.md](../../design/versioning.md#bump-rules) requires.
 
-   A missing file reads as empty. A file with an unknown schema version logs a warning, reads as empty, and stays on disk unchanged. Commit: `feat(core): add the memory store`.
-2. **Stale memory.** When the agent's first turn after the bridge starts is turn 1, or is lower than the newest turn in its journal, move the agent's folder to `<agent slot>.old-<time>` beside it, log a warning, and start with empty memory.
+   A missing file reads as empty. A file with no front matter or an unknown schema version moves to `<name>.unreadable-<time>`, reads as empty, and gives a warning, so a later write can't replace it. Commit: `feat(core): add the memory store`.
+2. **Stale memory.** When the agent's first turn after the bridge starts is turn 1, or is lower than the newest turn in its journal, move the agent's folder to `player-<ID>.old-<time>` beside it, log a warning, and start with empty memory.
 
    A new game or an older save then can't hand the agent memory of turns that no longer exist.
 
