@@ -573,3 +573,23 @@ Without force, it fails while a blocker is left or a unit needs orders, and name
 | --- | --- | --- | --- |
 | `reason` | string | yes | One sentence, in your own voice, on why you take this action. The narrator panel shows it, and the log keeps it. |
 | `force` | boolean | no | End the turn anyway, skipping the blockers and the units that need orders. Use it only when a blocker has no tool. |
+
+## `update_plan`
+
+Replace your plan with a new one. Your plan is your current strategy in a few lines: your victory goal, what you are building toward, and the threats you watch. Each turn starts with it, since you remember nothing else between turns.
+
+Change it when your strategy changes, not every turn. Write the whole plan, because it replaces the last one.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `plan` | string | yes | Your whole plan. |
+
+## `add_journal_entry`
+
+Add an entry to your journal for this turn. The journal is your log of what happened: wars, deals, promises, surprises, and lessons. Each turn starts with your newest entries.
+
+Write what a later turn needs to know and can't read from get_state, such as why a rival turned hostile or what you promised. Skip routine moves.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `entry` | string | yes | The entry's text. |

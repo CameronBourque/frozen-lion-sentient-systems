@@ -2,7 +2,7 @@
 
 How the bridge serves its tools over MCP: one server, reached in process by the agent loop and over local HTTP by outside clients. Part of the [bridge](bridge.md).
 
-`createServer(context)` in `src/mcp/server.ts` builds the server with `@modelcontextprotocol/server`, the v2 MCP SDK. The server's name is `sentient-systems`, and its version is the bridge's. The context holds the tuner client and the player source.
+`createServer(context)` in `src/mcp/server.ts` builds the server with `@modelcontextprotocol/server`, the v2 MCP SDK. The server's name is `sentient-systems`, and its version is the bridge's. The context holds the tuner client, the player source, and the memory source.
 
 - **Player.** Every tool acts for the player that the context's `player` function returns. No tool takes a player ID, so a model can't read or act for another civ.
 
@@ -30,6 +30,11 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
   `registerAction` adds it, and logs each action at the `decisions` level as an `action` record with the tool, the player, the reason, the fields, and the result.
 
   A success returns "The game took the request.", because an ok result means the game took the request, not that it is done. The model reads the state for the effect. A failed action returns its reason as a result marked `isError`.
+- **Memory tools.** `src/mcp/memory-tools.ts` registers `update_plan` and `add_journal_entry`, which write the player's [memory files](../memory.md#memory-files) in the folder that the context's `memory` function returns. Phase 3 can return a restored snapshot's folder from it.
+
+  `add_journal_entry` asks the game for `Game.GetCurrentGameTurn()` and files the entry under that turn. The plan is capped at 2000 characters and an entry at 1000, because every turn's prompt holds them.
+
+  They change no game, so they take no `reason`. Each call is logged at the `decisions` level as a `plan` or `journal` record.
 
   `unit_action` takes every order of the action API's `UnitOrder`, and its description lists them from one table, which TypeScript checks against the type. The core mod checks that an order has the fields it needs.
 

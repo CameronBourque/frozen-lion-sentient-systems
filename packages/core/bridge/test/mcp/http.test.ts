@@ -12,7 +12,7 @@ import type { TunerClient } from "../../src/tuner/client.js";
 
 const logger = new Logger("debug");
 // No test here calls a tool, so the context needs no game.
-const context: ToolContext = { client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }), logger };
+const context: ToolContext = { client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }), memory: () => "", logger };
 
 beforeEach(() => {
 	vi.spyOn(console, "log").mockImplementation(() => {});
