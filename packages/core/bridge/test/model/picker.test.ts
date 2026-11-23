@@ -264,7 +264,7 @@ describe("pickModel", () => {
 		});
 
 		test("asks what to do when no model calls tools", async () => {
-			const { io, asked, warnings } = scriptedIo([1], MODELS, { ok: true, facts: {} });
+			const { io, asked, warnings } = scriptedIo([2], MODELS, { ok: true, facts: {} });
 
 			expect(await pickModel(configWith(["openai"]), io)).toEqual({ result: "cancelled" });
 			expect(warnings).toEqual(["openai listed no models that call tools"]);
@@ -277,16 +277,16 @@ describe("pickModel", () => {
 		const SAVED: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
 		test("warns, then asks, starting on trying again", async () => {
-			const { io, asked, warnings } = scriptedIo([2], REFUSED);
+			const { io, asked, warnings } = scriptedIo([3], REFUSED);
 
 			await pickModel(configWith(["openai"], SAVED), io);
 
 			expect(warnings).toEqual(["openai answered the model list with 401: invalid x-api-key"]);
-			expect(asked).toEqual([{ title: "What now?", labels: ["Try again", "Use model-a (openai)", "Quit"], start: 0 }]);
+			expect(asked).toEqual([{ title: "What now?", labels: ["Try again", "Pick another run mode", "Use model-a (openai)", "Quit"], start: 0 }]);
 		});
 
 		test("uses the saved model only when the user picks it", async () => {
-			const { io } = scriptedIo([1], REFUSED);
+			const { io } = scriptedIo([2], REFUSED);
 
 			expect(await pickModel(configWith(["openai"], SAVED), io)).toEqual({ result: "kept", mode: "api-key", model: SAVED });
 		});
@@ -307,11 +307,19 @@ describe("pickModel", () => {
 			expect(listed).toEqual(["openai openai-key", "anthropic anthropic-key"]);
 		});
 
+		test("goes back to the Run mode menu", async () => {
+			const { io, modesAsked, listed } = scriptedIo([1, 0, 0], [REFUSED, MODELS]);
+
+			expect(await pickModel(configWith(["openai"], SAVED), io)).toMatchObject({ result: "picked", model: { id: "model-a" } });
+			expect(modesAsked).toHaveLength(2);
+			expect(listed).toHaveLength(2);
+		});
+
 		test("leaves out the saved model when it can't play", async () => {
-			const { io, asked } = scriptedIo([1], REFUSED);
+			const { io, asked } = scriptedIo([2], REFUSED);
 
 			expect(await pickModel(configWith(["openai"]), io)).toEqual({ result: "cancelled" });
-			expect(asked[0].labels).toEqual(["Try again", "Quit"]);
+			expect(asked[0].labels).toEqual(["Try again", "Pick another run mode", "Quit"]);
 		});
 
 		test("quits on Ctrl+C", async () => {
@@ -321,7 +329,7 @@ describe("pickModel", () => {
 		});
 
 		test("names an empty list", async () => {
-			const { io, warnings } = scriptedIo([1], { ok: true, models: [] });
+			const { io, warnings } = scriptedIo([2], { ok: true, models: [] });
 
 			await pickModel(configWith(["google"]), io);
 

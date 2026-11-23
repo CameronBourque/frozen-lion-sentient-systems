@@ -64,7 +64,7 @@ The picked model gets the list's price, unless you saved a price for the same mo
 
 The bridge saves the choice to `model` in the config file with `saveModel`, which keeps the file's comments. Ctrl+C in a menu exits the bridge.
 
-When the list fails, the picker logs a warning and asks what to do: pick another provider, or try again when only one has a key, use the saved model, or quit. The first row is never the saved model, and the saved model is a row only when it can play.
+When the list fails, the picker logs a warning and asks what to do: pick another provider, or try again when only one can play, pick another run mode, use the saved model, or quit. The first row is never the saved model, and the saved model is a row only when it can play.
 
 `askMenu` in `src/model/menu.ts` draws a menu that the arrow keys and Enter answer. Page Up, Page Down, Home, and End jump. A list longer than 5 rows scrolls in a window, with a marker when there are more rows above or below.
 

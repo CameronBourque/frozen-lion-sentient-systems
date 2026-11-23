@@ -82,16 +82,17 @@ async function askFor<T>(io: PickerIo, title: string, choices: readonly T[], lab
 	return row === undefined ? undefined : choices[row];
 }
 
-type AfterFailure = "again" | "use" | "quit";
+type AfterFailure = "provider" | "mode" | "use" | "quit";
 
 // After a failed model list, the user decides. The first row is never the
 // saved model, so Enter never spends money on a model the user didn't pick.
 // Use appears only when the saved model can play.
 async function askAfterFailure(io: PickerIo, config: Config, offered: Offered[]): Promise<AfterFailure> {
 	const { provider, id } = config.model;
-	const choices: AfterFailure[] = ["again", ...(canPlay(config, offered) ? ["use" as const] : []), "quit"];
+	const choices: AfterFailure[] = ["provider", "mode", ...(canPlay(config, offered) ? ["use" as const] : []), "quit"];
 	const labels: Record<AfterFailure, string> = {
-		again: offered.length > 1 ? "Pick another provider" : "Try again",
+		provider: offered.length > 1 ? "Pick another provider" : "Try again",
+		mode: "Pick another run mode",
 		use: `Use ${id} (${provider})`,
 		quit: "Quit",
 	};
@@ -174,8 +175,12 @@ async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Pro
 
 	const next = await askAfterFailure(io, config, offered);
 
-	if (next === "again") {
+	if (next === "provider") {
 		return pickProvider(config, io, runMode);
+	}
+
+	if (next === "mode") {
+		return pickModel(config, io);
 	}
 
 	return next === "use" ? { result: "kept", mode: runMode, model: saved } : { result: "cancelled" };

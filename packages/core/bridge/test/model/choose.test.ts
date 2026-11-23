@@ -61,9 +61,8 @@ describe("in a terminal", () => {
 	test("returns false when the user quits after the list fails", async () => {
 		const warn = vi.spyOn(logger, "warn");
 		const failing = providersListing(() => Promise.resolve({ ok: false, error: "offline" }));
-		// API key, then Quit after the failed list. Its rows are Try again and
-		// Quit, since no model is saved.
-		const quit: ChooseIo["ask"] = (title) => Promise.resolve(title === "Run mode" ? 0 : 1);
+		// API key, then Quit after the failed list.
+		const quit: ChooseIo["ask"] = (title, labels) => Promise.resolve(title === "Run mode" ? 0 : labels.indexOf("Quit"));
 
 		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: quit, providers: failing, facts: FACTS })).toBe(false);
 		expect(warn).toHaveBeenCalledWith("model_warning", "offline");
