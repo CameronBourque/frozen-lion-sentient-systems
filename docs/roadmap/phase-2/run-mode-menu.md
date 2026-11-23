@@ -1,23 +1,28 @@
 # Run mode menu
 
-Add the four run modes to the config file and a **Run mode** menu to the picker, with only **API key** working. The design is in [run-modes.md](../../design/core/run-modes.md). Part of [phase 2](README.md).
+Add a file for each provider and a **Run mode** menu to the picker, with only **API key** working. The design is in [run-modes.md](../../design/core/run-modes.md). Part of [phase 2](README.md).
 
 ## Tasks
 
-1. **Mode table.** Add `src/model/run-modes.ts` with `RUN_MODES`, which lists Anthropic, OpenAI, and Google as `ready` in `api-key` and no provider in the other modes. Add `model.mode` to the config file, with `api-key` as the default. Commit: `feat(core): add run modes to the config`.
-2. **Menu.** Ask for the run mode before the provider, starting on the saved mode. **API key** leads to the provider, model, and effort menus. Each mode with no ready provider reads `(not available yet)`, warns when chosen, and asks again.
+1. **Providers.** Add `src/model/providers/` with `RunMode`, `ModeSupport`, and `ProviderDef` in `provider.ts`, `apiKeyMode` in `api-key.ts`, one file for each provider with only `api-key` in its `modes`, and `PROVIDERS` in `index.ts`.
 
-   Test the menu with a fake `PickerIo`, and a flagged provider with its constant injected both ways. Commit: `feat(core): ask for the run mode`.
+   Move the factories and the key check from `src/model/providers.ts` into them, and have the picker read `PROVIDERS`, with no change in how it plays. Commit: `refactor(core): move each provider into its own file`.
+2. **Menu.** Ask for the run mode before the provider, starting on **API key**. **API key** leads to the provider, model, and effort menus.
+
+   A mode that no provider has in `modes` reads `(not available yet)`, warns when chosen, and asks again. **API key** with no ready provider warns with the reason and asks again. Add **Pick another run mode** to the **What now?** menu, and name the run mode in the `model_chosen` log line.
+
+   Test the menu with a fake `PickerIo`, and with a fake `PROVIDERS` that has a provider with a second mode. Commit: `feat(core): ask for the run mode`.
 
 ## Done when
 
 All of these hold in a terminal:
 
-- `npm run ask` shows the **Run mode** menu with all four modes, and **API key** picks a model and calls it as before.
+- `npm run ask` shows the **Run mode** menu with all four modes, starting on **API key**, and **API key** picks a model and calls it as before.
 - **Subscription token**, **Agent SDK**, and **CLI** each warn that the mode isn't available yet, and show the menu again.
-- A config file with no `model.mode` loads, and the bridge saves `mode: api-key` after the pick.
+- With no API key in the config file or the environment, **API key** warns and shows the menu again.
+- After a pick, the config file has no run mode, and the log line names it.
 
 ## Record
 
-- The **Run mode** menu, in the picker section of [model-client.md](../../design/core/model-client.md#picker).
-- `model.mode` and its default, in [settings.md](../../design/core/settings.md).
+- The **Run mode** menu and the **Pick another run mode** row, in the picker section of [model-client.md](../../design/core/model-client.md#picker).
+- Any change to `src/model/providers/`, in [run-modes.md](../../design/core/run-modes.md#providers).
