@@ -35,8 +35,8 @@ export async function chooseModel(config: Config, file: string, logger: Logger, 
 	}
 
 	// With no key at all, keyWarning already says what to do, and no model can
-	// play.
-	if (offeredProviders(config, providers).length === 0) {
+	// play. In a terminal, the picker returns only a mode that can play.
+	if (offeredProviders(config, providers, "api-key").length === 0) {
 		return true;
 	}
 

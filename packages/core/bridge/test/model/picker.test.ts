@@ -1,5 +1,6 @@
 // Tests for model/picker.ts, with scripted answers in place of the menus and
-// a fake model list.
+// a fake model list. The Run mode menu has its own script, which picks API key
+// once it runs out.
 
 import { describe, expect, test } from "vitest";
 import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
@@ -7,6 +8,7 @@ import type { ListResult } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 import { PROVIDERS } from "../../src/model/providers/index.js";
+import type { ModeSupport } from "../../src/model/providers/provider.js";
 import { providersListing } from "./fake-providers.js";
 
 const MODELS: ListResult = {
@@ -42,13 +44,20 @@ interface Asked {
 // Answers each menu with the next row in the script, and records what it
 // asked and warned.
 // A list of results answers each list call in turn, and repeats the last.
-function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[] = MODELS, facts: FactsResult = TOOL_FACTS) {
+function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[] = MODELS, facts: FactsResult = TOOL_FACTS, modeRows: (number | undefined)[] = []) {
 	const lists = Array.isArray(list) ? [...list] : [list];
 	const asked: Asked[] = [];
+	const modesAsked: Asked[] = [];
 	const warnings: string[] = [];
 	const listed: string[] = [];
 	const io: PickerIo = {
 		ask: (title, labels, start) => {
+			if (title === "Run mode") {
+				modesAsked.push({ title, labels, start });
+
+				return Promise.resolve(modeRows.length > 0 ? modeRows.shift() : 0);
+			}
+
 			asked.push({ title, labels, start });
 
 			return Promise.resolve(rows.shift());
@@ -62,7 +71,7 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[
 		warn: (text) => warnings.push(text),
 	};
 
-	return { io, asked, warnings, listed };
+	return { io, asked, modesAsked, warnings, listed };
 }
 
 describe("pickModel", () => {
@@ -71,6 +80,7 @@ describe("pickModel", () => {
 
 		expect(await pickModel(configWith(["anthropic", "openai"]), io)).toEqual({
 			result: "picked",
+			mode: "api-key",
 			model: { provider: "openai", id: "model-b", effort: "high", price: NO_PRICE },
 		});
 		expect(asked.map(({ title }) => title)).toEqual(["Provider", "openai model", "Effort"]);
@@ -84,6 +94,7 @@ describe("pickModel", () => {
 
 		expect(await pickModel(configWith(["google"]), io)).toEqual({
 			result: "picked",
+			mode: "api-key",
 			model: { provider: "google", id: "model-a", effort: "provider-default", price: NO_PRICE },
 		});
 		expect(asked.map(({ title }) => title)).toEqual(["google model", "Effort"]);
@@ -159,11 +170,60 @@ describe("pickModel", () => {
 		expect(asked.map(({ start }) => start)).toEqual([0, 0]);
 	});
 
-	test("keeps the saved model when no provider has a key", async () => {
-		const { io, asked } = scriptedIo([]);
+	describe("run mode", () => {
+		test("lists every mode and Quit, starting on API key", async () => {
+			const { io, modesAsked } = scriptedIo([0, 0]);
 
-		expect(await pickModel(configWith([]), io)).toEqual({ result: "kept", model: NO_MODEL });
-		expect(asked).toEqual([]);
+			await pickModel(configWith(["openai"]), io);
+
+			expect(modesAsked).toEqual([{
+				title: "Run mode",
+				labels: ["API key", "Subscription token (not available yet)", "Agent SDK (not available yet)", "CLI (not available yet)", "Quit"],
+				start: 0,
+			}]);
+		});
+
+		test("warns and asks again when the mode isn't available yet", async () => {
+			const { io, modesAsked, warnings } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [2, 0]);
+
+			expect(await pickModel(configWith(["openai"]), io)).toMatchObject({ result: "picked", mode: "api-key" });
+			expect(modesAsked).toHaveLength(2);
+			expect(warnings[0]).toBe("Agent SDK isn't available yet, so pick another run mode");
+		});
+
+		test.each([
+			["Quit", 4],
+			["Ctrl+C", undefined],
+		])("is cancelled by %s", async (_key, row) => {
+			const { io, asked } = scriptedIo([], MODELS, TOOL_FACTS, [row]);
+
+			expect(await pickModel(configWith(["openai"]), io)).toEqual({ result: "cancelled" });
+			expect(asked).toEqual([]);
+		});
+
+		test("warns with each provider's reason and asks again when none can play", async () => {
+			const { io, asked, modesAsked, warnings } = scriptedIo([], MODELS, TOOL_FACTS, [0, 4]);
+
+			expect(await pickModel(configWith([]), io)).toEqual({ result: "cancelled" });
+			expect(asked).toEqual([]);
+			expect(modesAsked).toHaveLength(2);
+			expect(warnings).toEqual([expect.stringMatching(/^No provider can play in API key, so pick another run mode or Quit\. No API key for anthropic\..*No API key for openai\..*No API key for google\./) as unknown]);
+		});
+
+		test("offers only the providers that have the mode", async () => {
+			const plan: ModeSupport = {
+				ready: () => ({ ok: true }),
+				listModels: () => Promise.resolve(MODELS),
+				model: () => ({ ok: false, error: "unused" }),
+			};
+			const { io, asked, modesAsked } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [1]);
+
+			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
+
+			expect(await pickModel(configWith(["anthropic", "openai"]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { provider: "openai" } });
+			expect(modesAsked[0].labels[1]).toBe("Subscription token");
+			expect(asked.map(({ title }) => title)).toEqual(["openai model", "Effort"]);
+		});
 	});
 
 	describe("effort", () => {
@@ -228,7 +288,7 @@ describe("pickModel", () => {
 		test("uses the saved model only when the user picks it", async () => {
 			const { io } = scriptedIo([1], REFUSED);
 
-			expect(await pickModel(configWith(["openai"], SAVED), io)).toEqual({ result: "kept", model: SAVED });
+			expect(await pickModel(configWith(["openai"], SAVED), io)).toEqual({ result: "kept", mode: "api-key", model: SAVED });
 		});
 
 		test("tries the list again", async () => {
@@ -238,11 +298,12 @@ describe("pickModel", () => {
 			expect(listed).toHaveLength(2);
 		});
 
-		test("picks another provider when several have a key", async () => {
-			const { io, asked, listed } = scriptedIo([1, 0, 0, 0, 0], [REFUSED, MODELS]);
+		test("picks another provider in the same run mode when several have a key", async () => {
+			const { io, asked, modesAsked, listed } = scriptedIo([1, 0, 0, 0, 0], [REFUSED, MODELS]);
 
 			expect(await pickModel(configWith(["anthropic", "openai"], SAVED), io)).toMatchObject({ result: "picked", model: { provider: "anthropic" } });
 			expect(asked[1].labels[0]).toBe("Pick another provider");
+			expect(modesAsked).toHaveLength(1);
 			expect(listed).toEqual(["openai openai-key", "anthropic anthropic-key"]);
 		});
 

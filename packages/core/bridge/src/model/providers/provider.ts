@@ -5,7 +5,17 @@ import type { LanguageModel } from "ai";
 import type { Config, Provider } from "../../config.js";
 import type { Fetch, ListResult } from "../list-models.js";
 
-export type RunMode = "api-key" | "subscription" | "agent-sdk" | "cli";
+// In the order the Run mode menu lists them.
+export const RUN_MODES = [
+	{ mode: "api-key", label: "API key" },
+	{ mode: "subscription", label: "Subscription token" },
+	{ mode: "agent-sdk", label: "Agent SDK" },
+	{ mode: "cli", label: "CLI" },
+] as const;
+
+export type RunModeRow = typeof RUN_MODES[number];
+
+export type RunMode = RunModeRow["mode"];
 
 export type Ready =
 	| { ok: true }

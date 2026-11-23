@@ -1,10 +1,11 @@
-// Asks the user for the provider, the model, and the effort when the bridge
-// starts in a terminal. docs/design/core/model-client.md has the design.
+// Asks the user for the run mode, the provider, the model, and the effort when
+// the bridge starts in a terminal. docs/design/core/run-modes.md and
+// docs/design/core/model-client.md have the design.
 
 import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider } from "../config.js";
 import type { ModelInfo } from "./list-models.js";
 import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
-import type { ModeSupport, ProviderDef } from "./providers/provider.js";
+import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunModeRow } from "./providers/provider.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
@@ -15,11 +16,11 @@ export interface PickerIo {
 	warn: (text: string) => void;
 }
 
-// The new choice, or the saved one when there is nothing to ask, or
-// cancelled when the user pressed Ctrl+C.
+// The new choice, or the saved one when the user keeps it, each with its run
+// mode, or cancelled when the user quit or pressed Ctrl+C.
 export type PickResult =
-	| { result: "picked"; model: ModelSetting }
-	| { result: "kept"; model: ModelSetting }
+	| { result: "picked"; mode: RunMode; model: ModelSetting }
+	| { result: "kept"; mode: RunMode; model: ModelSetting }
 	| { result: "cancelled" };
 
 interface Offered {
@@ -27,12 +28,21 @@ interface Offered {
 	mode: ModeSupport;
 }
 
-// The providers that can play in API key mode.
-export function offeredProviders(config: Config, providers: ProviderDef[]): Offered[] {
+// The providers that can play in a run mode.
+export function offeredProviders(config: Config, providers: ProviderDef[], mode: RunMode): Offered[] {
 	return providers.flatMap(({ name, modes }) => {
-		const mode = modes["api-key"];
+		const support = modes[mode];
 
-		return mode !== undefined && mode.ready(config).ok ? [{ name, mode }] : [];
+		return support !== undefined && support.ready(config).ok ? [{ name, mode: support }] : [];
+	});
+}
+
+// Why each provider that has a run mode can't play in it.
+function notReadyReasons(config: Config, providers: ProviderDef[], mode: RunMode): string[] {
+	return providers.flatMap(({ modes }) => {
+		const ready = modes[mode]?.ready(config);
+
+		return ready?.ok === false ? [ready.reason] : [];
 	});
 }
 
@@ -96,16 +106,51 @@ function usableModels(models: ModelInfo[], provider: Provider, fetched: FactsRes
 	return fetched.ok ? models.filter(({ id }) => callsTools(fetched.facts, provider, id)) : models;
 }
 
-export async function pickModel(config: Config, io: PickerIo): Promise<PickResult> {
-	const saved = config.model;
-	const offered = offeredProviders(config, io.providers);
-	const names = offered.map(({ name }) => name);
+// Asks for the run mode until the user picks one that a provider has, or
+// quits. Quit is the last row, after the modes.
+async function askRunMode(io: PickerIo): Promise<RunModeRow | undefined> {
+	const available = (mode: RunMode) => io.providers.some(({ modes }) => modes[mode] !== undefined);
+	const labels = RUN_MODES.map(({ mode, label }) => available(mode) ? label : `${label} (not available yet)`);
+	const row = await io.ask("Run mode", [...labels, "Quit"], 0);
 
-	// keyWarning already says that no provider has a key.
-	if (offered.length === 0) {
-		return { result: "kept", model: saved };
+	if (row === undefined || row === RUN_MODES.length) {
+		return undefined;
 	}
 
+	const chosen = RUN_MODES[row];
+
+	if (!available(chosen.mode)) {
+		io.warn(`${chosen.label} isn't available yet, so pick another run mode`);
+
+		return askRunMode(io);
+	}
+
+	return chosen;
+}
+
+export async function pickModel(config: Config, io: PickerIo): Promise<PickResult> {
+	const run = await askRunMode(io);
+
+	if (run === undefined) {
+		return { result: "cancelled" };
+	}
+
+	if (offeredProviders(config, io.providers, run.mode).length === 0) {
+		const reasons = notReadyReasons(config, io.providers, run.mode);
+
+		io.warn(`No provider can play in ${run.label}, so pick another run mode or Quit. ${reasons.join(". ")}`);
+
+		return pickModel(config, io);
+	}
+
+	return pickProvider(config, io, run.mode);
+}
+
+// Asks for the provider in a run mode, then its model and effort.
+async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Promise<PickResult> {
+	const saved = config.model;
+	const offered = offeredProviders(config, io.providers, runMode);
+	const names = offered.map(({ name }) => name);
 	const provider = names.length === 1 ? names[0] : await askFor(io, "Provider", names, names, saved.provider);
 
 	if (provider === undefined) {
@@ -122,7 +167,7 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 	const models = listed.ok ? usableModels(listed.models, provider, fetched) : [];
 
 	if (models.length > 0) {
-		return pickFromList(config, io, provider, models, fetched);
+		return pickFromList(config, io, runMode, provider, models, fetched);
 	}
 
 	io.warn(listed.ok ? `${provider} listed no models that call tools` : listed.error);
@@ -130,14 +175,14 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 	const next = await askAfterFailure(io, config, offered);
 
 	if (next === "again") {
-		return pickModel(config, io);
+		return pickProvider(config, io, runMode);
 	}
 
-	return next === "use" ? { result: "kept", model: saved } : { result: "cancelled" };
+	return next === "use" ? { result: "kept", mode: runMode, model: saved } : { result: "cancelled" };
 }
 
 // Asks for the model and the effort from a provider's list.
-async function pickFromList(config: Config, io: PickerIo, provider: Provider, models: ModelInfo[], fetched: FactsResult): Promise<PickResult> {
+async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, provider: Provider, models: ModelInfo[], fetched: FactsResult): Promise<PickResult> {
 	const saved = config.model;
 	const facts = fetched.ok ? fetched.facts : {};
 	const ids = models.map(({ id }) => id);
@@ -162,7 +207,7 @@ async function pickFromList(config: Config, io: PickerIo, provider: Provider, mo
 		io.warn(`OpenRouter lists no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
 	}
 
-	return { result: "picked", model: { provider, id, effort, price } };
+	return { result: "picked", mode: runMode, model: { provider, id, effort, price } };
 }
 
 // A saved model can play when it is picked and its provider is offered.
@@ -172,11 +217,12 @@ function canPlay(config: Config, offered: Offered[]): boolean {
 	return provider !== "" && id !== "" && offered.some(({ name }) => name === provider);
 }
 
-// Says why the saved choice can't play, or nothing when it can.
+// Says why the saved choice can't play in API key mode, which the bridge uses
+// without a terminal, or nothing when it can.
 export function savedModelWarning(config: Config, file: string, providers: ProviderDef[]): string | undefined {
 	const { provider, id } = config.model;
 
-	if (canPlay(config, offeredProviders(config, providers))) {
+	if (canPlay(config, offeredProviders(config, providers, "api-key"))) {
 		return undefined;
 	}
 

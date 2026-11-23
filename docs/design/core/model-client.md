@@ -40,9 +40,11 @@ A cache read or write with no cache price counts as plain input, at the input pr
 
 ## Picker
 
-When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. In a terminal, `pickModel(config, io)` in `src/model/picker.ts` asks three menus, each starting on the saved choice:
+When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one.
 
-1. **Provider**, from the providers with a key. With only one, the picker skips this menu.
+In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for the **Run mode**, from `RUN_MODES` in `src/model/providers/provider.ts`, as [run-modes.md](run-modes.md#picker) describes. Then it asks three menus, each starting on the saved choice:
+
+1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu.
 2. **Model**, from the provider's list, by name, ID, and price.
 3. **Effort**, from the levels the model supports, with `provider-default` first. `effortsFor` in `src/model/model-facts.ts` reads them from OpenRouter's list:
    - every level for a model OpenRouter doesn't list,
