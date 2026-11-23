@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.29.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.28.0...core-v0.29.0) (2026-11-23)
+
+
+### Features
+
+* **core:** add plan and journal memory ([#129](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/129)) ([39afefb](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/39afefbbb49971767335b97dc30d1c380418f8fc))
+
 ## [0.28.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.27.0...core-v0.28.0) (2026-11-21)
 
 
