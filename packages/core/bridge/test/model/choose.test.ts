@@ -10,6 +10,7 @@ import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetti
 import { CONFIG_NAME, EXAMPLE_CONFIG, loadConfig } from "../../src/load-config.js";
 import { Logger } from "../../src/log.js";
 import { type ChooseIo, chooseModel } from "../../src/model/choose.js";
+import type { ModeSupport } from "../../src/model/providers/provider.js";
 import { providersListing } from "./fake-providers.js";
 
 const LISTING = providersListing(() => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }));
@@ -49,7 +50,23 @@ describe("in a terminal", () => {
 
 		expect(config.model).toEqual(picked);
 		expect(loadConfig(file)).toMatchObject({ result: "loaded", config: { model: picked } });
-		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with provider-default effort", { provider: "openai", id: "model-a", effort: "provider-default" });
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in API key mode, with provider-default effort", { mode: "api-key", provider: "openai", id: "model-a", effort: "provider-default" });
+	});
+
+	test("names the picked run mode in the log", async () => {
+		const plan: ModeSupport = {
+			ready: () => ({ ok: true }),
+			listModels: () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }),
+			model: () => ({ ok: false, error: "unused" }),
+		};
+		const providers = LISTING.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
+		// Subscription token, then the first row of each menu after it.
+		const subscription: ChooseIo["ask"] = (title) => Promise.resolve(title === "Run mode" ? 1 : 0);
+		const info = vi.spyOn(logger, "info");
+
+		await chooseModel(configWith(NO_MODEL), file, logger, { ask: subscription, providers, facts: FACTS });
+
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in Subscription token mode, with provider-default effort", expect.objectContaining({ mode: "subscription" }));
 	});
 
 	test("returns false when the user cancels", async () => {
@@ -83,7 +100,7 @@ describe("without a terminal", () => {
 		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
 		expect(await chooseModel(configWith(saved), file, logger, { providers: LISTING, facts: FACTS })).toBe(true);
-		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with the provider's default effort", { provider: "openai", id: "model-a", effort: "" });
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in API key mode, with the provider's default effort", { mode: "api-key", provider: "openai", id: "model-a", effort: "" });
 	});
 
 	test("logs nothing about the model when no provider has a key", async () => {

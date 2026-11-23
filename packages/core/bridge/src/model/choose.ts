@@ -5,6 +5,7 @@ import type { Config } from "../config.js";
 import { saveModel } from "../load-config.js";
 import type { Logger } from "../log.js";
 import { type PickerIo, offeredProviders, pickModel, savedModelWarning } from "./picker.js";
+import { RUN_MODES, type RunMode, type RunModeRow } from "./providers/provider.js";
 
 // With no ask, there is no terminal to ask in.
 export interface ChooseIo {
@@ -16,12 +17,17 @@ export interface ChooseIo {
 // Sets config.model to the choice, saves a new one, and logs the model agents
 // use, or why they can't play. Returns false when the user cancels.
 export async function chooseModel(config: Config, file: string, logger: Logger, { ask, providers, facts }: ChooseIo): Promise<boolean> {
+	// Without a terminal, the bridge uses API key mode.
+	let mode: RunMode = "api-key";
+
 	if (ask !== undefined) {
 		const picked = await pickModel(config, { ask, providers, facts, warn: (text) => logger.warn("model_warning", text) });
 
 		if (picked.result === "cancelled") {
 			return false;
 		}
+
+		mode = picked.mode;
 
 		if (picked.result === "picked") {
 			config.model = picked.model;
@@ -42,9 +48,10 @@ export async function chooseModel(config: Config, file: string, logger: Logger, 
 
 	const warning = savedModelWarning(config, file, providers);
 	const { provider, id, effort } = config.model;
+	const { label } = RUN_MODES.find((row) => row.mode === mode) as RunModeRow;
 
 	if (warning === undefined) {
-		logger.info("model_chosen", `Agents use ${provider} ${id}, with ${effort === "" ? "the provider's default" : effort} effort`, { provider, id, effort });
+		logger.info("model_chosen", `Agents use ${provider} ${id} in ${label} mode, with ${effort === "" ? "the provider's default" : effort} effort`, { mode, provider, id, effort });
 	} else {
 		logger.warn("model_warning", warning);
 	}
