@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.29.0...core-v0.30.0) (2026-11-23)
+
+
+### Features
+
+* **core:** add the run mode menu ([#132](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/132)) ([7bb9759](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/7bb9759294bfac389884a8fd719f3862d1908df5))
+
 ## [0.29.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.28.0...core-v0.29.0) (2026-11-23)
 
 
