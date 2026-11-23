@@ -10,8 +10,10 @@ import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetti
 import { CONFIG_NAME, EXAMPLE_CONFIG, loadConfig } from "../../src/load-config.js";
 import { Logger } from "../../src/log.js";
 import { type ChooseIo, chooseModel } from "../../src/model/choose.js";
+import type { ModeSupport } from "../../src/model/providers/provider.js";
+import { providersListing } from "./fake-providers.js";
 
-const LIST: ChooseIo["list"] = () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] });
+const LISTING = providersListing(() => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }));
 const FACTS: ChooseIo["facts"] = () => Promise.resolve({ ok: true, facts: { "openai/model-a": { supported_parameters: ["tools"] } } });
 
 let folder: string;
@@ -42,35 +44,51 @@ describe("in a terminal", () => {
 		const config = configWith(NO_MODEL);
 		const info = vi.spyOn(logger, "info");
 
-		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, list: LIST, facts: FACTS })).toBe(true);
+		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, providers: LISTING, facts: FACTS })).toBe(true);
 
 		const picked = { provider: "openai", id: "model-a", effort: "provider-default", price: NO_PRICE };
 
 		expect(config.model).toEqual(picked);
 		expect(loadConfig(file)).toMatchObject({ result: "loaded", config: { model: picked } });
-		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with provider-default effort", { provider: "openai", id: "model-a", effort: "provider-default" });
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in API key mode, with provider-default effort", { mode: "api-key", provider: "openai", id: "model-a", effort: "provider-default" });
+	});
+
+	test("names the picked run mode in the log", async () => {
+		const plan: ModeSupport = {
+			ready: () => ({ ok: true }),
+			listModels: () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }),
+			model: () => ({ ok: false, error: "unused" }),
+		};
+		const providers = LISTING.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
+		// Subscription token, then the first row of each menu after it.
+		const subscription: ChooseIo["ask"] = (title) => Promise.resolve(title === "Run mode" ? 1 : 0);
+		const info = vi.spyOn(logger, "info");
+
+		await chooseModel(configWith(NO_MODEL), file, logger, { ask: subscription, providers, facts: FACTS });
+
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in Subscription token mode, with provider-default effort", expect.objectContaining({ mode: "subscription" }));
 	});
 
 	test("returns false when the user cancels", async () => {
 		const cancel: ChooseIo["ask"] = () => Promise.resolve(undefined);
 
-		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: cancel, list: LIST, facts: FACTS })).toBe(false);
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: cancel, providers: LISTING, facts: FACTS })).toBe(false);
 	});
 
 	test("returns false when the user quits after the list fails", async () => {
 		const warn = vi.spyOn(logger, "warn");
-		const failing: ChooseIo["list"] = () => Promise.resolve({ ok: false, error: "offline" });
-		// Try again and Quit, since no model is saved.
-		const quit: ChooseIo["ask"] = () => Promise.resolve(1);
+		const failing = providersListing(() => Promise.resolve({ ok: false, error: "offline" }));
+		// API key, then Quit after the failed list.
+		const quit: ChooseIo["ask"] = (title, labels) => Promise.resolve(title === "Run mode" ? 0 : labels.indexOf("Quit"));
 
-		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: quit, list: failing, facts: FACTS })).toBe(false);
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: quit, providers: failing, facts: FACTS })).toBe(false);
 		expect(warn).toHaveBeenCalledWith("model_warning", "offline");
 	});
 
 	test("warns when it can't save the choice", async () => {
 		const warn = vi.spyOn(logger, "warn");
 
-		await chooseModel(configWith(NO_MODEL), path.join(folder, "missing", CONFIG_NAME), logger, { ask: FIRST_ROWS, list: LIST, facts: FACTS });
+		await chooseModel(configWith(NO_MODEL), path.join(folder, "missing", CONFIG_NAME), logger, { ask: FIRST_ROWS, providers: LISTING, facts: FACTS });
 
 		expect(warn).toHaveBeenCalledWith("model_warning", expect.stringMatching(/^Couldn't save the model/));
 	});
@@ -81,8 +99,8 @@ describe("without a terminal", () => {
 		const info = vi.spyOn(logger, "info");
 		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
-		expect(await chooseModel(configWith(saved), file, logger, { list: LIST, facts: FACTS })).toBe(true);
-		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a, with the provider's default effort", { provider: "openai", id: "model-a", effort: "" });
+		expect(await chooseModel(configWith(saved), file, logger, { providers: LISTING, facts: FACTS })).toBe(true);
+		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in API key mode, with the provider's default effort", { mode: "api-key", provider: "openai", id: "model-a", effort: "" });
 	});
 
 	test("logs nothing about the model when no provider has a key", async () => {
@@ -90,7 +108,7 @@ describe("without a terminal", () => {
 		const warn = vi.spyOn(logger, "warn");
 		const config = { ...configWith({ provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), providers: {} };
 
-		expect(await chooseModel(config, file, logger, { list: LIST, facts: FACTS })).toBe(true);
+		expect(await chooseModel(config, file, logger, { providers: LISTING, facts: FACTS })).toBe(true);
 		expect(info).not.toHaveBeenCalled();
 		expect(warn).not.toHaveBeenCalled();
 	});
@@ -98,7 +116,7 @@ describe("without a terminal", () => {
 	test("warns when no model is saved, and doesn't write the file", async () => {
 		const warn = vi.spyOn(logger, "warn");
 
-		await chooseModel(configWith(NO_MODEL), file, logger, { list: LIST, facts: FACTS });
+		await chooseModel(configWith(NO_MODEL), file, logger, { providers: LISTING, facts: FACTS });
 
 		expect(warn).toHaveBeenCalledWith("model_warning", expect.stringMatching(/^No model is picked/));
 		expect(fs.readFileSync(file, "utf8")).toBe(EXAMPLE_CONFIG);

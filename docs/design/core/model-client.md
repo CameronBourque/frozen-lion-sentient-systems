@@ -8,11 +8,13 @@ You pick the model and its effort in `model` in the [config file](settings.md), 
 
 Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
 
-`providerModel(config, provider, modelId)` in `src/model/providers.ts` builds the model for one provider: Anthropic, OpenAI, or Google, each through its `@ai-sdk/` package.
+Each provider's API key mode, from `apiKeyMode` in `src/model/providers/api-key.ts`, builds the model for that provider: Anthropic, OpenAI, or Google, each through its `@ai-sdk/` package. [run-modes.md](run-modes.md#providers) has the provider files.
 
 It reads the API key from `providers` in the [config file](settings.md), which an environment variable fills when it is blank, and fails with the field to set when the key is empty or missing.
 
-`listModels(provider, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. The provider's list shows the models the user's key can use. Anthropic lists the newest first, and the OpenAI list is sorted newest first.
+`listModels(provider, lister, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. Each provider file has its own lister, with the list's URL, headers, and page shape.
+
+The provider's list shows the models the user's key can use. Anthropic lists the newest first, and the OpenAI list is sorted newest first.
 
 OpenAI lists each dated snapshot beside its alias, so the list drops an ID that ends in a date: the full date, or in an older one, the month and day. Google's IDs lose their `models/` prefix, which the SDK doesn't take.
 
@@ -38,9 +40,11 @@ A cache read or write with no cache price counts as plain input, at the input pr
 
 ## Picker
 
-When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. In a terminal, `pickModel(config, io)` in `src/model/picker.ts` asks three menus, each starting on the saved choice:
+When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one.
 
-1. **Provider**, from the providers with a key. With only one, the picker skips this menu.
+In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for the **Run mode**, from `RUN_MODES` in `src/model/providers/provider.ts`, as [run-modes.md](run-modes.md#picker) describes. Then it asks three menus, each starting on the saved choice:
+
+1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu.
 2. **Model**, from the provider's list, by name, ID, and price.
 3. **Effort**, from the levels the model supports, with `provider-default` first. `effortsFor` in `src/model/model-facts.ts` reads them from OpenRouter's list:
    - every level for a model OpenRouter doesn't list,
@@ -60,7 +64,7 @@ The picked model gets the list's price, unless you saved a price for the same mo
 
 The bridge saves the choice to `model` in the config file with `saveModel`, which keeps the file's comments. Ctrl+C in a menu exits the bridge.
 
-When the list fails, the picker logs a warning and asks what to do: pick another provider, or try again when only one has a key, use the saved model, or quit. The first row is never the saved model, and the saved model is a row only when it can play.
+When the list fails, the picker logs a warning and asks what to do: pick another provider, or try again when only one can play, pick another run mode, use the saved model, or quit. The first row is never the saved model, and the saved model is a row only when it can play.
 
 `askMenu` in `src/model/menu.ts` draws a menu that the arrow keys and Enter answer. Page Up, Page Down, Home, and End jump. A list longer than 5 rows scrolls in a window, with a marker when there are more rows above or below.
 

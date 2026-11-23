@@ -7,7 +7,9 @@ Add the Claude Agent SDK runner to the **Agent SDK** run mode, behind a flag tha
 1. **Runner.** Move the agent loop behind `AgentRunner` in `src/agents/runner.ts`, with no change in how a turn plays. Commit: `refactor(core): run turns through an agent runner`.
 2. **Tools check.** Run the [plan-access.md](../../findings/plan-access.md#method) method for question 3 with `ANTHROPIC_API_KEY` set, so no plan login is used. Record the result. Commit: `docs: record the Claude Agent SDK tools check`.
 3. **Claude runner.** Add the runner that calls `query()` with the options in [run-modes.md](../../design/core/run-modes.md#claude-runner). Test it with a fake `query()` that calls tools, calls `end_turn`, and never answers. Commit: `feat(core): run Claude turns through the Agent SDK`.
-4. **Flag.** Add `CLAUDE_AGENT_SDK_ENABLED`, set to `false`, and list Anthropic as `flagged` in the agent SDK mode. With the flag on, the picker checks the login and lists the models from `supportedModels()`. Commit: `feat(core): add Claude to the agent SDK mode behind a flag`.
+4. **Flag.** Add `CLAUDE_AGENT_SDK_ENABLED`, set to `false`, in `src/model/providers/anthropic.ts`. While it is false, Anthropic's `modes` has no `agent-sdk` entry.
+
+   With the flag on, the picker checks the login and lists the models from `supportedModels()`. Commit: `feat(core): add Claude to the agent SDK mode behind a flag`.
 
 ## Done when
 

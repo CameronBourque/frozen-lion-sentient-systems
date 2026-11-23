@@ -10,7 +10,7 @@ Turn on the **Subscription token** run mode for OpenAI, so agents can play on a 
 2. **Calls.** Build the OpenAI model with the token in the subscription mode. Stream each call with `store: false`, and list the models from `/v1/models` with the token.
 
    Return a usage limit as a failure marked `limit`, and an account that isn't eligible as an `auth` failure. Commit: `feat(core): call OpenAI on a ChatGPT plan`.
-3. **Menu.** Mark OpenAI `ready` in the subscription mode. Show "Continue with ChatGPT" when there is no valid token, and log the first-use message after the first sign-in. Warn without a terminal when the saved mode has no valid token. Commit: `feat(core): offer the ChatGPT plan in the picker`.
+3. **Menu.** Add `subscription` to OpenAI's `modes` in `src/model/providers/openai.ts`. Show "Continue with ChatGPT" when there is no valid token, and log the first-use message after the first sign-in. Commit: `feat(core): offer the ChatGPT plan in the picker`.
 4. **Live check.** Run the [plan-access.md](../../findings/plan-access.md#method) method for questions 1 and 2, and record the results. Commit: `docs: record the ChatGPT plan check`.
 
 ## Done when

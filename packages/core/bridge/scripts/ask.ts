@@ -7,10 +7,9 @@ import { startConfig } from "../src/load-config.js";
 import { Logger } from "../src/log.js";
 import { chooseModel } from "../src/model/choose.js";
 import { type ModelRequest, callModel } from "../src/model/client.js";
-import { listModels } from "../src/model/list-models.js";
 import { askMenu } from "../src/model/menu.js";
 import { cachedFacts, factsCachePath } from "../src/model/model-facts.js";
-import { providerModel } from "../src/model/providers.js";
+import { PROVIDERS } from "../src/model/providers/index.js";
 import { logModelCall } from "../src/model/usage.js";
 
 // A question that only a tool call answers well, so a model that writes text
@@ -48,7 +47,7 @@ async function main(): Promise<void> {
 	logger.level = config.logLevel;
 	started.warnings.forEach((warning) => logger.warn("config_warning", warning));
 
-	if (!await chooseModel(config, started.path, logger, { ask, list: listModels, facts: () => cachedFacts(factsCachePath(started.path)) })) {
+	if (!await chooseModel(config, started.path, logger, { ask, providers: PROVIDERS, facts: () => cachedFacts(factsCachePath(started.path)) })) {
 		return;
 	}
 
@@ -61,10 +60,10 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const built = providerModel(config, provider, id);
+	const built = PROVIDERS.find(({ name }) => name === provider)?.modes["api-key"]?.model(config, id);
 
-	if (!built.ok) {
-		logger.error("model_failed", built.error);
+	if (built?.ok !== true) {
+		logger.error("model_failed", built?.error ?? `${provider} has no API key mode`);
 		process.exitCode = 1;
 
 		return;

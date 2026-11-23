@@ -43,3 +43,16 @@ A test runs two fake turns through the tools and checks all three files. The age
 - The memory tools and the `memory` source are in [design/core/mcp-server.md](../../design/core/mcp-server.md).
 - The plan, journal, and decision parts of the turn message are in [design/agents/prompt.md](../../design/agents/prompt.md#two-calls).
 - The `journalEntries` cap is in [design/core/settings.md](../../design/core/settings.md).
+
+## Run mode menu
+
+Pull request: feat(core): add the run mode menu.
+
+It moved each provider into its own file in `src/model/providers/`, listed in `PROVIDERS`, and added a **Run mode** menu before the provider menu. The menu lists the four run modes and **Quit**, starting on **API key**, and only **API key** plays.
+
+A mode that no provider has reads `(not available yet)`. **What now?** gained **Pick another run mode**, and the `model_chosen` log line names the run mode. The bridge doesn't save the run mode.
+
+`npm run ask` passed every case in a terminal on 2026-11-23.
+
+- The provider files and the menu's rules are in [design/core/run-modes.md](../../design/core/run-modes.md#providers).
+- The menus, in order, are in the picker section of [design/core/model-client.md](../../design/core/model-client.md#picker).
