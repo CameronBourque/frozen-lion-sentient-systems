@@ -593,3 +593,23 @@ Write what a later turn needs to know and can't read from get_state, such as why
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `entry` | string | yes | The entry's text. |
+
+## `record_decision`
+
+Record an important decision you made this turn, with your reason, such as a war, a new city's site, a government, or a pantheon. Skip routine moves.
+
+Next turn starts by listing these decisions with their ids, and asks you for each one's result.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `decision` | string | yes | What you decided, in one sentence. |
+| `reason` | string | yes | Why, in one sentence. |
+
+## `record_result`
+
+Record the short-term result of one of last turn's decisions, by the id that the turn message gives it. Say what happened and whether the decision worked, in a sentence or two.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `id` | integer | yes | The decision's id. |
+| `result` | string | yes | What happened, and whether the decision worked. |

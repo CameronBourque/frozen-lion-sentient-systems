@@ -51,8 +51,8 @@ describe("registerAction", () => {
 describe("the reason", () => {
 	test("every action tool requires it, first in its schema", async () => {
 		const { tools } = await mcp.listTools();
-		// The memory tools change no game, so they take no reason.
-		const memory = ["update_plan", "add_journal_entry"];
+		// The memory tools change no game, so they aren't actions.
+		const memory = ["update_plan", "add_journal_entry", "record_decision", "record_result"];
 		const actions = tools.filter((tool) => !tool.name.startsWith("get_") && !tool.name.endsWith("_civilopedia") && !memory.includes(tool.name));
 
 		expect(actions.length).toBeGreaterThan(30);

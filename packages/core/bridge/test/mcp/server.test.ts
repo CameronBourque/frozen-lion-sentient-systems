@@ -37,7 +37,7 @@ test("the server lists every tool, each with a description", async () => {
 		"spy_mission", "spy_travel", "choose_escape_route",
 		"vote_in_congress", "propose_in_congress",
 		"end_turn",
-		"update_plan", "add_journal_entry",
+		"update_plan", "add_journal_entry", "record_decision", "record_result",
 	]);
 	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);
 });

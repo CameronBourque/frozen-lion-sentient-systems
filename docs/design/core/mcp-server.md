@@ -30,15 +30,14 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
   `registerAction` adds it, and logs each action at the `decisions` level as an `action` record with the tool, the player, the reason, the fields, and the result.
 
   A success returns "The game took the request.", because an ok result means the game took the request, not that it is done. The model reads the state for the effect. A failed action returns its reason as a result marked `isError`.
-- **Memory tools.** `src/mcp/memory-tools.ts` registers `update_plan` and `add_journal_entry`, which write the player's [memory files](../memory.md#memory-files) in the folder that the context's `memory` function returns. Phase 3 can return a restored snapshot's folder from it.
-
-  `add_journal_entry` asks the game for `Game.GetCurrentGameTurn()` and files the entry under that turn. The plan is capped at 2000 characters and an entry at 1000, because every turn's prompt holds them.
-
-  They change no game, so they take no `reason`. Each call is logged at the `decisions` level as a `plan` or `journal` record.
-
   `unit_action` takes every order of the action API's `UnitOrder`, and its description lists them from one table, which TypeScript checks against the type. The core mod checks that an order has the fields it needs.
 
   An action with an optional tile, such as `unit_action` and `set_production`, refuses `x` without `y` through `optionalTile`.
+- **Memory tools.** `src/mcp/memory-tools.ts` registers `update_plan`, `add_journal_entry`, `record_decision`, and `record_result`, which write the player's [memory files](../memory.md#files-on-disk) in the folder that the context's `memory` function returns. Phase 3 can return a restored snapshot's folder from it.
+
+  `add_journal_entry` and `record_decision` ask the game for `Game.GetCurrentGameTurn()` and file what they write under that turn. The plan is capped at 2000 characters, an entry at 1000, and a decision, its reason, and its result at 300 each, because every turn's prompt holds them.
+
+  They change no game, so they don't go through `registerAction`. Each call is logged at the `decisions` level as a `plan`, `journal`, `decision`, or `decision_result` record. A file the bridge can't write fails the tool with the reason, not the bridge.
 - **In process.** The agent loop connects to the server through the SDK's `InMemoryTransport`, so the loop needs no port.
 - **Over HTTP.** With `--mcp`, `src/mcp/http.ts` also serves the server over Streamable HTTP at `http://127.0.0.1:<mcpPort>/mcp`, for Claude Code and the MCP Inspector. `npm run mcp` starts the bridge this way, and `mcpPort` is in the [config file](settings.md).
 

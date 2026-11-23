@@ -2,7 +2,7 @@
 // message each turn. docs/design/agents/prompt.md has the design.
 
 import type { Knowledge } from "../knowledge.js";
-import type { JournalEntry, Memory } from "../memory/store.js";
+import type { DecisionRecord, JournalEntry, Memory } from "../memory/store.js";
 import type { State } from "../state/state.js";
 
 // The names of an agent's personality and sweat level files, without ".md".
@@ -22,11 +22,13 @@ export interface TurnInput {
 	journalEntries: number;
 }
 
-// The turn message's parts, in order.
-const TURN_PARTS: ((input: TurnInput) => string)[] = [
+// The turn message's parts, in order. A part with nothing to say returns
+// undefined, and the message leaves it out.
+const TURN_PARTS: ((input: TurnInput) => string | undefined)[] = [
 	({ state }) => `# Turn ${state.turn}\n\nIt's your turn.`,
 	({ memory }) => `## Your plan\n\n${memory.plan === "" ? "You have no plan yet. Make one with update_plan." : memory.plan}`,
 	({ memory, journalEntries }) => `## Your journal\n\n${journalText(memory.journal, journalEntries)}`,
+	({ state, memory }) => decisionsText(memory.decisions, state.turn),
 	({ state }) => `## End-turn blockers\n\n${blockersText(state.blockers)}`,
 	({ state }) => `## State\n\n${stateText(state)}`,
 ];
@@ -56,7 +58,22 @@ export function systemPrompt(knowledge: Knowledge, profile: AgentProfile): { tex
 }
 
 export function turnMessage(input: TurnInput): string {
-	return TURN_PARTS.map((part) => part(input)).join("\n\n");
+	return TURN_PARTS.flatMap((part) => part(input) ?? []).join("\n\n");
+}
+
+// The records from the agent's last turn before this one that have no result
+// yet. docs/design/agents/turn-loop.md has decision records.
+function decisionsText(decisions: DecisionRecord[], turn: number): string | undefined {
+	const lastTurn = Math.max(-1, ...decisions.filter((record) => record.turn < turn).map((record) => record.turn));
+	const open = decisions.filter((record) => record.turn === lastTurn && record.result === undefined);
+
+	if (open.length === 0) {
+		return undefined;
+	}
+
+	const lines = open.map((record) => `- ${record.id}: ${record.decision} Reason: ${record.reason}`);
+
+	return `## Last turn's decisions\n\nRecord the short-term result of each with record_result and its id.\n\n${lines.join("\n")}`;
 }
 
 // The newest entries, oldest first, so they read in the order they happened.

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { addJournalEntry, memoryFolder, readMemory, startMemory, writePlan } from "../../src/memory/store.js";
+import { addDecision, addJournalEntry, memoryFolder, readMemory, setDecisionResult, startMemory, writePlan } from "../../src/memory/store.js";
 
 const NOW = new Date("2026-11-21T10:20:30.456Z");
 const STAMP = "2026-11-21T10-20-30-456Z";
@@ -35,7 +35,7 @@ describe("memoryFolder", () => {
 
 describe("readMemory", () => {
 	test("reads a missing folder as empty memory", () => {
-		expect(readMemory(folder, NOW)).toEqual({ memory: { plan: "", journal: [] }, warnings: [] });
+		expect(readMemory(folder, NOW)).toEqual({ memory: { plan: "", journal: [], decisions: [] }, warnings: [] });
 	});
 
 	test("reads a file with Windows line endings", () => {
@@ -82,7 +82,7 @@ describe("startMemory", () => {
 	const aside = (): string => `${folder}.old-${STAMP}`;
 
 	test("starts a new agent with empty memory", () => {
-		expect(startMemory(folder, 1, NOW)).toEqual({ memory: { plan: "", journal: [] }, warnings: [] });
+		expect(startMemory(folder, 1, NOW)).toEqual({ memory: { plan: "", journal: [], decisions: [] }, warnings: [] });
 		expect(fs.existsSync(aside())).toBe(false);
 	});
 
@@ -92,7 +92,7 @@ describe("startMemory", () => {
 		addJournalEntry(folder, { turn: 5, text: "Settled a second city." });
 
 		expect(startMemory(folder, 5, NOW)).toEqual({
-			memory: { plan: "Take the coast.", journal: [{ turn: 4, text: "Met Rome." }, { turn: 5, text: "Settled a second city." }] },
+			memory: { plan: "Take the coast.", journal: [{ turn: 4, text: "Met Rome." }, { turn: 5, text: "Settled a second city." }], decisions: [] },
 			warnings: [],
 		});
 	});
@@ -103,16 +103,16 @@ describe("startMemory", () => {
 
 		const { memory, warnings } = startMemory(folder, 30, NOW);
 
-		expect(memory).toEqual({ plan: "", journal: [] });
+		expect(memory).toEqual({ plan: "", journal: [], decisions: [] });
 		expect(warnings).toEqual([expect.stringContaining(aside())]);
 		expect(fs.existsSync(folder)).toBe(false);
-		expect(readMemory(aside(), NOW).memory).toEqual({ plan: "Take the coast.", journal: [{ turn: 50, text: "Took Rome." }] });
+		expect(readMemory(aside(), NOW).memory).toEqual({ plan: "Take the coast.", journal: [{ turn: 50, text: "Took Rome." }], decisions: [] });
 	});
 
 	test("moves aside a plan alone on turn 1, since a new game has none yet", () => {
 		writePlan(folder, "Take the coast.");
 
-		expect(startMemory(folder, 1, NOW).memory).toEqual({ plan: "", journal: [] });
+		expect(startMemory(folder, 1, NOW).memory).toEqual({ plan: "", journal: [], decisions: [] });
 		expect(readMemory(aside(), NOW).memory.plan).toBe("Take the coast.");
 	});
 
@@ -124,6 +124,68 @@ describe("startMemory", () => {
 
 		expect(warnings).toEqual([expect.stringContaining("no front matter"), expect.stringContaining(aside())]);
 		expect(fs.existsSync(path.join(aside(), `plan.md.unreadable-${STAMP}`))).toBe(true);
+	});
+
+	test("moves aside a decision record from a later turn", () => {
+		addDecision(folder, [], { turn: 50, decision: "Declare war on Rome.", reason: "Their capital is weak." });
+
+		expect(startMemory(folder, 30, NOW).memory).toEqual({ plan: "", journal: [], decisions: [] });
+		expect(fs.existsSync(aside())).toBe(true);
+	});
+});
+
+describe("decision records", () => {
+	const WAR = { turn: 5, decision: "Declare war on Rome.", reason: "Their capital is weak." };
+	const WALL = { turn: 5, decision: "Build a wall.", reason: "Rome is close." };
+
+	function decisions(): ReturnType<typeof readMemory>["memory"]["decisions"] {
+		return readMemory(folder, NOW).memory.decisions;
+	}
+
+	test("appends one JSON line per record, with the schema version and the next id", () => {
+		expect(addDecision(folder, [], WAR)).toBe(1);
+		expect(addDecision(folder, decisions(), WALL)).toBe(2);
+
+		expect(fs.readFileSync(path.join(folder, "decisions.jsonl"), "utf8")).toBe([
+			`{"schemaVersion":1,"id":1,"turn":5,"decision":"Declare war on Rome.","reason":"Their capital is weak."}`,
+			`{"schemaVersion":1,"id":2,"turn":5,"decision":"Build a wall.","reason":"Rome is close."}`,
+			"",
+		].join("\n"));
+		expect(decisions()).toEqual([{ id: 1, ...WAR }, { id: 2, ...WALL }]);
+	});
+
+	test("sets the result of the record with the id, and keeps the others", () => {
+		addDecision(folder, [], WAR);
+		addDecision(folder, decisions(), WALL);
+
+		expect(setDecisionResult(folder, decisions(), 1, "Took two cities.")).toBe(true);
+		expect(decisions()).toEqual([{ id: 1, ...WAR, result: "Took two cities." }, { id: 2, ...WALL }]);
+	});
+
+	test("changes nothing for an id no record has", () => {
+		addDecision(folder, [], WAR);
+
+		expect(setDecisionResult(folder, decisions(), 7, "Took two cities.")).toBe(false);
+		expect(decisions()).toEqual([{ id: 1, ...WAR }]);
+	});
+
+	test("reads a file with Windows line endings", () => {
+		writeFile("decisions.jsonl", `{"schemaVersion":1,"id":1,"turn":5,"decision":"Build a wall.","reason":"Rome is close."}\r\n`);
+
+		expect(decisions()).toEqual([{ id: 1, ...WALL }]);
+	});
+
+	test.each([
+		["a line that isn't JSON", `{"schemaVersion":1,`, "a line isn't valid JSON"],
+		["a newer schema version", `{"schemaVersion":2,"id":1,"turn":5,"decision":"Build a wall.","reason":"Rome is close."}`, "the record on its line 1 isn't a decision record of schema version 1"],
+	])("moves aside a file with %s, and warns", (_, line, reason) => {
+		writeFile("decisions.jsonl", `${line}\n`);
+
+		const { memory, warnings } = readMemory(folder, NOW);
+
+		expect(memory.decisions).toEqual([]);
+		expect(warnings).toEqual([expect.stringContaining(reason)]);
+		expect(fs.existsSync(path.join(folder, `decisions.jsonl.unreadable-${STAMP}`))).toBe(true);
 	});
 });
 

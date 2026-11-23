@@ -49,6 +49,12 @@ During testing, the agent records each important decision with its reason. It ad
 
 The records are noisy, and that is acceptable. You review them over time and turn useful patterns into [knowledge files](../knowledge-files.md).
 
+- **`record_decision`** appends `{ schemaVersion, id, turn, decision, reason }` to the agent's `decisions.jsonl`, in its [memory folder](../memory.md#files-on-disk). `id` counts from 1, and the tool returns it. The decision and the reason are capped at 300 characters each.
+- **Next turn.** The turn message lists the records from the agent's last turn before this one that have no `result` yet, each with its id, and asks for each short-term result. When there are none, the [prompt](prompt.md#two-calls) leaves the part out.
+- **`record_result`** sets `result` on the record with the id, and rewrites the file. The file holds a few lines per turn, so the rewrite costs little, and each record keeps its result on its own line.
+
+The long-term result at a deep strategic review comes in a later phase.
+
 ## Decisions
 
 | Decision | Reason |
@@ -59,3 +65,4 @@ The records are noisy, and that is acceptable. You review them over time and tur
 | The run spending limit counts one start of the bridge, not one game | A game outlives restarts, so a total per game needs stored totals. Each call's cost is already in the log |
 | Spending limits in tokens, dollars, or both, blank to start | Users pay in dollars, but neither the AI SDK nor the providers' model lists give a price, so a dollar limit needs a price that the user enters. A token limit needs nothing |
 | Record decisions and their results during testing | Noisy records still show which patterns belong in knowledge files |
+| The model names a record by an id that the bridge gives it | The turn and the text can repeat, and a number costs the fewest tokens |

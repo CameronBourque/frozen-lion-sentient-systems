@@ -58,7 +58,7 @@ describe("turnMessage", () => {
 		return `## State\n\n${JSON.stringify(rest)}`;
 	}
 
-	const NO_MEMORY: Memory = { plan: "", journal: [] };
+	const NO_MEMORY: Memory = { plan: "", journal: [], decisions: [] };
 	const JOURNAL = [{ turn: 3, text: "Met Rome." }, { turn: 4, text: "Rome denounced us." }, { turn: 6, text: "Settled the coast." }];
 
 	function message(state = MINIMAL_STATE, memory = NO_MEMORY, journalEntries = 10): string {
@@ -66,7 +66,7 @@ describe("turnMessage", () => {
 	}
 
 	test("holds the turn, the plan, the journal, the blockers, and the rest of the state, in that order", () => {
-		expect(message(MINIMAL_STATE, { plan: "Take the coast.", journal: JOURNAL.slice(0, 1) })).toBe([
+		expect(message(MINIMAL_STATE, { ...NO_MEMORY, plan: "Take the coast.", journal: JOURNAL.slice(0, 1) })).toBe([
 			"# Turn 1\n\nIt's your turn.",
 			"## Your plan\n\nTake the coast.",
 			"## Your journal\n\n### Turn 3\n\nMet Rome.",
@@ -80,11 +80,11 @@ describe("turnMessage", () => {
 	});
 
 	test("holds only the newest entries, oldest first, and says how many it left out", () => {
-		expect(message(MINIMAL_STATE, { plan: "", journal: JOURNAL }, 2)).toContain("## Your journal\n\nYour newest 2 of 3 entries.\n\n### Turn 4\n\nRome denounced us.\n\n### Turn 6\n\nSettled the coast.\n\n## End-turn blockers");
+		expect(message(MINIMAL_STATE, { ...NO_MEMORY, journal: JOURNAL }, 2)).toContain("## Your journal\n\nYour newest 2 of 3 entries.\n\n### Turn 4\n\nRome denounced us.\n\n### Turn 6\n\nSettled the coast.\n\n## End-turn blockers");
 	});
 
 	test("holds no entries when the cap is 0", () => {
-		expect(message(MINIMAL_STATE, { plan: "", journal: JOURNAL }, 0)).toContain("## Your journal\n\nNo entries yet.");
+		expect(message(MINIMAL_STATE, { ...NO_MEMORY, journal: JOURNAL }, 0)).toContain("## Your journal\n\nNo entries yet.");
 	});
 
 	test("names each blocker's choice and the units that need orders", () => {
@@ -95,5 +95,31 @@ describe("turnMessage", () => {
 
 	test("says when nothing blocks the turn", () => {
 		expect(message({ ...MINIMAL_STATE, blockers: { list: [], units: [] } })).toContain("None. End the turn when your other actions are done.");
+	});
+
+	describe("last turn's decisions", () => {
+		const DECISIONS = [
+			{ id: 1, turn: 3, decision: "Settle the coast.", reason: "Fish and a harbor.", result: "The city grew fast." },
+			{ id: 2, turn: 5, decision: "Declare war on Rome.", reason: "Their capital is weak." },
+			{ id: 3, turn: 5, decision: "Pick Oligarchy.", reason: "Combat strength.", result: "Units hit harder." },
+			{ id: 4, turn: 5, decision: "Build a wall.", reason: "Rome is close." },
+			{ id: 5, turn: 6, decision: "Raze the camp.", reason: "Barbarians." },
+		];
+
+		test("lists the records of the last turn before this one that have no result, after the journal", () => {
+			expect(message({ ...MINIMAL_STATE, turn: 6 }, { ...NO_MEMORY, decisions: DECISIONS })).toContain([
+				"## Your journal\n\nNo entries yet. Add one with add_journal_entry when something happens that a later turn needs to know.",
+				"## Last turn's decisions\n\nRecord the short-term result of each with record_result and its id.\n\n- 2: Declare war on Rome. Reason: Their capital is weak.\n- 4: Build a wall. Reason: Rome is close.",
+				"## End-turn blockers",
+			].join("\n\n"));
+		});
+
+		test("leaves the part out when every record of the last turn has a result", () => {
+			expect(message({ ...MINIMAL_STATE, turn: 4 }, { ...NO_MEMORY, decisions: DECISIONS })).not.toContain("## Last turn's decisions");
+		});
+
+		test("leaves the part out when no record is from an earlier turn", () => {
+			expect(message({ ...MINIMAL_STATE, turn: 3 }, { ...NO_MEMORY, decisions: DECISIONS })).not.toContain("## Last turn's decisions");
+		});
 	});
 });

@@ -16,10 +16,11 @@ Call `get_state` only when a decision needs something your earlier actions chang
 
 ## Memory
 
-You remember nothing between turns except your plan and your journal.
+You remember nothing between turns except your plan, your journal, and your decision records.
 
 - Keep your strategy in your plan with `update_plan`. Change it when your strategy changes, not every turn.
 - Record what a later turn needs to know with `add_journal_entry`, such as a promise, a betrayal, or a lesson. Skip what the state already shows.
+- Record each important decision and its reason with `record_decision`. When a turn message lists last turn's decisions, record each one's short-term result with `record_result`.
 
 ## Actions
 

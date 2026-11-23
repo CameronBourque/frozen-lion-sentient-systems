@@ -91,3 +91,77 @@ describe("add_journal_entry", () => {
 		expect(await call(await connect(() => blocked), "add_journal_entry", { entry: "Met Rome." })).toMatchObject({ text: expect.stringContaining("Couldn't save your journal") as unknown, isError: true });
 	});
 });
+
+describe("record_decision and record_result", () => {
+	const WAR = { decision: "Declare war on Rome.", reason: "Their capital is weak." };
+
+	test("record each decision under the turn with the next id, then its result", async () => {
+		const mcp = await connect();
+
+		answerTurn(["5"]);
+		expect(await call(mcp, "record_decision", WAR)).toEqual({ text: "Recorded decision 1.", isError: false });
+		expect(await call(mcp, "record_decision", { decision: "Build a wall.", reason: "Rome is close." })).toEqual({ text: "Recorded decision 2.", isError: false });
+		expect(await call(mcp, "record_result", { id: 1, result: "Took two cities." })).toEqual({ text: "Recorded the result of decision 1.", isError: false });
+
+		expect(readMemory(folder(3), NOW).memory.decisions).toEqual([
+			{ id: 1, turn: 5, ...WAR, result: "Took two cities." },
+			{ id: 2, turn: 5, decision: "Build a wall.", reason: "Rome is close." },
+		]);
+	});
+
+	test("record_result fails for an id no decision has", async () => {
+		expect(await call(await connect(), "record_result", { id: 4, result: "Took two cities." })).toEqual({ text: "No decision has the id 4.", isError: true });
+	});
+
+	test("record_decision writes nothing when the game gives no turn", async () => {
+		answerTurn([]);
+
+		expect(await call(await connect(), "record_decision", WAR)).toMatchObject({ isError: true });
+		expect(fs.existsSync(folder(3))).toBe(false);
+	});
+
+	test("record_decision fails when it can't write the folder", async () => {
+		const blocked = path.join(root, "a-file");
+
+		fs.writeFileSync(blocked, "");
+		answerTurn(["5"]);
+
+		expect(await call(await connect(() => blocked), "record_decision", WAR)).toMatchObject({ text: expect.stringContaining("Couldn't save your decision") as unknown, isError: true });
+	});
+
+	test("record_result fails when it can't read or write the file", async () => {
+		fs.mkdirSync(path.join(folder(3), "decisions.jsonl"), { recursive: true });
+
+		expect(await call(await connect(), "record_result", { id: 1, result: "Took two cities." })).toMatchObject({ text: expect.stringContaining("Couldn't save your result") as unknown, isError: true });
+	});
+
+	test("a decisions file it can't read moves aside, and the ids start again", async () => {
+		fs.mkdirSync(folder(3), { recursive: true });
+		fs.writeFileSync(path.join(folder(3), "decisions.jsonl"), "not JSON\n");
+		answerTurn(["5"]);
+
+		expect(await call(await connect(), "record_decision", WAR)).toEqual({ text: "Recorded decision 1.", isError: false });
+		expect(fs.readdirSync(folder(3)).some((name) => name.startsWith("decisions.jsonl.unreadable-"))).toBe(true);
+	});
+});
+
+// The step's "Done when" in docs/roadmap/phase-2/memory-and-decisions.md.
+test("two fake turns through the tools leave the second plan, both entries, and one decision with its result", async () => {
+	const mcp = await connect();
+
+	answerTurn(["4"]);
+	await call(mcp, "update_plan", { plan: "Take the coast." });
+	await call(mcp, "add_journal_entry", { entry: "Met Rome." });
+	await call(mcp, "record_decision", { decision: "Settle the coast.", reason: "Fish and a harbor." });
+
+	answerTurn(["5"]);
+	await call(mcp, "update_plan", { plan: "Build a navy." });
+	await call(mcp, "add_journal_entry", { entry: "Rome denounced us." });
+	await call(mcp, "record_result", { id: 1, result: "The city grew fast." });
+
+	expect(readMemory(folder(3), NOW).memory).toEqual({
+		plan: "Build a navy.",
+		journal: [{ turn: 4, text: "Met Rome." }, { turn: 5, text: "Rome denounced us." }],
+		decisions: [{ id: 1, turn: 4, decision: "Settle the coast.", reason: "Fish and a harbor.", result: "The city grew fast." }],
+	});
+});

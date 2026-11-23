@@ -11,16 +11,16 @@ The file exports two functions, and everything else in it is private.
   1. the turn number,
   2. the plan from [memory](../memory.md#memory-files),
   3. the newest journal entries, oldest first, up to the config file's `journalEntries`, with a line that says how many it left out,
-  4. each end-turn blocker with the `get_choices` key that resolves it, and the units that need orders,
-  5. the rest of the state as compact JSON. The state part leaves out the turn and the blockers, so each fact appears once.
+  4. last turn's [decision records](turn-loop.md#decision-records) that have no result yet, each with its id,
+  5. each end-turn blocker with the `get_choices` key that resolves it, and the units that need orders,
+  6. the rest of the state as compact JSON. The state part leaves out the turn and the blockers, so each fact appears once.
 
-  An empty plan or journal names the tool that fills it.
+  An empty plan or journal names the tool that fills it. With no open decision records, the message leaves their part out.
 
 The agent loop passes them to `callModel` as the system prompt and the first message.
 
 Later steps add these parts:
 
-- last turn's [decision records](turn-loop.md#decision-records), in the turn message,
 - the concept guides, civ notes, and chosen opening, as more files in the system prompt,
 - the wake triggers from [standing orders](../decision-support/standing-orders.md#wake-triggers), in the turn message.
 
