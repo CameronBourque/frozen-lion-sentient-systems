@@ -28,4 +28,4 @@ If no provider has a key, the bridge warns and keeps running. Agent slots, perso
 | The config file holds only settings for the whole bridge | Agent slots, personalities, and sweat levels belong to a game, so they save with it. A player ID in the config would point at the wrong player after loading another save |
 | One API key per provider in `providers` | An agent and its subagents can each use a model from a different provider |
 | A blank key comes from an environment variable, and a key in the file wins | A key in the environment stays out of the file, which users may share or show. A key in the file is the one the user chose for the bridge |
-| A missing config file gets an example and exits, and an empty key only warns | The example shows every field. With no key, the parts that don't call a model still run |
+| A missing config file gets an example and exits, and an empty key only warns | The example shows every field. Without a terminal, the parts that don't call a model still run with no key. In a terminal, the **Run mode** menu asks again until you pick a mode that can play or **Quit** |
