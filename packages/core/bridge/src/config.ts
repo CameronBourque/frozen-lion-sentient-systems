@@ -11,9 +11,9 @@ import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 // Bump this when the format changes, and migrate older files when they load.
 export const SCHEMA_VERSION = 1;
 
-export const PROVIDERS = ["anthropic", "openai", "google"] as const;
+export const PROVIDER_NAMES = ["anthropic", "openai", "google"] as const;
 
-export type Provider = typeof PROVIDERS[number];
+export type Provider = typeof PROVIDER_NAMES[number];
 
 // Where a provider's key comes from when the config file leaves it blank.
 export const KEY_VARIABLES: Record<Provider, string> = {
@@ -70,7 +70,7 @@ export const NO_PRICE: Price = { input: "", output: "", cacheRead: "", cacheWrit
 
 // Blank until the user picks, which the picker then asks for.
 const MODEL = z.strictObject({
-	provider: z.union([z.literal(""), z.enum(PROVIDERS)]).default(""),
+	provider: z.union([z.literal(""), z.enum(PROVIDER_NAMES)]).default(""),
 	id: z.string().default(""),
 	effort: z.union([z.literal(""), z.enum(EFFORTS)]).default(""),
 	price: PRICE.default(NO_PRICE),
@@ -86,7 +86,7 @@ const CONFIG = z.strictObject({
 	logLevel: z.enum(LOG_LEVELS).default(DEFAULT_LOG_LEVEL),
 	// Only the providers the user has a key for. A model from any listed
 	// provider can be used.
-	providers: z.partialRecord(z.enum(PROVIDERS), PROVIDER).default({}),
+	providers: z.partialRecord(z.enum(PROVIDER_NAMES), PROVIDER).default({}),
 	model: MODEL.default(NO_MODEL),
 	// Where --mcp serves the MCP tools.
 	mcpPort: z.int().min(1).max(65535).default(DEFAULT_MCP_PORT),
@@ -146,7 +146,7 @@ function environmentKey(env: Record<string, string | undefined>, provider: Provi
 // Fills each blank key from its environment variable. A key in the file wins,
 // and the file itself never gets the environment's key.
 export function withEnvironmentKeys(config: Config, env: Record<string, string | undefined>): EnvironmentKeys {
-	const fromEnvironment = PROVIDERS.filter((provider) =>
+	const fromEnvironment = PROVIDER_NAMES.filter((provider) =>
 		(config.providers[provider]?.apiKey ?? "") === "" && environmentKey(env, provider) !== "");
 	const filled = Object.fromEntries(fromEnvironment.map((provider) => [provider, { apiKey: environmentKey(env, provider) }]));
 

@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT,EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDERS, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT,EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
@@ -26,12 +26,12 @@ logLevel: ${DEFAULT_LOG_LEVEL}
 
 # An API key for each provider whose models the agents use. Fill in at least one. Delete a provider
 # you don't use. A blank key comes from its environment variable instead, if it is set:
-# ${PROVIDERS.map((provider) => KEY_VARIABLES[provider]).join(", ")}.
+# ${PROVIDER_NAMES.map((provider) => KEY_VARIABLES[provider]).join(", ")}.
 providers:
-${PROVIDERS.map((provider) => `  ${provider}:\n    apiKey: ""`).join("\n")}
+${PROVIDER_NAMES.map((provider) => `  ${provider}:\n    apiKey: ""`).join("\n")}
 
 # The model the agents use, and how hard it thinks before it answers. The bridge asks for these
-# when it starts, and saves your choice here. The provider is one of: ${PROVIDERS.join(", ")}. The
+# when it starts, and saves your choice here. The provider is one of: ${PROVIDER_NAMES.join(", ")}. The
 # effort is one of: ${EFFORTS.join(", ")}.
 model:
   provider: ""

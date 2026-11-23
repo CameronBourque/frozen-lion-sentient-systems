@@ -2,14 +2,14 @@
 // the config, and an empty or missing key fails with the field to set.
 
 import { describe, expect, test } from "vitest";
-import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, KEY_VARIABLES, NO_MODEL, PROVIDERS } from "../../src/config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, KEY_VARIABLES, NO_MODEL, PROVIDER_NAMES } from "../../src/config.js";
 import { providerModel } from "../../src/model/providers.js";
 
 function configWith(providers: Config["providers"]): Config {
 	return { schemaVersion: 1, logLevel: "decisions", providers, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES };
 }
 
-describe.each(PROVIDERS)("%s", (provider) => {
+describe.each(PROVIDER_NAMES)("%s", (provider) => {
 	test("builds the model with the key from the config", () => {
 		const result = providerModel(configWith({ [provider]: { apiKey: "key" } }), provider, "some-model");
 
@@ -30,7 +30,7 @@ describe.each(PROVIDERS)("%s", (provider) => {
 
 test("names each provider's own model", () => {
 	const config = configWith({ anthropic: { apiKey: "a" }, openai: { apiKey: "b" }, google: { apiKey: "c" } });
-	const names = PROVIDERS.map((provider) => {
+	const names = PROVIDER_NAMES.map((provider) => {
 		const result = providerModel(config, provider, "m");
 
 		return result.ok && typeof result.model === "object" ? result.model.provider : undefined;

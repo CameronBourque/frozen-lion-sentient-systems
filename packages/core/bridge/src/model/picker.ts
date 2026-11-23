@@ -1,7 +1,7 @@
 // Asks the user for the provider, the model, and the effort when the bridge
 // starts in a terminal. docs/design/core/model-client.md has the design.
 
-import { type Config, type Effort, type ModelSetting, NO_PRICE, PROVIDERS, type Price, type Provider } from "../config.js";
+import { type Config, type Effort, type ModelSetting, NO_PRICE, PROVIDER_NAMES, type Price, type Provider } from "../config.js";
 import type { ListResult, ModelInfo } from "./list-models.js";
 import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
 
@@ -21,7 +21,7 @@ export type PickResult =
 	| { result: "cancelled" };
 
 export function keyedProviders(config: Config): Provider[] {
-	return PROVIDERS.filter((provider) => (config.providers[provider]?.apiKey ?? "") !== "");
+	return PROVIDER_NAMES.filter((provider) => (config.providers[provider]?.apiKey ?? "") !== "");
 }
 
 function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts): string {
