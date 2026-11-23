@@ -8,6 +8,7 @@ Core is the core mod and the bridge. The core mod is the in-game Lua, and the br
 | [bridge.md](bridge.md) | The bridge: tuner client, tagged lines, resync, version check, MCP server, model client, memory store |
 | [mcp-server.md](mcp-server.md) | How the bridge serves its tools over MCP, in process and over local HTTP |
 | [model-client.md](model-client.md) | How the bridge calls a model through one interface over every provider |
+| [run-modes.md](run-modes.md) | How agents reach a model: an API key, a subscription token, an agent SDK, or a CLI |
 | [logs.md](logs.md) | The bridge's log records, levels, and log files |
 | [settings.md](settings.md) | The bridge's config file |
 | [toolchain.md](toolchain.md) | How the bridge is built, checked, and released, and the tool reference workflow |

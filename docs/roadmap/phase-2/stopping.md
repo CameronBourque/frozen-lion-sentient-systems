@@ -12,7 +12,9 @@ Add the stop key, the turn count, and the spending limits, so an agent never spe
 
    A cost limit needs `model.price`, so a cost limit with no price logs a warning when the bridge starts. With no spending limit set, the bridge logs a warning when it starts.
 
-   A turn at its limit ends with `force`, as the other turn limits do. A run at its limit stops as the stop key does, and logs the run's total cost. Commit: `feat(core): add spending limits`.
+   A turn at its limit ends with `force`, as the other turn limits do. A run at its limit stops as the stop key does, and logs the run's total cost.
+
+   A model call failure marked `limit`, from a plan's usage limit, stops the run the same way, as [run-modes.md](../../design/core/run-modes.md#subscription-token) says. Commit: `feat(core): add spending limits`.
 
 ## Done when
 

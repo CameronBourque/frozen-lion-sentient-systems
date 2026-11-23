@@ -51,7 +51,7 @@ The bridge is one TypeScript program that connects to the game over FireTuner, r
 
   It refuses a type with anything but capital letters, digits, and `_`, such as `DISTRICT_CAMPUS`, without sending a command, because the type goes into the Lua call as a string.
 - **MCP server.** It serves the action API and lookup as tools. See [mcp-server.md](mcp-server.md).
-- **Model client.** It calls the configured provider through one interface, the Vercel AI SDK, so any provider works. See [model-client.md](model-client.md).
+- **Model client.** It calls the configured provider through one interface, the Vercel AI SDK, so any provider works. See [model-client.md](model-client.md). The [run mode](run-modes.md) decides whether it uses an API key or a plan's token, or whether a provider's agent SDK or CLI runs the turn instead.
 - **Memory store.** It reads and writes each agent's memory files and snapshots them under the current checkpoint ID. See [memory.md](../memory.md).
 
 The agent and advisor features are modules in the same codebase, not plugins. The logs are in [logs.md](logs.md), the config file is in [settings.md](settings.md), and the build and the tools that work on the code are in [toolchain.md](toolchain.md).

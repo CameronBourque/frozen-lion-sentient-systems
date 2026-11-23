@@ -42,6 +42,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Region summary | One line of counts for a part of the map, such as the land around a city. A candidate map format | [map-format.md](design/decision-support/map-format.md#candidate-formats) |
 | Relative measure | One of the agent's numbers compared with the other players' numbers on the same turn, such as its rank or its ratio to the leader | [evaluation.md](design/evaluation.md#relative-measures) |
 | Request function | A game function, such as `UnitManager.RequestOperation`, that asks the engine to do an action. The engine checks that the action is legal | [game-api.md](findings/game-api.md) |
+| Run mode | How agents reach a model: an API key, a subscription token, a provider's agent SDK, or a provider's CLI. The picker asks for it first | [run-modes.md](design/core/run-modes.md) |
 | Scenario test | A test that loads a save at one hard moment, lets the agent play a few turns, and checks the outcome with code | [testing.md](design/testing.md#scenario-tests) |
 | Significance score | The bridge's score for how much a model turn matters, from its wake triggers, the decisions waiting, and the scoreboard. It sets the model tier | [model-routing.md](design/decision-support/model-routing.md#significance-score) |
 | Single executable application (SEA) | Node's way to build one executable that holds the Node runtime and a bundled program. The bridge ships as one | [build-tooling.md](findings/build-tooling.md) |
