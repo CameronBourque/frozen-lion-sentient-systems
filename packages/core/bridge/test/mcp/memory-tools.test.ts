@@ -145,7 +145,7 @@ describe("record_decision and record_result", () => {
 	});
 });
 
-// The step's "Done when" in docs/roadmap/phase-2/memory-and-decisions.md.
+// The check that closed the memory step of phase 2.
 test("two fake turns through the tools leave the second plan, both entries, and one decision with its result", async () => {
 	const mcp = await connect();
 
