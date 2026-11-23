@@ -16,6 +16,7 @@ const client = new Client({ name: "tool-reference", version: "1.0.0" });
 const server = createServer({
 	client: {} as TunerClient,
 	player: () => Promise.resolve({ ok: false, error: "The tool reference reads no game." }),
+	memory: () => "",
 	logger: new Logger("error"),
 });
 

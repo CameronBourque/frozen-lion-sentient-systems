@@ -2,9 +2,8 @@
 // the source, so phase 3 can give each agent's server its own player.
 // docs/design/core/mcp-server.md has the design.
 
-import { CORE_STATE } from "../connect.js";
-import { explainFailure } from "../errors.js";
 import type { TunerClient } from "../tuner/client.js";
+import { readGameNumber } from "./game-number.js";
 
 export type PlayerResult =
 	| { ok: true; playerID: number }
@@ -17,18 +16,8 @@ export type PlayerSource = () => Promise<PlayerResult>;
 // docs/findings/game-api.md has Game.GetLocalPlayer().
 export function localPlayer(client: TunerClient): PlayerSource {
 	return async () => {
-		let lines: string[];
+		const read = await readGameNumber(client, "Game.GetLocalPlayer()", "player ID");
 
-		try {
-			({ lines } = await client.run(CORE_STATE, "print(Game.GetLocalPlayer())"));
-		} catch (error) {
-			return { ok: false, error: explainFailure(error, "local player request") };
-		}
-
-		const playerID = Number(lines[0]);
-
-		return lines.length === 1 && Number.isInteger(playerID) && playerID >= 0
-			? { ok: true, playerID }
-			: { ok: false, error: `Game.GetLocalPlayer() printed ${JSON.stringify(lines)}, not a player ID` };
+		return read.ok ? { ok: true, playerID: read.value } : read;
 	};
 }

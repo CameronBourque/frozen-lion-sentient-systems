@@ -13,6 +13,7 @@ import { startConfig } from "./load-config.js";
 import { logFilePath, Logger } from "./log.js";
 import { type McpHttp, startMcpHttp } from "./mcp/http.js";
 import { localPlayer } from "./mcp/player.js";
+import { memoryFolder } from "./memory/store.js";
 import { chooseModel } from "./model/choose.js";
 import { listModels } from "./model/list-models.js";
 import { askMenu } from "./model/menu.js";
@@ -79,7 +80,7 @@ void chooseModel(started.config, started.path, logger, { ask, list: listModels, 
 	client.connect();
 
 	if (started.mcp) {
-		void startMcpHttp(started.config.mcpPort, { client, player: localPlayer(client), logger }).then((http) => {
+		void startMcpHttp(started.config.mcpPort, { client, player: localPlayer(client), memory: (playerID) => memoryFolder(started.path, playerID), logger }).then((http) => {
 			mcp = http;
 		});
 	}

@@ -2,7 +2,7 @@
 // a fake model list.
 
 import { describe, expect, test } from "vitest";
-import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
 import type { ListResult } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
@@ -27,6 +27,7 @@ function configWith(keys: string[], model: ModelSetting = NO_MODEL): Config {
 		providers: Object.fromEntries(keys.map((provider) => [provider, { apiKey: `${provider}-key` }])),
 		model,
 		mcpPort: DEFAULT_MCP_PORT,
+		journalEntries: DEFAULT_JOURNAL_ENTRIES,
 	};
 }
 

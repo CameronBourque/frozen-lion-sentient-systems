@@ -573,3 +573,43 @@ Without force, it fails while a blocker is left or a unit needs orders, and name
 | --- | --- | --- | --- |
 | `reason` | string | yes | One sentence, in your own voice, on why you take this action. The narrator panel shows it, and the log keeps it. |
 | `force` | boolean | no | End the turn anyway, skipping the blockers and the units that need orders. Use it only when a blocker has no tool. |
+
+## `update_plan`
+
+Replace your plan with a new one. Your plan is your current strategy in a few lines: your victory goal, what you are building toward, and the threats you watch. Each turn starts with it, since you remember nothing else between turns.
+
+Change it when your strategy changes, not every turn. Write the whole plan, because it replaces the last one.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `plan` | string | yes | Your whole plan. |
+
+## `add_journal_entry`
+
+Add an entry to your journal for this turn. The journal is your log of what happened: wars, deals, promises, surprises, and lessons. Each turn starts with your newest entries.
+
+Write what a later turn needs to know and can't read from get_state, such as why a rival turned hostile or what you promised. Skip routine moves.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `entry` | string | yes | The entry's text. |
+
+## `record_decision`
+
+Record an important decision you made this turn, with your reason, such as a war, a new city's site, a government, or a pantheon. Skip routine moves.
+
+Next turn starts by listing these decisions with their ids, and asks you for each one's result.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `decision` | string | yes | What you decided, in one sentence. |
+| `reason` | string | yes | Why, in one sentence. |
+
+## `record_result`
+
+Record the short-term result of one of last turn's decisions, by the id that the turn message gives it. Say what happened and whether the decision worked, in a sentence or two.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `id` | integer | yes | The decision's id. |
+| `result` | string | yes | What happened, and whether the decision worked. |

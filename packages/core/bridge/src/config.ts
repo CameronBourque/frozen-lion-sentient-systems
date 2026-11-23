@@ -25,6 +25,8 @@ export const KEY_VARIABLES: Record<Provider, string> = {
 // The first port after the two the game listens on, 4318 and 4319.
 export const DEFAULT_MCP_PORT = 4320;
 
+export const DEFAULT_JOURNAL_ENTRIES = 10;
+
 const PROVIDER = z.strictObject({
 	// Empty until the user fills it in. The bridge warns about an empty key
 	// instead of exiting.
@@ -88,6 +90,8 @@ const CONFIG = z.strictObject({
 	model: MODEL.default(NO_MODEL),
 	// Where --mcp serves the MCP tools.
 	mcpPort: z.int().min(1).max(65535).default(DEFAULT_MCP_PORT),
+	// How many of the newest journal entries each turn's prompt holds.
+	journalEntries: z.int().min(0).default(DEFAULT_JOURNAL_ENTRIES),
 });
 
 export type Config = z.infer<typeof CONFIG>;

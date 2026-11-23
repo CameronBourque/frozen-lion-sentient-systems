@@ -9,7 +9,7 @@ import { QUIET, connectTools } from "./tools.js";
 
 test("an in-process client connects and reads the bridge's name and version", async () => {
 	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-	const server = createServer({ client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }), logger: QUIET });
+	const server = createServer({ client: {} as TunerClient, player: () => Promise.resolve({ ok: false, error: "No game" }), memory: () => "", logger: QUIET });
 	const client = new Client({ name: "test", version: "1.0.0" });
 
 	await server.connect(serverSide);
@@ -37,6 +37,7 @@ test("the server lists every tool, each with a description", async () => {
 		"spy_mission", "spy_travel", "choose_escape_route",
 		"vote_in_congress", "propose_in_congress",
 		"end_turn",
+		"update_plan", "add_journal_entry", "record_decision", "record_result",
 	]);
 	expect(tools.every((tool) => (tool.description ?? "").length > 50)).toBe(true);
 });

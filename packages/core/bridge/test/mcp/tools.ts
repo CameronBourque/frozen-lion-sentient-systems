@@ -1,8 +1,11 @@
 // Test helpers for the MCP tools: a server connected to an in-process client,
 // stash answers from the fake game, and a tool call's text.
 
+import os from "node:os";
+import path from "node:path";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { Logger } from "../../src/log.js";
+import type { MemorySource } from "../../src/mcp/context.js";
 import type { PlayerSource } from "../../src/mcp/player.js";
 import { createServer } from "../../src/mcp/server.js";
 import type { TunerClient } from "../../src/tuner/client.js";
@@ -13,12 +16,15 @@ export const PLAYER_3: PlayerSource = () => Promise.resolve({ ok: true, playerID
 // Logs only errors, so the decision lines of the tests don't print.
 export const QUIET = new Logger("error");
 
+// A memory folder no test writes to. Tests of the memory tools pass their own.
+const NO_MEMORY: MemorySource = () => path.join(os.tmpdir(), "no-memory");
+
 // Connects an in-process client to a server for the player.
-export async function connectTools(tuner: TunerClient, player = PLAYER_3, logger = QUIET): Promise<Client> {
+export async function connectTools(tuner: TunerClient, player = PLAYER_3, logger = QUIET, memory = NO_MEMORY): Promise<Client> {
 	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
 	const mcp = new Client({ name: "test", version: "1.0.0" });
 
-	await createServer({ client: tuner, player, logger }).connect(serverSide);
+	await createServer({ client: tuner, player, memory, logger }).connect(serverSide);
 	await mcp.connect(clientSide);
 
 	return mcp;

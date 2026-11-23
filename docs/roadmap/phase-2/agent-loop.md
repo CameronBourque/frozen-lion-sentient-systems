@@ -5,7 +5,9 @@ Run an agent's turn when its turn signal arrives: read the state, give the model
 ## Tasks
 
 1. **MCP tools.** Connect the loop to the MCP server in the same process, and turn the server's tools into the [model client](../../design/core/model-client.md)'s tool definitions, with each tool's description and input schema. Test it with a fake client. Commit: `feat(core): give the model the MCP tools`.
-2. **Turn.** Add `src/agents/loop.ts`. It reads the state, builds the prompt, and passes the model's tool calls to the MCP server and their results back to the model, until the model calls `end_turn`. Test it with a mock model and a fake client. Commit: `feat(core): run an agent's turn`.
+2. **Turn.** Add `src/agents/loop.ts`. It reads the state and the agent's memory, builds the prompt, and passes the model's tool calls to the MCP server and their results back to the model, until the model calls `end_turn`.
+
+   On the agent's first turn after the bridge starts, read the memory with `startMemory`, so [stale memory](../../design/memory.md#stale-memory) moves aside. On later turns, read it with `readMemory`. Log each warning that either returns. Test it with a mock model and a fake client. Commit: `feat(core): run an agent's turn`.
 3. **Turn signal.** On `AGENT_TURN` for a configured agent, start that agent's turn. Ignore `AGENT_TURN` for a player with no agent in the config. Commit: `feat(core): start an agent's turn on its turn signal`.
 
 ## Done when

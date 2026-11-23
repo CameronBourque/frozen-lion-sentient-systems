@@ -12,7 +12,8 @@ Git ignores `tmp/`. `src/config.ts` holds the `zod` schema, and `src/load-config
 - `model`, the model the agents use: `provider`, `id`, `effort`, and `price`, all blank until you pick them. `effort` is one of the AI SDK's reasoning levels, and blank leaves the provider's default.
 
   `price` has `input`, `output`, `cacheRead`, and `cacheWrite`, in US dollars per million tokens. The cache prices are for input read from or written to the provider's prompt cache. The picker fills it from OpenRouter's public model list, and you can change it. See [model-client.md](model-client.md),
-- `mcpPort`, where `--mcp` serves the [MCP server](bridge.md), with `4320` as the default. The game listens on 4318 and 4319 ([protocol.md](../../findings/tuner/protocol.md)), so the default is the next port.
+- `mcpPort`, where `--mcp` serves the [MCP server](bridge.md), with `4320` as the default. The game listens on 4318 and 4319 ([protocol.md](../../findings/tuner/protocol.md)), so the default is the next port,
+- `journalEntries`, how many of an agent's newest journal entries each turn's [prompt](../agents/prompt.md#two-calls) holds, with `10` as the default.
 
 The schema rejects unknown fields, so a misspelled field is an error instead of a silent default. If the file is missing, the bridge writes a commented example there, names its path, and exits. A bad file exits with one error per field, such as `logLevel: Invalid option`.
 
