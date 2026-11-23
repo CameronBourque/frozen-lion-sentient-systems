@@ -2,6 +2,7 @@
 // message each turn. docs/design/agents/prompt.md has the design.
 
 import type { Knowledge } from "../knowledge.js";
+import type { JournalEntry, Memory } from "../memory/store.js";
 import type { State } from "../state/state.js";
 
 // The names of an agent's personality and sweat level files, without ".md".
@@ -13,11 +14,21 @@ export interface AgentProfile {
 // Until the setup screen has its dropdowns, every agent plays this way.
 export const DEFAULT_PROFILE: AgentProfile = { personality: "neutral", sweatLevel: "balanced" };
 
+// What a turn message is built from. journalEntries is the config file's cap
+// on the newest entries it holds.
+export interface TurnInput {
+	state: State;
+	memory: Memory;
+	journalEntries: number;
+}
+
 // The turn message's parts, in order.
-const TURN_PARTS: ((state: State) => string)[] = [
-	(state) => `# Turn ${state.turn}\n\nIt's your turn.`,
-	(state) => `## End-turn blockers\n\n${blockersText(state.blockers)}`,
-	(state) => `## State\n\n${stateText(state)}`,
+const TURN_PARTS: ((input: TurnInput) => string)[] = [
+	({ state }) => `# Turn ${state.turn}\n\nIt's your turn.`,
+	({ memory }) => `## Your plan\n\n${memory.plan === "" ? "You have no plan yet. Make one with update_plan." : memory.plan}`,
+	({ memory, journalEntries }) => `## Your journal\n\n${journalText(memory.journal, journalEntries)}`,
+	({ state }) => `## End-turn blockers\n\n${blockersText(state.blockers)}`,
+	({ state }) => `## State\n\n${stateText(state)}`,
 ];
 
 // The state fields that have parts of their own.
@@ -44,8 +55,21 @@ export function systemPrompt(knowledge: Knowledge, profile: AgentProfile): { tex
 	return { text: files.flatMap((name) => knowledge.get(name)?.trim() ?? []).join("\n\n"), warnings };
 }
 
-export function turnMessage(state: State): string {
-	return TURN_PARTS.map((part) => part(state)).join("\n\n");
+export function turnMessage(input: TurnInput): string {
+	return TURN_PARTS.map((part) => part(input)).join("\n\n");
+}
+
+// The newest entries, oldest first, so they read in the order they happened.
+function journalText(journal: JournalEntry[], cap: number): string {
+	const newest = cap === 0 ? [] : journal.slice(-cap);
+
+	if (newest.length === 0) {
+		return "No entries yet. Add one with add_journal_entry when something happens that a later turn needs to know.";
+	}
+
+	const shown = newest.length < journal.length ? `Your newest ${newest.length} of ${journal.length} entries.\n\n` : "";
+
+	return shown + newest.map((entry) => `### Turn ${entry.turn}\n\n${entry.text}`).join("\n\n");
 }
 
 function blockersText(blockers: State["blockers"]): string {

@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDERS, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT,EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDERS, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
@@ -49,6 +49,10 @@ model:
 # The port where the bridge serves its MCP tools when it starts with --mcp, for Claude Code and
 # the MCP Inspector. Change it if another program uses it.
 mcpPort: ${DEFAULT_MCP_PORT}
+
+# How many of an agent's newest journal entries each turn's prompt holds. More entries give the
+# agent more of its past, and cost more tokens on every turn.
+journalEntries: ${DEFAULT_JOURNAL_ENTRIES}
 `;
 
 // Where the bridge runs from. In development, tsx runs the bridge with

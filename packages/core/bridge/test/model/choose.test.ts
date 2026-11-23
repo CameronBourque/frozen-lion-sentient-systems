@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { type Config, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
 import { CONFIG_NAME, EXAMPLE_CONFIG, loadConfig } from "../../src/load-config.js";
 import { Logger } from "../../src/log.js";
 import { type ChooseIo, chooseModel } from "../../src/model/choose.js";
@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 function configWith(model: ModelSetting): Config {
-	return { schemaVersion: 1, logLevel: "decisions", providers: { openai: { apiKey: "key" } }, model, mcpPort: DEFAULT_MCP_PORT };
+	return { schemaVersion: 1, logLevel: "decisions", providers: { openai: { apiKey: "key" } }, model, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES };
 }
 
 // Answers every menu with its first row.

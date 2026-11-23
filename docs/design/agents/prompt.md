@@ -7,13 +7,20 @@ How the bridge builds an agent's prompt: a system prompt from the parts that sta
 The file exports two functions, and everything else in it is private.
 
 - **`systemPrompt(knowledge, profile)`** runs once per agent. It joins `rules/play.md`, the personality file, and the sweat level file from the [knowledge files](../knowledge-files.md#file-layout), in that order. It returns the text and any warnings.
-- **`turnMessage(state)`** runs each turn. It joins the turn number, each end-turn blocker with the `get_choices` key that resolves it, the units that need orders, and the rest of the state as compact JSON. The state part leaves out the turn and the blockers, so each fact appears once.
+- **`turnMessage({ state, memory, journalEntries })`** runs each turn. It joins these parts, in order:
+  1. the turn number,
+  2. the plan from [memory](../memory.md#memory-files),
+  3. the newest journal entries, oldest first, up to the config file's `journalEntries`, with a line that says how many it left out,
+  4. each end-turn blocker with the `get_choices` key that resolves it, and the units that need orders,
+  5. the rest of the state as compact JSON. The state part leaves out the turn and the blockers, so each fact appears once.
+
+  An empty plan or journal names the tool that fills it.
 
 The agent loop passes them to `callModel` as the system prompt and the first message.
 
 Later steps add these parts:
 
-- the plan and the newest journal entries from [memory](../memory.md#memory-files), and last turn's [decision records](turn-loop.md#decision-records), in the turn message,
+- last turn's [decision records](turn-loop.md#decision-records), in the turn message,
 - the concept guides, civ notes, and chosen opening, as more files in the system prompt,
 - the wake triggers from [standing orders](../decision-support/standing-orders.md#wake-triggers), in the turn message.
 
@@ -52,4 +59,6 @@ The rules of play name tools, such as `end_turn`. A test checks that each tool n
 | A missing personality or sweat level falls back to the default with a warning | A typo or a removed file shouldn't stop a game |
 | The state goes into the turn message as the same JSON `get_state` returns | The model reads one format. A more compact format can replace the one part later |
 | The state part leaves out the turn and the blockers | Each fact appears once in the turn message |
+| Memory goes in the turn message, not the system prompt | The plan and journal change during a game. In the system prompt, each change would end the prompt cache for the rules and the profile |
+| The journal part holds the newest entries up to a cap set in the config file | The whole journal grows every turn, and every entry costs tokens on every later turn. Users can trade tokens for more of the agent's past |
 | The state goes in once per turn, and the agent reads it again only when it needs to | The provider's prompt cache keeps one unchanged state for the whole turn. A state per action costs a full state each time |
