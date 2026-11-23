@@ -1,14 +1,16 @@
 // Asks the user for the provider, the model, and the effort when the bridge
 // starts in a terminal. docs/design/core/model-client.md has the design.
 
-import { type Config, type Effort, type ModelSetting, NO_PRICE, PROVIDER_NAMES, type Price, type Provider } from "../config.js";
-import type { ListResult, ModelInfo } from "./list-models.js";
+import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider } from "../config.js";
+import type { ModelInfo } from "./list-models.js";
 import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
+import type { ModeSupport, ProviderDef } from "./providers/provider.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
 	ask: (title: string, labels: string[], start: number) => Promise<number | undefined>;
-	list: (provider: Provider, apiKey: string) => Promise<ListResult>;
+	// PROVIDERS, or fakes in tests.
+	providers: ProviderDef[];
 	facts: () => Promise<FactsResult>;
 	warn: (text: string) => void;
 }
@@ -20,8 +22,18 @@ export type PickResult =
 	| { result: "kept"; model: ModelSetting }
 	| { result: "cancelled" };
 
-export function keyedProviders(config: Config): Provider[] {
-	return PROVIDER_NAMES.filter((provider) => (config.providers[provider]?.apiKey ?? "") !== "");
+interface Offered {
+	name: Provider;
+	mode: ModeSupport;
+}
+
+// The providers that can play in API key mode.
+export function offeredProviders(config: Config, providers: ProviderDef[]): Offered[] {
+	return providers.flatMap(({ name, modes }) => {
+		const mode = modes["api-key"];
+
+		return mode !== undefined && mode.ready(config).ok ? [{ name, mode }] : [];
+	});
 }
 
 function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts): string {
@@ -65,11 +77,11 @@ type AfterFailure = "again" | "use" | "quit";
 // After a failed model list, the user decides. The first row is never the
 // saved model, so Enter never spends money on a model the user didn't pick.
 // Use appears only when the saved model can play.
-async function askAfterFailure(io: PickerIo, config: Config, keyed: Provider[]): Promise<AfterFailure> {
+async function askAfterFailure(io: PickerIo, config: Config, offered: Offered[]): Promise<AfterFailure> {
 	const { provider, id } = config.model;
-	const choices: AfterFailure[] = ["again", ...(canPlay(config) ? ["use" as const] : []), "quit"];
+	const choices: AfterFailure[] = ["again", ...(canPlay(config, offered) ? ["use" as const] : []), "quit"];
 	const labels: Record<AfterFailure, string> = {
-		again: keyed.length > 1 ? "Pick another provider" : "Try again",
+		again: offered.length > 1 ? "Pick another provider" : "Try again",
 		use: `Use ${id} (${provider})`,
 		quit: "Quit",
 	};
@@ -86,20 +98,22 @@ function usableModels(models: ModelInfo[], provider: Provider, fetched: FactsRes
 
 export async function pickModel(config: Config, io: PickerIo): Promise<PickResult> {
 	const saved = config.model;
-	const keyed = keyedProviders(config);
+	const offered = offeredProviders(config, io.providers);
+	const names = offered.map(({ name }) => name);
 
 	// keyWarning already says that no provider has a key.
-	if (keyed.length === 0) {
+	if (offered.length === 0) {
 		return { result: "kept", model: saved };
 	}
 
-	const provider = keyed.length === 1 ? keyed[0] : await askFor(io, "Provider", keyed, keyed, saved.provider);
+	const provider = names.length === 1 ? names[0] : await askFor(io, "Provider", names, names, saved.provider);
 
 	if (provider === undefined) {
 		return { result: "cancelled" };
 	}
 
-	const [listed, fetched] = await Promise.all([io.list(provider, config.providers[provider]?.apiKey ?? ""), io.facts()]);
+	const { mode } = offered[names.indexOf(provider)];
+	const [listed, fetched] = await Promise.all([mode.listModels(config), io.facts()]);
 
 	if (!fetched.ok) {
 		io.warn(`${fetched.error}, so the menu lists every model ${provider} has, with no prices`);
@@ -113,7 +127,7 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 
 	io.warn(listed.ok ? `${provider} listed no models that call tools` : listed.error);
 
-	const next = await askAfterFailure(io, config, keyed);
+	const next = await askAfterFailure(io, config, offered);
 
 	if (next === "again") {
 		return pickModel(config, io);
@@ -151,18 +165,18 @@ async function pickFromList(config: Config, io: PickerIo, provider: Provider, mo
 	return { result: "picked", model: { provider, id, effort, price } };
 }
 
-// A saved model can play when it is picked and its provider has a key.
-function canPlay(config: Config): boolean {
+// A saved model can play when it is picked and its provider is offered.
+function canPlay(config: Config, offered: Offered[]): boolean {
 	const { provider, id } = config.model;
 
-	return provider !== "" && id !== "" && keyedProviders(config).includes(provider);
+	return provider !== "" && id !== "" && offered.some(({ name }) => name === provider);
 }
 
 // Says why the saved choice can't play, or nothing when it can.
-export function savedModelWarning(config: Config, file: string): string | undefined {
+export function savedModelWarning(config: Config, file: string, providers: ProviderDef[]): string | undefined {
 	const { provider, id } = config.model;
 
-	if (canPlay(config)) {
+	if (canPlay(config, offeredProviders(config, providers))) {
 		return undefined;
 	}
 

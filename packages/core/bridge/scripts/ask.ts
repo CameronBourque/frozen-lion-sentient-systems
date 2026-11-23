@@ -9,7 +9,7 @@ import { chooseModel } from "../src/model/choose.js";
 import { type ModelRequest, callModel } from "../src/model/client.js";
 import { askMenu } from "../src/model/menu.js";
 import { cachedFacts, factsCachePath } from "../src/model/model-facts.js";
-import { PROVIDERS, listApiKeyModels } from "../src/model/providers/index.js";
+import { PROVIDERS } from "../src/model/providers/index.js";
 import { logModelCall } from "../src/model/usage.js";
 
 // A question that only a tool call answers well, so a model that writes text
@@ -47,7 +47,7 @@ async function main(): Promise<void> {
 	logger.level = config.logLevel;
 	started.warnings.forEach((warning) => logger.warn("config_warning", warning));
 
-	if (!await chooseModel(config, started.path, logger, { ask, list: (provider) => listApiKeyModels(provider, config), facts: () => cachedFacts(factsCachePath(started.path)) })) {
+	if (!await chooseModel(config, started.path, logger, { ask, providers: PROVIDERS, facts: () => cachedFacts(factsCachePath(started.path)) })) {
 		return;
 	}
 

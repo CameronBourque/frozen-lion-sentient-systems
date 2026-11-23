@@ -4,20 +4,20 @@
 import type { Config } from "../config.js";
 import { saveModel } from "../load-config.js";
 import type { Logger } from "../log.js";
-import { type PickerIo, keyedProviders, pickModel, savedModelWarning } from "./picker.js";
+import { type PickerIo, offeredProviders, pickModel, savedModelWarning } from "./picker.js";
 
 // With no ask, there is no terminal to ask in.
 export interface ChooseIo {
 	ask?: PickerIo["ask"];
-	list: PickerIo["list"];
+	providers: PickerIo["providers"];
 	facts: PickerIo["facts"];
 }
 
 // Sets config.model to the choice, saves a new one, and logs the model agents
 // use, or why they can't play. Returns false when the user cancels.
-export async function chooseModel(config: Config, file: string, logger: Logger, { ask, list, facts }: ChooseIo): Promise<boolean> {
+export async function chooseModel(config: Config, file: string, logger: Logger, { ask, providers, facts }: ChooseIo): Promise<boolean> {
 	if (ask !== undefined) {
-		const picked = await pickModel(config, { ask, list, facts, warn: (text) => logger.warn("model_warning", text) });
+		const picked = await pickModel(config, { ask, providers, facts, warn: (text) => logger.warn("model_warning", text) });
 
 		if (picked.result === "cancelled") {
 			return false;
@@ -36,11 +36,11 @@ export async function chooseModel(config: Config, file: string, logger: Logger, 
 
 	// With no key at all, keyWarning already says what to do, and no model can
 	// play.
-	if (keyedProviders(config).length === 0) {
+	if (offeredProviders(config, providers).length === 0) {
 		return true;
 	}
 
-	const warning = savedModelWarning(config, file);
+	const warning = savedModelWarning(config, file, providers);
 	const { provider, id, effort } = config.model;
 
 	if (warning === undefined) {
