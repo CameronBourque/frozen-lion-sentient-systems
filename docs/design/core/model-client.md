@@ -8,11 +8,13 @@ You pick the model and its effort in `model` in the [config file](settings.md), 
 
 Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
 
-`providerModel(config, provider, modelId)` in `src/model/providers.ts` builds the model for one provider: Anthropic, OpenAI, or Google, each through its `@ai-sdk/` package.
+Each provider's API key mode, from `apiKeyMode` in `src/model/providers/api-key.ts`, builds the model for that provider: Anthropic, OpenAI, or Google, each through its `@ai-sdk/` package. [run-modes.md](run-modes.md#providers) has the provider files.
 
 It reads the API key from `providers` in the [config file](settings.md), which an environment variable fills when it is blank, and fails with the field to set when the key is empty or missing.
 
-`listModels(provider, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. The provider's list shows the models the user's key can use. Anthropic lists the newest first, and the OpenAI list is sorted newest first.
+`listModels(provider, lister, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. Each provider file has its own lister, with the list's URL, headers, and page shape.
+
+The provider's list shows the models the user's key can use. Anthropic lists the newest first, and the OpenAI list is sorted newest first.
 
 OpenAI lists each dated snapshot beside its alias, so the list drops an ID that ends in a date: the full date, or in an older one, the month and day. Google's IDs lose their `models/` prefix, which the SDK doesn't take.
 
