@@ -18,13 +18,15 @@ const FULL_DATE = String.raw`\d{4}-\d{2}-\d{2}`;
 const MONTH_AND_DAY = String.raw`\d{4}`;
 const DATED = new RegExp(`-(${FULL_DATE}|${MONTH_AND_DAY})(-preview)?$`);
 
+const OPENAI_API_URL = "https://api.openai.com/v1";
+
 const API_KEY_PAGE = z.object({
 	data: z.array(z.object({ id: z.string(), created: z.number() })),
 });
 
 // OpenAI lists every model in one page.
 const API_KEY_LISTER: Lister = {
-	url: "https://api.openai.com/v1/models",
+	url: `${OPENAI_API_URL}/models`,
 	headers: (credential) => ({ Authorization: `Bearer ${credential}` }),
 	parse: (body) => ({
 		models: API_KEY_PAGE.parse(body).data
@@ -60,24 +62,31 @@ function withToken(init: RequestInit | undefined, token: string): RequestInit {
 	return { ...init, headers };
 }
 
-// Sets the plan's current token on each request, because a game outlasts a
-// token. A 401 refreshes once and sends again, unless the refresh fails. A
-// token that can't refresh fails the call with the refresh's reason.
-function subscriptionFetch(tokens: OpenAITokens, send: Send = fetch): Send {
+// The SDK reads the key before each request, so each request gets the plan's
+// current token, because a game outlasts a token. A token that can't refresh
+// fails the call with the refresh's reason.
+async function currentToken(tokens: OpenAITokens): Promise<string> {
+	const current = await tokens.secret();
+
+	if (!current.ok) {
+		throw new Error(current.error);
+	}
+
+	return current.secret;
+}
+
+// A 401 refreshes once and sends again with the new token, unless the
+// refresh fails.
+function subscriptionFetch(tokens: OpenAITokens, send: Send): Send {
 	return async (input, init) => {
-		const current = await tokens.secret();
-
-		if (!current.ok) {
-			throw new Error(current.error);
-		}
-
-		const response = await send(input, withToken(init, current.secret));
+		const response = await send(input, init);
 
 		if (response.status !== 401) {
 			return response;
 		}
 
-		const fresh = await tokens.refreshAfterRefusal(current.secret);
+		const rejected = new Headers(init?.headers).get("Authorization")?.replace(/^Bearer /, "") ?? "";
+		const fresh = await tokens.refreshAfterRefusal(rejected);
 
 		return fresh.ok ? send(input, withToken(init, fresh.secret)) : response;
 	};
@@ -120,10 +129,11 @@ function subscriptionCredential(tokens: OpenAITokens): Credential<OpenAITokens> 
 	};
 }
 
-// The SDK needs an API key, which the plan's fetch replaces with the token.
+// The base URL is fixed, so OPENAI_BASE_URL can't send the plan's token to
+// another server.
 export function subscriptionMode(tokens: OpenAITokens, send: Send = fetch): ModeSupport {
 	const factory = (store: OpenAITokens) => (modelId: string) => wrapLanguageModel({
-		model: createOpenAI({ apiKey: "chatgpt-plan", fetch: subscriptionFetch(store, send) })(modelId),
+		model: createOpenAI({ baseURL: OPENAI_API_URL, apiKey: () => currentToken(store), fetch: subscriptionFetch(store, send) })(modelId),
 		middleware: SUBSCRIPTION_MIDDLEWARE,
 	});
 

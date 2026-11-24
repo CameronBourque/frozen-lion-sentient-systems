@@ -2,7 +2,7 @@
 // each request, the retry after a 401, and the request the plan accepts, with
 // a fake token store and a fake send.
 
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { type ModelRequest, callModel } from "../../../src/model/client.js";
 import { type Send, subscriptionMode } from "../../../src/model/providers/openai.js";
 import type { OpenAITokens } from "../../../src/model/sign-in/openai-tokens.js";
@@ -85,6 +85,20 @@ test("sends the token, store false, and the system prompt as instructions", asyn
 	expect(sent[0].authorization).toBe("Bearer token-1");
 	expect(sent[0].body).toMatchObject({ model: "gpt-plan", store: false, stream: true, instructions: "You play Civilization VI." });
 	expect(sent[0].body.input).toEqual([{ role: "user", content: [{ type: "input_text", text: "Your turn." }] }]);
+});
+
+test("sends the token to OpenAI even when OPENAI_BASE_URL points elsewhere", async () => {
+	const sent: Sent[] = [];
+
+	vi.stubEnv("OPENAI_BASE_URL", "https://proxy.example.com/v1");
+
+	try {
+		await call(fakeTokens(["token-1"]), [json({ error: { message: "Bad request" } }, 400)], sent);
+	} finally {
+		vi.unstubAllEnvs();
+	}
+
+	expect(sent[0].url).toBe("https://api.openai.com/v1/responses");
 });
 
 test("refreshes once after a 401 and sends again with the new token", async () => {
