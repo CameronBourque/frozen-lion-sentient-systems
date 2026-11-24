@@ -50,7 +50,7 @@ The picker finds a mode's providers in two passes over `PROVIDERS`:
 The menus after it depend on the mode:
 
 - **API key.** Provider, model, and effort, as today.
-- **Subscription token.** Provider, then the mode's `signIn`, which opens the browser only when there is no valid token, then model and effort from the provider's own list.
+- **Subscription token.** Provider, then the mode's `signIn`, then model and effort from the provider's own list.
 - **Agent SDK.** Provider, a login check, then model and effort from the SDK's list.
 - **CLI.** Provider, a check that the CLI is installed and logged in, then model and effort.
 
@@ -64,13 +64,15 @@ The bridge's loop and the model client stay the same. The provider model gets a 
 
 - **Sign-in.** `signIn` in `src/model/sign-in/openai.ts` opens the browser to OpenAI's OAuth page with PKCE, and listens on `127.0.0.1` on a free port for the callback. The menu row reads "Continue with ChatGPT".
 
-  The first sign-in registers the bridge with `dynamic_agent_client`, a random `ext_agent_host_id`, and `agent_name_hint` set to `Sentient Systems`. It saves the issued `client_id`, which every later sign-in and refresh uses.
+  The first sign-in registers the bridge with `dynamic_agent_client`, an `ext_agent_host_id` of `urn:uuid:` and a random UUID, and `agent_name_hint` set to `Sentient Systems`. It saves the issued `client_id` from the callback, which every later sign-in and refresh uses.
+
+  A later sign-in sends the last ID token as `id_token_hint`. The bridge checks the ID token, and that the granted scopes include `chatgpt.tokens.use.direct`.
 - **Tokens.** `auth/openai.json` in the config file's folder holds the client ID, the host ID, and the tokens. The config file never does, because users may share it, and the refresh token changes on every refresh.
 - **Refresh.** Before each request, the bridge checks the access token's expiry. With less than a minute left, it refreshes the token first. A request that comes during a refresh waits for that refresh, so only one runs at a time.
 
   A request refused with 401 refreshes once and tries again. A refused refresh clears the tokens, and the picker asks to sign in again on the next start.
-- **Calls.** The OpenAI model gets a `fetch` that sets the current token on each request, so a game keeps playing past the token's hour. Each call goes to the Responses API with `store: false`, the system prompt in `instructions`, streamed, and with none of the fields the plan rejects.
-- **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token. It reads `/v1/models` and keeps the entries whose `visibility` is `list`.
+- **Calls.** The OpenAI model gets a `fetch` that sets the current token on each request. Each call goes to the Responses API with `store: false`, the system prompt in `instructions`, streamed, and with none of the fields the plan rejects.
+- **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token. It reads `/v1/models`, which has its own reply shape on a plan, and keeps the entries whose `visibility` is `list`.
 - **First use.** After the first sign-in, the bridge logs "You're using your ChatGPT plan", with the usage page.
 - **Failures.** A usage limit is a failure marked `limit`. The agent loop logs it with `https://chatgpt.com/settings/usage`, and stops the run as a run spending limit does. An account that isn't eligible is an `auth` failure that names the plan.
 - **Price.** A plan has no price per token, so `model.price` stays blank. The log shows tokens with no cost, and only the token [spending limits](../agents/turn-loop.md#stopping) apply.
