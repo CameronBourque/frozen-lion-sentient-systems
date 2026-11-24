@@ -25,7 +25,7 @@ interface Page {
 // How one provider's API lists its models. Each provider file has its own.
 export interface Lister {
 	url: string;
-	headers: (apiKey: string) => Record<string, string>;
+	headers: (credential: string) => Record<string, string>;
 	parse: (body: unknown, url: string) => Page;
 }
 
@@ -57,13 +57,13 @@ async function describeFailure(provider: Provider, response: Response): Promise<
 
 // Fetches every page. A failed request or an unexpected answer fails the
 // whole list, with a reason the picker can show.
-export async function listModels(provider: Provider, lister: Lister, apiKey: string, fetchPage: Fetch = fetch): Promise<ListResult> {
+export async function listModels(provider: Provider, lister: Lister, credential: string, fetchPage: Fetch = fetch): Promise<ListResult> {
 	const models: ModelInfo[] = [];
 	let url: string | undefined = lister.url;
 
 	try {
 		while (url !== undefined) {
-			const response = await fetchPage(url, { headers: lister.headers(apiKey) });
+			const response = await fetchPage(url, { headers: lister.headers(credential) });
 
 			if (!response.ok) {
 				return { ok: false, error: await describeFailure(provider, response) };

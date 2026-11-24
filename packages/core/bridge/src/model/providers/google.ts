@@ -18,7 +18,7 @@ const PAGE = z.object({
 // Google's names start with "models/", which the SDK doesn't take.
 const LISTER: Lister = {
 	url: "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000",
-	headers: (apiKey) => ({ "x-goog-api-key": apiKey }),
+	headers: (key) => ({ "x-goog-api-key": key }),
 	parse: (body, url) => {
 		const page = PAGE.parse(body);
 

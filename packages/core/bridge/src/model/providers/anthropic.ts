@@ -16,7 +16,7 @@ const PAGE = z.object({
 // Anthropic lists its models newest first.
 const LISTER: Lister = {
 	url: "https://api.anthropic.com/v1/models?limit=1000",
-	headers: (apiKey) => ({ "x-api-key": apiKey, "anthropic-version": "2023-06-01" }),
+	headers: (key) => ({ "x-api-key": key, "anthropic-version": "2023-06-01" }),
 	parse: (body, url) => {
 		const page = PAGE.parse(body);
 

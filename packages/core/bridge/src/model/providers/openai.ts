@@ -21,7 +21,7 @@ const PAGE = z.object({
 // OpenAI lists every model in one page.
 const LISTER: Lister = {
 	url: "https://api.openai.com/v1/models",
-	headers: (apiKey) => ({ Authorization: `Bearer ${apiKey}` }),
+	headers: (credential) => ({ Authorization: `Bearer ${credential}` }),
 	parse: (body) => ({
 		models: PAGE.parse(body).data
 			.filter(({ id }) => !DATED.test(id))
