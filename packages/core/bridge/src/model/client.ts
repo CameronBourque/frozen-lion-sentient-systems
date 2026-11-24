@@ -77,9 +77,11 @@ interface Failed {
 
 // A plan's error code, in a refused request's body or in a stream error's
 // frame, which the OpenAI package also puts in responseBody.
-function hasCode(code: string): (cause: unknown) => boolean {
-	return (cause) => APICallError.isInstance(cause) && (cause.responseBody ?? "").includes(code);
+export function hasCode(code: string): (cause: unknown) => cause is APICallError {
+	return (cause): cause is APICallError => APICallError.isInstance(cause) && (cause.responseBody ?? "").includes(code);
 }
+
+export const USAGE_LIMIT_CODE = "subscription_sharing_usage_limit_exceeded";
 
 function refused(cause: unknown): boolean {
 	return APICallError.isInstance(cause) && (cause.statusCode === 401 || cause.statusCode === 403);
@@ -90,7 +92,7 @@ function refused(cause: unknown): boolean {
 const FAILURES = [
 	{
 		kind: "limit",
-		matches: hasCode("subscription_sharing_usage_limit_exceeded"),
+		matches: hasCode(USAGE_LIMIT_CODE),
 		message: ({ message }: Failed) => `The ChatGPT plan's usage limit is reached: ${message}. ${PLAN_USAGE_URL} shows when it resets`,
 	},
 	{

@@ -27,7 +27,11 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
   A request refused with 401 refreshes once and tries again, unless another request already replaced that token. A refresh refused as spent, such as `invalid_grant`, clears the tokens, and `invalid_client` clears the client ID too. The picker then asks to sign in again on the next start.
 
   A refresh that fails for any other reason keeps the tokens, so a network outage doesn't sign the user out. The file is written to a temporary file and renamed, so a crash mid-write can't lose the refresh token.
-- **Calls.** The OpenAI model gets a `fetch` that sets the current token on each request. Each call goes to the Responses API with `store: false`, the system prompt in `instructions`, streamed, and with none of the fields the plan rejects.
+- **Calls.** `subscriptionMode` in `src/model/providers/openai.ts` builds the mode from `subscriptionCredential`, whose source is the token store and which is ready once signed in. Its OpenAI model gets a `fetch` that sets the current token on each request.
+
+  A 401 refreshes once and sends again. A token that can't refresh fails the call with the refresh's reason and sends nothing.
+
+  A middleware sends each call to the Responses API with `store: false` and moves the system prompt from the messages to `instructions`. It also marks a usage limit as not to retry, since every retry fails until the plan resets. Each call streams, with none of the fields the plan rejects.
 - **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token.
 
   `SUBSCRIPTION_LISTER` in `src/model/providers/openai.ts` reads `/v1/models`, which has its own reply shape on a plan. It keeps the entries whose `visibility` is `list`, in OpenAI's order, with `display_name` as the name.
@@ -48,6 +52,8 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 | --- | --- |
 | The access token refreshes only when less than a minute is left | Each refresh replaces the refresh token. A refresh on every request adds a round trip and more chances of `refresh_token_reused` |
 | The plan model gets its token through `fetch` on each request | The picker builds the model once, and a game lasts longer than the hour a token lasts |
+| The system prompt goes in `instructions`, not a `developer` message | Both have the same authority, and OpenAI's own clients use `instructions`. It always comes first, apart from the messages the bridge may trim |
+| The plan's request rules live in a middleware on the model | `callModel` stays the same in every run mode, and OpenAI's plan rules stay in OpenAI's file |
 | The sign-in code is OpenAI's own until a second plan provider exists | [Plan access](../../findings/plan-access.md) finds no second provider, and OpenAI's flow is unusual. A second one moves the callback server and PKCE to a shared file, and OpenAI's URLs, scopes, and refresh codes to a description object, like a lister |
 | The browser opens with `rundll32 url.dll,FileProtocolHandler` on Windows | `start` runs through `cmd`, which reads each `&` in the sign-in URL as a new command |
 | The ID token check uses `node:crypto`, with no JWT package | The check is one RS256 signature and four claims, and Node reads a JWK |
