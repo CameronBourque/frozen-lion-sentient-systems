@@ -2,7 +2,7 @@
 // provider's API key, and the MCP port. Agent slots and personalities live in
 // the save. docs/design/core/settings.md has the design.
 
-import type { generateText } from "ai";
+import type { streamText } from "ai";
 import { parseDocument } from "yaml";
 import { z } from "zod";
 import { describeIssue } from "./errors.js";
@@ -34,7 +34,7 @@ const PROVIDER = z.strictObject({
 });
 
 // The AI SDK's reasoning levels, which it has only as a type.
-export type Effort = NonNullable<Parameters<typeof generateText>[0]["reasoning"]>;
+export type Effort = NonNullable<Parameters<typeof streamText>[0]["reasoning"]>;
 
 // A record needs every level and allows no others, so the type check fails
 // when the SDK adds or drops one. The order is the picker's.
