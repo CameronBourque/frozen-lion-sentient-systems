@@ -14,25 +14,41 @@ const FULL_DATE = String.raw`\d{4}-\d{2}-\d{2}`;
 const MONTH_AND_DAY = String.raw`\d{4}`;
 const DATED = new RegExp(`-(${FULL_DATE}|${MONTH_AND_DAY})(-preview)?$`);
 
-const PAGE = z.object({
+const API_KEY_PAGE = z.object({
 	data: z.array(z.object({ id: z.string(), created: z.number() })),
 });
 
 // OpenAI lists every model in one page.
-const LISTER: Lister = {
+const API_KEY_LISTER: Lister = {
 	url: "https://api.openai.com/v1/models",
 	headers: (credential) => ({ Authorization: `Bearer ${credential}` }),
 	parse: (body) => ({
-		models: PAGE.parse(body).data
+		models: API_KEY_PAGE.parse(body).data
 			.filter(({ id }) => !DATED.test(id))
 			.sort((a, b) => b.created - a.created)
 			.map(({ id }) => ({ id, name: id })),
 	}),
 };
 
+const SUBSCRIPTION_PAGE = z.object({
+	models: z.array(z.object({ slug: z.string(), display_name: z.string(), visibility: z.string() })),
+});
+
+// On a ChatGPT plan, the same URL answers with the plan's own shape, in
+// OpenAI's order. A model it doesn't mark "list" isn't for the user to pick.
+export const SUBSCRIPTION_LISTER: Lister = {
+	url: API_KEY_LISTER.url,
+	headers: API_KEY_LISTER.headers,
+	parse: (body) => ({
+		models: SUBSCRIPTION_PAGE.parse(body).models
+			.filter(({ visibility }) => visibility === "list")
+			.map(({ slug, display_name }) => ({ id: slug, name: display_name })),
+	}),
+};
+
 export const openai: ProviderDef = {
 	name: "openai",
 	modes: {
-		"api-key": apiKeyMode("openai", (apiKey) => createOpenAI({ apiKey }), LISTER),
+		"api-key": apiKeyMode("openai", (apiKey) => createOpenAI({ apiKey }), API_KEY_LISTER),
 	},
 };

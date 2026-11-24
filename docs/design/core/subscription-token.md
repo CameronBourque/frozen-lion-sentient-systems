@@ -28,7 +28,9 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 
   A refresh that fails for any other reason keeps the tokens, so a network outage doesn't sign the user out. The file is written to a temporary file and renamed, so a crash mid-write can't lose the refresh token.
 - **Calls.** The OpenAI model gets a `fetch` that sets the current token on each request. Each call goes to the Responses API with `store: false`, the system prompt in `instructions`, streamed, and with none of the fields the plan rejects.
-- **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token. It reads `/v1/models`, which has its own reply shape on a plan, and keeps the entries whose `visibility` is `list`.
+- **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token.
+
+  `SUBSCRIPTION_LISTER` in `src/model/providers/openai.ts` reads `/v1/models`, which has its own reply shape on a plan. It keeps the entries whose `visibility` is `list`, in OpenAI's order, with `display_name` as the name.
 - **First use.** After the first sign-in, the bridge logs "You're using your ChatGPT plan", with the usage page.
 - **Failures.** Each of the plan's error codes is its own [failure kind](model-client.md#failures). A 401 or 403 with none of these codes is `auth`, and its message says to sign in again.
 

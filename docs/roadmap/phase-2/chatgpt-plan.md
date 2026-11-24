@@ -24,7 +24,9 @@ Turn on the **Subscription token** run mode for OpenAI, so agents can play on a 
 
    1. Replace the `auth` flag on a failed call with a `kind` from a table of every known failure: `auth`, each plan error code, and `other` for the rest. Give the auth fix for the run mode. Commit: `refactor(core): mark a failed call with a kind`.
    2. List the models from `/v1/models` with the token, with a lister that reads the plan's `models` array. Commit: `feat(core): list the models on a ChatGPT plan`.
-   3. Add the plan credential, whose source is the token store. Build the OpenAI model in the subscription mode with a `fetch` that sets the current token on each request. Send `store: false` and the system prompt in `instructions`. Commit: `feat(core): call OpenAI on a ChatGPT plan`.
+   3. Add the plan credential, whose source is the token store. Build the OpenAI model in the subscription mode with a `fetch` that sets the current token on each request. Send `store: false` and the system prompt in `instructions`.
+
+      Make the `fetch` turn a usage limit's 429 into a status the SDK doesn't retry, since every retry fails until the plan resets. Commit: `feat(core): call OpenAI on a ChatGPT plan`.
 6. **Menu.** Turn `PROVIDERS` into `providers(folder)`, which passes the config file's folder to `openai(folder)`, so the plan's token store finds `auth/`. Add `subscription` to OpenAI's `modes` in `src/model/providers/openai.ts`, with `signIn`. Make the picker call `signIn` after the provider menu.
 
    Make `scripts/ask.ts` build the model and call it in the picked run mode, not always the API key mode.
