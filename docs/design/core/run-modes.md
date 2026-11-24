@@ -38,7 +38,7 @@ A run mode missing from a provider's `modes` isn't available for that provider. 
 
 - a `Credential`, whose `ready` says whether it is ready, `source` gives what a model is built from, and `secret` gives the string a request sends now, or why it can't, such as a refused refresh,
 - a factory, which builds the model from the credential's source through the provider's AI SDK package,
-- a [lister](model-client.md), which lists the models with the credential's secret.
+- a [lister](model-client.md), which lists the models with the credential's secret. A provider file names each lister and its page shape after the run mode, such as `API_KEY_LISTER` and `SUBSCRIPTION_PAGE`, since one URL may answer in another shape in each mode.
 
 `apiKeyMode(name, factory, lister)` in `src/model/providers/api-key.ts` uses `apiKeyCredential`, whose source and secret are both the key in `providers`, as [settings.md](settings.md) fills it. All three providers use it. A subscription token's source is a token store, which its factory reads on each request.
 
