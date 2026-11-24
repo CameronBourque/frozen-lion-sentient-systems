@@ -9,12 +9,14 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
   The first sign-in registers the bridge with `dynamic_agent_client`, an `ext_agent_host_id` of `urn:uuid:` and a random UUID, and `agent_name_hint` set to `Sentient Systems`. It saves the issued `client_id` from the callback, which every later sign-in and refresh uses.
 
   A later sign-in sends the last ID token as `id_token_hint`. The bridge checks the ID token, and that the granted scopes include `chatgpt.tokens.use.direct`.
-- **Tokens.** `auth/openai.json` in the config file's folder holds the client ID, the host ID, and the tokens. The config file never does, because users may share it, and the refresh token changes on every refresh.
+- **Tokens.** `src/model/sign-in/openai-tokens.ts` keeps them. `auth/openai.json` in the config file's folder holds the client ID, the host ID, and the tokens. The config file never does, because users may share it, and the refresh token changes on every refresh.
 
   The terminal bridge saves the tokens with no question. A GUI will ask the user to opt in to saving them, and without it the user signs in on each start.
 - **Refresh.** Before each request, the bridge checks the access token's expiry. With less than a minute left, it refreshes the token first. A request that comes during a refresh waits for that refresh, so only one runs at a time.
 
-  A request refused with 401 refreshes once and tries again. A refused refresh clears the tokens, and the picker asks to sign in again on the next start.
+  A request refused with 401 refreshes once and tries again, unless another request already replaced that token. A refresh refused as spent, such as `invalid_grant`, clears the tokens, and `invalid_client` clears the client ID too. The picker then asks to sign in again on the next start.
+
+  A refresh that fails for any other reason keeps the tokens, so a network outage doesn't sign the user out. The file is written to a temporary file and renamed, so a crash mid-write can't lose the refresh token.
 - **Calls.** The OpenAI model gets a `fetch` that sets the current token on each request. Each call goes to the Responses API with `store: false`, the system prompt in `instructions`, streamed, and with none of the fields the plan rejects.
 - **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token. It reads `/v1/models`, which has its own reply shape on a plan, and keeps the entries whose `visibility` is `list`.
 - **First use.** After the first sign-in, the bridge logs "You're using your ChatGPT plan", with the usage page.

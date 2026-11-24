@@ -17,6 +17,10 @@ Git ignores `tmp/`. `src/config.ts` holds the `zod` schema, and `src/load-config
 
 The schema rejects unknown fields, so a misspelled field is an error instead of a silent default. If the file is missing, the bridge writes a commented example there, names its path, and exits. A bad file exits with one error per field, such as `logLevel: Invalid option`.
 
+A plan's sign-in lives apart from the config file, in `auth/` in the config file's folder. `auth/openai.json` holds the ChatGPT plan's host ID, issued client ID, and tokens, with its own `schemaVersion`, as [subscription-token.md](subscription-token.md) describes.
+
+Never share `auth/`: anyone with a copy can use the plan until the tokens run out. Deleting the file signs the bridge out.
+
 If no provider has a key, the bridge warns and keeps running. Agent slots, personalities, and sweat levels aren't in the file, because they come from the [setup screen](../agents/slot-type.md) and save with the game. The key never goes into a game setup parameter, because saves and multiplayer games share those.
 
 ## Decisions
