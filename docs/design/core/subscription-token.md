@@ -41,6 +41,7 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 | --- | --- |
 | The access token refreshes only when less than a minute is left | Each refresh replaces the refresh token. A refresh on every request adds a round trip and more chances of `refresh_token_reused` |
 | The plan model gets its token through `fetch` on each request | The picker builds the model once, and a game lasts longer than the hour a token lasts |
+| The sign-in code is OpenAI's own until a second plan provider exists | [Plan access](../../findings/plan-access.md) finds no second provider, and OpenAI's flow is unusual. A second one moves the callback server and PKCE to a shared file, and OpenAI's URLs, scopes, and refresh codes to a description object, like a lister |
 | The browser opens with `rundll32 url.dll,FileProtocolHandler` on Windows | `start` runs through `cmd`, which reads each `&` in the sign-in URL as a new command |
 | The ID token check uses `node:crypto`, with no JWT package | The check is one RS256 signature and four claims, and Node reads a JWK |
 | Plan tokens live in `auth/`, not the config file | Users may share the config file. The refresh token changes on each refresh, and rewriting the config file each hour would risk the user's edits |
