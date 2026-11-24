@@ -1,6 +1,6 @@
 # ChatGPT plan
 
-Turn on the **Subscription token** run mode for OpenAI, so agents can play on a ChatGPT Plus or Pro plan. The design is in [run-modes.md](../../design/core/run-modes.md#subscription-token), and the provider's rules are in [plan-access.md](../../findings/plan-access.md#openai). Part of [phase 2](README.md).
+Turn on the **Subscription token** run mode for OpenAI, so agents can play on a ChatGPT Plus or Pro plan. The design is in [subscription-token.md](../../design/core/subscription-token.md), and the provider's rules are in [plan-access.md](../../findings/plan-access.md#openai). Part of [phase 2](README.md).
 
 ## Tasks
 
@@ -42,5 +42,5 @@ The repo has a `LICENSE` file.
 - `auth/` and its files, in [settings.md](../../design/core/settings.md).
 - The chosen license and why, in [distribution.md](../../design/distribution.md).
 - The credential type and the mode builder, in [run-modes.md](../../design/core/run-modes.md#providers).
-- Any change to the sign-in or the calls, in [run-modes.md](../../design/core/run-modes.md#subscription-token).
+- Any change to the sign-in or the calls, in [subscription-token.md](../../design/core/subscription-token.md).
 - Any change to streaming or failures, in [model-client.md](../../design/core/model-client.md).

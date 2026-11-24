@@ -34,7 +34,7 @@ A refused request, a network error, or an answer of the wrong shape fails the wh
 
   After the last try, the failure gives the number of tries and the last error.
 - **A refused key**, 401 or 403, doesn't retry. The failure is marked `auth`, and its message names `providers.<provider>.apiKey` and the key's environment variable. The agent loop logs it as a warning and stops the turn.
-- **A plan's usage limit** is marked `limit`, as [run-modes.md](run-modes.md#subscription-token) describes.
+- **A plan's usage limit** is marked `limit`, as [subscription-token.md](subscription-token.md) describes.
 - **An error after the stream starts**, or any other error, is marked `other` and gives its message.
 
 ## Usage
