@@ -85,7 +85,7 @@ function apiError(statusCode: number, message: string, responseBody?: string): A
 }
 
 // A ChatGPT plan's error, with its code in the body as OpenAI sends it.
-function planError(statusCode: number, code: string): APICallError {
+function subscriptionError(statusCode: number, code: string): APICallError {
 	return apiError(statusCode, "Plan error", JSON.stringify({ error: { code, message: "Plan error" } }));
 }
 
@@ -288,7 +288,7 @@ describe("modelFailure", () => {
 		[503, "subscription_sharing_usage_unavailable", "unavailable", "ChatGPT plan usage is unavailable right now: Plan error"],
 		[400, "subscription_sharing_unsupported_capability", "unsupported", "The ChatGPT plan rejected a field the bridge sent, which is a bridge bug. Report it with this message: Plan error"],
 	])("marks a %i with %s as its own kind", (status, code, kind, error) => {
-		expect(modelFailure("openai", "subscription", planError(status, code))).toEqual({ ok: false, kind, error });
+		expect(modelFailure("openai", "subscription", subscriptionError(status, code))).toEqual({ ok: false, kind, error });
 	});
 });
 

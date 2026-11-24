@@ -13,7 +13,7 @@ export const AUTHORIZE_URL = "https://auth.openai.com/api/accounts/authorize";
 export const DISCOVERY_URL = "https://auth.openai.com/.well-known/openid-configuration";
 
 const SCOPES = "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct";
-const PLAN_SCOPE = "chatgpt.tokens.use.direct";
+const SUBSCRIPTION_SCOPE = "chatgpt.tokens.use.direct";
 const FIRST_CLIENT_ID = "dynamic_agent_client";
 const ISSUED_CLIENT_PREFIX = "oaiapp_";
 const AGENT_NAME = "Sentient Systems";
@@ -141,8 +141,8 @@ async function getJson(url: string, io: SignInIo): Promise<unknown> {
 }
 
 async function checkReply(reply: SignedInReply, clientId: string, nonce: string, io: SignInIo): Promise<string | undefined> {
-	if (!reply.scope?.split(" ").includes(PLAN_SCOPE)) {
-		return `The ChatGPT sign-in didn't grant ${PLAN_SCOPE}, which plan usage needs`;
+	if (!reply.scope?.split(" ").includes(SUBSCRIPTION_SCOPE)) {
+		return `The ChatGPT sign-in didn't grant ${SUBSCRIPTION_SCOPE}, which plan usage needs`;
 	}
 
 	try {

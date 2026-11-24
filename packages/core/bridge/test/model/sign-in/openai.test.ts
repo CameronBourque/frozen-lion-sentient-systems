@@ -14,7 +14,7 @@ const NOW = 1_000_000_000_000;
 const HOUR_MS = 3_600_000;
 const JWKS_URL = "https://auth.openai.com/jwks";
 const HOST_ID = "urn:uuid:00000000-0000-4000-8000-000000000000";
-const PLAN_SCOPES = "openid offline_access chatgpt.tokens.use.direct";
+const SUBSCRIPTION_SCOPES = "openid offline_access chatgpt.tokens.use.direct";
 
 let folder: string;
 
@@ -72,7 +72,7 @@ function goodReply(nonce: string, audience = "oaiapp_9"): Response {
 		refresh_token: "refresh-1",
 		id_token: signedToken({ iss: ISSUER, aud: audience, exp: NOW / 1000 + 3600, nonce }),
 		expires_in: 3600,
-		scope: PLAN_SCOPES,
+		scope: SUBSCRIPTION_SCOPES,
 	});
 }
 
@@ -159,7 +159,7 @@ test("signs in the first time, registers the bridge, and saves the tokens", asyn
 		hostId: saved.hostId,
 		clientId: "oaiapp_9",
 		idToken: saved.idToken,
-		tokens: { access: "access-1", refresh: "refresh-1", expiresAt: NOW + HOUR_MS, scopes: PLAN_SCOPES.split(" ") },
+		tokens: { access: "access-1", refresh: "refresh-1", expiresAt: NOW + HOUR_MS, scopes: SUBSCRIPTION_SCOPES.split(" ") },
 	});
 	expect(seen.pages).toEqual([{ status: 200, text: "Signed in. You can close this tab and go back to the bridge." }]);
 });
@@ -229,7 +229,7 @@ test.each([
 
 test.each([
 	["the code exchange is refused", () => json({ error: "invalid_grant" }, 400), "OpenAI refused the ChatGPT token request with 400: invalid_grant"],
-	["the reply has no refresh token", () => json({ access_token: "a", id_token: "i", expires_in: 1, scope: PLAN_SCOPES }), "The ChatGPT sign-in's reply has no refresh token or ID token"],
+	["the reply has no refresh token", () => json({ access_token: "a", id_token: "i", expires_in: 1, scope: SUBSCRIPTION_SCOPES }), "The ChatGPT sign-in's reply has no refresh token or ID token"],
 	["the plan scope isn't granted", () => json({ access_token: "a", refresh_token: "r", id_token: "i", expires_in: 1, scope: "openid" }), "The ChatGPT sign-in didn't grant chatgpt.tokens.use.direct, which plan usage needs"],
 	["the ID token is for another sign-in", () => goodReply("nonce-other"), "The ChatGPT sign-in's ID token is for another sign-in"],
 ])("fails and saves no tokens when %s", async (_name, tokenReply, error) => {

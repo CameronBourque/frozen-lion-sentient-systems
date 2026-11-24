@@ -66,7 +66,7 @@ export interface ModelTarget {
 	effort: Effort | "";
 }
 
-const PLAN_USAGE_URL = "https://chatgpt.com/settings/usage";
+const SUBSCRIPTION_USAGE_URL = "https://chatgpt.com/settings/usage";
 
 interface Failed {
 	provider: Provider;
@@ -93,7 +93,7 @@ const FAILURES = [
 	{
 		kind: "limit",
 		matches: hasCode(USAGE_LIMIT_CODE),
-		message: ({ message }: Failed) => `The ChatGPT plan's usage limit is reached: ${message}. ${PLAN_USAGE_URL} shows when it resets`,
+		message: ({ message }: Failed) => `The ChatGPT plan's usage limit is reached: ${message}. ${SUBSCRIPTION_USAGE_URL} shows when it resets`,
 	},
 	{
 		kind: "not-eligible",
