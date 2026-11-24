@@ -39,7 +39,7 @@ const USAGE: Usage = {
 };
 
 function target(model: MockLanguageModelV4, effort: Effort | "" = "", provider: Provider = "anthropic"): ModelTarget {
-	return { model, provider, effort };
+	return { model, provider, mode: "api-key", effort };
 }
 
 // Each text arrives in two deltas, so the test checks that the client joins
@@ -80,8 +80,13 @@ function replying(make: () => StreamResult): MockLanguageModelV4 {
 }
 
 // An API error as a provider's package throws it.
-function apiError(statusCode: number, message: string): APICallError {
-	return new APICallError({ message, url: "https://api.example.com", requestBodyValues: {}, statusCode });
+function apiError(statusCode: number, message: string, responseBody?: string): APICallError {
+	return new APICallError({ message, url: "https://api.example.com", requestBodyValues: {}, statusCode, responseBody });
+}
+
+// A ChatGPT plan's error, with its code in the body as OpenAI sends it.
+function planError(statusCode: number, code: string): APICallError {
+	return apiError(statusCode, "Plan error", JSON.stringify({ error: { code, message: "Plan error" } }));
 }
 
 // A model that fails to start the stream with each error in turn, then
@@ -206,7 +211,7 @@ describe("failures", () => {
 
 		expect(await result).toEqual({
 			ok: false,
-			auth: false,
+			kind: "other",
 			error: `The anthropic model call failed after ${MAX_RETRIES + 1} tries: Internal error`,
 		});
 		expect(model.doStreamCalls).toHaveLength(MAX_RETRIES + 1);
@@ -217,7 +222,7 @@ describe("failures", () => {
 
 		expect(await callModel(target(model), REQUEST)).toEqual({
 			ok: false,
-			auth: true,
+			kind: "auth",
 			error: "anthropic refused the API key with 401: invalid x-api-key. Check providers.anthropic.apiKey in the config file, or ANTHROPIC_API_KEY",
 		});
 		expect(model.doStreamCalls).toHaveLength(1);
@@ -231,7 +236,7 @@ describe("failures", () => {
 
 		await vi.advanceTimersByTimeAsync(2000);
 
-		expect(await result).toMatchObject({ ok: false, auth: true, error: expect.stringMatching(/^google refused the API key with 403: Forbidden\. Check providers\.google\.apiKey/) as unknown });
+		expect(await result).toMatchObject({ ok: false, kind: "auth", error: expect.stringMatching(/^google refused the API key with 403: Forbidden\. Check providers\.google\.apiKey/) as unknown });
 	});
 
 	test("doesn't retry an error after the stream starts, and gives its message", async () => {
@@ -243,7 +248,7 @@ describe("failures", () => {
 
 		expect(await callModel(target(model, "", "openai"), REQUEST)).toEqual({
 			ok: false,
-			auth: false,
+			kind: "other",
 			error: "The openai model call failed: Usage limit reached",
 		});
 		expect(model.doStreamCalls).toHaveLength(1);
@@ -252,20 +257,51 @@ describe("failures", () => {
 	test("fails when the stream ends with no reply", async () => {
 		const model = replying(() => stream([{ type: "stream-start", warnings: [] }]));
 
-		expect(await callModel(target(model), REQUEST)).toMatchObject({ ok: false, auth: false });
+		expect(await callModel(target(model), REQUEST)).toMatchObject({ ok: false, kind: "other" });
 	});
 });
 
 describe("modelFailure", () => {
 	test("passes on any other error's message", () => {
-		expect(modelFailure("openai", new Error("fetch failed"))).toEqual({ ok: false, auth: false, error: "The openai model call failed: fetch failed" });
+		expect(modelFailure("openai", "api-key", new Error("fetch failed"))).toEqual({ ok: false, kind: "other", error: "The openai model call failed: fetch failed" });
 	});
 
 	test("names an error that isn't an Error", () => {
-		expect(modelFailure("openai", "socket closed")).toEqual({ ok: false, auth: false, error: "The openai model call failed: socket closed" });
+		expect(modelFailure("openai", "api-key", "socket closed")).toEqual({ ok: false, kind: "other", error: "The openai model call failed: socket closed" });
 	});
 
 	test("treats an API error without a refused key as a failure", () => {
-		expect(modelFailure("openai", apiError(400, "Bad request"))).toEqual({ ok: false, auth: false, error: "The openai model call failed: Bad request" });
+		expect(modelFailure("openai", "api-key", apiError(400, "Bad request"))).toEqual({ ok: false, kind: "other", error: "The openai model call failed: Bad request" });
 	});
+
+	test("tells a plan user to sign in again when the plan refuses the token", () => {
+		expect(modelFailure("openai", "subscription", apiError(401, "Expired"))).toEqual({
+			ok: false,
+			kind: "auth",
+			error: "openai refused the plan sign-in with 401: Expired. Sign in again from the Run mode menu",
+		});
+	});
+
+	test.each([
+		[429, "subscription_sharing_usage_limit_exceeded", "limit", "The ChatGPT plan's usage limit is reached: Plan error. https://chatgpt.com/settings/usage shows when it resets"],
+		[403, "subscription_sharing_user_not_eligible", "not-eligible", "This ChatGPT account's plan can't be used by other apps: Plan error"],
+		[503, "subscription_sharing_usage_unavailable", "unavailable", "ChatGPT plan usage is unavailable right now: Plan error"],
+		[400, "subscription_sharing_unsupported_capability", "unsupported", "The ChatGPT plan rejected a field the bridge sent, which is a bridge bug. Report it with this message: Plan error"],
+	])("marks a %i with %s as its own kind", (status, code, kind, error) => {
+		expect(modelFailure("openai", "subscription", planError(status, code))).toEqual({ ok: false, kind, error });
+	});
+});
+
+test("marks a plan's usage limit that arrives mid-stream", async () => {
+	// The OpenAI package gives a failed response a status from its code,
+	// which is 500 for this one.
+	const failed = apiError(500, "Usage limit reached", JSON.stringify({ type: "response.failed", response: { error: { code: "subscription_sharing_usage_limit_exceeded", message: "Usage limit reached" } } }));
+	const model = replying(() => stream([
+		{ type: "stream-start", warnings: [] },
+		...partsOf({ type: "text", text: "Ending" }),
+		{ type: "error", error: failed },
+	]));
+
+	expect(await callModel({ ...target(model, "", "openai"), mode: "subscription" }, REQUEST)).toMatchObject({ ok: false, kind: "limit" });
+	expect(model.doStreamCalls).toHaveLength(1);
 });

@@ -69,7 +69,7 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const result = await callModel({ model: built.model, provider, effort }, REQUEST);
+	const result = await callModel({ model: built.model, provider, mode: "api-key", effort }, REQUEST);
 
 	if (!result.ok) {
 		logger.warn("model_failed", result.error);

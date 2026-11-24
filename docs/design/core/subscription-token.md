@@ -30,7 +30,12 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 - **Calls.** The OpenAI model gets a `fetch` that sets the current token on each request. Each call goes to the Responses API with `store: false`, the system prompt in `instructions`, streamed, and with none of the fields the plan rejects.
 - **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token. It reads `/v1/models`, which has its own reply shape on a plan, and keeps the entries whose `visibility` is `list`.
 - **First use.** After the first sign-in, the bridge logs "You're using your ChatGPT plan", with the usage page.
-- **Failures.** A usage limit is a failure marked `limit`. The agent loop logs it with `https://chatgpt.com/settings/usage`, and stops the run as a run spending limit does. An account that isn't eligible is an `auth` failure that names the plan.
+- **Failures.** Each of the plan's error codes is its own [failure kind](model-client.md#failures). A 401 or 403 with none of these codes is `auth`, and its message says to sign in again.
+
+  - `limit`, for `subscription_sharing_usage_limit_exceeded`. Its message gives `https://chatgpt.com/settings/usage`, and the agent loop stops the run as a run spending limit does.
+  - `not-eligible`, for `subscription_sharing_user_not_eligible`. Its message says the account's plan can't be used by other apps, and the agent loop stops the turn.
+  - `unavailable`, for `subscription_sharing_usage_unavailable`. The SDK retries it as a server error, and the agent loop treats it as `other`.
+  - `unsupported`, for `subscription_sharing_unsupported_capability`. The bridge sent a field the plan rejects, which is a bridge bug, so its message asks the user to report it. The agent loop stops the turn.
 - **Price.** A plan has no price per token, so `model.price` stays blank. The log shows tokens with no cost, and only the token [spending limits](../agents/turn-loop.md#stopping) apply.
 
 [findings/plan-access.md](../../findings/plan-access.md#openai) has OpenAI's URLs, fields, and error codes.

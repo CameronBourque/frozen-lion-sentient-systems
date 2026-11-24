@@ -20,12 +20,14 @@ Turn on the **Subscription token** run mode for OpenAI, so agents can play on a 
    1. Rename the credential's `value` and `current` to `source` and `secret`, and make `secret` return a failure in place of throwing. Commit: `refactor(core): name a credential's source and secret`.
    2. The token store in `auth/openai.json`, with its refresh. Commit: `feat(core): keep and refresh ChatGPT plan tokens`.
    3. The browser sign-in, with its first-time registration and the ID token check. Commit: `feat(core): sign in with a ChatGPT plan`.
-5. **Calls.** Add the plan credential, whose source is the token store. Build the OpenAI model in the subscription mode with a `fetch` that sets the current token on each request. Send `store: false` and the system prompt in `instructions`.
+5. **Calls.** Three commits:
 
-   List the models from `/v1/models` with the token, with a lister that reads the plan's `models` array.
-
-   Replace the `auth` flag on a failed call with a `kind` of `auth`, `limit`, or `other`. Mark a usage limit `limit`, and an account that isn't eligible `auth`. Commit: `feat(core): call OpenAI on a ChatGPT plan`.
+   1. Replace the `auth` flag on a failed call with a `kind` from a table of every known failure: `auth`, each plan error code, and `other` for the rest. Give the auth fix for the run mode. Commit: `refactor(core): mark a failed call with a kind`.
+   2. List the models from `/v1/models` with the token, with a lister that reads the plan's `models` array. Commit: `feat(core): list the models on a ChatGPT plan`.
+   3. Add the plan credential, whose source is the token store. Build the OpenAI model in the subscription mode with a `fetch` that sets the current token on each request. Send `store: false` and the system prompt in `instructions`. Commit: `feat(core): call OpenAI on a ChatGPT plan`.
 6. **Menu.** Turn `PROVIDERS` into `providers(folder)`, which passes the config file's folder to `openai(folder)`, so the plan's token store finds `auth/`. Add `subscription` to OpenAI's `modes` in `src/model/providers/openai.ts`, with `signIn`. Make the picker call `signIn` after the provider menu.
+
+   Make `scripts/ask.ts` build the model and call it in the picked run mode, not always the API key mode.
 
    Show "Continue with ChatGPT" when there is no valid token, and log the first-use message after the first sign-in. Commit: `feat(core): offer the ChatGPT plan in the picker`.
 7. **Live check.** Run the [plan-access.md](../../findings/plan-access.md#method) method for questions 1, 2, 5, and 6, and record the results. Commit: `docs: record the ChatGPT plan check`.

@@ -28,13 +28,13 @@ A refused request, a network error, or an answer of the wrong shape fails the wh
 
 ## Failures
 
-`callModel` returns a failure instead of throwing. Each failure has a `kind`: `auth`, `limit`, or `other`.
+`callModel` returns a failure instead of throwing. Each failure has a `kind`, from a table in `src/model/client.ts` that lists every failure the bridge knows, with how to spot it and its message. The first row that matches wins. A failure that matches no row is `other`.
 
 - **A rate limit or a server error**, such as 429, 500, or 529, retries up to 3 times through the SDK's own retry, with backoff from 2 seconds, or after the provider's `Retry-After`. The SDK retries only before the stream starts.
 
   After the last try, the failure gives the number of tries and the last error.
-- **A refused key**, 401 or 403, doesn't retry. The failure is marked `auth`, and its message names `providers.<provider>.apiKey` and the key's environment variable. The agent loop logs it as a warning and stops the turn.
-- **A plan's usage limit** is marked `limit`, as [subscription-token.md](subscription-token.md) describes.
+- **A refused credential**, 401 or 403, doesn't retry. It is marked `auth`, with the fix for the run mode in `ModelTarget`. An API key's fix names `providers.<provider>.apiKey` and its variable, and a plan's says to sign in again. The agent loop stops the turn.
+- **A plan's error codes** each have a kind, matched in the error's `responseBody`, which also holds a mid-stream `response.failed` frame. [subscription-token.md](subscription-token.md) lists them.
 - **An error after the stream starts**, or any other error, is marked `other` and gives its message.
 
 ## Usage
@@ -106,6 +106,7 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | Retries use the SDK's own retry, with `maxRetries` set to 3 | It already backs off, honors `Retry-After`, and knows which status codes are worth a retry |
 | Every call streams, in every run mode | A ChatGPT plan takes only streamed calls. One path for every mode means the API key and plan calls fail, retry, and report usage the same way |
+| Every known failure has its own kind, and `other` is only for the rest | The agent loop decides by kind, and a new failure is one table row |
 | A failed call returns a failure instead of throwing | A failed call is an ordinary event for the agent loop, which decides what to do. An auth failure stops the turn, because every retry would fail the same way |
 | After a failed list, the user chooses the saved model, and Enter never does | The saved model may cost more than the user meant to spend. A switch the user didn't see could run it for a whole game |
 | The effort menu offers only the model's own levels | The SDK swaps an unsupported level for another without asking, so a pick of `minimal` can run at `low`. OpenRouter lists each model's levels |
