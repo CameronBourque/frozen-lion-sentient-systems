@@ -14,7 +14,8 @@ const SAVED = {
 	schemaVersion: 1,
 	hostId: "urn:uuid:00000000-0000-4000-8000-000000000000",
 	clientId: "oaiapp_1",
-	tokens: { access: "access-1", refresh: "refresh-1", id: "id-1", expiresAt: NOW + HOUR_MS, scopes: ["openid", "chatgpt.tokens.use.direct"] },
+	idToken: "id-1",
+	tokens: { access: "access-1", refresh: "refresh-1", expiresAt: NOW + HOUR_MS, scopes: ["openid", "chatgpt.tokens.use.direct"] },
 };
 
 const REFRESHED = { access_token: "access-2", refresh_token: "refresh-2", id_token: "id-2", expires_in: 3600, scope: "openid chatgpt.tokens.use.direct", earliest_refresh_at: 1234 };
@@ -96,14 +97,15 @@ test("refreshes with less than a minute left, and saves the new tokens", async (
 	expect(forms).toEqual([{ grant_type: "refresh_token", client_id: "oaiapp_1", refresh_token: "refresh-1", resource: "https://api.openai.com/v1" }]);
 	expect(readAuth()).toEqual({
 		...SAVED,
-		tokens: { access: "access-2", refresh: "refresh-2", id: "id-2", expiresAt: NOW + HOUR_MS, scopes: ["openid", "chatgpt.tokens.use.direct"], earliestRefreshAt: 1234 },
+		idToken: "id-2",
+		tokens: { access: "access-2", refresh: "refresh-2", expiresAt: NOW + HOUR_MS, scopes: ["openid", "chatgpt.tokens.use.direct"], earliestRefreshAt: 1234 },
 	});
 	expect(logged).toEqual([{ level: "info", event: "chatgpt_token_refreshed" }]);
 	expect(await tokens.secret()).toEqual({ ok: true, secret: "access-2" });
 	expect(forms).toHaveLength(1);
 });
 
-test("keeps the refresh token, ID token, and scopes a refresh leaves out", async () => {
+test("keeps the refresh token, the ID token, and the scopes a refresh leaves out", async () => {
 	writeAuth(expiring());
 	const tokens = openAITokens(folder, ioWith(fakePost([json({ access_token: "access-2", expires_in: 60 })], [])));
 
@@ -132,17 +134,17 @@ test.each(["invalid_grant", "refresh_token_reused"])("clears the tokens on %s, a
 	const tokens = openAITokens(folder, ioWith(fakePost([json({ error: code }, 400)], [])));
 
 	expect(await tokens.secret()).toEqual({ ok: false, error: `OpenAI refused the ChatGPT token request with 400: ${code}` });
-	expect(readAuth()).toEqual({ schemaVersion: 1, hostId: SAVED.hostId, clientId: "oaiapp_1" });
+	expect(readAuth()).toEqual({ schemaVersion: 1, hostId: SAVED.hostId, clientId: "oaiapp_1", idToken: "id-1" });
 	expect(tokens.signedIn()).toBe(false);
 	expect(await tokens.secret()).toEqual({ ok: false, error: "Not signed in to a ChatGPT plan" });
 });
 
-test("clears the client and the tokens on invalid_client, and keeps the host ID", async () => {
+test("clears the client and the tokens on invalid_client, and keeps the host ID and the ID token", async () => {
 	writeAuth(expiring());
 	const tokens = openAITokens(folder, ioWith(fakePost([json({ error: "invalid_client" }, 401)], [])));
 
 	expect((await tokens.secret()).ok).toBe(false);
-	expect(readAuth()).toEqual({ schemaVersion: 1, hostId: SAVED.hostId });
+	expect(readAuth()).toEqual({ schemaVersion: 1, hostId: SAVED.hostId, idToken: "id-1" });
 });
 
 test.each([

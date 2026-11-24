@@ -4,12 +4,22 @@ How agents play on a user's paid plan with a token from the provider's browser s
 
 The bridge's loop and the [model client](model-client.md) stay the same. The provider model gets a token in place of an API key, and the model client streams the call.
 
-- **Sign-in.** `signIn` in `src/model/sign-in/openai.ts` opens the browser to OpenAI's OAuth page with PKCE, and listens on `127.0.0.1` on a free port for the callback. The menu row reads "Continue with ChatGPT".
+- **Sign-in.** `signIn` in `src/model/sign-in/openai.ts` uses the saved token when it works or refreshes. A refresh that fails with the tokens kept, such as with no network, fails the sign-in too, since the browser can't do better.
 
-  The first sign-in registers the bridge with `dynamic_agent_client`, an `ext_agent_host_id` of `urn:uuid:` and a random UUID, and `agent_name_hint` set to `Sentient Systems`. It saves the issued `client_id` from the callback, which every later sign-in and refresh uses.
+  Otherwise it opens the default browser to OpenAI's OAuth page with PKCE, logs the URL in case no browser opens, and listens on `127.0.0.1` on a free port for the callback.
 
-  A later sign-in sends the last ID token as `id_token_hint`. The bridge checks the ID token, and that the granted scopes include `chatgpt.tokens.use.direct`.
-- **Tokens.** `src/model/sign-in/openai-tokens.ts` keeps them. `auth/openai.json` in the config file's folder holds the client ID, the host ID, and the tokens. The config file never does, because users may share it, and the refresh token changes on every refresh.
+  A request with another attempt's `state` gets a 404, and the bridge keeps waiting. After five minutes the sign-in fails. The menu row reads "Continue with ChatGPT".
+
+  The first sign-in makes and saves the host ID, an `ext_agent_host_id` of `urn:uuid:` and a random UUID.
+
+  It registers the bridge with `dynamic_agent_client` and `agent_name_hint` set to `Sentient Systems`, and saves the issued `client_id` from the callback, which every later sign-in and refresh uses.
+
+  A later sign-in sends the last ID token as `id_token_hint`. The bridge checks that the granted scopes include `chatgpt.tokens.use.direct`.
+
+  It also checks the ID token in `src/model/sign-in/id-token.ts` against the keys at the `jwks_uri` in OpenAI's OpenID configuration. A failed check saves no tokens.
+- **Tokens.** `src/model/sign-in/openai-tokens.ts` keeps them. `auth/openai.json` in the config file's folder holds the client ID, the host ID, the last ID token, and the tokens. The config file never does, because users may share it, and the refresh token changes on every refresh.
+
+  The ID token stays when a spent refresh clears the tokens, so the next sign-in can still send it.
 
   The terminal bridge saves the tokens with no question. A GUI will ask the user to opt in to saving them, and without it the user signs in on each start.
 - **Refresh.** Before each request, the bridge checks the access token's expiry. With less than a minute left, it refreshes the token first. A request that comes during a refresh waits for that refresh, so only one runs at a time.
@@ -31,6 +41,8 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 | --- | --- |
 | The access token refreshes only when less than a minute is left | Each refresh replaces the refresh token. A refresh on every request adds a round trip and more chances of `refresh_token_reused` |
 | The plan model gets its token through `fetch` on each request | The picker builds the model once, and a game lasts longer than the hour a token lasts |
+| The browser opens with `rundll32 url.dll,FileProtocolHandler` on Windows | `start` runs through `cmd`, which reads each `&` in the sign-in URL as a new command |
+| The ID token check uses `node:crypto`, with no JWT package | The check is one RS256 signature and four claims, and Node reads a JWK |
 | Plan tokens live in `auth/`, not the config file | Users may share the config file. The refresh token changes on each refresh, and rewriting the config file each hour would risk the user's edits |
 | Only a GUI asks before saving plan tokens | A terminal user runs the bridge on their own computer, and a question on every start adds a step. A GUI has room for the setting, and a user on a shared computer may not want a sign-in kept on disk |
 | A usage limit stops the run as a run spending limit does | Every later call fails until the plan resets, and the bridge can't tell when that is. Forced end turns would play turn after turn with no model. A stopped run resumes the same turn on the next start |

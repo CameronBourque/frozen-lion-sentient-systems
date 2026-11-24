@@ -2,6 +2,7 @@
 // and refreshes the access token before it runs out.
 // docs/design/core/subscription-token.md has the design.
 
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
@@ -21,7 +22,6 @@ const SIGN_IN_AGAIN = new Set(["invalid_grant", "invalid_refresh_token", "token_
 const TOKENS = z.strictObject({
 	access: z.string(),
 	refresh: z.string(),
-	id: z.string(),
 	expiresAt: z.number().describe("When the access token runs out, in milliseconds since 1970"),
 	scopes: z.array(z.string()),
 	earliestRefreshAt: z.unknown().optional().describe("Kept from the token reply until the live check says what it means"),
@@ -31,6 +31,7 @@ const AUTH_FILE = z.strictObject({
 	schemaVersion: z.literal(SCHEMA_VERSION),
 	hostId: z.string(),
 	clientId: z.string().optional(),
+	idToken: z.string().optional().describe("The last one, which the next sign-in sends as a hint. It outlives the tokens"),
 	tokens: TOKENS.optional(),
 });
 
@@ -61,6 +62,16 @@ export interface TokenIo {
 	log: Pick<Logger, "info" | "warn">;
 }
 
+// What a sign-in sends to OpenAI from the last one.
+export interface SignInHints {
+	hostId: string;
+	clientId?: string;
+	idToken?: string;
+}
+
+// A code exchange's reply always has these, or the sign-in failed.
+export type SignedInReply = TokenReply & { refresh_token: string; id_token: string };
+
 export interface OpenAITokens {
 	signedIn: () => boolean;
 	// A token with at least a minute left, refreshed first when needed.
@@ -68,6 +79,10 @@ export interface OpenAITokens {
 	// After a request with this token got 401. Another request may have
 	// refreshed it already.
 	refreshAfterRefusal: (rejected: string) => Promise<SecretResult>;
+	// Makes and saves the host ID the first time, since every sign-in from
+	// here has to send the same one.
+	signInHints: () => SignInHints;
+	saveSignIn: (clientId: string, reply: SignedInReply) => string;
 }
 
 export function authFilePath(folder: string): string {
@@ -97,13 +112,12 @@ export async function requestTokens(form: Record<string, string>, post: Post): P
 	}
 }
 
-// A refresh may leave out the refresh token, the ID token, or the scopes, which
-// then stay as they were.
-function refreshedTokens(reply: TokenReply, previous: Tokens, now: number): Tokens {
+// A refresh may leave out the refresh token or the scopes, which then stay as
+// they were.
+function tokensFrom(reply: TokenReply, previous: Pick<Tokens, "refresh" | "scopes">, now: number): Tokens {
 	return {
 		access: reply.access_token,
 		refresh: reply.refresh_token ?? previous.refresh,
-		id: reply.id_token ?? previous.id,
 		expiresAt: now + reply.expires_in * 1000,
 		scopes: reply.scope?.split(" ") ?? previous.scopes,
 		earliestRefreshAt: reply.earliest_refresh_at,
@@ -161,9 +175,9 @@ export function openAITokens(folder: string, io: TokenIo): OpenAITokens {
 			return { ok: false, error: result.error };
 		}
 
-		const next = refreshedTokens(result.reply, tokens, io.now());
+		const next = tokensFrom(result.reply, tokens, io.now());
 
-		save({ ...current, tokens: next });
+		save({ ...current, idToken: result.reply.id_token ?? current.idToken, tokens: next });
 		io.log.info("chatgpt_token_refreshed", `Refreshed the ChatGPT token, which lasts ${result.reply.expires_in} seconds`, { expiresIn: result.reply.expires_in, earliestRefreshAt: next.earliestRefreshAt });
 
 		return { ok: true, secret: next.access };
@@ -196,9 +210,30 @@ export function openAITokens(folder: string, io: TokenIo): OpenAITokens {
 		return tokens !== undefined && check(tokens) ? Promise.resolve({ ok: true, secret: tokens.access }) : refreshOnce();
 	}
 
+	function signInHints(): SignInHints {
+		const current = load() ?? { schemaVersion: SCHEMA_VERSION, hostId: `urn:uuid:${crypto.randomUUID()}` };
+
+		if (current !== auth) {
+			save(current);
+		}
+
+		return { hostId: current.hostId, clientId: current.clientId, idToken: current.idToken };
+	}
+
+	function saveSignIn(clientId: string, reply: SignedInReply): string {
+		const current = signInHints();
+		const tokens = tokensFrom(reply, { refresh: reply.refresh_token, scopes: [] }, io.now());
+
+		save({ schemaVersion: SCHEMA_VERSION, hostId: current.hostId, clientId, idToken: reply.id_token, tokens });
+
+		return tokens.access;
+	}
+
 	return {
 		signedIn: () => load()?.tokens !== undefined,
 		secret: () => settled((tokens) => tokens.expiresAt - io.now() > REFRESH_MARGIN_MS),
 		refreshAfterRefusal: (rejected) => settled((tokens) => tokens.access !== rejected),
+		signInHints,
+		saveSignIn,
 	};
 }
