@@ -10,6 +10,10 @@ Which providers let the bridge use a user's paid plan, such as ChatGPT Plus or C
 2. Does the AI SDK's OpenAI provider send a plan token call in the shape the plan requires, with `store: false`, streaming, and none of the rejected fields?
 3. In the Claude Agent SDK, does `tools: []` with only the bridge's MCP server remove every built-in tool?
 4. How does a Claude plan usage limit show in the Agent SDK's result message?
+5. Which URLs and parameters do the ChatGPT sign-in, the first-time registration, and the token refresh use?
+6. Which ChatGPT plans besides Plus and Pro can use plan usage?
+7. Which fields does a `/v1/models` entry have on a ChatGPT plan token?
+8. Does a ChatGPT plan call accept `include: ["reasoning.encrypted_content"]`, which the AI SDK adds to a reasoning model's call with `store: false`?
 
 ## What we know now
 
@@ -61,6 +65,7 @@ Which providers let the bridge use a user's paid plan, such as ChatGPT Plus or C
 1. To answer questions 1 and 2, sign in with a ChatGPT Plus plan, run `npm run ask`, and check the `model_call` record for nonzero input and output tokens.
 2. To answer question 3, run one `query()` with `tools: []`, `settingSources: []`, and only the bridge's MCP server. Then check that the init message lists no built-in tool.
 3. To answer question 4, run `query()` on a plan at its limit and log the result message.
+4. To answer questions 5 to 8, read the OpenAI pages linked in [OpenAI](#openai). If the pages don't answer question 8, run step 1 and check that the call has no error that names `include`.
 
 ## Results
 

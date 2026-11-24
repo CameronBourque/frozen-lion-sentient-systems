@@ -25,9 +25,10 @@ For a provider with more than one plan mode, the bridge offers the first that wo
 
 Each provider is one object in its own file in `src/model/providers/`: `anthropic.ts`, `openai.ts`, and `google.ts`. `PROVIDERS` in `src/model/providers/index.ts` lists them.
 
-The object's type is `ProviderDef` in `src/model/providers/provider.ts`. It has the provider's name and a `modes` record keyed by `RunMode`. Each entry in `modes` is a `ModeSupport` with three functions:
+The object's type is `ProviderDef` in `src/model/providers/provider.ts`. It has the provider's name and a `modes` record keyed by `RunMode`. Each entry in `modes` is a `ModeSupport` with these functions:
 
 - `ready(config)`, which says whether the provider can play in that mode, or why not, such as a missing API key,
+- `signIn(config)`, only in a subscription token mode, which gets a valid token: the saved one, a refreshed one, or one from the browser sign-in,
 - `listModels(config)`, which lists the models for the picker,
 - `model(config, id)`, which builds the model for the model client.
 
@@ -49,7 +50,7 @@ The picker finds a mode's providers in two passes over `PROVIDERS`:
 The menus after it depend on the mode:
 
 - **API key.** Provider, model, and effort, as today.
-- **Subscription token.** Provider, then a browser sign-in when there is no valid token, then model and effort from the provider's own list.
+- **Subscription token.** Provider, then the mode's `signIn`, which opens the browser only when there is no valid token, then model and effort from the provider's own list.
 - **Agent SDK.** Provider, a login check, then model and effort from the SDK's list.
 - **CLI.** Provider, a check that the CLI is installed and logged in, then model and effort.
 
@@ -65,8 +66,11 @@ The bridge's loop and the model client stay the same. The provider model gets a 
 
   The first sign-in registers the bridge with `dynamic_agent_client`, a random `ext_agent_host_id`, and `agent_name_hint` set to `Sentient Systems`. It saves the issued `client_id`, which every later sign-in and refresh uses.
 - **Tokens.** `auth/openai.json` in the config file's folder holds the client ID, the host ID, and the tokens. The config file never does, because users may share it, and the refresh token changes on every refresh.
-- **Refresh.** The bridge refreshes the access token a minute before its hour ends, one refresh at a time. A refused refresh clears the tokens, and the picker asks to sign in again on the next start.
-- **Calls.** Each call goes to the Responses API with `store: false`, streamed, and with none of the fields the plan rejects. The model list comes from `/v1/models` with the token, keeping the entries whose `visibility` is `list`.
+- **Refresh.** Before each request, the bridge checks the access token's expiry. With less than a minute left, it refreshes the token first. A request that comes during a refresh waits for that refresh, so only one runs at a time.
+
+  A request refused with 401 refreshes once and tries again. A refused refresh clears the tokens, and the picker asks to sign in again on the next start.
+- **Calls.** The OpenAI model gets a `fetch` that sets the current token on each request, so a game keeps playing past the token's hour. Each call goes to the Responses API with `store: false`, the system prompt in `instructions`, streamed, and with none of the fields the plan rejects.
+- **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token. It reads `/v1/models` and keeps the entries whose `visibility` is `list`.
 - **First use.** After the first sign-in, the bridge logs "You're using your ChatGPT plan", with the usage page.
 - **Failures.** A usage limit is a failure marked `limit`. The agent loop logs it with `https://chatgpt.com/settings/usage`, and stops the run as a run spending limit does. An account that isn't eligible is an `auth` failure that names the plan.
 - **Price.** A plan has no price per token, so `model.price` stays blank. The log shows tokens with no cost, and only the token [spending limits](../agents/turn-loop.md#stopping) apply.
@@ -124,6 +128,9 @@ No provider uses the CLI mode yet, so its menu row reads `(not available yet)`. 
 | A subscription token comes first, then an agent SDK, then a CLI | A token keeps the bridge's own loop, so nothing is lost. An SDK runs its own loop, and a CLI adds a process and output to parse |
 | An agent SDK or a CLI must pass the parity check | Users get the same game in every mode. A mode that loses the log, the limits, or the stop key isn't worth offering |
 | The Claude flag is a constant in the code, not a config setting | A setting would let anyone turn it on before Anthropic approves, which is the same as offering it. Tests turn it on through injection |
+| `signIn` is an optional part of `ModeSupport`, and the picker calls it when the mode has one | Only a subscription token mode signs in. A new plan provider is still one entry, with no change to the picker |
+| The access token refreshes only when less than a minute is left | Each refresh replaces the refresh token. A refresh on every request adds a round trip and more chances of `refresh_token_reused` |
+| The plan model gets its token through `fetch` on each request | The picker builds the model once, and a game lasts longer than the hour a token lasts |
 | Plan tokens live in `auth/`, not the config file | Users may share the config file. The refresh token changes on each refresh, and rewriting the config file each hour would risk the user's edits |
 | A plan mode leaves the price blank | A plan has no price per token. An estimate at API prices would make cost limits stop runs that cost the user nothing more |
 | A usage limit stops the run as a run spending limit does | Every later call fails until the plan resets, and the bridge can't tell when that is. Forced end turns would play turn after turn with no model. A stopped run resumes the same turn on the next start |

@@ -6,13 +6,17 @@ You pick the model and its effort in `model` in the [config file](settings.md), 
 
 `callModel(target, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools to the target's model, with the effort as the SDK's `reasoning` setting, and returns the model's text and tool calls. The target also names the provider, for the error messages.
 
+`callModel` streams every call with the SDK's `streamText`, in every run mode, and returns once the stream ends.
+
 Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
 
 Each provider's API key mode, from `apiKeyMode` in `src/model/providers/api-key.ts`, builds the model for that provider: Anthropic, OpenAI, or Google, each through its `@ai-sdk/` package. [run-modes.md](run-modes.md#providers) has the provider files.
 
 It reads the API key from `providers` in the [config file](settings.md), which an environment variable fills when it is blank, and fails with the field to set when the key is empty or missing.
 
-`listModels(provider, lister, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. Each provider file has its own lister, with the list's URL, headers, and page shape.
+`listModels(provider, lister, credential)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page.
+
+The credential is the API key, or the plan token in a subscription token mode. Each provider file has its own lister, with the list's URL, headers, and page shape.
 
 The provider's list shows the models the user's key can use. Anthropic lists the newest first, and the OpenAI list is sorted newest first.
 
@@ -24,11 +28,14 @@ A refused request, a network error, or an answer of the wrong shape fails the wh
 
 ## Failures
 
-`callModel` returns a failure instead of throwing:
+`callModel` returns a failure instead of throwing. Each failure has a `kind`: `auth`, `limit`, or `other`.
 
-- **A rate limit or a server error**, such as 429, 500, or 529, retries up to 3 times through the SDK's own retry, with backoff from 2 seconds, or after the provider's `Retry-After`. After the last try, the failure gives the number of tries and the last error.
+- **A rate limit or a server error**, such as 429, 500, or 529, retries up to 3 times through the SDK's own retry, with backoff from 2 seconds, or after the provider's `Retry-After`. The SDK retries only before the stream starts.
+
+  After the last try, the failure gives the number of tries and the last error.
 - **A refused key**, 401 or 403, doesn't retry. The failure is marked `auth`, and its message names `providers.<provider>.apiKey` and the key's environment variable. The agent loop logs it as a warning and stops the turn.
-- **Any other error** gives its message.
+- **A plan's usage limit** is marked `limit`, as [run-modes.md](run-modes.md#subscription-token) describes.
+- **An error after the stream starts**, or any other error, is marked `other` and gives its message.
 
 ## Usage
 
@@ -98,6 +105,7 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | Cached tokens with no cache price count as plain input, and the log shows a cost only when input and output have prices | Every cached token is still an input token, so the input price is a fair stand-in. Without an input or output price there is nothing to stand in |
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | Retries use the SDK's own retry, with `maxRetries` set to 3 | It already backs off, honors `Retry-After`, and knows which status codes are worth a retry |
+| Every call streams, in every run mode | A ChatGPT plan takes only streamed calls. One path for every mode means the API key and plan calls fail, retry, and report usage the same way |
 | A failed call returns a failure instead of throwing | A failed call is an ordinary event for the agent loop, which decides what to do. An auth failure stops the turn, because every retry would fail the same way |
 | After a failed list, the user chooses the saved model, and Enter never does | The saved model may cost more than the user meant to spend. A switch the user didn't see could run it for a whole game |
 | The effort menu offers only the model's own levels | The SDK swaps an unsupported level for another without asking, so a pick of `minimal` can run at `low`. OpenRouter lists each model's levels |
