@@ -36,11 +36,11 @@ A run mode missing from a provider's `modes` isn't available for that provider. 
 
 `credentialMode(name, credential, factory, lister)` in `src/model/providers/mode.ts` builds a `ModeSupport` from three parts:
 
-- a `Credential`, which says whether it is ready, gives the value a model is built from, and gives the string a request sends now,
-- a factory, which builds the model from the credential's value through the provider's AI SDK package,
-- a [lister](model-client.md), which lists the models with the credential's current string.
+- a `Credential`, whose `ready` says whether it is ready, `source` gives what a model is built from, and `secret` gives the string a request sends now, or why it can't, such as a refused refresh,
+- a factory, which builds the model from the credential's source through the provider's AI SDK package,
+- a [lister](model-client.md), which lists the models with the credential's secret.
 
-`apiKeyMode(name, factory, lister)` in `src/model/providers/api-key.ts` uses `apiKeyCredential`, whose value is the key in `providers`, as [settings.md](settings.md) fills it. All three providers use it. A subscription token's value is a token source, which its factory reads on each request.
+`apiKeyMode(name, factory, lister)` in `src/model/providers/api-key.ts` uses `apiKeyCredential`, whose source and secret are both the key in `providers`, as [settings.md](settings.md) fills it. All three providers use it. A subscription token's source is a token store, which its factory reads on each request.
 
 To add a provider, add its file and its entry in `PROVIDERS`. To add a run mode to a provider, add its entry in `modes`, with its sign-in for a subscription token, or its runner for an agent SDK or a CLI.
 

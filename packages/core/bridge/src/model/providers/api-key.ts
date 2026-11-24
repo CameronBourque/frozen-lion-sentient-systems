@@ -16,8 +16,8 @@ export function apiKeyCredential(name: Provider): Credential<string> {
 		ready: (config) => keyOf(config) === ""
 			? { ok: false, reason: `No API key for ${name}. Set providers.${name}.apiKey in the config file, or ${KEY_VARIABLES[name]}` }
 			: { ok: true },
-		value: keyOf,
-		current: (key) => Promise.resolve(key),
+		source: keyOf,
+		secret: (key) => Promise.resolve({ ok: true, secret: key }),
 	};
 }
 
