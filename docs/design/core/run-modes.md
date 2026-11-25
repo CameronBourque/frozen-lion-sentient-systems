@@ -19,7 +19,7 @@ For a provider with more than one plan mode, the bridge offers the first that wo
 2. Agent SDK, when it passes the [parity check](#parity-check).
 3. CLI, when the provider has no agent SDK that passes, and its CLI passes the same check.
 
-[findings/plan-access.md](../../findings/plan-access.md) has what each provider allows. Google offers no plan mode, so it is API key only.
+[findings/plan-access/](../../findings/plan-access/README.md) has what each provider allows. Google offers no plan mode, so it is API key only.
 
 ## Providers
 

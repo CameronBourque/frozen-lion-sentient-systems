@@ -1,21 +1,14 @@
-# Plan access
+# OpenAI plan access
 
-Status: OpenAI's plan confirmed by a live call on 2026-11-25. The rest is from each provider's docs, read on 2026-11-22 and 2026-11-23.
+Status: confirmed. A live call on a ChatGPT Plus plan on 2026-11-25 confirmed the sign-in, the call, and the token reply. The rest is from OpenAI's docs, read on 2026-11-22 and 2026-11-23.
 
-Which providers let the bridge use a user's paid plan, such as ChatGPT Plus or Claude Max, in place of an API key, and through what: a token for the provider's API, an agent SDK, or a CLI. [design/core/run-modes.md](../design/core/run-modes.md) uses these facts.
+How an open-source app signs in to a user's ChatGPT plan and calls OpenAI's API with its token. Part of [plan access](README.md).
 
 ## Questions
 
-1. Does a Responses API reply on a ChatGPT plan token report input, cached, and output tokens?
-2. Does the AI SDK's OpenAI provider send a plan token call in the shape the plan requires, with `store: false`, streaming, and none of the rejected fields?
-3. In the Claude Agent SDK, does `tools: []` with only the bridge's MCP server remove every built-in tool?
-4. How does a Claude plan usage limit show in the Agent SDK's result message?
-5. Does a ChatGPT plan call accept `include: ["reasoning.encrypted_content"]`, which the AI SDK adds to a reasoning model's call with `store: false`?
-6. What does `earliest_refresh_at` in the token response mean for when the bridge may refresh?
+1. Does a plan reply report cached tokens? The live call's prompt was too short to cache.
 
 ## What we know now
-
-### OpenAI
 
 - **ChatGPT plan usage.** An open-source app that runs on the user's computer may send requests on the user's ChatGPT plan. The overview says it is "for open-source and locally hosted apps". Paid or hosted apps use an interest form instead. Source: [token-sharing-open-source](https://developers.openai.com/siwc/token-sharing-open-source).
 - **Registration.** None ahead of time. The first sign-in passes `client_id=dynamic_agent_client`, `ext_agent_host_id`, and `agent_name_hint`, and the callback returns an issued `client_id` to save and reuse. No client secret or partner key. Source: [sign-in](https://developers.openai.com/siwc/token-sharing-open-source/sign-in).
@@ -52,45 +45,21 @@ Which providers let the bridge use a user's paid plan, such as ChatGPT Plus or C
 - **Wording.** The sign-in action reads "Continue with ChatGPT". The first sign-in shows "You're using your ChatGPT plan", and a usage limit links to `https://chatgpt.com/settings/usage`. Source: [ui-ux-guidelines](https://developers.openai.com/siwc/ui-ux-guidelines).
 - **Codex SDK.** `@openai/codex-sdk` spawns the `codex` CLI and streams its events. Its docs show no way to abort a run. Source: [codex-sdk](https://learn.chatgpt.com/docs/codex-sdk).
 
-### Anthropic
-
-- **Terms.** Without Anthropic's approval, a third-party product may not offer claude.ai login or plan rate limits. This includes agents built on the Claude Agent SDK. Source: [agent-sdk/overview](https://code.claude.com/docs/en/agent-sdk/overview).
-- **Personal use.** The legal page allows a user to sign in to the unmodified Claude Code binary with their own plan. It bars routing requests through plan credentials on behalf of other users. Source: [legal-and-compliance](https://code.claude.com/docs/en/legal-and-compliance).
-- **Agent SDK options.** `@anthropic-ai/claude-agent-sdk` takes the following options. Source: [agent-sdk/typescript](https://code.claude.com/docs/en/agent-sdk/typescript).
-  - `systemPrompt` as a string, which replaces the default prompt,
-  - `tools` to choose the built-in tools, `mcpServers` with `strictMcpConfig`, and `settingSources: []`, which loads no user or project settings,
-  - `abortController`, `model`, `effort`, and `supportedModels()`,
-  - a new session for each `query()` with no `resume`.
-- **Tool calls.** `PreToolUse` and `PostToolUse` hooks see each call, and `PreToolUse` can deny one. Source: [agent-sdk/hooks](https://code.claude.com/docs/en/agent-sdk/hooks).
-- **Usage.** Each assistant message has `input_tokens`, `cache_read_input_tokens`, and `cache_creation_input_tokens`. Its `output_tokens` is a placeholder, so output comes from the result message. `total_cost_usd` is an estimate at API prices. Source: [agent-sdk/cost-tracking](https://code.claude.com/docs/en/agent-sdk/cost-tracking).
-- **Install.** The package ships the Claude Code binary, and needs Node 18.14 or later.
-
-### Google
-
-- **Gemini CLI.** Since 2026-06-18, Gemini CLI serves only Gemini Code Assist Standard and Enterprise licenses. Free personal use and Google AI Pro and Ultra moved to Antigravity CLI. Source: [gemini-cli README](https://github.com/google-gemini/gemini-cli).
-- **Terms.** Using the services behind Gemini CLI from third-party software violates Google's terms. Source: [tos-privacy](https://geminicli.com/docs/resources/tos-privacy/).
-- **Antigravity SDK.** Python only. Source: [antigravity-sdk](https://antigravity.google/product/antigravity-sdk).
-- **Antigravity CLI.** The FAQ says using third-party software, tools, or services to access Antigravity violates the terms, and can lead to suspension. It points third-party coding agents to a Vertex or AI Studio API key. Source: [faq](https://antigravity.google/docs/faq).
-
-  Headless mode (`agy -p`) is for the user's own scripts and CI. Forum replies disagree on whether another app may launch it, and none covers an app that replaces its prompt and tools for other users, as the bridge would. Source: [forum thread](https://discuss.ai.google.dev/t/is-it-allowed-for-an-open-source-tool-to-call-the-official-agy-cli-in-headless-mode/183429).
-
 ## Method
 
-1. To answer questions 1 and 2, sign in with a ChatGPT Plus plan, run `npm run ask`, and check the `model_call` record for nonzero input and output tokens.
-2. To answer question 3, run one `query()` with `tools: []`, `settingSources: []`, and only the bridge's MCP server. Then check that the init message lists no built-in tool.
-3. To answer question 4, run `query()` on a plan at its limit and log the result message.
-4. To answer question 5, run step 1 with a reasoning model, and check that the call has no `subscription_sharing_unsupported_capability` error that names `include`.
-5. To answer question 6, sign in, then log `earliest_refresh_at` beside `expires_in` from the token response.
+1. To answer question 1, run the bridge's agent loop on a plan for a few turns, and check the `model_call` records for nonzero cache reads.
+
+The live check signed in with a ChatGPT Plus plan, ran `npm run ask` with a reasoning model, and read the `model_call` record and `auth/openai.json`.
 
 ## Results
 
-OpenAI, on a ChatGPT Plus trial with `gpt-6.2-sol` at medium effort:
+On a ChatGPT Plus trial with `gpt-6.2-sol` at medium effort:
 
-- **1.** Yes: 85 input and 20 output tokens. Cached tokens are unchecked, since the prompt was too short to cache.
-- **2.** Yes. The reply had a tool call.
-- **5.** Yes, on that reasoning model.
-- **6.** A Unix time in seconds, 6 minutes before the token expires, so a refresh with under a minute left is after it.
-
-With no plan, the browser sign-in passed and the code exchange failed with `invalid_grant`, not `subscription_sharing_user_not_eligible`. ChatGPT's settings cap how much of the plan each app may use.
+- **Tokens.** The reply reports input and output tokens: 85 and 20.
+- **Request shape.** The AI SDK's call, with `store: false`, streaming, and the system prompt in `instructions`, came back with a tool call.
+- **Reasoning.** The plan accepts `include: ["reasoning.encrypted_content"]`, which the AI SDK adds to a reasoning model's call.
+- **`earliest_refresh_at`.** A Unix time in seconds, 6 minutes before the access token expires.
+- **No plan.** An account with no plan got through the browser sign-in, then the code exchange failed with `invalid_grant`, not `subscription_sharing_user_not_eligible`.
+- **Usage cap.** ChatGPT's settings let the user cap how much of the plan each app may use.
 
 Date checked: 2026-11-25.

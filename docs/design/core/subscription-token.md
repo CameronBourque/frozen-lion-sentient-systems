@@ -46,7 +46,7 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
   - `unsupported`, for `subscription_sharing_unsupported_capability`. The bridge sent a field the plan rejects, which is a bridge bug, so its message asks the user to report it. The agent loop stops the turn.
 - **Price.** A plan has no price per token, so the model menu shows none and `model.price` stays blank. The log shows tokens with no cost, and only the token [spending limits](../agents/turn-loop.md#stopping) apply.
 
-[findings/plan-access.md](../../findings/plan-access.md#openai) has OpenAI's URLs, fields, and error codes.
+[findings/plan-access/openai.md](../../findings/plan-access/openai.md) has OpenAI's URLs, fields, and error codes.
 
 ## Decisions
 
@@ -57,7 +57,7 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 | The plan model's base URL is fixed | The SDK reads `OPENAI_BASE_URL`, which a user may set for a proxy in the API key mode. The plan's token is for OpenAI only |
 | The system prompt goes in `instructions`, not a `developer` message | Both have the same authority, and OpenAI's own clients use `instructions`. It always comes first, apart from the messages the bridge may trim |
 | The plan's request rules live in a middleware on the model | `callModel` stays the same in every run mode, and OpenAI's plan rules stay in OpenAI's file |
-| The sign-in code is OpenAI's own until a second plan provider exists | [Plan access](../../findings/plan-access.md) finds no second provider, and OpenAI's flow is unusual. A second one moves the callback server and PKCE to a shared file, and OpenAI's URLs, scopes, and refresh codes to a description object, like a lister |
+| The sign-in code is OpenAI's own until a second plan provider exists | [Plan access](../../findings/plan-access/README.md) finds no second provider, and OpenAI's flow is unusual. A second one moves the callback server and PKCE to a shared file, and OpenAI's URLs, scopes, and refresh codes to a description object, like a lister |
 | The browser opens with `rundll32 url.dll,FileProtocolHandler` on Windows | `start` runs through `cmd`, which reads each `&` in the sign-in URL as a new command |
 | The ID token check uses `node:crypto`, with no JWT package | The check is one RS256 signature and four claims, and Node reads a JWK |
 | Plan tokens live in `auth/`, not the config file | Users may share the config file. The refresh token changes on each refresh, and rewriting the config file each hour would risk the user's edits |
