@@ -1,6 +1,6 @@
 // Looks up facts about each model, such as its price, in OpenRouter's public
 // model list, which gives each provider's own prices with no markup.
-// docs/design/core/model-client.md has the design.
+// docs/design/core/picker.md has the design.
 
 import fs from "node:fs";
 import path from "node:path";

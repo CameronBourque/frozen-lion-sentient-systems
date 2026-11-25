@@ -1,6 +1,6 @@
 // Asks the user for the run mode, the provider, the model, and the effort when
 // the bridge starts in a terminal. docs/design/core/run-modes.md and
-// docs/design/core/model-client.md have the design.
+// docs/design/core/picker.md have the design.
 
 import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider } from "../config.js";
 import type { ModelInfo } from "./list-models.js";

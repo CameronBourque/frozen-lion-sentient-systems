@@ -1,5 +1,5 @@
 // Chooses the model when the bridge starts: the picker in a terminal, or the
-// saved model without one. docs/design/core/model-client.md has the design.
+// saved model without one. docs/design/core/picker.md has the design.
 
 import type { Config } from "../config.js";
 import { saveModel } from "../load-config.js";

@@ -1,5 +1,5 @@
 // A terminal menu that the arrow keys and Enter answer, with a window that
-// scrolls through a long list. docs/design/core/model-client.md has the design.
+// scrolls through a long list. docs/design/core/picker.md has the design.
 
 import { on } from "node:events";
 import { emitKeypressEvents } from "node:readline";

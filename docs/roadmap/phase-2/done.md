@@ -10,7 +10,7 @@ It added the model client, which calls Anthropic, OpenAI, or Google through the 
 
 Each model's price, tool support, and effort levels come from OpenRouter's public model list. Each call logs its tokens and cost, and retries a rate limit or a server error. `npm run ask` returned a tool call from each provider, and a refused key named its config field.
 
-- The client, the providers, the model list, the picker, the prices, the failures, and `npm run ask` are in [design/core/model-client.md](../../design/core/model-client.md).
+- The client, the providers, the model list, the failures, and `npm run ask` are in [design/core/model-client.md](../../design/core/model-client.md). The picker and the prices are in [design/core/picker.md](../../design/core/picker.md).
 - The `providers` and `model` fields, and the environment variables that fill a blank key, are in [design/core/settings.md](../../design/core/settings.md).
 
 ## Personality and sweat level
@@ -55,7 +55,7 @@ A mode that no provider has reads `(not available yet)`. **What now?** gained **
 `npm run ask` passed every case in a terminal on 2026-11-23.
 
 - The provider files and the menu's rules are in [design/core/run-modes.md](../../design/core/run-modes.md#providers).
-- The menus, in order, are in the picker section of [design/core/model-client.md](../../design/core/model-client.md#picker).
+- The menus, in order, are in [design/core/picker.md](../../design/core/picker.md#menus).
 
 ## ChatGPT plan
 

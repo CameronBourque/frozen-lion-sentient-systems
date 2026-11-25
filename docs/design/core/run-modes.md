@@ -50,7 +50,7 @@ To add a provider, add its file and its entry in `providers`. To add a run mode 
 
 ## Picker
 
-The picker in [model-client.md](model-client.md#picker) starts with a **Run mode** menu that lists all four modes and **Quit**, starting on **API key**. **Quit** exits the bridge, as Ctrl+C does, and saves nothing. The bridge doesn't save the run mode, so each start asks again, and one run uses one mode.
+The [picker](picker.md) starts with a **Run mode** menu that lists all four modes and **Quit**, starting on **API key**. **Quit** exits the bridge, as Ctrl+C does, and saves nothing. The bridge doesn't save the run mode, so each start asks again, and one run uses one mode.
 
 The picker finds a mode's providers in two passes over `providers`:
 

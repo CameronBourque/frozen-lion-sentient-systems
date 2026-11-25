@@ -19,7 +19,7 @@ So code sets the tier at the start of the turn, and the agent can raise it withi
 
 ## Tiers
 
-Each tier is a model that the user picks in the [model picker](../core/model-client.md), as phase 2 picks one model for every turn.
+Each tier is a model that the user picks in the [model picker](../core/picker.md), as phase 2 picks one model for every turn.
 
 | Tier | Plays |
 | --- | --- |
