@@ -8,7 +8,7 @@ The four run modes differ in who runs the tool loop and how the user signs in.
 
 | Run mode | `RunMode` | Who runs the tool loop | Sign-in | Providers |
 | --- | --- | --- | --- | --- |
-| **API key** | `api-key` | The bridge's [agent loop](../agents/turn-loop.md), through the [model client](model-client.md) | An API key in `providers` in the [config file](settings.md) | Anthropic, OpenAI, Google |
+| **API key** | `api-key` | The bridge's [agent loop](../agents/turn-loop.md), through the [model client](model-client.md) | An API key in `providers` in the [config file](settings.md) | Anthropic, OpenAI, Google, xAI |
 | **Subscription token** | `subscription` | The bridge's agent loop, through the model client | The provider's browser sign-in for the user's plan | OpenAI, on a ChatGPT plan |
 | **Agent SDK** | `agent-sdk` | The provider's agent SDK | The provider's own login for the user's plan | Anthropic, behind a flag |
 | **CLI** | `cli` | The provider's CLI, started once per turn | The CLI's own login | None |
@@ -19,11 +19,11 @@ For a provider with more than one plan mode, the bridge offers the first that wo
 2. Agent SDK, when it passes the [parity check](#parity-check).
 3. CLI, when the provider has no agent SDK that passes, and its CLI passes the same check.
 
-[findings/plan-access/](../../findings/plan-access/README.md) has what each provider allows. Google offers no plan mode, so it is API key only.
+[findings/plan-access/](../../findings/plan-access/README.md) has what each provider allows. Google offers no plan mode, so it is API key only. xAI is API key only until xAI says whether the bridge may use its plan sign-in.
 
 ## Providers
 
-Each provider is one object in its own file in `src/model/providers/`: `anthropic.ts`, `openai.ts`, and `google.ts`. `providers(folder, log)` in `src/model/providers/index.ts` lists them.
+Each provider is one object in its own file in `src/model/providers/`: `anthropic.ts`, `openai.ts`, `google.ts`, and `xai.ts`. `providers(folder, log)` in `src/model/providers/index.ts` lists them.
 
 It takes the config file's folder and the logger, since OpenAI's token store keeps the plan's tokens in that folder and logs its warnings.
 

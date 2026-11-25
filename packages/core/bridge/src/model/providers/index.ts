@@ -6,8 +6,9 @@ import { anthropic } from "./anthropic.js";
 import { google } from "./google.js";
 import { openai } from "./openai.js";
 import type { ProviderDef } from "./provider.js";
+import { xai } from "./xai.js";
 
 // The folder is the config file's, where a plan's tokens are saved.
 export function providers(folder: string, log: Pick<Logger, "info" | "warn">): ProviderDef[] {
-	return [anthropic, openai(folder, log), google];
+	return [anthropic, openai(folder, log), google, xai];
 }

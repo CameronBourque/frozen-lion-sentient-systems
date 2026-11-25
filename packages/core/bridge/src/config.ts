@@ -11,7 +11,7 @@ import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 // Bump this when the format changes, and migrate older files when they load.
 export const SCHEMA_VERSION = 1;
 
-export const PROVIDER_NAMES = ["anthropic", "openai", "google"] as const;
+export const PROVIDER_NAMES = ["anthropic", "openai", "google", "xai"] as const;
 
 export type Provider = typeof PROVIDER_NAMES[number];
 
@@ -20,6 +20,7 @@ export const KEY_VARIABLES: Record<Provider, string> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	openai: "OPENAI_API_KEY",
 	google: "GOOGLE_API_KEY",
+	xai: "XAI_API_KEY",
 };
 
 // The first port after the two the game listens on, 4318 and 4319.

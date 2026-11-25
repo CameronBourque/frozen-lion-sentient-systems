@@ -8,7 +8,7 @@ Git ignores `tmp/`. `src/config.ts` holds the `zod` schema, and `src/load-config
 
 - `schemaVersion`, which [versioning.md](../versioning.md#bump-rules) requires,
 - `logLevel`, one of the five log levels, with `decisions` as the default,
-- `providers`, an API key for each provider: `anthropic`, `openai`, or `google`, such as `anthropic: { apiKey: "..." }`. A blank key comes from `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GOOGLE_API_KEY` when it is set, and the bridge logs which keys came from there,
+- `providers`, an API key for each provider: `anthropic`, `openai`, `google`, or `xai`, such as `anthropic: { apiKey: "..." }`. A blank key comes from `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`, or `XAI_API_KEY` when it is set, and the bridge logs which keys came from there,
 - `model`, the model the agents use: `provider`, `id`, `effort`, and `price`, all blank until you pick them. `effort` is one of the AI SDK's reasoning levels, and blank leaves the provider's default.
 
   `price` has `input`, `output`, `cacheRead`, and `cacheWrite`, in US dollars per million tokens. The cache prices are for input read from or written to the provider's prompt cache. The picker fills it from OpenRouter's public model list, and you can change it. See [picker.md](picker.md#model-facts),
