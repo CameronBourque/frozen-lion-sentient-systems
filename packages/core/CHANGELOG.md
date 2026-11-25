@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.30.0...core-v0.31.0) (2026-11-25)
+
+
+### Features
+
+* **core:** run agents on a ChatGPT plan ([#134](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/134)) ([fe92290](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/fe922906654a5682aa944554678061db5d574cf6))
+
 ## [0.30.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.29.0...core-v0.30.0) (2026-11-23)
 
 
