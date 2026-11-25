@@ -34,7 +34,7 @@ interface Offered {
 // The providers that can play in a run mode. One that signs in is offered
 // while signed out too, since picking it signs in.
 export function offeredProviders(config: Config, providers: ProviderDef[], mode: RunMode): Offered[] {
-	return providers.flatMap(({ name, modes }) => {
+	return providers.flatMap<Offered>(({ name, modes }) => {
 		const support = modes[mode];
 
 		if (support === undefined) {

@@ -70,8 +70,8 @@ const terminal = { input: process.stdin, write: (text: string) => process.stdout
 const ask = process.stdin.isTTY ? (title: string, labels: string[], start: number) => askMenu(title, labels, start, terminal) : undefined;
 
 // No top-level await, because the executable's bundle is CommonJS.
-void chooseModel(started.config, started.path, logger, { ask, providers: providers(path.dirname(started.path), logger), facts: () => cachedFacts(factsCachePath(started.path)) }).then((chosen) => {
-	if (!chosen) {
+void chooseModel(started.config, started.path, logger, { ask, providers: providers(path.dirname(started.path), logger), facts: () => cachedFacts(factsCachePath(started.path)) }).then((mode) => {
+	if (mode === undefined) {
 		logger.closeFile();
 		process.exit(0);
 	}

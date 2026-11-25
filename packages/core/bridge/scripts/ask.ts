@@ -7,7 +7,7 @@ import { isSea } from "node:sea";
 import { startConfig } from "../src/load-config.js";
 import { Logger } from "../src/log.js";
 import { chooseModel } from "../src/model/choose.js";
-import { type ModelRequest, callModel } from "../src/model/client.js";
+import { type ModelRequest, callModel, isCallMode } from "../src/model/client.js";
 import { askMenu } from "../src/model/menu.js";
 import { cachedFacts, factsCachePath } from "../src/model/model-facts.js";
 import { providers } from "../src/model/providers/index.js";
@@ -50,7 +50,9 @@ async function main(): Promise<void> {
 
 	const offered = providers(path.dirname(started.path), logger);
 
-	if (!await chooseModel(config, started.path, logger, { ask, providers: offered, facts: () => cachedFacts(factsCachePath(started.path)) })) {
+	const mode = await chooseModel(config, started.path, logger, { ask, providers: offered, facts: () => cachedFacts(factsCachePath(started.path)) });
+
+	if (mode === undefined) {
 		return;
 	}
 
@@ -63,16 +65,24 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const built = offered.find(({ name }) => name === provider)?.modes["api-key"]?.model(config, id);
-
-	if (built?.ok !== true) {
-		logger.error("model_failed", built?.error ?? `${provider} has no API key mode`);
+	// Only the API key and subscription token modes call the model here.
+	if (!isCallMode(mode)) {
+		logger.error("model_failed", `${mode} runs its own loop, which ask doesn't cover`);
 		process.exitCode = 1;
 
 		return;
 	}
 
-	const result = await callModel({ model: built.model, provider, mode: "api-key", effort }, REQUEST);
+	const built = offered.find(({ name }) => name === provider)?.modes[mode]?.model(config, id);
+
+	if (built?.ok !== true) {
+		logger.error("model_failed", built?.error ?? `${provider} has no ${mode} mode`);
+		process.exitCode = 1;
+
+		return;
+	}
+
+	const result = await callModel({ model: built.model, provider, mode, effort }, REQUEST);
 
 	if (!result.ok) {
 		logger.warn("model_failed", result.error);

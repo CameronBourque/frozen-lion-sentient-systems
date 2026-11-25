@@ -57,6 +57,12 @@ const AUTH_FIXES = {
 
 export type CallMode = keyof typeof AUTH_FIXES;
 
+// The run modes the model client calls in, as opposed to an agent SDK or a
+// CLI, which run their own loop.
+export function isCallMode(mode: RunMode): mode is CallMode {
+	return mode in AUTH_FIXES;
+}
+
 // The model, its provider for the messages, the run mode for the auth
 // message, and the effort, where blank leaves the provider's default.
 export interface ModelTarget {

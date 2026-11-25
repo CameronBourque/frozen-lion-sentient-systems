@@ -47,11 +47,11 @@ A cache read or write with no cache price counts as plain input, at the input pr
 
 ## Picker
 
-When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one.
+When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. It returns the run mode, which is API key without a terminal, or nothing when the user cancels.
 
 In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for the **Run mode**, from `RUN_MODES` in `src/model/providers/provider.ts`, as [run-modes.md](run-modes.md#picker) describes. Then it asks three menus, each starting on the saved choice:
 
-1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu.
+1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu, unless it needs a sign-in.
 2. **Model**, from the provider's list, by name, ID, and price.
 3. **Effort**, from the levels the model supports, with `provider-default` first. `effortsFor` in `src/model/model-facts.ts` reads them from OpenRouter's list:
    - every level for a model OpenRouter doesn't list,
@@ -79,7 +79,7 @@ Without a terminal, the bridge uses the saved model. `savedModelWarning` warns w
 
 ## Checking a model
 
-`npm run ask` checks a model without the game. It reads `tmp/sentient-systems.yaml`, runs the picker in a terminal, and sends the chosen model one prompt with one fake tool, `report_civilization`.
+`npm run ask` checks a model without the game. It reads `tmp/sentient-systems.yaml`, runs the picker in a terminal, and sends the chosen model one prompt with one fake tool, `report_civilization`, in the picked run mode.
 
 It prints the tool call, such as `report_civilization({"name":"Rome"})`, and logs the call's tokens and cost.
 

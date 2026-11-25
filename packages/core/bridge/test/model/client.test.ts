@@ -5,7 +5,8 @@ import { APICallError, simulateReadableStream } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Effort, Provider } from "../../src/config.js";
-import { MAX_RETRIES, type ModelRequest, type ModelTarget, type ToolDefinition, callModel, modelFailure } from "../../src/model/client.js";
+import type { RunMode } from "../../src/model/providers/provider.js";
+import { MAX_RETRIES, type ModelRequest, type ModelTarget, type ToolDefinition, callModel, isCallMode, modelFailure } from "../../src/model/client.js";
 
 // @ai-sdk/provider names these types, but the bridge doesn't depend on it.
 type StreamResult = Awaited<ReturnType<MockLanguageModelV4["doStream"]>>;
@@ -304,4 +305,8 @@ test("marks a plan's usage limit that arrives mid-stream", async () => {
 
 	expect(await callModel({ ...target(model, "", "openai"), mode: "subscription" }, REQUEST)).toMatchObject({ ok: false, kind: "limit" });
 	expect(model.doStreamCalls).toHaveLength(1);
+});
+
+test("calls the model only in the modes that use the bridge's loop", () => {
+	expect(["api-key", "subscription", "agent-sdk", "cli"].filter((mode) => isCallMode(mode as RunMode))).toEqual(["api-key", "subscription"]);
 });
