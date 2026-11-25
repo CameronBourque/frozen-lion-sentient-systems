@@ -14,47 +14,52 @@ export interface ChooseIo {
 	facts: PickerIo["facts"];
 }
 
-// Sets config.model to the choice, saves a new one, and logs the model agents
-// use, or why they can't play. Returns false when the user cancels.
-export async function chooseModel(config: Config, file: string, logger: Logger, { ask, providers, facts }: ChooseIo): Promise<boolean> {
-	// Without a terminal, the bridge uses API key mode.
-	let mode: RunMode = "api-key";
-
-	if (ask !== undefined) {
-		const picked = await pickModel(config, { ask, providers, facts, warn: (text) => logger.warn("model_warning", text) });
-
-		if (picked.result === "cancelled") {
-			return false;
-		}
-
-		mode = picked.mode;
-
-		if (picked.result === "picked") {
-			config.model = picked.model;
-
-			const saveError = saveModel(file, picked.model);
-
-			if (saveError !== undefined) {
-				logger.warn("model_warning", saveError);
-			}
-		}
-	}
-
-	// With no key at all, keyWarning already says what to do, and no model can
-	// play. In a terminal, the picker returns only a mode that can play.
-	if (offeredProviders(config, providers, "api-key").length === 0) {
-		return true;
-	}
-
-	const warning = savedModelWarning(config, file, providers);
+function logChosen(logger: Logger, config: Config, mode: RunMode): void {
 	const { provider, id, effort } = config.model;
 	const { label } = RUN_MODES.find((row) => row.mode === mode) as RunModeRow;
 
-	if (warning === undefined) {
-		logger.info("model_chosen", `Agents use ${provider} ${id} in ${label} mode, with ${effort === "" ? "the provider's default" : effort} effort`, { mode, provider, id, effort });
-	} else {
-		logger.warn("model_warning", warning);
+	logger.info("model_chosen", `Agents use ${provider} ${id} in ${label} mode, with ${effort === "" ? "the provider's default" : effort} effort`, { mode, provider, id, effort });
+}
+
+// Sets config.model to the choice, saves a new one, and logs the model agents
+// use, or why they can't play. Returns the run mode, or undefined when the
+// user cancels.
+export async function chooseModel(config: Config, file: string, logger: Logger, { ask, providers, facts }: ChooseIo): Promise<RunMode | undefined> {
+	// Without a terminal, the bridge uses API key mode with the saved model.
+	if (ask === undefined) {
+		// With no key at all, keyWarning already says what to do.
+		if (offeredProviders(config, providers, "api-key").length > 0) {
+			const warning = savedModelWarning(config, file, providers);
+
+			if (warning === undefined) {
+				logChosen(logger, config, "api-key");
+			} else {
+				logger.warn("model_warning", warning);
+			}
+		}
+
+		return "api-key";
 	}
 
-	return true;
+	const picked = await pickModel(config, { ask, providers, facts, warn: (text) => logger.warn("model_warning", text) });
+
+	if (picked.result === "cancelled") {
+		return undefined;
+	}
+
+	// A kept model may differ from the saved one in its price.
+	config.model = picked.model;
+
+	if (picked.result === "picked") {
+		const saveError = saveModel(file, picked.model);
+
+		if (saveError !== undefined) {
+			logger.warn("model_warning", saveError);
+		}
+	}
+
+	// The picker returns only a model that can play in its mode.
+	logChosen(logger, config, picked.mode);
+
+	return picked.mode;
 }

@@ -1,14 +1,22 @@
 // Tests for model/client.ts, with the AI SDK's mock model in place of a
 // provider, and fake timers for the retries.
 
-import { APICallError } from "ai";
+import { APICallError, simulateReadableStream } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Effort, Provider } from "../../src/config.js";
-import { MAX_RETRIES, type ModelRequest, type ModelTarget, type ToolDefinition, callModel, modelFailure } from "../../src/model/client.js";
+import type { RunMode } from "../../src/model/providers/provider.js";
+import { MAX_RETRIES, type ModelRequest, type ModelTarget, type ToolDefinition, callModel, isCallMode, modelFailure } from "../../src/model/client.js";
 
-// @ai-sdk/provider names this type, but the bridge doesn't depend on it.
-type GenerateResult = Awaited<ReturnType<MockLanguageModelV4["doGenerate"]>>;
+// @ai-sdk/provider names these types, but the bridge doesn't depend on it.
+type StreamResult = Awaited<ReturnType<MockLanguageModelV4["doStream"]>>;
+type StreamPart = StreamResult["stream"] extends ReadableStream<infer Part> ? Part : never;
+type Usage = Extract<StreamPart, { type: "finish" }>["usage"];
+
+// What the model writes and calls, before the test turns it into stream parts.
+type Content =
+	| { type: "text"; text: string }
+	| { type: "tool-call"; toolCallId: string; toolName: string; input: string };
 
 const END_TURN: ToolDefinition = {
 	name: "end_turn",
@@ -26,46 +34,80 @@ const REQUEST: ModelRequest = {
 	tools: [END_TURN],
 };
 
+const USAGE: Usage = {
+	inputTokens: { total: 10, noCache: 10, cacheRead: undefined, cacheWrite: undefined },
+	outputTokens: { total: 5, text: 5, reasoning: undefined },
+};
+
 function target(model: MockLanguageModelV4, effort: Effort | "" = "", provider: Provider = "anthropic"): ModelTarget {
-	return { model, provider, effort };
+	return { model, provider, mode: "api-key", effort };
 }
 
-function reply(content: GenerateResult["content"]): GenerateResult {
-	return {
-		content,
-		finishReason: { unified: "stop", raw: undefined },
-		usage: {
-			inputTokens: { total: 10, noCache: 10, cacheRead: undefined, cacheWrite: undefined },
-			outputTokens: { total: 5, text: 5, reasoning: undefined },
-		},
-		warnings: [],
-	};
+// Each text arrives in two deltas, so the test checks that the client joins
+// them.
+function partsOf(content: Content): StreamPart[] {
+	if (content.type === "tool-call") {
+		return [content];
+	}
+
+	const half = Math.ceil(content.text.length / 2);
+
+	return [
+		{ type: "text-start", id: "text-1" },
+		{ type: "text-delta", id: "text-1", delta: content.text.slice(0, half) },
+		{ type: "text-delta", id: "text-1", delta: content.text.slice(half) },
+		{ type: "text-end", id: "text-1" },
+	];
 }
 
-const DONE = reply([{ type: "text", text: "Done." }]);
+function stream(parts: StreamPart[]): StreamResult {
+	return { stream: simulateReadableStream({ chunks: parts, initialDelayInMs: null, chunkDelayInMs: null }) };
+}
+
+function reply(content: Content[], usage: Usage = USAGE): StreamResult {
+	return stream([
+		{ type: "stream-start", warnings: [] },
+		...content.flatMap(partsOf),
+		{ type: "finish", finishReason: { unified: "stop", raw: undefined }, usage },
+	]);
+}
+
+function done(): StreamResult {
+	return reply([{ type: "text", text: "Done." }]);
+}
+
+function replying(make: () => StreamResult): MockLanguageModelV4 {
+	return new MockLanguageModelV4({ doStream: () => Promise.resolve(make()) });
+}
 
 // An API error as a provider's package throws it.
-function apiError(statusCode: number, message: string): APICallError {
-	return new APICallError({ message, url: "https://api.example.com", requestBodyValues: {}, statusCode });
+function apiError(statusCode: number, message: string, responseBody?: string): APICallError {
+	return new APICallError({ message, url: "https://api.example.com", requestBodyValues: {}, statusCode, responseBody });
 }
 
-// A model that fails with each error in turn, then answers.
+// A ChatGPT plan's error, with its code in the body as OpenAI sends it.
+function subscriptionError(statusCode: number, code: string): APICallError {
+	return apiError(statusCode, "Plan error", JSON.stringify({ error: { code, message: "Plan error" } }));
+}
+
+// A model that fails to start the stream with each error in turn, then
+// answers.
 function failingModel(errors: Error[]): MockLanguageModelV4 {
 	return new MockLanguageModelV4({
-		doGenerate: () => {
+		doStream: () => {
 			const error = errors.shift();
 
-			return error === undefined ? Promise.resolve(DONE) : Promise.reject(error);
+			return error === undefined ? Promise.resolve(done()) : Promise.reject(error);
 		},
 	});
 }
 
 test("sends the system prompt, the messages, and the tools", async () => {
-	const model = new MockLanguageModelV4({ doGenerate: DONE });
+	const model = replying(done);
 
 	await callModel(target(model), REQUEST);
 
-	const [call] = model.doGenerateCalls;
+	const [call] = model.doStreamCalls;
 
 	expect(call.prompt).toEqual([
 		{ role: "system", content: "You play Civilization VI." },
@@ -80,23 +122,23 @@ test("sends the system prompt, the messages, and the tools", async () => {
 });
 
 test("leaves the provider's effort when the effort is blank", async () => {
-	const model = new MockLanguageModelV4({ doGenerate: DONE });
+	const model = replying(done);
 
 	await callModel(target(model), REQUEST);
 
-	expect(model.doGenerateCalls[0].reasoning).toBeUndefined();
+	expect(model.doStreamCalls[0].reasoning).toBeUndefined();
 });
 
 test("sends the effort", async () => {
-	const model = new MockLanguageModelV4({ doGenerate: DONE });
+	const model = replying(done);
 
 	await callModel(target(model, "high"), REQUEST);
 
-	expect(model.doGenerateCalls[0].reasoning).toBe("high");
+	expect(model.doStreamCalls[0].reasoning).toBe("high");
 });
 
 test("returns the text and no tool calls when the model only writes", async () => {
-	const model = new MockLanguageModelV4({ doGenerate: reply([{ type: "text", text: "I'll wait." }]) });
+	const model = replying(() => reply([{ type: "text", text: "I'll wait." }]));
 
 	expect(await callModel(target(model), REQUEST)).toEqual({
 		ok: true,
@@ -105,12 +147,10 @@ test("returns the text and no tool calls when the model only writes", async () =
 });
 
 test("returns the tool calls without running them", async () => {
-	const model = new MockLanguageModelV4({
-		doGenerate: reply([
-			{ type: "text", text: "Ending the turn." },
-			{ type: "tool-call", toolCallId: "call-1", toolName: "end_turn", input: "{\"reason\":\"Nothing left.\"}" },
-		]),
-	});
+	const model = replying(() => reply([
+		{ type: "text", text: "Ending the turn." },
+		{ type: "tool-call", toolCallId: "call-1", toolName: "end_turn", input: "{\"reason\":\"Nothing left.\"}" },
+	]));
 
 	expect(await callModel(target(model), REQUEST)).toEqual({
 		ok: true,
@@ -120,31 +160,23 @@ test("returns the tool calls without running them", async () => {
 			usage: { inputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 5 },
 		},
 	});
-	expect(model.doGenerateCalls).toHaveLength(1);
+	expect(model.doStreamCalls).toHaveLength(1);
 });
 
 test("counts tokens the provider doesn't report as 0", async () => {
-	const unreported = reply([{ type: "text", text: "Done." }]);
-
-	unreported.usage = {
+	const model = replying(() => reply([{ type: "text", text: "Done." }], {
 		inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
 		outputTokens: { total: undefined, text: undefined, reasoning: undefined },
-	};
-
-	const model = new MockLanguageModelV4({ doGenerate: unreported });
+	}));
 
 	expect(await callModel(target(model), REQUEST)).toMatchObject({ reply: { usage: { inputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 0 } } });
 });
 
 test("returns the tokens read from and written to the prompt cache", async () => {
-	const cached = reply([{ type: "text", text: "Done." }]);
-
-	cached.usage = {
+	const model = replying(() => reply([{ type: "text", text: "Done." }], {
 		inputTokens: { total: 100, noCache: 20, cacheRead: 70, cacheWrite: 10 },
 		outputTokens: { total: 5, text: 5, reasoning: undefined },
-	};
-
-	const model = new MockLanguageModelV4({ doGenerate: cached });
+	}));
 
 	expect(await callModel(target(model), REQUEST)).toMatchObject({
 		reply: { usage: { inputTokens: 100, cacheReadTokens: 70, cacheWriteTokens: 10, outputTokens: 5 } },
@@ -166,7 +198,7 @@ describe("failures", () => {
 		await vi.advanceTimersByTimeAsync(6000);
 
 		expect(await result).toMatchObject({ ok: true });
-		expect(model.doGenerateCalls).toHaveLength(3);
+		expect(model.doStreamCalls).toHaveLength(3);
 	});
 
 	test("gives up after the last retry", async () => {
@@ -180,10 +212,10 @@ describe("failures", () => {
 
 		expect(await result).toEqual({
 			ok: false,
-			auth: false,
+			kind: "other",
 			error: `The anthropic model call failed after ${MAX_RETRIES + 1} tries: Internal error`,
 		});
-		expect(model.doGenerateCalls).toHaveLength(MAX_RETRIES + 1);
+		expect(model.doStreamCalls).toHaveLength(MAX_RETRIES + 1);
 	});
 
 	test("doesn't retry a refused key, and names the key to check", async () => {
@@ -191,10 +223,10 @@ describe("failures", () => {
 
 		expect(await callModel(target(model), REQUEST)).toEqual({
 			ok: false,
-			auth: true,
+			kind: "auth",
 			error: "anthropic refused the API key with 401: invalid x-api-key. Check providers.anthropic.apiKey in the config file, or ANTHROPIC_API_KEY",
 		});
-		expect(model.doGenerateCalls).toHaveLength(1);
+		expect(model.doStreamCalls).toHaveLength(1);
 	});
 
 	test("finds a refused key after a retry", async () => {
@@ -205,16 +237,76 @@ describe("failures", () => {
 
 		await vi.advanceTimersByTimeAsync(2000);
 
-		expect(await result).toMatchObject({ ok: false, auth: true, error: expect.stringMatching(/^google refused the API key with 403: Forbidden\. Check providers\.google\.apiKey/) as unknown });
+		expect(await result).toMatchObject({ ok: false, kind: "auth", error: expect.stringMatching(/^google refused the API key with 403: Forbidden\. Check providers\.google\.apiKey/) as unknown });
+	});
+
+	test("doesn't retry an error after the stream starts, and gives its message", async () => {
+		const model = replying(() => stream([
+			{ type: "stream-start", warnings: [] },
+			...partsOf({ type: "text", text: "Ending" }),
+			{ type: "error", error: apiError(429, "Usage limit reached") },
+		]));
+
+		expect(await callModel(target(model, "", "openai"), REQUEST)).toEqual({
+			ok: false,
+			kind: "other",
+			error: "The openai model call failed: Usage limit reached",
+		});
+		expect(model.doStreamCalls).toHaveLength(1);
+	});
+
+	test("fails when the stream ends with no reply", async () => {
+		const model = replying(() => stream([{ type: "stream-start", warnings: [] }]));
+
+		expect(await callModel(target(model), REQUEST)).toMatchObject({ ok: false, kind: "other" });
 	});
 });
 
 describe("modelFailure", () => {
 	test("passes on any other error's message", () => {
-		expect(modelFailure("openai", new Error("fetch failed"))).toEqual({ ok: false, auth: false, error: "The openai model call failed: fetch failed" });
+		expect(modelFailure("openai", "api-key", new Error("fetch failed"))).toEqual({ ok: false, kind: "other", error: "The openai model call failed: fetch failed" });
+	});
+
+	test("names an error that isn't an Error", () => {
+		expect(modelFailure("openai", "api-key", "socket closed")).toEqual({ ok: false, kind: "other", error: "The openai model call failed: socket closed" });
 	});
 
 	test("treats an API error without a refused key as a failure", () => {
-		expect(modelFailure("openai", apiError(400, "Bad request"))).toEqual({ ok: false, auth: false, error: "The openai model call failed: Bad request" });
+		expect(modelFailure("openai", "api-key", apiError(400, "Bad request"))).toEqual({ ok: false, kind: "other", error: "The openai model call failed: Bad request" });
 	});
+
+	test("tells a plan user to sign in again when the plan refuses the token", () => {
+		expect(modelFailure("openai", "subscription", apiError(401, "Expired"))).toEqual({
+			ok: false,
+			kind: "auth",
+			error: "openai refused the plan sign-in with 401: Expired. Sign in again from the Run mode menu",
+		});
+	});
+
+	test.each([
+		[429, "subscription_sharing_usage_limit_exceeded", "limit", "The ChatGPT plan's usage limit is reached: Plan error. https://chatgpt.com/settings/usage shows when it resets"],
+		[403, "subscription_sharing_user_not_eligible", "not-eligible", "This ChatGPT account's plan can't be used by other apps: Plan error"],
+		[503, "subscription_sharing_usage_unavailable", "unavailable", "ChatGPT plan usage is unavailable right now: Plan error"],
+		[400, "subscription_sharing_unsupported_capability", "unsupported", "The ChatGPT plan rejected a field the bridge sent, which is a bridge bug. Report it with this message: Plan error"],
+	])("marks a %i with %s as its own kind", (status, code, kind, error) => {
+		expect(modelFailure("openai", "subscription", subscriptionError(status, code))).toEqual({ ok: false, kind, error });
+	});
+});
+
+test("marks a plan's usage limit that arrives mid-stream", async () => {
+	// The OpenAI package gives a failed response a status from its code,
+	// which is 500 for this one.
+	const failed = apiError(500, "Usage limit reached", JSON.stringify({ type: "response.failed", response: { error: { code: "subscription_sharing_usage_limit_exceeded", message: "Usage limit reached" } } }));
+	const model = replying(() => stream([
+		{ type: "stream-start", warnings: [] },
+		...partsOf({ type: "text", text: "Ending" }),
+		{ type: "error", error: failed },
+	]));
+
+	expect(await callModel({ ...target(model, "", "openai"), mode: "subscription" }, REQUEST)).toMatchObject({ ok: false, kind: "limit" });
+	expect(model.doStreamCalls).toHaveLength(1);
+});
+
+test("calls the model only in the modes that use the bridge's loop", () => {
+	expect(["api-key", "subscription", "agent-sdk", "cli"].filter((mode) => isCallMode(mode as RunMode))).toEqual(["api-key", "subscription"]);
 });

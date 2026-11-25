@@ -7,7 +7,7 @@ import { type Lister, withParam } from "../list-models.js";
 import { apiKeyMode } from "./api-key.js";
 import type { ProviderDef } from "./provider.js";
 
-const PAGE = z.object({
+const API_KEY_PAGE = z.object({
 	models: z.array(z.object({
 		name: z.string(),
 		displayName: z.string(),
@@ -16,11 +16,11 @@ const PAGE = z.object({
 });
 
 // Google's names start with "models/", which the SDK doesn't take.
-const LISTER: Lister = {
+const API_KEY_LISTER: Lister = {
 	url: "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000",
-	headers: (apiKey) => ({ "x-goog-api-key": apiKey }),
+	headers: (key) => ({ "x-goog-api-key": key }),
 	parse: (body, url) => {
-		const page = PAGE.parse(body);
+		const page = API_KEY_PAGE.parse(body);
 
 		return {
 			models: page.models.map(({ name, displayName }) => ({ id: name.replace(/^models\//, ""), name: displayName })),
@@ -32,6 +32,6 @@ const LISTER: Lister = {
 export const google: ProviderDef = {
 	name: "google",
 	modes: {
-		"api-key": apiKeyMode("google", (apiKey) => createGoogle({ apiKey }), LISTER),
+		"api-key": apiKeyMode("google", (apiKey) => createGoogle({ apiKey }), API_KEY_LISTER),
 	},
 };

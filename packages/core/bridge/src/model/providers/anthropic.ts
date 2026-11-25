@@ -7,18 +7,18 @@ import { type Lister, withParam } from "../list-models.js";
 import { apiKeyMode } from "./api-key.js";
 import type { ProviderDef } from "./provider.js";
 
-const PAGE = z.object({
+const API_KEY_PAGE = z.object({
 	data: z.array(z.object({ id: z.string(), display_name: z.string() })),
 	has_more: z.boolean(),
 	last_id: z.string().nullable(),
 });
 
 // Anthropic lists its models newest first.
-const LISTER: Lister = {
+const API_KEY_LISTER: Lister = {
 	url: "https://api.anthropic.com/v1/models?limit=1000",
-	headers: (apiKey) => ({ "x-api-key": apiKey, "anthropic-version": "2023-06-01" }),
+	headers: (key) => ({ "x-api-key": key, "anthropic-version": "2023-06-01" }),
 	parse: (body, url) => {
-		const page = PAGE.parse(body);
+		const page = API_KEY_PAGE.parse(body);
 
 		return {
 			models: page.data.map(({ id, display_name }) => ({ id, name: display_name })),
@@ -30,6 +30,6 @@ const LISTER: Lister = {
 export const anthropic: ProviderDef = {
 	name: "anthropic",
 	modes: {
-		"api-key": apiKeyMode("anthropic", (apiKey) => createAnthropic({ apiKey }), LISTER),
+		"api-key": apiKeyMode("anthropic", (apiKey) => createAnthropic({ apiKey }), API_KEY_LISTER),
 	},
 };

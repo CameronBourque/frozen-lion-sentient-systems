@@ -6,13 +6,17 @@ You pick the model and its effort in `model` in the [config file](settings.md), 
 
 `callModel(target, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools to the target's model, with the effort as the SDK's `reasoning` setting, and returns the model's text and tool calls. The target also names the provider, for the error messages.
 
+`callModel` streams every call with the SDK's `streamText`, in every run mode, and returns once the stream ends.
+
 Each tool has a name, a description, and a JSON Schema for its input, as the MCP tools do. The client returns each tool call without running it.
 
 Each provider's API key mode, from `apiKeyMode` in `src/model/providers/api-key.ts`, builds the model for that provider: Anthropic, OpenAI, or Google, each through its `@ai-sdk/` package. [run-modes.md](run-modes.md#providers) has the provider files.
 
 It reads the API key from `providers` in the [config file](settings.md), which an environment variable fills when it is blank, and fails with the field to set when the key is empty or missing.
 
-`listModels(provider, lister, apiKey)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page. Each provider file has its own lister, with the list's URL, headers, and page shape.
+`listModels(provider, lister, credential)` in `src/model/list-models.ts` lists a provider's models through its own API, with `fetch`, and reads every page.
+
+The credential is the API key, or the plan token in a subscription token mode. Each provider file has its own lister, with the list's URL, headers, and page shape.
 
 The provider's list shows the models the user's key can use. Anthropic lists the newest first, and the OpenAI list is sorted newest first.
 
@@ -24,11 +28,14 @@ A refused request, a network error, or an answer of the wrong shape fails the wh
 
 ## Failures
 
-`callModel` returns a failure instead of throwing:
+`callModel` returns a failure instead of throwing. Each failure has a `kind`, from a table in `src/model/client.ts` that lists every failure the bridge knows, with how to spot it and its message. The first row that matches wins. A failure that matches no row is `other`.
 
-- **A rate limit or a server error**, such as 429, 500, or 529, retries up to 3 times through the SDK's own retry, with backoff from 2 seconds, or after the provider's `Retry-After`. After the last try, the failure gives the number of tries and the last error.
-- **A refused key**, 401 or 403, doesn't retry. The failure is marked `auth`, and its message names `providers.<provider>.apiKey` and the key's environment variable. The agent loop logs it as a warning and stops the turn.
-- **Any other error** gives its message.
+- **A rate limit or a server error**, such as 429, 500, or 529, retries up to 3 times through the SDK's own retry, with backoff from 2 seconds, or after the provider's `Retry-After`. The SDK retries only before the stream starts.
+
+  After the last try, the failure gives the number of tries and the last error.
+- **A refused credential**, 401 or 403, doesn't retry. It is marked `auth`, with the fix for the run mode in `ModelTarget`. An API key's fix names `providers.<provider>.apiKey` and its variable, and a plan's says to sign in again. The agent loop stops the turn.
+- **A plan's error codes** each have a kind, matched in the error's `responseBody`, which also holds a mid-stream `response.failed` frame. [subscription-token.md](subscription-token.md) lists them.
+- **An error after the stream starts**, or any other error, is marked `other` and gives its message.
 
 ## Usage
 
@@ -40,19 +47,19 @@ A cache read or write with no cache price counts as plain input, at the input pr
 
 ## Picker
 
-When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one.
+When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. It returns the run mode, which is API key without a terminal, or nothing when the user cancels.
 
 In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for the **Run mode**, from `RUN_MODES` in `src/model/providers/provider.ts`, as [run-modes.md](run-modes.md#picker) describes. Then it asks three menus, each starting on the saved choice:
 
-1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu.
-2. **Model**, from the provider's list, by name, ID, and price.
+1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu, unless it needs a sign-in.
+2. **Model**, from the provider's list, by name, ID, and price. Any other mode shows no price and leaves it blank.
 3. **Effort**, from the levels the model supports, with `provider-default` first. `effortsFor` in `src/model/model-facts.ts` reads them from OpenRouter's list:
    - every level for a model OpenRouter doesn't list,
    - only `provider-default` for a model without reasoning,
    - `provider-default` and the model's levels, when OpenRouter lists them, with the level that `provider-default` means, such as `provider-default (high)`,
    - otherwise every level, but `none` only when reasoning can be turned off.
 
-`cachedFacts` and `priceFor` in `src/model/model-facts.ts` look up facts about each model, such as its price, in OpenRouter's public model list, while the picker lists the models. The list gives each provider's own price, with no markup.
+`cachedFacts` and `priceFor` in `src/model/model-facts.ts` look up facts about each model, such as its price, in OpenRouter's public model list, while the picker lists the models. It gives each provider's own price.
 
 OpenRouter names a model `anthropic/claude-opus-5.5` where Anthropic's API says `claude-opus-5-5`, so the lookup counts a dot and a dash as the same.
 
@@ -72,7 +79,7 @@ Without a terminal, the bridge uses the saved model. `savedModelWarning` warns w
 
 ## Checking a model
 
-`npm run ask` checks a model without the game. It reads `tmp/sentient-systems.yaml`, runs the picker in a terminal, and sends the chosen model one prompt with one fake tool, `report_civilization`.
+`npm run ask` checks a model without the game. It reads `tmp/sentient-systems.yaml`, runs the picker in a terminal, and sends the chosen model one prompt with one fake tool, `report_civilization`, in the picked run mode.
 
 It prints the tool call, such as `report_civilization({"name":"Rome"})`, and logs the call's tokens and cost.
 
@@ -98,6 +105,8 @@ It exits with code 1 when the config has errors, no model can be built, the call
 | Cached tokens with no cache price count as plain input, and the log shows a cost only when input and output have prices | Every cached token is still an input token, so the input price is a fair stand-in. Without an input or output price there is nothing to stand in |
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | Retries use the SDK's own retry, with `maxRetries` set to 3 | It already backs off, honors `Retry-After`, and knows which status codes are worth a retry |
+| Every call streams, in every run mode | A ChatGPT plan takes only streamed calls. One path for every mode means the API key and plan calls fail, retry, and report usage the same way |
+| Every known failure has its own kind, and `other` is only for the rest | The agent loop decides by kind, and a new failure is one table row |
 | A failed call returns a failure instead of throwing | A failed call is an ordinary event for the agent loop, which decides what to do. An auth failure stops the turn, because every retry would fail the same way |
 | After a failed list, the user chooses the saved model, and Enter never does | The saved model may cost more than the user meant to spend. A switch the user didn't see could run it for a whole game |
 | The effort menu offers only the model's own levels | The SDK swaps an unsupported level for another without asking, so a pick of `minimal` can run at `low`. OpenRouter lists each model's levels |

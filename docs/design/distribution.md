@@ -13,6 +13,7 @@ How a nontechnical user gets and runs the project: three mods on the Steam Works
 
   Each platform ships once someone has run the phase 0 gate on it, and releases from before then have no build for it. macOS builds also need signing and notarization, or Gatekeeper blocks them.
 - Gathering Storm is the first supported ruleset. Other rulesets follow.
+- The repo is under the Apache License 2.0, in `LICENSE` at its root. It covers the project's own code, mods, and knowledge files, but not the game's files, which stay under Firaxis's terms.
 
 ## Open questions
 
@@ -30,4 +31,5 @@ How a nontechnical user gets and runs the project: three mods on the Steam Works
 | The user enters the API key in game, and the bridge stores it | Saves and multiplayer games share game setup parameters |
 | Windows first, then Linux and macOS, each once it is tested | The tuner works on all three, but each platform needs a machine to run the gate on. A Linux test machine exists. macOS also needs signing and notarization |
 | Gathering Storm first | One ruleset to support at the start |
+| Apache-2.0 for the whole repo | OpenAI allows plan usage only for open-source apps, and Apache-2.0 is one. It lets anyone build on the project, as the AI SDK and MCP SDK it uses do, and gives a patent grant from each contributor. One license is simpler than a separate one for the knowledge files |
 | Publish measured costs in the mod description | Users pay their own API bills and should know the cost before they play |

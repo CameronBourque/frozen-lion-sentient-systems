@@ -56,3 +56,20 @@ A mode that no provider has reads `(not available yet)`. **What now?** gained **
 
 - The provider files and the menu's rules are in [design/core/run-modes.md](../../design/core/run-modes.md#providers).
 - The menus, in order, are in the picker section of [design/core/model-client.md](../../design/core/model-client.md#picker).
+
+## ChatGPT plan
+
+Pull request: feat(core): run agents on a ChatGPT plan.
+
+It turned on the **Subscription token** run mode for OpenAI. Picking **Continue with ChatGPT** signs in through the browser, and the bridge saves the tokens in `auth/openai.json`, refreshes them before they expire, and calls OpenAI's API with them.
+
+Each plan error code is its own failure kind, and a plan model has no price, so its calls log no cost. The repo is now under the Apache License 2.0.
+
+On 2026-11-25, `npm run ask` signed in on a ChatGPT Plus plan, listed the plan's models with no prices, and printed the tool call. Its `model_call` record had 85 input and 20 output tokens and no cost. Once the access token expired, the next run refreshed it with no browser.
+
+In the API key mode it printed the tool call for Anthropic. OpenAI and Google wait for an API key to check.
+
+- The sign-in, the tokens, the refresh, and the calls are in [design/core/subscription-token.md](../../design/core/subscription-token.md).
+- The credential, `subscriptionMode`, and the picker's sign-in row are in [design/core/run-modes.md](../../design/core/run-modes.md#providers).
+- The failure kinds are in [design/core/model-client.md](../../design/core/model-client.md#failures), and `auth/` is in [design/core/settings.md](../../design/core/settings.md).
+- The live check's results are in [findings/plan-access/openai.md](../../findings/plan-access/openai.md#results), and the license and why are in [design/distribution.md](../../design/distribution.md).

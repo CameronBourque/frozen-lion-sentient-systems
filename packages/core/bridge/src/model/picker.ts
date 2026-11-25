@@ -10,7 +10,7 @@ import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunMo
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
 	ask: (title: string, labels: string[], start: number) => Promise<number | undefined>;
-	// PROVIDERS, or fakes in tests.
+	// providers(), or fakes in tests.
 	providers: ProviderDef[];
 	facts: () => Promise<FactsResult>;
 	warn: (text: string) => void;
@@ -26,14 +26,26 @@ export type PickResult =
 interface Offered {
 	name: Provider;
 	mode: ModeSupport;
+	ready: boolean;
+	// The provider's name, or its sign-in row when it needs a sign-in.
+	label: string;
 }
 
-// The providers that can play in a run mode.
+// The providers that can play in a run mode. One that signs in is offered
+// while signed out too, since picking it signs in.
 export function offeredProviders(config: Config, providers: ProviderDef[], mode: RunMode): Offered[] {
-	return providers.flatMap(({ name, modes }) => {
+	return providers.flatMap<Offered>(({ name, modes }) => {
 		const support = modes[mode];
 
-		return support !== undefined && support.ready(config).ok ? [{ name, mode: support }] : [];
+		if (support === undefined) {
+			return [];
+		}
+
+		if (support.ready(config).ok) {
+			return [{ name, mode: support, ready: true, label: name }];
+		}
+
+		return support.signIn === undefined ? [] : [{ name, mode: support, ready: false, label: support.signIn.label }];
 	});
 }
 
@@ -46,8 +58,16 @@ function notReadyReasons(config: Config, providers: ProviderDef[], mode: RunMode
 	});
 }
 
-function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts): string {
-	return `${name === id ? id : `${name} (${id})`}, ${priceLabel(priceFor(facts, provider, id))}`;
+// Only the API key mode pays per token. A plan has no price per token, and an
+// API price would make cost limits stop runs that cost the user nothing more.
+function isPricedMode(mode: RunMode): boolean {
+	return mode === "api-key";
+}
+
+function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts, priced: boolean): string {
+	const named = name === id ? id : `${name} (${id})`;
+
+	return priced ? `${named}, ${priceLabel(priceFor(facts, provider, id))}` : named;
 }
 
 // Names the level that provider-default means, when OpenRouter says.
@@ -149,16 +169,25 @@ export async function pickModel(config: Config, io: PickerIo): Promise<PickResul
 
 // Asks for the provider in a run mode, then its model and effort.
 async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Promise<PickResult> {
-	const saved = config.model;
 	const offered = offeredProviders(config, io.providers, runMode);
 	const names = offered.map(({ name }) => name);
-	const provider = names.length === 1 ? names[0] : await askFor(io, "Provider", names, names, saved.provider);
+	// The menu shows even for one provider when it needs a sign-in, so the
+	// browser never opens before the user asks.
+	const provider = names.length === 1 && offered[0].ready ? names[0] : await askFor(io, "Provider", names, offered.map(({ label }) => label), config.model.provider);
 
 	if (provider === undefined) {
 		return { result: "cancelled" };
 	}
 
 	const { mode } = offered[names.indexOf(provider)];
+	const signedIn = await mode.signIn?.run();
+
+	if (signedIn?.ok === false) {
+		io.warn(signedIn.error);
+
+		return pickAfterFailure(config, io, runMode);
+	}
+
 	const [listed, fetched] = await Promise.all([mode.listModels(config), io.facts()]);
 
 	if (!fetched.ok) {
@@ -173,7 +202,13 @@ async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Pro
 
 	io.warn(listed.ok ? `${provider} listed no models that call tools` : listed.error);
 
-	const next = await askAfterFailure(io, config, offered);
+	return pickAfterFailure(config, io, runMode);
+}
+
+// Asks what now after a failed sign-in or model list, with the providers as
+// they are now, since a sign-in may have changed them.
+async function pickAfterFailure(config: Config, io: PickerIo, runMode: RunMode): Promise<PickResult> {
+	const next = await askAfterFailure(io, config, offeredProviders(config, io.providers, runMode));
 
 	if (next === "provider") {
 		return pickProvider(config, io, runMode);
@@ -183,7 +218,11 @@ async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Pro
 		return pickModel(config, io);
 	}
 
-	return next === "use" ? { result: "kept", mode: runMode, model: saved } : { result: "cancelled" };
+	if (next !== "use") {
+		return { result: "cancelled" };
+	}
+
+	return { result: "kept", mode: runMode, model: isPricedMode(runMode) ? config.model : { ...config.model, price: NO_PRICE } };
 }
 
 // Asks for the model and the effort from a provider's list.
@@ -191,7 +230,8 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 	const saved = config.model;
 	const facts = fetched.ok ? fetched.facts : {};
 	const ids = models.map(({ id }) => id);
-	const labels = models.map((model) => modelLabel(model, provider, facts));
+	const priced = isPricedMode(runMode);
+	const labels = models.map((model) => modelLabel(model, provider, facts, priced));
 	const id = await askFor(io, `${provider} model`, ids, labels, saved.id);
 
 	if (id === undefined) {
@@ -206,20 +246,20 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 		return { result: "cancelled" };
 	}
 
-	const price = chosenPrice(saved, provider, id, facts);
+	const price = priced ? chosenPrice(saved, provider, id, facts) : NO_PRICE;
 
-	if (fetched.ok && !isPriced(price)) {
+	if (priced && fetched.ok && !isPriced(price)) {
 		io.warn(`OpenRouter lists no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
 	}
 
 	return { result: "picked", mode: runMode, model: { provider, id, effort, price } };
 }
 
-// A saved model can play when it is picked and its provider is offered.
+// A saved model can play when it is picked and its provider is ready.
 function canPlay(config: Config, offered: Offered[]): boolean {
 	const { provider, id } = config.model;
 
-	return provider !== "" && id !== "" && offered.some(({ name }) => name === provider);
+	return provider !== "" && id !== "" && offered.some(({ name, ready }) => ready && name === provider);
 }
 
 // Says why the saved choice can't play in API key mode, which the bridge uses

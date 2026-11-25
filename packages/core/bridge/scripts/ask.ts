@@ -2,14 +2,15 @@
 // call, its tokens, and its cost. Run it with `npm run ask`, with no game.
 // Exits with code 1 if the model can't be called or calls no tool.
 
+import path from "node:path";
 import { isSea } from "node:sea";
 import { startConfig } from "../src/load-config.js";
 import { Logger } from "../src/log.js";
 import { chooseModel } from "../src/model/choose.js";
-import { type ModelRequest, callModel } from "../src/model/client.js";
+import { type ModelRequest, callModel, isCallMode } from "../src/model/client.js";
 import { askMenu } from "../src/model/menu.js";
 import { cachedFacts, factsCachePath } from "../src/model/model-facts.js";
-import { PROVIDERS } from "../src/model/providers/index.js";
+import { providers } from "../src/model/providers/index.js";
 import { logModelCall } from "../src/model/usage.js";
 
 // A question that only a tool call answers well, so a model that writes text
@@ -47,7 +48,11 @@ async function main(): Promise<void> {
 	logger.level = config.logLevel;
 	started.warnings.forEach((warning) => logger.warn("config_warning", warning));
 
-	if (!await chooseModel(config, started.path, logger, { ask, providers: PROVIDERS, facts: () => cachedFacts(factsCachePath(started.path)) })) {
+	const offered = providers(path.dirname(started.path), logger);
+
+	const mode = await chooseModel(config, started.path, logger, { ask, providers: offered, facts: () => cachedFacts(factsCachePath(started.path)) });
+
+	if (mode === undefined) {
 		return;
 	}
 
@@ -60,16 +65,24 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const built = PROVIDERS.find(({ name }) => name === provider)?.modes["api-key"]?.model(config, id);
-
-	if (built?.ok !== true) {
-		logger.error("model_failed", built?.error ?? `${provider} has no API key mode`);
+	// Only the API key and subscription token modes call the model here.
+	if (!isCallMode(mode)) {
+		logger.error("model_failed", `${mode} runs its own loop, which ask doesn't cover`);
 		process.exitCode = 1;
 
 		return;
 	}
 
-	const result = await callModel({ model: built.model, provider, effort }, REQUEST);
+	const built = offered.find(({ name }) => name === provider)?.modes[mode]?.model(config, id);
+
+	if (built?.ok !== true) {
+		logger.error("model_failed", built?.error ?? `${provider} has no ${mode} mode`);
+		process.exitCode = 1;
+
+		return;
+	}
+
+	const result = await callModel({ model: built.model, provider, mode, effort }, REQUEST);
 
 	if (!result.ok) {
 		logger.warn("model_failed", result.error);

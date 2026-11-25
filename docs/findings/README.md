@@ -9,8 +9,9 @@ What we learn about Civ VI, FireTuner, and our tools while we build the bridge. 
 | [actions/](actions/README.md) | The game calls the action API wraps, with the reasons their checks give. |
 | [state/](state/README.md) | The game calls the state serializer uses, and what a player can know about each tile. |
 | [choices/](choices/README.md) | The game calls the choices use to list each choice's legal options, as the game's screens list them. |
+| [plan-access/](plan-access/README.md) | Which providers let the bridge use a user's paid plan in place of an API key, and how. |
 
-Five files sit at the top, because each has no topic folder yet:
+Four files sit at the top, because each has no topic folder yet:
 
 | File | Topic |
 | --- | --- |
@@ -18,7 +19,6 @@ Five files sit at the top, because each has no topic folder yet:
 | [civilopedia.md](civilopedia.md) | How the Civilopedia builds its pages, text, and search, and which of its calls the core mod's UI state can make |
 | [build-tooling.md](build-tooling.md) | The single-executable build tool |
 | [agent-runs.md](agent-runs.md) | Runs of a model playing through the MCP tools: setup, calls per turn, failures, and guesses |
-| [plan-access.md](plan-access.md) | Which providers let the bridge use a user's paid plan in place of an API key, and how |
 
 ## Local paths
 

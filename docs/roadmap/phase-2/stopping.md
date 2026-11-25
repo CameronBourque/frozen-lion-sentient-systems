@@ -14,7 +14,7 @@ Add the stop key, the turn count, and the spending limits, so an agent never spe
 
    A turn at its limit ends with `force`, as the other turn limits do. A run at its limit stops as the stop key does, and logs the run's total cost.
 
-   A model call failure marked `limit`, from a plan's usage limit, stops the run the same way, as [run-modes.md](../../design/core/run-modes.md#subscription-token) says. Commit: `feat(core): add spending limits`.
+   A model call failure marked `limit`, from a plan's usage limit, stops the run the same way, as [subscription-token.md](../../design/core/subscription-token.md) says. Commit: `feat(core): add spending limits`.
 
 ## Done when
 

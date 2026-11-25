@@ -44,7 +44,7 @@ describe("in a terminal", () => {
 		const config = configWith(NO_MODEL);
 		const info = vi.spyOn(logger, "info");
 
-		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, providers: LISTING, facts: FACTS })).toBe(true);
+		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, providers: LISTING, facts: FACTS })).toBe("api-key");
 
 		const picked = { provider: "openai", id: "model-a", effort: "provider-default", price: NO_PRICE };
 
@@ -64,25 +64,51 @@ describe("in a terminal", () => {
 		const subscription: ChooseIo["ask"] = (title) => Promise.resolve(title === "Run mode" ? 1 : 0);
 		const info = vi.spyOn(logger, "info");
 
-		await chooseModel(configWith(NO_MODEL), file, logger, { ask: subscription, providers, facts: FACTS });
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: subscription, providers, facts: FACTS })).toBe("subscription");
 
 		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in Subscription token mode, with provider-default effort", expect.objectContaining({ mode: "subscription" }));
 	});
 
-	test("returns false when the user cancels", async () => {
-		const cancel: ChooseIo["ask"] = () => Promise.resolve(undefined);
+	test("logs a plan's model when no provider has an API key", async () => {
+		const plan: ModeSupport = {
+			ready: () => ({ ok: true }),
+			listModels: () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }),
+			model: () => ({ ok: false, error: "unused" }),
+		};
+		const providers = LISTING.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
+		const subscription: ChooseIo["ask"] = (title) => Promise.resolve(title === "Run mode" ? 1 : 0);
+		const info = vi.spyOn(logger, "info");
 
-		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: cancel, providers: LISTING, facts: FACTS })).toBe(false);
+		expect(await chooseModel({ ...configWith(NO_MODEL), providers: {} }, file, logger, { ask: subscription, providers, facts: FACTS })).toBe("subscription");
+		expect(info).toHaveBeenCalledWith("model_chosen", expect.stringMatching(/in Subscription token mode/), expect.objectContaining({ mode: "subscription" }));
 	});
 
-	test("returns false when the user quits after the list fails", async () => {
+	test("returns no mode when the user cancels", async () => {
+		const cancel: ChooseIo["ask"] = () => Promise.resolve(undefined);
+
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: cancel, providers: LISTING, facts: FACTS })).toBeUndefined();
+	});
+
+	test("returns no mode when the user quits after the list fails", async () => {
 		const warn = vi.spyOn(logger, "warn");
 		const failing = providersListing(() => Promise.resolve({ ok: false, error: "offline" }));
 		// API key, then Quit after the failed list.
 		const quit: ChooseIo["ask"] = (title, labels) => Promise.resolve(title === "Run mode" ? 0 : labels.indexOf("Quit"));
 
-		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: quit, providers: failing, facts: FACTS })).toBe(false);
+		expect(await chooseModel(configWith(NO_MODEL), file, logger, { ask: quit, providers: failing, facts: FACTS })).toBeUndefined();
 		expect(warn).toHaveBeenCalledWith("model_warning", "offline");
+	});
+
+	test("keeps and logs the saved model without saving it again", async () => {
+		const info = vi.spyOn(logger, "info");
+		const failing = providersListing(() => Promise.resolve({ ok: false, error: "offline" }));
+		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
+		// API key, then Use after the failed list.
+		const use: ChooseIo["ask"] = (title, labels) => Promise.resolve(title === "Run mode" ? 0 : labels.findIndex((label) => label.startsWith("Use")));
+
+		expect(await chooseModel(configWith(saved), file, logger, { ask: use, providers: failing, facts: FACTS })).toBe("api-key");
+		expect(info).toHaveBeenCalledWith("model_chosen", expect.stringMatching(/^Agents use openai model-a in API key mode/), expect.objectContaining({ mode: "api-key" }));
+		expect(fs.readFileSync(file, "utf8")).toBe(EXAMPLE_CONFIG);
 	});
 
 	test("warns when it can't save the choice", async () => {
@@ -99,7 +125,7 @@ describe("without a terminal", () => {
 		const info = vi.spyOn(logger, "info");
 		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
-		expect(await chooseModel(configWith(saved), file, logger, { providers: LISTING, facts: FACTS })).toBe(true);
+		expect(await chooseModel(configWith(saved), file, logger, { providers: LISTING, facts: FACTS })).toBe("api-key");
 		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in API key mode, with the provider's default effort", { mode: "api-key", provider: "openai", id: "model-a", effort: "" });
 	});
 
@@ -108,7 +134,7 @@ describe("without a terminal", () => {
 		const warn = vi.spyOn(logger, "warn");
 		const config = { ...configWith({ provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), providers: {} };
 
-		expect(await chooseModel(config, file, logger, { providers: LISTING, facts: FACTS })).toBe(true);
+		expect(await chooseModel(config, file, logger, { providers: LISTING, facts: FACTS })).toBe("api-key");
 		expect(info).not.toHaveBeenCalled();
 		expect(warn).not.toHaveBeenCalled();
 	});

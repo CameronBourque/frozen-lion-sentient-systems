@@ -20,7 +20,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 2 | Personality and sweat level | The neutral personality, the balanced sweat level, and the prompt | `feat(core): add the neutral personality and the balanced sweat level` | Done. See [done.md](done.md#personality-and-sweat-level) |
 | 3 | Memory and decision records | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | Done. See [done.md](done.md#memory-and-decision-records) |
 | 4 | Run mode menu | A file for each provider and the four run modes in the picker, with only the API key working | `feat(core): add the run mode menu` | Done. See [done.md](done.md#run-mode-menu) |
-| 5 | [ChatGPT plan](chatgpt-plan.md) | The subscription token mode for OpenAI: sign-in, token refresh, and plan calls | `feat(core): run agents on a ChatGPT plan` | |
+| 5 | ChatGPT plan | The subscription token mode for OpenAI: sign-in, token refresh, and plan calls | `feat(core): run agents on a ChatGPT plan` | Done. See [done.md](done.md#chatgpt-plan) |
 | 6 | [Agent loop](agent-loop.md) | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | |
 | 7 | [End turn](end-turn.md) | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | |
 | 8 | [Turn limits](turn-limits.md) | Retries per action, actions per turn, and time per turn | `feat(core): add turn limits` | |
