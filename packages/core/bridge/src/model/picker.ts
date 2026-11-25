@@ -58,8 +58,16 @@ function notReadyReasons(config: Config, providers: ProviderDef[], mode: RunMode
 	});
 }
 
-function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts): string {
-	return `${name === id ? id : `${name} (${id})`}, ${priceLabel(priceFor(facts, provider, id))}`;
+// Only the API key mode pays per token. A plan has no price per token, and an
+// API price would make cost limits stop runs that cost the user nothing more.
+function isPricedMode(mode: RunMode): boolean {
+	return mode === "api-key";
+}
+
+function modelLabel({ id, name }: ModelInfo, provider: Provider, facts: Facts, priced: boolean): string {
+	const named = name === id ? id : `${name} (${id})`;
+
+	return priced ? `${named}, ${priceLabel(priceFor(facts, provider, id))}` : named;
 }
 
 // Names the level that provider-default means, when OpenRouter says.
@@ -210,7 +218,11 @@ async function pickAfterFailure(config: Config, io: PickerIo, runMode: RunMode):
 		return pickModel(config, io);
 	}
 
-	return next === "use" ? { result: "kept", mode: runMode, model: config.model } : { result: "cancelled" };
+	if (next !== "use") {
+		return { result: "cancelled" };
+	}
+
+	return { result: "kept", mode: runMode, model: isPricedMode(runMode) ? config.model : { ...config.model, price: NO_PRICE } };
 }
 
 // Asks for the model and the effort from a provider's list.
@@ -218,7 +230,8 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 	const saved = config.model;
 	const facts = fetched.ok ? fetched.facts : {};
 	const ids = models.map(({ id }) => id);
-	const labels = models.map((model) => modelLabel(model, provider, facts));
+	const priced = isPricedMode(runMode);
+	const labels = models.map((model) => modelLabel(model, provider, facts, priced));
 	const id = await askFor(io, `${provider} model`, ids, labels, saved.id);
 
 	if (id === undefined) {
@@ -233,9 +246,9 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 		return { result: "cancelled" };
 	}
 
-	const price = chosenPrice(saved, provider, id, facts);
+	const price = priced ? chosenPrice(saved, provider, id, facts) : NO_PRICE;
 
-	if (fetched.ok && !isPriced(price)) {
+	if (priced && fetched.ok && !isPriced(price)) {
 		io.warn(`OpenRouter lists no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
 	}
 

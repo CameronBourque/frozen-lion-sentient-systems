@@ -47,9 +47,10 @@ export async function chooseModel(config: Config, file: string, logger: Logger, 
 		return undefined;
 	}
 
-	if (picked.result === "picked") {
-		config.model = picked.model;
+	// A kept model may differ from the saved one in its price.
+	config.model = picked.model;
 
+	if (picked.result === "picked") {
 		const saveError = saveModel(file, picked.model);
 
 		if (saveError !== undefined) {

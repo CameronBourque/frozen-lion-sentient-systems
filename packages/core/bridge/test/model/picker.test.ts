@@ -275,6 +275,28 @@ describe("pickModel", () => {
 			expect(warnings).toEqual(["The browser never came back"]);
 			expect(asked[1]).toEqual({ title: "What now?", labels: ["Try again", "Pick another run mode", "Quit"], start: 0 });
 		});
+
+		test("shows no prices on a plan, and saves none, with no warning", async () => {
+			const priced: FactsResult = { ok: true, facts: { "openai/model-a": { ...TOOLS, pricing: { prompt: "0.000002", completion: "0.00001" } }, "openai/model-b": TOOLS } };
+			const saved = { provider: "openai" as const, id: "model-a", effort: "" as const, price: { ...NO_PRICE, input: 2, output: 10 } };
+			const { io, asked, warnings } = scriptedIo([0, 0], MODELS, priced, [1]);
+
+			withPlan(io, true);
+
+			expect(await pickModel(configWith([], saved), io)).toMatchObject({ result: "picked", model: { id: "model-a", price: NO_PRICE } });
+			expect(asked[0].labels).toEqual(["Model A (model-a)", "model-b"]);
+			expect(warnings).toEqual([]);
+		});
+
+		test("keeps the saved model on a plan without its price", async () => {
+			const saved = { provider: "openai" as const, id: "model-a", effort: "" as const, price: { ...NO_PRICE, input: 2, output: 10 } };
+			const { io } = scriptedIo([2], { ok: false, error: "offline" }, TOOL_FACTS, [1]);
+
+			withPlan(io, true);
+			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: { ...provider.modes.subscription as ModeSupport, listModels: () => Promise.resolve({ ok: false as const, error: "offline" }) } } } : provider);
+
+			expect(await pickModel(configWith([], saved), io)).toEqual({ result: "kept", mode: "subscription", model: { ...saved, price: NO_PRICE } });
+		});
 	});
 
 	describe("effort", () => {

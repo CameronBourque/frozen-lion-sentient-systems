@@ -52,14 +52,14 @@ When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker i
 In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for the **Run mode**, from `RUN_MODES` in `src/model/providers/provider.ts`, as [run-modes.md](run-modes.md#picker) describes. Then it asks three menus, each starting on the saved choice:
 
 1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu, unless it needs a sign-in.
-2. **Model**, from the provider's list, by name, ID, and price.
+2. **Model**, from the provider's list, by name, ID, and price. Any other mode shows no price and leaves it blank.
 3. **Effort**, from the levels the model supports, with `provider-default` first. `effortsFor` in `src/model/model-facts.ts` reads them from OpenRouter's list:
    - every level for a model OpenRouter doesn't list,
    - only `provider-default` for a model without reasoning,
    - `provider-default` and the model's levels, when OpenRouter lists them, with the level that `provider-default` means, such as `provider-default (high)`,
    - otherwise every level, but `none` only when reasoning can be turned off.
 
-`cachedFacts` and `priceFor` in `src/model/model-facts.ts` look up facts about each model, such as its price, in OpenRouter's public model list, while the picker lists the models. The list gives each provider's own price, with no markup.
+`cachedFacts` and `priceFor` in `src/model/model-facts.ts` look up facts about each model, such as its price, in OpenRouter's public model list, while the picker lists the models. It gives each provider's own price.
 
 OpenRouter names a model `anthropic/claude-opus-5.5` where Anthropic's API says `claude-opus-5-5`, so the lookup counts a dot and a dash as the same.
 

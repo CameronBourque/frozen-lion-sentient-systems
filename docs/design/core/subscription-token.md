@@ -44,7 +44,7 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
   - `not-eligible`, for `subscription_sharing_user_not_eligible`. Its message says the account's plan can't be used by other apps, and the agent loop stops the turn.
   - `unavailable`, for `subscription_sharing_usage_unavailable`. The SDK retries it as a server error, and the agent loop treats it as `other`.
   - `unsupported`, for `subscription_sharing_unsupported_capability`. The bridge sent a field the plan rejects, which is a bridge bug, so its message asks the user to report it. The agent loop stops the turn.
-- **Price.** A plan has no price per token, so `model.price` stays blank. The log shows tokens with no cost, and only the token [spending limits](../agents/turn-loop.md#stopping) apply.
+- **Price.** A plan has no price per token, so the model menu shows none and `model.price` stays blank. The log shows tokens with no cost, and only the token [spending limits](../agents/turn-loop.md#stopping) apply.
 
 [findings/plan-access.md](../../findings/plan-access.md#openai) has OpenAI's URLs, fields, and error codes.
 
