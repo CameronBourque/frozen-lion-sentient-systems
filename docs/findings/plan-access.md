@@ -1,6 +1,6 @@
 # Plan access
 
-Status: unconfirmed. Read from each provider's docs on 2026-11-22, and from OpenAI's sign-in pages again on 2026-11-23, with no sign-in or call tested yet.
+Status: OpenAI's plan confirmed by a live call on 2026-11-25. The rest is from each provider's docs, read on 2026-11-22 and 2026-11-23.
 
 Which providers let the bridge use a user's paid plan, such as ChatGPT Plus or Claude Max, in place of an API key, and through what: a token for the provider's API, an agent SDK, or a CLI. [design/core/run-modes.md](../design/core/run-modes.md) uses these facts.
 
@@ -84,6 +84,13 @@ Which providers let the bridge use a user's paid plan, such as ChatGPT Plus or C
 
 ## Results
 
-None yet.
+OpenAI, on a ChatGPT Plus trial with `gpt-6.2-sol` at medium effort:
 
-Date checked: 2026-11-23.
+- **1.** Yes: 85 input and 20 output tokens. Cached tokens are unchecked, since the prompt was too short to cache.
+- **2.** Yes. The reply had a tool call.
+- **5.** Yes, on that reasoning model.
+- **6.** A Unix time in seconds, 6 minutes before the token expires, so a refresh with under a minute left is after it.
+
+With no plan, the browser sign-in passed and the code exchange failed with `invalid_grant`, not `subscription_sharing_user_not_eligible`. ChatGPT's settings cap how much of the plan each app may use.
+
+Date checked: 2026-11-25.
