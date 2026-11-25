@@ -7,3 +7,4 @@ Which providers let the bridge use a user's paid plan, such as ChatGPT Plus or C
 | [openai.md](openai.md) | OpenAI lets an open-source app use a ChatGPT plan through a token for its API, with a browser sign-in |
 | [anthropic.md](anthropic.md) | Anthropic's Claude Agent SDK can use a Claude plan, but a third-party app needs Anthropic's approval first |
 | [google.md](google.md) | Google offers no plan access to third-party apps, so it is API key only |
+| [xai.md](xai.md) | xAI lets the open-source tools it has announced use an X Subscription, with no published path for other apps |

@@ -34,7 +34,9 @@ What could go wrong, what it would cost, and the fallback. Open questions that a
 
   Fallback or mitigation: The lookup gives the row's stats beside the text. Concept guides fill the gaps that the phase 2 games show. Tracked in: [knowledge-files.md](design/knowledge-files.md#layers), [findings/civilopedia.md](findings/civilopedia.md#titles-and-text).
 - **Some modded civs have thin Civilopedia text.** Impact: Generated notes for those civs are weaker. Fallback or mitigation: Overrides, and better Civilopedia entries from mod authors. Tracked in: [knowledge-files.md](design/knowledge-files.md#civ-notes).
-- **Plan sign-in depends on each provider's terms.** Impact: A provider can change or end plan access for apps like the bridge, and Anthropic hasn't approved Claude plan login. Fallback or mitigation: API keys work for every provider.
+- **Plan sign-in depends on each provider's terms.** Impact: A provider can change or end plan access for apps like the bridge, and Anthropic hasn't approved Claude plan login.
 
-  The Claude agent SDK mode stays behind a flag until Anthropic approves. Tracked in: [plan-access/anthropic.md](findings/plan-access/anthropic.md), [run-modes.md](design/core/run-modes.md#claude-runner).
+  xAI publishes no way for an app it hasn't announced to use its plan sign-in. Fallback or mitigation: API keys work for every provider.
+
+  The Claude agent SDK mode stays behind a flag until Anthropic approves. xAI's plan sign-in gets a step only once xAI answers. Tracked in: [plan-access/anthropic.md](findings/plan-access/anthropic.md), [plan-access/xai.md](findings/plan-access/xai.md), [run-modes.md](design/core/run-modes.md#claude-runner).
 - **Cost per game.** Impact: Users pay their own API bills. Fallback or mitigation: Measure in phase 2 and publish the results. Spending limits per turn and per run stop the agent, as [turn-loop.md](design/agents/turn-loop.md#stopping) describes. Tracked in: [distribution.md](design/distribution.md#decisions), [phase 2](roadmap/phase-2/README.md).
