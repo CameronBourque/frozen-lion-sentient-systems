@@ -10,7 +10,7 @@ import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunMo
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
 	ask: (title: string, labels: string[], start: number) => Promise<number | undefined>;
-	// PROVIDERS, or fakes in tests.
+	// providers(), or fakes in tests.
 	providers: ProviderDef[];
 	facts: () => Promise<FactsResult>;
 	warn: (text: string) => void;

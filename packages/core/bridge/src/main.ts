@@ -17,7 +17,7 @@ import { memoryFolder } from "./memory/store.js";
 import { chooseModel } from "./model/choose.js";
 import { askMenu } from "./model/menu.js";
 import { cachedFacts, factsCachePath } from "./model/model-facts.js";
-import { PROVIDERS } from "./model/providers/index.js";
+import { providers } from "./model/providers/index.js";
 import { TunerClient } from "./tuner/client.js";
 
 // The default level until the config file sets one. Lines before then go to the
@@ -70,7 +70,7 @@ const terminal = { input: process.stdin, write: (text: string) => process.stdout
 const ask = process.stdin.isTTY ? (title: string, labels: string[], start: number) => askMenu(title, labels, start, terminal) : undefined;
 
 // No top-level await, because the executable's bundle is CommonJS.
-void chooseModel(started.config, started.path, logger, { ask, providers: PROVIDERS, facts: () => cachedFacts(factsCachePath(started.path)) }).then((chosen) => {
+void chooseModel(started.config, started.path, logger, { ask, providers: providers(path.dirname(started.path), logger), facts: () => cachedFacts(factsCachePath(started.path)) }).then((chosen) => {
 	if (!chosen) {
 		logger.closeFile();
 		process.exit(0);

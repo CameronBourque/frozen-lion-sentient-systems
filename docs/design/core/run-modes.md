@@ -23,12 +23,14 @@ For a provider with more than one plan mode, the bridge offers the first that wo
 
 ## Providers
 
-Each provider is one object in its own file in `src/model/providers/`: `anthropic.ts`, `openai.ts`, and `google.ts`. `PROVIDERS` in `src/model/providers/index.ts` lists them.
+Each provider is one object in its own file in `src/model/providers/`: `anthropic.ts`, `openai.ts`, and `google.ts`. `providers(folder, log)` in `src/model/providers/index.ts` lists them.
+
+It takes the config file's folder and the logger, since OpenAI's token store keeps the plan's tokens in that folder and logs its warnings.
 
 The object's type is `ProviderDef` in `src/model/providers/provider.ts`. It has the provider's name and a `modes` record keyed by `RunMode`. Each entry in `modes` is a `ModeSupport` with these functions:
 
 - `ready(config)`, which says whether the provider can play in that mode, or why not, such as a missing API key,
-- `signIn(config)`, only in a subscription token mode, which gets a valid token: the saved one, a refreshed one, or one from the browser sign-in,
+- `signIn`, only in a subscription token mode, with the `label` of its row in the provider menu, and `run()`, which gets a valid token: the saved one, a refreshed one, or one from the browser sign-in,
 - `listModels(config)`, which lists the models for the picker,
 - `model(config, id)`, which builds the model for the model client.
 
@@ -44,13 +46,13 @@ A run mode missing from a provider's `modes` isn't available for that provider. 
 
 A subscription token's source is a token store, which its factory reads on each request, as `subscriptionMode` in `src/model/providers/openai.ts` does.
 
-To add a provider, add its file and its entry in `PROVIDERS`. To add a run mode to a provider, add its entry in `modes`, with its sign-in for a subscription token, or its runner for an agent SDK or a CLI.
+To add a provider, add its file and its entry in `providers`. To add a run mode to a provider, add its entry in `modes`, with its sign-in for a subscription token, or its runner for an agent SDK or a CLI.
 
 ## Picker
 
 The picker in [model-client.md](model-client.md#picker) starts with a **Run mode** menu that lists all four modes and **Quit**, starting on **API key**. **Quit** exits the bridge, as Ctrl+C does, and saves nothing. The bridge doesn't save the run mode, so each start asks again, and one run uses one mode.
 
-The picker finds a mode's providers in two passes over `PROVIDERS`:
+The picker finds a mode's providers in two passes over `providers`:
 
 1. The providers that have the mode in `modes`. With none, the mode's row reads `(not available yet)`, and choosing it warns and shows the menu again.
 2. Of those, the providers whose `ready` passes. With none, the picker warns with the reason, such as no API key, and shows the **Run mode** menu again.

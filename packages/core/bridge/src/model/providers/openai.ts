@@ -6,7 +6,10 @@ import { APICallError, type LanguageModelMiddleware, wrapLanguageModel } from "a
 import { z } from "zod";
 import { USAGE_LIMIT_CODE, hasCode } from "../client.js";
 import type { Lister } from "../list-models.js";
-import type { OpenAITokens } from "../sign-in/openai-tokens.js";
+import type { Logger } from "../../log.js";
+import { openBrowser } from "../sign-in/browser.js";
+import { signIn } from "../sign-in/openai.js";
+import { type OpenAITokens, type TokenIo, openAITokens } from "../sign-in/openai-tokens.js";
 import { apiKeyMode } from "./api-key.js";
 import { type Credential, credentialMode } from "./mode.js";
 import type { ModeSupport, ProviderDef } from "./provider.js";
@@ -140,9 +143,19 @@ export function subscriptionMode(tokens: OpenAITokens, send: Send = fetch): Mode
 	return credentialMode("openai", subscriptionCredential(tokens), factory, SUBSCRIPTION_LISTER);
 }
 
-export const openai: ProviderDef = {
-	name: "openai",
-	modes: {
-		"api-key": apiKeyMode("openai", (apiKey) => createOpenAI({ apiKey }), API_KEY_LISTER),
-	},
-};
+// The folder is the config file's, where the plan's tokens are saved.
+export function openai(folder: string, log: Pick<Logger, "info" | "warn">): ProviderDef {
+	const io: TokenIo = { post: fetch, now: Date.now, log };
+	const tokens = openAITokens(folder, io);
+
+	return {
+		name: "openai",
+		modes: {
+			"api-key": apiKeyMode("openai", (apiKey) => createOpenAI({ apiKey }), API_KEY_LISTER),
+			subscription: {
+				...subscriptionMode(tokens),
+				signIn: { label: "Continue with ChatGPT", run: () => signIn(tokens, { ...io, get: (url) => fetch(url), openBrowser: (url) => openBrowser(url) }) },
+			},
+		},
+	};
+}

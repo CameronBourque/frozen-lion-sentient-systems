@@ -7,7 +7,7 @@ import { type ModelRequest, callModel } from "../../../src/model/client.js";
 import { type Send, subscriptionMode } from "../../../src/model/providers/openai.js";
 import type { OpenAITokens } from "../../../src/model/sign-in/openai-tokens.js";
 import { type Call, fakeFetch } from "../fake-fetch.js";
-import { configWithKeys } from "../fake-providers.js";
+import { configWithKeys, realProviders } from "../fake-providers.js";
 
 const CONFIG = configWithKeys({});
 
@@ -145,4 +145,11 @@ test("lists the plan's models with the current token", async () => {
 
 test("isn't ready until signed in", () => {
 	expect(subscriptionMode(fakeTokens([], { signedIn: false })).ready(CONFIG)).toEqual({ ok: false, reason: "Not signed in to a ChatGPT plan" });
+});
+
+test("offers OpenAI's plan with a sign-in, signed out when no tokens are saved", () => {
+	const subscription = realProviders().find(({ name }) => name === "openai")?.modes.subscription;
+
+	expect(subscription?.signIn?.label).toBe("Continue with ChatGPT");
+	expect(subscription?.ready(CONFIG)).toEqual({ ok: false, reason: "Not signed in to a ChatGPT plan" });
 });

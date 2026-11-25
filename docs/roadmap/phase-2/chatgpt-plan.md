@@ -27,11 +27,15 @@ Turn on the **Subscription token** run mode for OpenAI, so agents can play on a 
    3. Add the plan credential, whose source is the token store. Build the OpenAI model in the subscription mode with a `fetch` that sets the current token on each request. Send `store: false` and the system prompt in `instructions`.
 
       Make the `fetch` turn a usage limit's 429 into a status the SDK doesn't retry, since every retry fails until the plan resets. Commit: `feat(core): call OpenAI on a ChatGPT plan`.
-6. **Menu.** Turn `PROVIDERS` into `providers(folder)`, which passes the config file's folder to `openai(folder)`, so the plan's token store finds `auth/`. Add `subscription` to OpenAI's `modes` in `src/model/providers/openai.ts`, with `signIn`. Make the picker call `signIn` after the provider menu.
+6. **Menu.** Three commits:
 
-   Make `scripts/ask.ts` build the model and call it in the picked run mode, not always the API key mode.
+   1. Turn `PROVIDERS` into `providers(folder, log)`, which passes the config file's folder and the logger to `openai(folder, log)`, so the plan's token store finds `auth/`.
 
-   Show "Continue with ChatGPT" when there is no valid token, and log the first-use message after the first sign-in. Commit: `feat(core): offer the ChatGPT plan in the picker`.
+      Add `subscription` to OpenAI's `modes` in `src/model/providers/openai.ts`, with a `signIn` of a menu label and a `run`. Commit: `feat(core): add OpenAI's subscription mode`.
+   2. Offer a provider whose mode has `signIn` even when it isn't ready, with "Continue with ChatGPT" as its row, and always show the provider menu then, so the browser never opens unasked.
+
+      Run `signIn` after the provider menu, and log the first-use message after a browser sign-in. Commit: `feat(core): offer the ChatGPT plan in the picker`.
+   3. Make `chooseModel` return the picked run mode, and `scripts/ask.ts` build the model and call it in that mode, not always the API key mode. Commit: `feat(core): ask in the picked run mode`.
 7. **Live check.** Run the [plan-access.md](../../findings/plan-access.md#method) method for questions 1, 2, 5, and 6, and record the results. Commit: `docs: record the ChatGPT plan check`.
 8. **License.** Choose the repo's license and add it as `LICENSE` at the repo root. OpenAI allows plan usage only for open-source apps, as [plan-access.md](../../findings/plan-access.md#openai) says. Commit: `chore: add the license`.
 

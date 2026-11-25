@@ -3,14 +3,14 @@
 
 import { describe, expect, test } from "vitest";
 import { listModels } from "../../../src/model/list-models.js";
-import { SUBSCRIPTION_LISTER, openai } from "../../../src/model/providers/openai.js";
+import { SUBSCRIPTION_LISTER } from "../../../src/model/providers/openai.js";
 import type { ModeSupport } from "../../../src/model/providers/provider.js";
 import { type Call, fakeFetch } from "../fake-fetch.js";
-import { configWithKeys } from "../fake-providers.js";
+import { configWithKeys, realProviders } from "../fake-providers.js";
 
 const URL = "https://api.openai.com/v1/models";
 const CONFIG = configWithKeys({ openai: { apiKey: "key" } });
-const mode = openai.modes["api-key"] as ModeSupport;
+const mode = realProviders().find(({ name }) => name === "openai")?.modes["api-key"] as ModeSupport;
 
 test("keeps every model without a date, newest first", async () => {
 	const fetchPage = fakeFetch({

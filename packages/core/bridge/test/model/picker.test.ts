@@ -7,9 +7,8 @@ import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetti
 import type { ListResult } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
-import { PROVIDERS } from "../../src/model/providers/index.js";
 import type { ModeSupport } from "../../src/model/providers/provider.js";
-import { providersListing } from "./fake-providers.js";
+import { providersListing, realProviders } from "./fake-providers.js";
 
 const MODELS: ListResult = {
 	ok: true,
@@ -350,16 +349,16 @@ describe("pickModel", () => {
 
 describe("savedModelWarning", () => {
 	test("says nothing when the saved model can play", () => {
-		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", PROVIDERS)).toBeUndefined();
+		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", realProviders())).toBeUndefined();
 	});
 
 	test("warns when no model is picked", () => {
-		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "", effort: "", price: NO_PRICE }), "x.yaml", PROVIDERS)).toMatch(/^No model is picked/);
-		expect(savedModelWarning(configWith(["openai"]), "x.yaml", PROVIDERS)).toMatch(/^No model is picked/);
+		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "", effort: "", price: NO_PRICE }), "x.yaml", realProviders())).toMatch(/^No model is picked/);
+		expect(savedModelWarning(configWith(["openai"]), "x.yaml", realProviders())).toMatch(/^No model is picked/);
 	});
 
 	test("warns when the model's provider has no key", () => {
-		expect(savedModelWarning(configWith(["anthropic"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", PROVIDERS))
+		expect(savedModelWarning(configWith(["anthropic"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", realProviders()))
 			.toMatch(/^The picked model is from openai, which has no API key/);
 	});
 });
