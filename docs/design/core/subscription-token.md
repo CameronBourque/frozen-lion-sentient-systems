@@ -37,7 +37,7 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 - **Model list.** The picker lists the models right after `signIn`, so the list's request uses that token.
 
   `SUBSCRIPTION_LISTER` in `src/model/providers/openai.ts` reads `/v1/models`, which has its own reply shape on a plan. It keeps the entries whose `visibility` is `list`, in OpenAI's order, with `display_name` as the name.
-- **First use.** After the first sign-in, the bridge logs "You're using your ChatGPT plan", with the usage page.
+- **First use.** After each sign-in through the browser, the bridge logs "You're using your ChatGPT plan", with the usage page.
 - **Failures.** Each of the plan's error codes is its own [failure kind](model-client.md#failures). A 401 or 403 with none of these codes is `auth`, and its message says to sign in again.
 
   - `limit`, for `subscription_sharing_usage_limit_exceeded`. Its message gives `https://chatgpt.com/settings/usage`, and the agent loop stops the run as a run spending limit does.

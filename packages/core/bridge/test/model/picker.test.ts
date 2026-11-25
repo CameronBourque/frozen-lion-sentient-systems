@@ -7,6 +7,7 @@ import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetti
 import type { ListResult } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
+import type { SecretResult } from "../../src/model/providers/mode.js";
 import type { ModeSupport } from "../../src/model/providers/provider.js";
 import { providersListing, realProviders } from "./fake-providers.js";
 
@@ -222,6 +223,57 @@ describe("pickModel", () => {
 			expect(await pickModel(configWith(["anthropic", "openai"]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { provider: "openai" } });
 			expect(modesAsked[0].labels[1]).toBe("Subscription token");
 			expect(asked.map(({ title }) => title)).toEqual(["openai model", "Effort"]);
+		});
+
+		// A plan mode for openai only, which records each sign-in.
+		function withPlan(io: PickerIo, ready: boolean, signedIn: SecretResult = { ok: true, secret: "token" }): string[] {
+			const signIns: string[] = [];
+			const plan: ModeSupport = {
+				ready: () => ready ? { ok: true } : { ok: false, reason: "Not signed in" },
+				signIn: {
+					label: "Continue with ChatGPT",
+					run: () => {
+						signIns.push("openai");
+
+						return Promise.resolve(signedIn);
+					},
+				},
+				listModels: () => Promise.resolve(MODELS),
+				model: () => ({ ok: false, error: "unused" }),
+			};
+
+			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
+
+			return signIns;
+		}
+
+		test("asks before signing in, with the sign-in row, even for one provider", async () => {
+			const { io, asked } = scriptedIo([0, 0, 0], MODELS, TOOL_FACTS, [1]);
+			const signIns = withPlan(io, false);
+
+			expect(await pickModel(configWith([]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { provider: "openai" } });
+			expect(asked[0]).toEqual({ title: "Provider", labels: ["Continue with ChatGPT"], start: 0 });
+			expect(signIns).toEqual(["openai"]);
+		});
+
+		test("skips the menu for one signed-in provider, and still signs in for a fresh token", async () => {
+			const { io, asked } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [1]);
+			const signIns = withPlan(io, true);
+
+			expect(await pickModel(configWith([]), io)).toMatchObject({ result: "picked", mode: "subscription" });
+			expect(asked.map(({ title }) => title)).toEqual(["openai model", "Effort"]);
+			expect(signIns).toEqual(["openai"]);
+		});
+
+		test("warns when the sign-in fails, and doesn't offer the saved model", async () => {
+			const saved = { provider: "openai" as const, id: "model-a", effort: "" as const, price: NO_PRICE };
+			const { io, asked, warnings } = scriptedIo([0, 2], MODELS, TOOL_FACTS, [1]);
+
+			withPlan(io, false, { ok: false, error: "The browser never came back" });
+
+			expect(await pickModel(configWith([], saved), io)).toEqual({ result: "cancelled" });
+			expect(warnings).toEqual(["The browser never came back"]);
+			expect(asked[1]).toEqual({ title: "What now?", labels: ["Try again", "Pick another run mode", "Quit"], start: 0 });
 		});
 	});
 

@@ -55,16 +55,18 @@ The picker in [model-client.md](model-client.md#picker) starts with a **Run mode
 The picker finds a mode's providers in two passes over `providers`:
 
 1. The providers that have the mode in `modes`. With none, the mode's row reads `(not available yet)`, and choosing it warns and shows the menu again.
-2. Of those, the providers whose `ready` passes. With none, the picker warns with the reason, such as no API key, and shows the **Run mode** menu again.
+2. Of those, the providers whose `ready` passes, or whose mode has `signIn`, since picking one signs in. With none, the picker warns with the reason, such as no API key, and shows the **Run mode** menu again.
 
 The menus after it depend on the mode:
 
 - **API key.** Provider, model, and effort, as today.
-- **Subscription token.** Provider, then the mode's `signIn`, then model and effort from the provider's own list.
+- **Subscription token.** Provider, then the mode's `signIn`, then model and effort from the provider's own list. A signed-out provider's row shows its sign-in label, such as "Continue with ChatGPT". A failed sign-in warns with its reason and shows the **What now?** menu.
 - **Agent SDK.** Provider, a login check, then model and effort from the SDK's list.
 - **CLI.** Provider, a check that the CLI is installed and logged in, then model and effort.
 
-A provider menu with one provider is skipped, as today. When the model list fails, the **What now?** menu offers **Pick another run mode**, which goes back to the **Run mode** menu, beside **Pick another provider**, which stays in the same mode.
+A provider menu with one provider is skipped, unless that provider needs a sign-in, so the browser never opens before the user picks its row.
+
+When the sign-in or the model list fails, the **What now?** menu offers **Pick another run mode**, which goes back to the **Run mode** menu, beside **Pick another provider**, which stays in the same mode.
 
 The exe always runs in a console, so the picker has a terminal to ask in. Without one, such as when another program pipes the bridge's input, the bridge uses API key mode with the saved model.
 

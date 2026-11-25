@@ -50,6 +50,8 @@ interface Seen {
 	pages: Page[];
 	forms: Record<string, string>[];
 	visits: Promise<void>[];
+	// Each info line's event.
+	logged: string[];
 }
 
 interface Options {
@@ -77,7 +79,7 @@ function goodReply(nonce: string, audience = "oaiapp_9"): Response {
 }
 
 function setUp(options: Options = {}): { io: SignInIo; seen: Seen } {
-	const seen: Seen = { authorize: [], pages: [], forms: [], visits: [] };
+	const seen: Seen = { authorize: [], pages: [], forms: [], visits: [], logged: [] };
 	const visit = options.visit ?? ((authorize) => [callbackQuery(authorize, "&code=code-1&client_id=oaiapp_9")]);
 	const tokenReply = options.tokenReply ?? goodReply;
 
@@ -97,7 +99,7 @@ function setUp(options: Options = {}): { io: SignInIo; seen: Seen } {
 		post,
 		get: (url) => Promise.resolve(replies[url]),
 		now: () => NOW,
-		log: { info: () => undefined, warn: () => undefined },
+		log: { info: (event) => seen.logged.push(event), warn: () => undefined },
 		timeoutMs: options.timeoutMs,
 		openBrowser: (url) => {
 			const authorize = new URL(url);
@@ -162,6 +164,7 @@ test("signs in the first time, registers the bridge, and saves the tokens", asyn
 		tokens: { access: "access-1", refresh: "refresh-1", expiresAt: NOW + HOUR_MS, scopes: SUBSCRIPTION_SCOPES.split(" ") },
 	});
 	expect(seen.pages).toEqual([{ status: 200, text: "Signed in. You can close this tab and go back to the bridge." }]);
+	expect(seen.logged).toContain("chatgpt_plan_used");
 });
 
 test("signs in again with the saved client, host ID, and ID token", async () => {
@@ -183,6 +186,7 @@ test("uses a saved token that still works, with no browser", async () => {
 
 	expect(await run(io, seen)).toEqual({ ok: true, secret: "access-0" });
 	expect(seen.authorize).toEqual([]);
+	expect(seen.logged).toEqual([]);
 });
 
 test("signs in through the browser when the saved refresh token is spent", async () => {

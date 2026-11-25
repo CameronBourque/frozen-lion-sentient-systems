@@ -66,7 +66,7 @@ export interface ModelTarget {
 	effort: Effort | "";
 }
 
-const SUBSCRIPTION_USAGE_URL = "https://chatgpt.com/settings/usage";
+export const SUBSCRIPTION_USAGE_URL = "https://chatgpt.com/settings/usage";
 
 interface Failed {
 	provider: Provider;

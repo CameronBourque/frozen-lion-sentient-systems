@@ -5,6 +5,7 @@
 import crypto from "node:crypto";
 import http from "node:http";
 import { z } from "zod";
+import { SUBSCRIPTION_USAGE_URL } from "../client.js";
 import type { SecretResult } from "../providers/mode.js";
 import { JWKS, checkIdToken } from "./id-token.js";
 import { type OpenAITokens, RESOURCE, type SignInHints, type SignedInReply, type TokenIo, requestTokens } from "./openai-tokens.js";
@@ -186,7 +187,13 @@ async function finishSignIn(tokens: OpenAITokens, hints: SignInHints, callback: 
 	const signedIn = { ...reply, refresh_token: reply.refresh_token, id_token: reply.id_token };
 	const problem = await checkReply(signedIn, clientId, attempt.nonce, io);
 
-	return problem === undefined ? { ok: true, secret: tokens.saveSignIn(clientId, signedIn) } : { ok: false, error: problem };
+	if (problem !== undefined) {
+		return { ok: false, error: problem };
+	}
+
+	io.log.info("chatgpt_plan_used", `You're using your ChatGPT plan. ${SUBSCRIPTION_USAGE_URL} shows how much is left`);
+
+	return { ok: true, secret: tokens.saveSignIn(clientId, signedIn) };
 }
 
 async function browserSignIn(tokens: OpenAITokens, io: SignInIo): Promise<SecretResult> {
