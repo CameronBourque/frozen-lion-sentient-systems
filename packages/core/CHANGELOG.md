@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.31.0...core-v0.32.0) (2026-11-26)
+
+
+### Features
+
+* **core:** add xAI as a provider ([#137](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/137)) ([cd3841f](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/cd3841fb3984bea3046951318f6aa99edc15112e))
+
 ## [0.31.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.30.0...core-v0.31.0) (2026-11-25)
 
 
