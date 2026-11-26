@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.1](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.33.0...core-v0.33.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* **deps:** bump @ai-sdk/google from 4.0.122 to 4.0.124 ([#139](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/139)) ([7dd836b](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/7dd836b62eda310929132b9f68e3c0c701ad3ebe))
+
 ## [0.33.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.32.0...core-v0.33.0) (2026-11-26)
 
 
