@@ -3,9 +3,10 @@
 
 import os from "node:os";
 import path from "node:path";
-import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import type { Client } from "@modelcontextprotocol/client";
 import { Logger } from "../../src/log.js";
 import type { MemorySource } from "../../src/mcp/context.js";
+import { connectClient } from "../../src/mcp/in-process.js";
 import type { PlayerSource } from "../../src/mcp/player.js";
 import { createServer } from "../../src/mcp/server.js";
 import type { TunerClient } from "../../src/tuner/client.js";
@@ -20,14 +21,8 @@ export const QUIET = new Logger("error");
 const NO_MEMORY: MemorySource = () => path.join(os.tmpdir(), "no-memory");
 
 // Connects an in-process client to a server for the player.
-export async function connectTools(tuner: TunerClient, player = PLAYER_3, logger = QUIET, memory = NO_MEMORY): Promise<Client> {
-	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-	const mcp = new Client({ name: "test", version: "1.0.0" });
-
-	await createServer({ client: tuner, player, memory, logger }).connect(serverSide);
-	await mcp.connect(clientSide);
-
-	return mcp;
+export function connectTools(tuner: TunerClient, player = PLAYER_3, logger = QUIET, memory = NO_MEMORY): Promise<Client> {
+	return connectClient(createServer({ client: tuner, player, memory, logger }));
 }
 
 // Answers the stash of each call in the table with its value as JSON. Other
