@@ -61,8 +61,8 @@ describe("turnMessage", () => {
 	const NO_MEMORY: Memory = { plan: "", journal: [], decisions: [] };
 	const JOURNAL = [{ turn: 3, text: "Met Rome." }, { turn: 4, text: "Rome denounced us." }, { turn: 6, text: "Settled the coast." }];
 
-	function message(state = MINIMAL_STATE, memory = NO_MEMORY, journalEntries = 10): string {
-		return turnMessage({ state, memory, journalEntries });
+	function message(state = MINIMAL_STATE, memory = NO_MEMORY, journalEntries = 10, again = false): string {
+		return turnMessage({ state, memory, journalEntries, again });
 	}
 
 	test("holds the turn, the plan, the journal, the blockers, and the rest of the state, in that order", () => {
@@ -73,6 +73,13 @@ describe("turnMessage", () => {
 			"## End-turn blockers\n\n- ENDTURN_BLOCKING_RESEARCH",
 			statePart(MINIMAL_STATE),
 		].join("\n\n"));
+	});
+
+	test("says a turn that started again is still the same turn, and asks for end_turn again", () => {
+		const text = message(MINIMAL_STATE, NO_MEMORY, 10, true);
+
+		expect(text).toMatch(/^# Turn 1\n\nThe game cancelled your end turn, so this is still the same turn\..*call end_turn again\.\n\n## Your plan/s);
+		expect(text).not.toContain("It's your turn.");
 	});
 
 	test("asks for a plan and an entry when memory is empty", () => {

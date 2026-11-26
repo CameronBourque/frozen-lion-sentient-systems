@@ -189,6 +189,8 @@ test("a turn started again plays, though the agent already ended it", async () =
 
 	expect(await playTurn(player, context(model), true)).toEqual({ ended: true });
 	expect(model.doStreamCalls).toHaveLength(2);
+	expect(JSON.stringify(model.doStreamCalls[0].prompt)).not.toContain("still the same turn");
+	expect(JSON.stringify(model.doStreamCalls[1].prompt)).toContain("still the same turn");
 });
 
 test("a turn that stops doesn't count as ended, so the next signal plays it", async () => {

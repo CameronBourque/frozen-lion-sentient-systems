@@ -32,7 +32,9 @@ The agents play only in a run mode the [model client](../core/model-client.md) c
 1. It reads the state for the agent's player. A state it can't read stops the turn before any model call.
 2. It skips the turn when the agent already ended that game turn, so a later signal on the same turn, such as one from the resync, never sends a second end turn. It logs `turn_skipped` with the turn and calls no model.
 
-   An `again` signal still plays, because the game cancelled the end and the turn number stays the same. Only an end turn that goes through counts, so a turn that stops plays again on the next signal.
+   An `again` signal still plays, because the game cancelled the end and the turn number stays the same. Its turn message tells the model so, because a model can't tell on its own, as [agent-runs.md](../../findings/agent-runs.md#second-run) shows.
+
+   Only an end turn that goes through counts, so a turn that stops plays again on the next signal.
 3. It reads the agent's [memory](../memory.md). On the agent's first turn after the bridge starts, it calls `startMemory`, so [stale memory](../memory.md#stale-memory) moves aside. On later turns, it calls `readMemory`. It logs each warning either returns as `memory_warning`.
 4. It sends the system prompt, the [turn message](prompt.md#two-calls), and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.
 5. It runs the reply's tool calls in order through the MCP server, and sends each result back, marked as an error when the tool failed. A blocked `end_turn` goes back the same way, so the model resolves the blocker and tries again.

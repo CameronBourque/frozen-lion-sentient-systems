@@ -15,17 +15,23 @@ export interface AgentProfile {
 export const DEFAULT_PROFILE: AgentProfile = { personality: "neutral", sweatLevel: "balanced" };
 
 // What a turn message is built from. journalEntries is the config file's cap
-// on the newest entries it holds.
+// on the newest entries it holds. again is true when the game cancelled the
+// end of the turn and started it again.
 export interface TurnInput {
 	state: State;
 	memory: Memory;
 	journalEntries: number;
+	again: boolean;
 }
+
+// A model can't tell a turn started again from the next one, and counts every
+// later turn one too high. docs/findings/agent-runs.md has the run.
+const AGAIN = "The game cancelled your end turn, so this is still the same turn. Something changed after you ended it, such as a queued move that stopped short. Resolve the blockers below, and call end_turn again.";
 
 // The turn message's parts, in order. A part with nothing to say returns
 // undefined, and the message leaves it out.
 const TURN_PARTS: ((input: TurnInput) => string | undefined)[] = [
-	({ state }) => `# Turn ${state.turn}\n\nIt's your turn.`,
+	({ state, again }) => `# Turn ${state.turn}\n\n${again ? AGAIN : "It's your turn."}`,
 	({ memory }) => `## Your plan\n\n${memory.plan === "" ? "You have no plan yet. Make one with update_plan." : memory.plan}`,
 	({ memory, journalEntries }) => `## Your journal\n\n${journalText(memory.journal, journalEntries)}`,
 	({ state, memory }) => decisionsText(memory.decisions, state.turn),

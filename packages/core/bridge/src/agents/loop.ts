@@ -48,7 +48,8 @@ const END_TURN = "end_turn";
 const NUDGE = "You wrote no tool call. Take your next action, or call end_turn when you are done.";
 
 // again is true when the game started the turn again after cancelling its
-// end, so the turn number stays the same and the agent plays it.
+// end, so the turn number stays the same, and the agent plays it and is told
+// so.
 export async function playTurn(agent: Agent, context: LoopContext, again = false): Promise<TurnResult> {
 	const { client, logger, now } = context;
 	const state = await readState(client, agent.playerID);
@@ -73,7 +74,7 @@ export async function playTurn(agent: Agent, context: LoopContext, again = false
 	agent.first = false;
 	read.warnings.forEach((warning) => logger.warn("memory_warning", warning, { player: agent.playerID }));
 
-	const messages: ModelMessage[] = [{ role: "user", content: turnMessage({ state: state.value, memory: read.memory, journalEntries: context.journalEntries }) }];
+	const messages: ModelMessage[] = [{ role: "user", content: turnMessage({ state: state.value, memory: read.memory, journalEntries: context.journalEntries, again }) }];
 
 	const result = await converse(agent, context, messages);
 
