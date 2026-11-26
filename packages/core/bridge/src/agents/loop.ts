@@ -37,22 +37,34 @@ export interface LoopContext {
 }
 
 // A turn that stops without end_turn leaves the game waiting on the agent. A
-// skipped turn was already ended, so the game has moved on.
+// skipped turn was already ended, so the game has moved on. A cancelled turn
+// belongs to a game that is no longer loaded.
 export type TurnResult =
 	| { ended: true }
 	| { ended: false; reason: string }
-	| { ended: false; skipped: true };
+	| { ended: false; skipped: true }
+	| { ended: false; cancelled: true };
+
+// again is true when the game started the turn again after cancelling its
+// end. signal aborts the turn when a game loads.
+export interface TurnOptions {
+	again?: boolean;
+	signal?: AbortSignal;
+}
 
 const END_TURN = "end_turn";
 
 const NUDGE = "You wrote no tool call. Take your next action, or call end_turn when you are done.";
 
-// again is true when the game started the turn again after cancelling its
-// end, so the turn number stays the same, and the agent plays it and is told
-// so.
-export async function playTurn(agent: Agent, context: LoopContext, again = false): Promise<TurnResult> {
+// A turn started again keeps its turn number, so the agent plays it and is
+// told so.
+export async function playTurn(agent: Agent, context: LoopContext, { again = false, signal }: TurnOptions = {}): Promise<TurnResult> {
 	const { client, logger, now } = context;
 	const state = await readState(client, agent.playerID);
+
+	if (signal?.aborted === true) {
+		return cancelTurn(logger, agent);
+	}
 
 	if (!state.ok) {
 		return stopTurn(logger, agent, `The state couldn't be read: ${state.error}`);
@@ -76,7 +88,7 @@ export async function playTurn(agent: Agent, context: LoopContext, again = false
 
 	const messages: ModelMessage[] = [{ role: "user", content: turnMessage({ state: state.value, memory: read.memory, journalEntries: context.journalEntries, again }) }];
 
-	const result = await converse(agent, context, messages);
+	const result = await converse(agent, context, messages, signal);
 
 	if (result.ended) {
 		agent.endedTurn = turn;
@@ -87,12 +99,17 @@ export async function playTurn(agent: Agent, context: LoopContext, again = false
 
 // Calls the model and runs its tool calls until end_turn goes through. A
 // reply with no tool call gets one nudge, and a second in a row stops.
-async function converse(agent: Agent, context: LoopContext, messages: ModelMessage[]): Promise<TurnResult> {
+async function converse(agent: Agent, context: LoopContext, messages: ModelMessage[], signal: AbortSignal | undefined): Promise<TurnResult> {
 	const { logger } = context;
 	let nudged = false;
 
 	for (;;) {
-		const result = await callModel(context.target, { system: agent.system, messages, tools: agent.definitions });
+		const result = await callModel(context.target, { system: agent.system, messages, tools: agent.definitions, signal });
+
+		// An aborted call fails, and that failure isn't the model's.
+		if (signal?.aborted === true) {
+			return cancelTurn(logger, agent);
+		}
 
 		if (!result.ok) {
 			return stopTurn(logger, agent, result.error);
@@ -113,7 +130,11 @@ async function converse(agent: Agent, context: LoopContext, messages: ModelMessa
 
 		nudged = false;
 
-		const ran = await runCalls(agent, logger, result.reply.toolCalls);
+		const ran = await runCalls(agent, logger, result.reply.toolCalls, signal);
+
+		if (ran === "cancelled") {
+			return cancelTurn(logger, agent);
+		}
 
 		if (ran.ended) {
 			return { ended: true };
@@ -124,11 +145,16 @@ async function converse(agent: Agent, context: LoopContext, messages: ModelMessa
 }
 
 // Runs the calls in order. Once end_turn goes through, it's another
-// player's turn, so the rest don't run.
-async function runCalls(agent: Agent, logger: Logger, calls: ToolCall[]): Promise<{ ended: true } | { ended: false; message: ToolModelMessage }> {
+// player's turn, so the rest don't run. After a game load, the rest would act
+// in the new game, so they don't run either.
+async function runCalls(agent: Agent, logger: Logger, calls: ToolCall[], signal: AbortSignal | undefined): Promise<{ ended: true } | { ended: false; message: ToolModelMessage } | "cancelled"> {
 	const message: ToolModelMessage = { role: "tool", content: [] };
 
 	for (const call of calls) {
+		if (signal?.aborted === true) {
+			return "cancelled";
+		}
+
 		const output = await callTool(agent.tools, call.name, call.input);
 
 		logger.debug("tool_call", `${call.name}: ${output.isError ? "failed" : "done"}`, { player: agent.playerID, tool: call.name, input: call.input, ok: !output.isError });
@@ -146,6 +172,12 @@ async function runCalls(agent: Agent, logger: Logger, calls: ToolCall[]): Promis
 	}
 
 	return { ended: false, message };
+}
+
+function cancelTurn(logger: Logger, agent: Agent): TurnResult {
+	logger.info("turn_cancelled", `Player ${agent.playerID}'s turn was cancelled, because a game loaded`, { player: agent.playerID });
+
+	return { ended: false, cancelled: true };
 }
 
 function stopTurn(logger: Logger, agent: Agent, reason: string): TurnResult {

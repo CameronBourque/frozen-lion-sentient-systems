@@ -15,35 +15,37 @@ export interface SignalContext extends LoopContext {
 	memory: MemorySource;
 }
 
+// A turn in progress, and the controller a game load aborts it with.
+interface RunningTurn {
+	controller: AbortController;
+	done: Promise<void>;
+}
+
 // Returns the handler for the core mod's events. One turn runs at a time for
-// each agent, so a signal for a turn that is still running is skipped. The
-// returned promise settles when the turn it started ends, and never rejects.
+// each agent, so a signal for a turn that is still running is skipped. A game
+// load cancels the running turns. The returned promise settles when the turn
+// it started ends, and never rejects.
 export function turnSignal(context: SignalContext): (event: CoreEvent) => Promise<void> {
 	const { logger } = context;
 	const agents = new Map<number, Agent>();
-	const playing = new Set<number>();
+	const running = new Map<number, RunningTurn>();
+	// The agents whose game loaded since their last turn.
+	const loaded = new Set<number>();
 
-	return async (event) => {
-		if (event.type !== "turn") {
-			return;
-		}
-
-		const { playerId } = event;
-
-		if (playing.has(playerId)) {
-			logger.info("turn_skipped", `Player ${playerId}'s turn is already being played`, { player: playerId });
-
-			return;
-		}
-
-		playing.add(playerId);
-
+	const play = async (playerId: number, again: boolean, signal: AbortSignal): Promise<void> => {
 		try {
 			const agent = agents.get(playerId) ?? await buildAgent(context, playerId);
 
 			agents.set(playerId, agent);
 
-			const result = await playTurn(agent, context, event.again);
+			// The loaded game may be an earlier save of the same turn, or
+			// another game, so the agent starts over as it does on a restart.
+			if (loaded.delete(playerId)) {
+				agent.first = true;
+				agent.endedTurn = undefined;
+			}
+
+			const result = await playTurn(agent, context, { again, signal });
 
 			if (result.ended) {
 				logger.info("turn_ended", `Player ${playerId} ended its turn`, { player: playerId });
@@ -53,8 +55,42 @@ export function turnSignal(context: SignalContext): (event: CoreEvent) => Promis
 			// tries again.
 			logger.warn("turn_failed", `Player ${playerId}'s turn failed: ${String(error)}`, { player: playerId, reason: String(error) });
 		} finally {
-			playing.delete(playerId);
+			running.delete(playerId);
 		}
+	};
+
+	return async (event) => {
+		if (event.type === "game_ready") {
+			agents.forEach((_, playerId) => loaded.add(playerId));
+			running.forEach(({ controller }) => controller.abort());
+
+			return;
+		}
+
+		if (event.type !== "turn") {
+			return;
+		}
+
+		const { playerId } = event;
+		const current = running.get(playerId);
+
+		// A cancelled turn may still wait on a call. The new turn waits for it,
+		// so the two never share the agent.
+		if (current?.controller.signal.aborted === true) {
+			await current.done;
+		}
+
+		if (running.has(playerId)) {
+			logger.info("turn_skipped", `Player ${playerId}'s turn is already being played`, { player: playerId });
+
+			return;
+		}
+
+		const controller = new AbortController();
+		const done = play(playerId, event.again, controller.signal);
+
+		running.set(playerId, { controller, done });
+		await done;
 	};
 }
 

@@ -14,7 +14,7 @@ import { toolDefinitions } from "../../src/mcp/in-process.js";
 import { addJournalEntry } from "../../src/memory/store.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { answerStash, connectTools } from "../mcp/tools.js";
-import { type Content, reply, scripted } from "../model/mock-model.js";
+import { type Content, reply, scripted, waitingForAbort } from "../model/mock-model.js";
 import { MINIMAL_STATE } from "../state/minimal-state.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -187,7 +187,7 @@ test("a turn started again plays, though the agent already ended it", async () =
 
 	await playTurn(player, context(model));
 
-	expect(await playTurn(player, context(model), true)).toEqual({ ended: true });
+	expect(await playTurn(player, context(model), { again: true })).toEqual({ ended: true });
 	expect(model.doStreamCalls).toHaveLength(2);
 	expect(JSON.stringify(model.doStreamCalls[0].prompt)).not.toContain("still the same turn");
 	expect(JSON.stringify(model.doStreamCalls[1].prompt)).toContain("still the same turn");
@@ -201,6 +201,51 @@ test("a turn that stops doesn't count as ended, so the next signal plays it", as
 	expect(await playTurn(player, context(model))).toMatchObject({ ended: false });
 	expect(player.endedTurn).toBeUndefined();
 	expect(await playTurn(player, context(model))).toEqual({ ended: true });
+});
+
+test("a game load during the model call cancels the turn, without a stop warning", async () => {
+	const info = vi.spyOn(logger, "info");
+	const warn = vi.spyOn(logger, "warn");
+	const controller = new AbortController();
+	const { model, started } = waitingForAbort([]);
+	const turn = playTurn(await agent(), context(model), { signal: controller.signal });
+
+	await started;
+	controller.abort();
+
+	expect(await turn).toEqual({ ended: false, cancelled: true });
+	expect(info).toHaveBeenCalledWith("turn_cancelled", "Player 3's turn was cancelled, because a game loaded", { player: 3 });
+	expect(warn).not.toHaveBeenCalledWith("turn_stopped", expect.anything(), expect.anything());
+});
+
+test("a game load during a tool call runs none of the reply's later calls", async () => {
+	const controller = new AbortController();
+	const answer = game.onCommand;
+
+	game.onCommand = (stateIndex, text) => {
+		if (text.includes("EndTurn")) {
+			controller.abort();
+		}
+
+		return answer(stateIndex, text);
+	};
+
+	const plan: Content = { type: "tool-call", toolCallId: "call-2", toolName: "update_plan", input: JSON.stringify({ plan: "For the old game." }) };
+	const model = scripted([reply([endTurn("call-1", false), plan])]);
+
+	expect(await playTurn(await agent(), context(model), { signal: controller.signal })).toEqual({ ended: false, cancelled: true });
+	expect(fs.existsSync(path.join(folder, "plan.md"))).toBe(false);
+	expect(model.doStreamCalls).toHaveLength(1);
+});
+
+test("a game load while the state is read cancels the turn before the model is called", async () => {
+	const controller = new AbortController();
+	const model = scripted([]);
+
+	controller.abort();
+
+	expect(await playTurn(await agent(), context(model), { signal: controller.signal })).toEqual({ ended: false, cancelled: true });
+	expect(model.doStreamCalls).toEqual([]);
 });
 
 test("the first turn moves memory from another game aside, and later turns read it as it is", async () => {
