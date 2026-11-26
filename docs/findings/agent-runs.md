@@ -7,7 +7,7 @@ How a model plays the game through the MCP tools, with a person prompting each t
 ## Questions
 
 - Why do most calls of a turn on a ChatGPT plan read nothing from the prompt cache, when each call starts with the same system prompt and turn message? The [smoke test](../roadmap/phase-2/smoke-test.md) measures the cost per turn.
-- Does the agent read the state at the start of every turn when no one prompts it? In the second run, it skipped `get_state` on 3 of 11 prompts and called `end_turn` to find the blockers. The [agent loop](../roadmap/phase-2/agent-loop.md) reads the state for it.
+- Does the agent read the state at the start of every turn when no one prompts it? In the second run, it skipped `get_state` on 3 of 11 prompts and called `end_turn` to find the blockers. The [agent loop](../design/agents/turn-loop.md#one-turn) reads the state for it.
 
 ## What we know now
 
@@ -67,7 +67,7 @@ The person then sent the turn prompt, and Claude Code took it as turn 10. Its fi
 
 ### Agent loop run
 
-The bridge executable played with no one prompting it, for the [agent loop](../roadmap/phase-2/agent-loop.md) step's check. It ran from a folder with no `knowledge` folder, and read its 3 knowledge files from the executable.
+The bridge executable played with no one prompting it, for the [agent loop](../roadmap/phase-2/done.md#agent-loop) step's check. It ran from a folder with no `knowledge` folder, and read its 3 knowledge files from the executable.
 
 The model was `gpt-6.2-sol` on a ChatGPT plan, in the subscription token mode, with the provider's default effort. The game was a saved game on turn 1.
 

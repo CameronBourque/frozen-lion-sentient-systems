@@ -1,8 +1,11 @@
 # End turn
 
-End each agent turn once, and start the next one only when the game moves on, so the [agent loop](agent-loop.md) can play turn after turn. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 2](README.md).
+End each agent turn once, and start the next one only when the game moves on, so the [agent loop](done.md#agent-loop) can play turn after turn. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 2](README.md).
 
 ## Tasks
+
+The agent loop starts a turn on every `AGENT_TURN`, `again` included. In its live check on 2026-11-26, the next `AGENT_TURN` came 0.5 s after each end turn, and the bridge played on to turn 5 with no wait. See [agent-runs.md](../../findings/agent-runs.md#agent-loop-run).
+
 
 1. **Turn change.** After `end_turn`, wait for the turn number to change before the loop accepts the next `AGENT_TURN`. Never send a second end-turn request for one turn. Commit: `feat(core): wait for the turn to change after end turn`.
 2. **Turn started again.** An `AGENT_TURN` that ends with `again` means the game cancelled the end of the turn, such as for a queued move that stopped short.
