@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.32.0...core-v0.33.0) (2026-11-26)
+
+
+### Features
+
+* **core:** add the agent loop ([#143](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/143)) ([80138ef](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/80138ef35b3ab9302c7dd601f990e179742fc562))
+
 ## [0.32.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.31.0...core-v0.32.0) (2026-11-26)
 
 
