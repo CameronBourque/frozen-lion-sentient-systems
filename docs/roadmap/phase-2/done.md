@@ -73,3 +73,16 @@ In the API key mode it printed the tool call for Anthropic. OpenAI and Google wa
 - The credential, `subscriptionMode`, and the picker's sign-in row are in [design/core/run-modes.md](../../design/core/run-modes.md#providers).
 - The failure kinds are in [design/core/model-client.md](../../design/core/model-client.md#failures), and `auth/` is in [design/core/settings.md](../../design/core/settings.md).
 - The live check's results are in [findings/plan-access/openai.md](../../findings/plan-access/openai.md#results), and the license and why are in [design/distribution.md](../../design/distribution.md).
+
+## xAI provider
+
+Pull request: feat(core): add xAI as a provider.
+
+It added xAI as a fourth provider in the **API key** mode, through `@ai-sdk/xai`, with `XAI_API_KEY` for a blank key. Its model list reads `/v1/language-models`, which leaves out xAI's image and video models. xAI's plan sign-in waits on xAI's answer in [findings/plan-access/xai.md](../../findings/plan-access/xai.md).
+
+The saved model now keeps the run mode it was picked in, as `model.mode`. After a failed list, **Use** runs it in that mode, so a model picked on a ChatGPT plan no longer runs on a refused API key. The picker's design moved to its own file.
+
+On 2026-11-25, `npm run ask` named a refused OpenAI key's config field, and **Use** ran the saved plan model on the plan. The xAI list and a Grok call wait for an xAI API key to check.
+
+- The xAI lister is in [design/core/model-client.md](../../design/core/model-client.md#model-lists), and its key is in [design/core/settings.md](../../design/core/settings.md).
+- The saved run mode and **Use** are in [design/core/run-modes.md](../../design/core/run-modes.md#picker), and the menus are in [design/core/picker.md](../../design/core/picker.md#menus).
