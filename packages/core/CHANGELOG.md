@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.33.2](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.33.1...core-v0.33.2) (2026-11-26)
+
+
+### Bug Fixes
+
+* **deps:** bump @ai-sdk/anthropic from 4.0.106 to 4.0.107 ([#141](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/141)) ([b9c3142](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/b9c3142dbb69757703f227d8586eb749ef6c2a58))
+
 ## [0.33.1](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.33.0...core-v0.33.1) (2026-11-26)
 
 
