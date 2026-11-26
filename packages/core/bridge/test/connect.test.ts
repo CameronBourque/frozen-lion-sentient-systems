@@ -54,6 +54,19 @@ describe("onConnect", () => {
 		expect(warned).not.toHaveBeenCalled();
 	});
 
+	test("passes each event to onEvent, so a resync starts the active turn", async () => {
+		answer({
+			"SentientSystems_GetVersion()": ["[SENTIENTSYSTEMS] CORE_VERSION 0.1.0"],
+			"SentientSystems_Resync()": ["[SENTIENTSYSTEMS] AGENT_TURN 0"],
+		});
+
+		const onEvent = vi.fn();
+
+		await onConnect(client, logger, onEvent);
+
+		expect(onEvent.mock.calls).toEqual([[{ type: "version", version: "0.1.0" }], [{ type: "turn", playerId: 0, again: false }]]);
+	});
+
 	test("logs only the version between turns, when the resync prints nothing", async () => {
 		answer({ "SentientSystems_GetVersion()": ["[SENTIENTSYSTEMS] CORE_VERSION 0.1.0"] });
 

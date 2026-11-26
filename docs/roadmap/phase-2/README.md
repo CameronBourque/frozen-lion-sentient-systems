@@ -22,7 +22,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 4 | Run mode menu | A file for each provider and the four run modes in the picker, with only the API key working | `feat(core): add the run mode menu` | Done. See [done.md](done.md#run-mode-menu) |
 | 5 | ChatGPT plan | The subscription token mode for OpenAI: sign-in, token refresh, and plan calls | `feat(core): run agents on a ChatGPT plan` | Done. See [done.md](done.md#chatgpt-plan) |
 | 6 | xAI provider | xAI as a fourth provider in the API key mode, for Grok models | `feat(core): add xAI as a provider` | Done. See [done.md](done.md#xai-provider) |
-| 7 | [Agent loop](agent-loop.md) | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | |
+| 7 | Agent loop | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | Done. See [done.md](done.md#agent-loop) |
 | 8 | [End turn](end-turn.md) | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | |
 | 9 | [Turn limits](turn-limits.md) | Retries per action, actions per turn, and time per turn | `feat(core): add turn limits` | |
 | 10 | [Forced end turn](forced-end-turn.md) | Another try after a blocked end turn, and a forced end at a limit | `feat(core): force the end turn at the turn limit` | |

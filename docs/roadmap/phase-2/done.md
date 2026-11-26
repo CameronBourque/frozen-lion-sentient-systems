@@ -21,7 +21,7 @@ It added the neutral personality, the balanced sweat level, and the rules of pla
 
 It also added `systemPrompt` and `turnMessage` in `src/agents/prompt.ts`, which build the prompt from them and the state.
 
-The executable, copied alone to an empty folder, read the 3 files. A test builds the prompt from the shipped files and a fixed state. The executable builds its first real prompt in the [agent loop](agent-loop.md) step.
+The executable, copied alone to an empty folder, read the 3 files. A test builds the prompt from the shipped files and a fixed state. The executable builds its first real prompt in the [agent loop](#agent-loop) step.
 
 - Where the files live, their format, and the neutral personality are in [design/knowledge-files.md](../../design/knowledge-files.md#file-layout).
 - How the prompt is built, and why the state goes in once per turn, are in [design/agents/prompt.md](../../design/agents/prompt.md).
@@ -36,7 +36,7 @@ It added each agent's memory files in `memory/player-<ID>/`, next to the config 
 
 A file the store can't read moves aside with a warning. Until checkpoint IDs exist, `startMemory` moves stale memory aside on turn 1 or an earlier turn than the memory holds.
 
-A test runs two fake turns through the tools and checks all three files. The agent loop calls `startMemory` in the [agent loop](agent-loop.md) step.
+A test runs two fake turns through the tools and checks all three files. The agent loop calls `startMemory` in the [agent loop](#agent-loop) step.
 
 - The files, their formats, unreadable files, and stale memory are in [design/memory.md](../../design/memory.md#files-on-disk).
 - The decision records and their results are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#decision-records).
@@ -86,3 +86,17 @@ On 2026-11-25, `npm run ask` named a refused OpenAI key's config field, and **Us
 
 - The xAI lister is in [design/core/model-client.md](../../design/core/model-client.md#model-lists), and its key is in [design/core/settings.md](../../design/core/settings.md).
 - The saved run mode and **Use** are in [design/core/run-modes.md](../../design/core/run-modes.md#picker), and the menus are in [design/core/picker.md](../../design/core/picker.md#menus).
+
+## Agent loop
+
+Pull request: feat(core): add the agent loop.
+
+It added the agent loop: `playTurn` in `src/agents/loop.ts` reads the state and the memory, sends the prompt and the MCP tools to the model, and runs its tool calls through an in-process MCP server until `end_turn` goes through.
+
+`turnSignal` in `src/agents/turn-signal.ts` starts a turn on each `AGENT_TURN`, from the game or the resync, and builds each player's agent the first time.
+
+On 2026-11-26, the bridge executable, alone in an empty folder, played turn 1 of a saved game on a ChatGPT plan with no manual help, and logged each action with its reason. It played on to turn 5, because nothing yet stops it after an end turn.
+
+- The turn signal and one turn are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#turn-signal).
+- `connectClient`, `toolDefinitions`, and `callTool` are in [design/core/mcp-server.md](../../design/core/mcp-server.md), and the reply's messages are in [design/core/model-client.md](../../design/core/model-client.md).
+- The live run, its tokens, its plan usage, and the prompt cache question are in [findings/agent-runs.md](../../findings/agent-runs.md#agent-loop-run).

@@ -3,9 +3,10 @@
 
 import os from "node:os";
 import path from "node:path";
-import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import type { Client } from "@modelcontextprotocol/client";
 import { Logger } from "../../src/log.js";
 import type { MemorySource } from "../../src/mcp/context.js";
+import { type ToolOutput, callTool as callServerTool, connectClient } from "../../src/mcp/in-process.js";
 import type { PlayerSource } from "../../src/mcp/player.js";
 import { createServer } from "../../src/mcp/server.js";
 import type { TunerClient } from "../../src/tuner/client.js";
@@ -20,14 +21,8 @@ export const QUIET = new Logger("error");
 const NO_MEMORY: MemorySource = () => path.join(os.tmpdir(), "no-memory");
 
 // Connects an in-process client to a server for the player.
-export async function connectTools(tuner: TunerClient, player = PLAYER_3, logger = QUIET, memory = NO_MEMORY): Promise<Client> {
-	const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-	const mcp = new Client({ name: "test", version: "1.0.0" });
-
-	await createServer({ client: tuner, player, memory, logger }).connect(serverSide);
-	await mcp.connect(clientSide);
-
-	return mcp;
+export function connectTools(tuner: TunerClient, player = PLAYER_3, logger = QUIET, memory = NO_MEMORY): Promise<Client> {
+	return connectClient(createServer({ client: tuner, player, memory, logger }));
 }
 
 // Answers the stash of each call in the table with its value as JSON. Other
@@ -49,9 +44,6 @@ export function answerStash(game: FakeGame, values: Record<string, unknown>): vo
 }
 
 // The tool's text, and whether it is an error.
-export async function callTool(mcp: Client, name: string, args: Record<string, unknown> = {}): Promise<{ text: string; isError: boolean }> {
-	const result = await mcp.callTool({ name, arguments: args });
-	const [content] = result.content as { type: string; text: string }[];
-
-	return { text: content.text, isError: result.isError === true };
+export function callTool(mcp: Client, name: string, args: Record<string, unknown> = {}): Promise<ToolOutput> {
+	return callServerTool(mcp, name, args);
 }

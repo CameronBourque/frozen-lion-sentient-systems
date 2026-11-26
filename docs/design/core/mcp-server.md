@@ -39,6 +39,10 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
 
   They change no game, so they don't go through `registerAction`. Each call is logged at the `decisions` level as a `plan`, `journal`, `decision`, or `decision_result` record. A file the bridge can't write fails the tool with the reason, not the bridge.
 - **In process.** The agent loop connects to the server through the SDK's `InMemoryTransport`, so the loop needs no port.
+
+  `connectClient(server)` in `src/mcp/in-process.ts` links a client to a server, and closing the client closes the server's side too. The tool reference script and the tests connect the same way.
+
+  `toolDefinitions(client)` lists the server's tools as the [model client](model-client.md)'s tool definitions, each with its name, description, and input schema. The schemas are already JSON Schema, so they pass through as they are.
 - **Over HTTP.** With `--mcp`, `src/mcp/http.ts` also serves the server over Streamable HTTP at `http://127.0.0.1:<mcpPort>/mcp`, for Claude Code and the MCP Inspector. `npm run mcp` starts the bridge this way, and `mcpPort` is in the [config file](settings.md).
 
   The SDK's handler builds a server for each request, so a server holds no state between calls. The bridge keeps its one tuner connection and its console logs, and every client shares them.

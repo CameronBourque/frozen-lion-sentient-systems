@@ -1,22 +1,13 @@
 // Tests for model/client.ts, with the AI SDK's mock model in place of a
 // provider, and fake timers for the retries.
 
-import { APICallError, simulateReadableStream } from "ai";
+import { APICallError } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { Effort, Provider } from "../../src/config.js";
 import type { RunMode } from "../../src/model/providers/provider.js";
+import { USAGE, done, partsOf, reply, replying, stream } from "./mock-model.js";
 import { MAX_RETRIES, type ModelRequest, type ModelTarget, type ToolDefinition, callModel, isCallMode, modelFailure } from "../../src/model/client.js";
-
-// @ai-sdk/provider names these types, but the bridge doesn't depend on it.
-type StreamResult = Awaited<ReturnType<MockLanguageModelV4["doStream"]>>;
-type StreamPart = StreamResult["stream"] extends ReadableStream<infer Part> ? Part : never;
-type Usage = Extract<StreamPart, { type: "finish" }>["usage"];
-
-// What the model writes and calls, before the test turns it into stream parts.
-type Content =
-	| { type: "text"; text: string }
-	| { type: "tool-call"; toolCallId: string; toolName: string; input: string };
 
 const END_TURN: ToolDefinition = {
 	name: "end_turn",
@@ -34,50 +25,8 @@ const REQUEST: ModelRequest = {
 	tools: [END_TURN],
 };
 
-const USAGE: Usage = {
-	inputTokens: { total: 10, noCache: 10, cacheRead: undefined, cacheWrite: undefined },
-	outputTokens: { total: 5, text: 5, reasoning: undefined },
-};
-
 function target(model: MockLanguageModelV4, effort: Effort | "" = "", provider: Provider = "anthropic"): ModelTarget {
 	return { model, provider, mode: "api-key", effort };
-}
-
-// Each text arrives in two deltas, so the test checks that the client joins
-// them.
-function partsOf(content: Content): StreamPart[] {
-	if (content.type === "tool-call") {
-		return [content];
-	}
-
-	const half = Math.ceil(content.text.length / 2);
-
-	return [
-		{ type: "text-start", id: "text-1" },
-		{ type: "text-delta", id: "text-1", delta: content.text.slice(0, half) },
-		{ type: "text-delta", id: "text-1", delta: content.text.slice(half) },
-		{ type: "text-end", id: "text-1" },
-	];
-}
-
-function stream(parts: StreamPart[]): StreamResult {
-	return { stream: simulateReadableStream({ chunks: parts, initialDelayInMs: null, chunkDelayInMs: null }) };
-}
-
-function reply(content: Content[], usage: Usage = USAGE): StreamResult {
-	return stream([
-		{ type: "stream-start", warnings: [] },
-		...content.flatMap(partsOf),
-		{ type: "finish", finishReason: { unified: "stop", raw: undefined }, usage },
-	]);
-}
-
-function done(): StreamResult {
-	return reply([{ type: "text", text: "Done." }]);
-}
-
-function replying(make: () => StreamResult): MockLanguageModelV4 {
-	return new MockLanguageModelV4({ doStream: () => Promise.resolve(make()) });
 }
 
 // An API error as a provider's package throws it.
@@ -142,7 +91,12 @@ test("returns the text and no tool calls when the model only writes", async () =
 
 	expect(await callModel(target(model), REQUEST)).toEqual({
 		ok: true,
-		reply: { text: "I'll wait.", toolCalls: [], usage: { inputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 5 } },
+		reply: {
+			text: "I'll wait.",
+			toolCalls: [],
+			messages: [{ role: "assistant", content: [{ type: "text", text: "I'll wait." }] }],
+			usage: { inputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 5 },
+		},
 	});
 });
 
@@ -157,10 +111,32 @@ test("returns the tool calls without running them", async () => {
 		reply: {
 			text: "Ending the turn.",
 			toolCalls: [{ id: "call-1", name: "end_turn", input: { reason: "Nothing left." } }],
+			messages: [{
+				role: "assistant",
+				content: [
+					{ type: "text", text: "Ending the turn." },
+					{ type: "tool-call", toolCallId: "call-1", toolName: "end_turn", input: { reason: "Nothing left." } },
+				],
+			}],
 			usage: { inputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 5 },
 		},
 	});
 	expect(model.doStreamCalls).toHaveLength(1);
+});
+
+test("the reply's messages keep the model's reasoning, so the next call sends it back", async () => {
+	const model = replying(() => stream([
+		{ type: "stream-start", warnings: [] },
+		{ type: "reasoning-start", id: "reasoning-1" },
+		{ type: "reasoning-delta", id: "reasoning-1", delta: "No moves left." },
+		{ type: "reasoning-end", id: "reasoning-1" },
+		...partsOf({ type: "tool-call", toolCallId: "call-1", toolName: "end_turn", input: "{\"reason\":\"Done.\"}" }),
+		{ type: "finish", finishReason: { unified: "tool-calls", raw: undefined }, usage: USAGE },
+	]));
+
+	expect(await callModel(target(model), REQUEST)).toMatchObject({
+		reply: { messages: [{ role: "assistant", content: [{ type: "reasoning", text: "No moves left." }, { type: "tool-call", toolCallId: "call-1" }] }] },
+	});
 });
 
 test("counts tokens the provider doesn't report as 0", async () => {
