@@ -17,7 +17,7 @@
     "build:exe": "node scripts/build-exe.mjs"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.106",
+    "@ai-sdk/anthropic": "^4.0.107",
     "@ai-sdk/google": "^4.0.124",
     "@ai-sdk/openai": "^4.0.121",
     "@ai-sdk/xai": "^5.0.51",
