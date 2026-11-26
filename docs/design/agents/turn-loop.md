@@ -13,6 +13,16 @@ The loop starts when the bridge sees the turn-start event for an agent slot. It 
 
 Plain code handles trivial cases without the LLM, such as fortifying idle units and setting scouts to auto-explore. Quick movement and quick combat stay on during agent turns. [Standing orders](../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
 
+## Turn signal
+
+`turnSignal(context)` in `src/agents/turn-signal.ts` starts a turn on each `AGENT_TURN` line, from the game's turn event or from the [resync on connect](../core/bridge.md). The core mod prints the line only for agent players, so the bridge plays every player it names, and keeps no list of its own.
+
+The first signal for a player builds its agent: the system prompt, an in-process MCP server whose tools act for that player, and the player's memory folder. Later turns reuse it.
+
+One turn runs at a time for each agent. A signal for a turn that is still running logs `turn_skipped`. A turn that ends logs `turn_ended`, and one that throws logs `turn_failed` as a warning, so the bridge keeps running and the next signal tries again.
+
+The agents play only in a run mode the [model client](../core/model-client.md) calls. In the Agent SDK and CLI modes, or with no model, the bridge logs `agents_off` once and plays no turns.
+
 ## One turn
 
 `playTurn(agent, context)` in `src/agents/loop.ts` plays one turn for one agent:
@@ -84,5 +94,6 @@ The long-term result at a deep strategic review comes in a later phase.
 | Spending limits in tokens, dollars, or both, blank to start | Users pay in dollars, but neither the AI SDK nor the providers' model lists give a price, so a dollar limit needs a price that the user enters. A token limit needs nothing |
 | Record decisions and their results during testing | Noisy records still show which patterns belong in knowledge files |
 | The model names a record by an id that the bridge gives it | The turn and the text can repeat, and a number costs the fewest tokens |
+| The bridge plays every player that `AGENT_TURN` names, with no list of agents in the config | The core mod decides which players are agents, and agent slots save with the game, as [settings.md](../core/settings.md) says. A computer slot agent needs no bridge change |
 | The loop sends replies back as the SDK's own messages | The messages keep the model's reasoning, which Anthropic needs back in a tool call conversation with extended thinking |
 | A reply with no tool call gets one nudge, and a second stops the turn | A model that only writes may still act when asked, and until the turn limits exist, the stop keeps a talking model from spending without end |

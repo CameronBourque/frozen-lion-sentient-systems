@@ -7,10 +7,11 @@ import { isSea } from "node:sea";
 import { startConfig } from "../src/load-config.js";
 import { Logger } from "../src/log.js";
 import { chooseModel } from "../src/model/choose.js";
-import { type ModelRequest, callModel, isCallMode } from "../src/model/client.js";
+import { type ModelRequest, callModel } from "../src/model/client.js";
 import { askMenu } from "../src/model/menu.js";
 import { cachedFacts, factsCachePath } from "../src/model/model-facts.js";
 import { providers } from "../src/model/providers/index.js";
+import { modelTarget } from "../src/model/target.js";
 import { logModelCall } from "../src/model/usage.js";
 
 // A question that only a tool call answers well, so a model that writes text
@@ -56,33 +57,16 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const { provider, id, effort } = config.model;
+	const built = modelTarget(config, mode, offered);
 
-	// chooseModel has already said why there is no model.
-	if (provider === "") {
+	if (!built.ok) {
+		logger.error("model_failed", built.error);
 		process.exitCode = 1;
 
 		return;
 	}
 
-	// Only the API key and subscription token modes call the model here.
-	if (!isCallMode(mode)) {
-		logger.error("model_failed", `${mode} runs its own loop, which ask doesn't cover`);
-		process.exitCode = 1;
-
-		return;
-	}
-
-	const built = offered.find(({ name }) => name === provider)?.modes[mode]?.model(config, id);
-
-	if (built?.ok !== true) {
-		logger.error("model_failed", built?.error ?? `${provider} has no ${mode} mode`);
-		process.exitCode = 1;
-
-		return;
-	}
-
-	const result = await callModel({ model: built.model, provider, mode, effort }, REQUEST);
+	const result = await callModel(built.target, REQUEST);
 
 	if (!result.ok) {
 		logger.warn("model_failed", result.error);
