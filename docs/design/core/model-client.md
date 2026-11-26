@@ -4,7 +4,9 @@ How the bridge calls a model: one interface over every provider, through the Ver
 
 You pick the model and its effort in `model` in the [config file](settings.md), through the [picker](picker.md) when the bridge starts. The picker lists each provider's models from its own API.
 
-`callModel(target, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools to the target's model, with the effort as the SDK's `reasoning` setting, and returns the model's text and tool calls. The target also names the provider, for the error messages.
+`callModel(target, request)` in `src/model/client.ts` sends a system prompt, the messages, and the tools to the target's model, with the effort as the SDK's `reasoning` setting, and returns the model's text and tool calls.
+
+It also returns the reply as the SDK's messages, reasoning included, which the agent loop sends back on its next call. The target also names the provider, for the error messages.
 
 `callModel` streams every call with the SDK's `streamText`, in every run mode, and returns once the stream ends.
 

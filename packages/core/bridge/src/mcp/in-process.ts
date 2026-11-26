@@ -1,5 +1,5 @@
-// Connects a client to the MCP server in the same process, and turns the
-// server's tools into the model client's tool definitions.
+// Connects a client to the MCP server in the same process, turns the server's
+// tools into the model client's tool definitions, and calls a tool.
 // docs/design/core/mcp-server.md has the design.
 
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
@@ -28,4 +28,22 @@ export async function toolDefinitions(client: Client): Promise<ToolDefinition[]>
 	const { tools } = await client.listTools();
 
 	return tools.map(({ name, description, inputSchema }) => ({ name, description: description ?? "", inputSchema: inputSchema as JSONSchema7 }));
+}
+
+export interface ToolOutput {
+	text: string;
+	isError: boolean;
+}
+
+// The tools answer in text, and a tool the server doesn't have is an error
+// result. A call that can't reach the server throws, and the model reads why.
+export async function callTool(client: Client, name: string, args: unknown): Promise<ToolOutput> {
+	try {
+		const result = await client.callTool({ name, arguments: args as Record<string, unknown> });
+		const blocks = result.content as { type: string; text?: string }[];
+
+		return { text: blocks.flatMap((block) => block.text ?? []).join("\n"), isError: result.isError === true };
+	} catch (error) {
+		return { text: String(error), isError: true };
+	}
 }

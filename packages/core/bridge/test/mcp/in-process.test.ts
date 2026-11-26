@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { expect, test } from "vitest";
 import { z } from "zod";
 import packageJson from "../../package.json" with { type: "json" };
-import { CLIENT_NAME, connectClient, toolDefinitions } from "../../src/mcp/in-process.js";
+import { CLIENT_NAME, callTool, connectClient, toolDefinitions } from "../../src/mcp/in-process.js";
 import { createServer } from "../../src/mcp/server.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { PLAYER_3, QUIET } from "./tools.js";
@@ -52,6 +52,34 @@ test("a tool with no description gets an empty one", async () => {
 	const client = await connectClient(server);
 
 	expect(await toolDefinitions(client)).toEqual([{ name: "bare", description: "", inputSchema: expect.objectContaining({ type: "object", required: ["x"] }) as unknown }]);
+
+	await client.close();
+});
+
+test("a call to a tool the server doesn't have fails with the reason", async () => {
+	const client = await connectClient(bridgeServer());
+
+	expect(await callTool(client, "build_wonder", {})).toEqual({ text: expect.stringContaining("build_wonder") as unknown, isError: true });
+
+	await client.close();
+});
+
+test("a call after the connection closes fails with the reason, instead of throwing", async () => {
+	const client = await connectClient(bridgeServer());
+
+	await client.close();
+
+	expect(await callTool(client, "end_turn", {})).toMatchObject({ isError: true });
+});
+
+test("a result's text blocks join, one per line, and other blocks drop", async () => {
+	const server = new McpServer({ name: "two", version: "1.0.0" });
+
+	server.registerTool("two", {}, () => ({ content: [{ type: "text", text: "First." }, { type: "image", data: "", mimeType: "image/png" }, { type: "text", text: "Second." }] }));
+
+	const client = await connectClient(server);
+
+	expect(await callTool(client, "two", {})).toEqual({ text: "First.\nSecond.", isError: false });
 
 	await client.close();
 });

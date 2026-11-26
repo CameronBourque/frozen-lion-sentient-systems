@@ -36,9 +36,12 @@ export interface Usage {
 	outputTokens: number;
 }
 
+// messages are the reply as the SDK records it, reasoning included, which
+// the next call in the turn sends back as they are.
 export interface ModelReply {
 	text: string;
 	toolCalls: ToolCall[];
+	messages: ModelMessage[];
 	usage: Usage;
 }
 
@@ -182,13 +185,14 @@ export async function callModel({ model, provider, mode, effort }: ModelTarget, 
 			return modelFailure(provider, mode, streamError.error);
 		}
 
-		const [text, toolCalls, usage] = await Promise.all([result.text, result.toolCalls, result.usage]);
+		const [text, toolCalls, response, usage] = await Promise.all([result.text, result.toolCalls, result.response, result.usage]);
 
 		return {
 			ok: true,
 			reply: {
 				text,
 				toolCalls: toolCalls.map(({ toolCallId, toolName, input }): ToolCall => ({ id: toolCallId, name: toolName, input })),
+				messages: response.messages,
 				// A provider that doesn't report a count counts as 0, so a sum
 				// still adds up.
 				usage: {
