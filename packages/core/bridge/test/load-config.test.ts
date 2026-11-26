@@ -177,7 +177,7 @@ describe("startConfig", () => {
 });
 
 describe("saveModel", () => {
-	const MODEL = { provider: "google", id: "gemini-pro", effort: "medium", price: NO_PRICE } as const;
+	const MODEL = { mode: "api-key", provider: "google", id: "gemini-pro", effort: "medium", price: NO_PRICE } as const;
 	let folder: string;
 
 	beforeEach(() => {

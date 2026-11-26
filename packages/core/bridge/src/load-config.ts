@@ -7,6 +7,7 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT,EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
+import { RUN_MODE_NAMES } from "./model/providers/provider.js";
 
 export const CONFIG_NAME = "sentient-systems.yaml";
 
@@ -31,9 +32,11 @@ providers:
 ${PROVIDER_NAMES.map((provider) => `  ${provider}:\n    apiKey: ""`).join("\n")}
 
 # The model the agents use, and how hard it thinks before it answers. The bridge asks for these
-# when it starts, and saves your choice here. The provider is one of: ${PROVIDER_NAMES.join(", ")}. The
-# effort is one of: ${EFFORTS.join(", ")}.
+# when it starts, and saves your choice here. The run mode is how the model is paid for, one of:
+# ${RUN_MODE_NAMES.join(", ")}. The provider is one of: ${PROVIDER_NAMES.join(", ")}. The effort is
+# one of: ${EFFORTS.join(", ")}.
 model:
+  mode: api-key
   provider: ""
   id: ""
   effort: ""

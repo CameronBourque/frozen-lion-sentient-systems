@@ -18,6 +18,12 @@ export type RunModeRow = typeof RUN_MODES[number];
 
 export type RunMode = RunModeRow["mode"];
 
+export const RUN_MODE_NAMES = RUN_MODES.map(({ mode }) => mode);
+
+export function runModeLabel(mode: RunMode): string {
+	return (RUN_MODES.find((row) => row.mode === mode) as RunModeRow).label;
+}
+
 export type Ready =
 	| { ok: true }
 	| { ok: false; reason: string };

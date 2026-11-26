@@ -20,9 +20,11 @@ The model menu lists the provider's models from its own API, as [model-client.md
 
 That drops speech, image, embedding, and realtime models, which OpenRouter lists without tools or not at all. When OpenRouter's list can't be read and there is no cache, the menu lists every model, with a warning.
 
-The bridge saves the choice to `model` in the config file with `saveModel`, which keeps the file's comments. Ctrl+C in a menu exits the bridge.
+The bridge saves the choice and its run mode to `model` in the config file with `saveModel`, which keeps the file's comments. Ctrl+C in a menu exits the bridge.
 
-When the list fails, the picker logs a warning and asks what to do: pick another provider, or try again when only one can play, pick another run mode, use the saved model, or quit. The first row is never the saved model, and the saved model is a row only when it can play.
+When the list fails, the picker logs a warning and asks what to do: pick another provider, or try again when only one can play, pick another run mode, use the saved model, or quit.
+
+The first row is never the saved model, and the saved model is a row only when it can play in its own [run mode](run-modes.md#picker), which the row names.
 
 `askMenu` in `src/model/menu.ts` draws a menu that the arrow keys and Enter answer. Page Up, Page Down, Home, and End jump. A list longer than 5 rows scrolls in a window, with a marker when there are more rows above or below.
 

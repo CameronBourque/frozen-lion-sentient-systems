@@ -5,7 +5,7 @@
 import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider } from "../config.js";
 import type { ModelInfo } from "./list-models.js";
 import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
-import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunModeRow } from "./providers/provider.js";
+import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunModeRow, runModeLabel } from "./providers/provider.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
@@ -106,14 +106,16 @@ type AfterFailure = "provider" | "mode" | "use" | "quit";
 
 // After a failed model list, the user decides. The first row is never the
 // saved model, so Enter never spends money on a model the user didn't pick.
-// Use appears only when the saved model can play.
+// Use appears only when the saved model can play in its own run mode, which
+// may not be the one that failed.
 async function askAfterFailure(io: PickerIo, config: Config, offered: Offered[]): Promise<AfterFailure> {
-	const { provider, id } = config.model;
-	const choices: AfterFailure[] = ["provider", "mode", ...(canPlay(config, offered) ? ["use" as const] : []), "quit"];
+	const { mode, provider, id } = config.model;
+	const savedCanPlay = canPlay(config, offeredProviders(config, io.providers, mode));
+	const choices: AfterFailure[] = ["provider", "mode", ...(savedCanPlay ? ["use" as const] : []), "quit"];
 	const labels: Record<AfterFailure, string> = {
 		provider: offered.length > 1 ? "Pick another provider" : "Try again",
 		mode: "Pick another run mode",
-		use: `Use ${id} (${provider})`,
+		use: `Use ${id} (${provider}, ${runModeLabel(mode)})`,
 		quit: "Quit",
 	};
 	const row = await io.ask("What now?", choices.map((choice) => labels[choice]), 0);
@@ -222,7 +224,9 @@ async function pickAfterFailure(config: Config, io: PickerIo, runMode: RunMode):
 		return { result: "cancelled" };
 	}
 
-	return { result: "kept", mode: runMode, model: isPricedMode(runMode) ? config.model : { ...config.model, price: NO_PRICE } };
+	const { mode } = config.model;
+
+	return { result: "kept", mode, model: isPricedMode(mode) ? config.model : { ...config.model, price: NO_PRICE } };
 }
 
 // Asks for the model and the effort from a provider's list.
@@ -252,7 +256,7 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 		io.warn(`OpenRouter lists no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
 	}
 
-	return { result: "picked", mode: runMode, model: { provider, id, effort, price } };
+	return { result: "picked", mode: runMode, model: { mode: runMode, provider, id, effort, price } };
 }
 
 // A saved model can play when it is picked and its provider is ready.

@@ -7,6 +7,7 @@ import { parseDocument } from "yaml";
 import { z } from "zod";
 import { describeIssue } from "./errors.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
+import { RUN_MODE_NAMES } from "./model/providers/provider.js";
 
 // Bump this when the format changes, and migrate older files when they load.
 export const SCHEMA_VERSION = 1;
@@ -69,8 +70,10 @@ export type Price = z.infer<typeof PRICE>;
 
 export const NO_PRICE: Price = { input: "", output: "", cacheRead: "", cacheWrite: "" };
 
-// Blank until the user picks, which the picker then asks for.
+// Blank until the user picks, which the picker then asks for. The run mode is
+// the one the model was picked in, so keeping the model keeps how it pays.
 const MODEL = z.strictObject({
+	mode: z.enum(RUN_MODE_NAMES).default("api-key"),
 	provider: z.union([z.literal(""), z.enum(PROVIDER_NAMES)]).default(""),
 	id: z.string().default(""),
 	effort: z.union([z.literal(""), z.enum(EFFORTS)]).default(""),
@@ -79,7 +82,7 @@ const MODEL = z.strictObject({
 
 export type ModelSetting = z.infer<typeof MODEL>;
 
-export const NO_MODEL: ModelSetting = { provider: "", id: "", effort: "", price: NO_PRICE };
+export const NO_MODEL: ModelSetting = { mode: "api-key", provider: "", id: "", effort: "", price: NO_PRICE };
 
 // Strict objects, so a misspelled field is an error and not a silent default.
 const CONFIG = z.strictObject({
