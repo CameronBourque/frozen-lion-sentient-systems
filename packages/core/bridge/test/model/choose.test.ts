@@ -46,7 +46,7 @@ describe("in a terminal", () => {
 
 		expect(await chooseModel(config, file, logger, { ask: FIRST_ROWS, providers: LISTING, facts: FACTS })).toBe("api-key");
 
-		const picked = { provider: "openai", id: "model-a", effort: "provider-default", price: NO_PRICE };
+		const picked = { mode: "api-key", provider: "openai", id: "model-a", effort: "provider-default", price: NO_PRICE };
 
 		expect(config.model).toEqual(picked);
 		expect(loadConfig(file)).toMatchObject({ result: "loaded", config: { model: picked } });
@@ -102,7 +102,7 @@ describe("in a terminal", () => {
 	test("keeps and logs the saved model without saving it again", async () => {
 		const info = vi.spyOn(logger, "info");
 		const failing = providersListing(() => Promise.resolve({ ok: false, error: "offline" }));
-		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
+		const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 		// API key, then Use after the failed list.
 		const use: ChooseIo["ask"] = (title, labels) => Promise.resolve(title === "Run mode" ? 0 : labels.findIndex((label) => label.startsWith("Use")));
 
@@ -123,7 +123,7 @@ describe("in a terminal", () => {
 describe("without a terminal", () => {
 	test("logs the saved model, with the provider's default effort when it is blank", async () => {
 		const info = vi.spyOn(logger, "info");
-		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
+		const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
 		expect(await chooseModel(configWith(saved), file, logger, { providers: LISTING, facts: FACTS })).toBe("api-key");
 		expect(info).toHaveBeenCalledWith("model_chosen", "Agents use openai model-a in API key mode, with the provider's default effort", { mode: "api-key", provider: "openai", id: "model-a", effort: "" });
@@ -132,7 +132,7 @@ describe("without a terminal", () => {
 	test("logs nothing about the model when no provider has a key", async () => {
 		const info = vi.spyOn(logger, "info");
 		const warn = vi.spyOn(logger, "warn");
-		const config = { ...configWith({ provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), providers: {} };
+		const config = { ...configWith({ mode: "api-key", provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), providers: {} };
 
 		expect(await chooseModel(config, file, logger, { providers: LISTING, facts: FACTS })).toBe("api-key");
 		expect(info).not.toHaveBeenCalled();

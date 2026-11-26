@@ -31,12 +31,12 @@ describe.each(realProviders())("$name", ({ name, modes }) => {
 });
 
 test("names each provider's own model", () => {
-	const config = configWithKeys({ anthropic: { apiKey: "a" }, openai: { apiKey: "b" }, google: { apiKey: "c" } });
+	const config = configWithKeys({ anthropic: { apiKey: "a" }, openai: { apiKey: "b" }, google: { apiKey: "c" }, xai: { apiKey: "d" } });
 	const names = realProviders().map(({ modes }) => {
 		const result = (modes["api-key"] as ModeSupport).model(config, "m");
 
 		return result.ok && typeof result.model === "object" ? result.model.provider : undefined;
 	});
 
-	expect(names).toEqual([expect.stringMatching(/^anthropic/), expect.stringMatching(/^openai/), expect.stringMatching(/^google/)]);
+	expect(names).toEqual([expect.stringMatching(/^anthropic/), expect.stringMatching(/^openai/), expect.stringMatching(/^google/), expect.stringMatching(/^xai/)]);
 });

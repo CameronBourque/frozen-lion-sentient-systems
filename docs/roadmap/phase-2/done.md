@@ -10,7 +10,7 @@ It added the model client, which calls Anthropic, OpenAI, or Google through the 
 
 Each model's price, tool support, and effort levels come from OpenRouter's public model list. Each call logs its tokens and cost, and retries a rate limit or a server error. `npm run ask` returned a tool call from each provider, and a refused key named its config field.
 
-- The client, the providers, the model list, the picker, the prices, the failures, and `npm run ask` are in [design/core/model-client.md](../../design/core/model-client.md).
+- The client, the providers, the model list, the failures, and `npm run ask` are in [design/core/model-client.md](../../design/core/model-client.md). The picker and the prices are in [design/core/picker.md](../../design/core/picker.md).
 - The `providers` and `model` fields, and the environment variables that fill a blank key, are in [design/core/settings.md](../../design/core/settings.md).
 
 ## Personality and sweat level
@@ -55,7 +55,7 @@ A mode that no provider has reads `(not available yet)`. **What now?** gained **
 `npm run ask` passed every case in a terminal on 2026-11-23.
 
 - The provider files and the menu's rules are in [design/core/run-modes.md](../../design/core/run-modes.md#providers).
-- The menus, in order, are in the picker section of [design/core/model-client.md](../../design/core/model-client.md#picker).
+- The menus, in order, are in [design/core/picker.md](../../design/core/picker.md#menus).
 
 ## ChatGPT plan
 
@@ -73,3 +73,16 @@ In the API key mode it printed the tool call for Anthropic. OpenAI and Google wa
 - The credential, `subscriptionMode`, and the picker's sign-in row are in [design/core/run-modes.md](../../design/core/run-modes.md#providers).
 - The failure kinds are in [design/core/model-client.md](../../design/core/model-client.md#failures), and `auth/` is in [design/core/settings.md](../../design/core/settings.md).
 - The live check's results are in [findings/plan-access/openai.md](../../findings/plan-access/openai.md#results), and the license and why are in [design/distribution.md](../../design/distribution.md).
+
+## xAI provider
+
+Pull request: feat(core): add xAI as a provider.
+
+It added xAI as a fourth provider in the **API key** mode, through `@ai-sdk/xai`, with `XAI_API_KEY` for a blank key. Its model list reads `/v1/language-models`, which leaves out xAI's image and video models. xAI's plan sign-in waits on xAI's answer in [findings/plan-access/xai.md](../../findings/plan-access/xai.md).
+
+The saved model now keeps the run mode it was picked in, as `model.mode`. After a failed list, **Use** runs it in that mode, so a model picked on a ChatGPT plan no longer runs on a refused API key. The picker's design moved to its own file.
+
+On 2026-11-25, `npm run ask` named a refused OpenAI key's config field, and **Use** ran the saved plan model on the plan. The xAI list and a Grok call wait for an xAI API key to check.
+
+- The xAI lister is in [design/core/model-client.md](../../design/core/model-client.md#model-lists), and its key is in [design/core/settings.md](../../design/core/settings.md).
+- The saved run mode and **Use** are in [design/core/run-modes.md](../../design/core/run-modes.md#picker), and the menus are in [design/core/picker.md](../../design/core/picker.md#menus).

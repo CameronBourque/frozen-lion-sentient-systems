@@ -74,6 +74,28 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[
 	return { io, asked, modesAsked, warnings, listed };
 }
 
+// A plan mode for openai only, which records each sign-in.
+function withPlan(io: PickerIo, ready: boolean, signedIn: SecretResult = { ok: true, secret: "token" }): string[] {
+	const signIns: string[] = [];
+	const plan: ModeSupport = {
+		ready: () => ready ? { ok: true } : { ok: false, reason: "Not signed in" },
+		signIn: {
+			label: "Continue with ChatGPT",
+			run: () => {
+				signIns.push("openai");
+
+				return Promise.resolve(signedIn);
+			},
+		},
+		listModels: () => Promise.resolve(MODELS),
+		model: () => ({ ok: false, error: "unused" }),
+	};
+
+	io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
+
+	return signIns;
+}
+
 describe("pickModel", () => {
 	test("asks for the provider, the model, and the effort", async () => {
 		const { io, asked, listed } = scriptedIo([1, 1, 5]);
@@ -81,7 +103,7 @@ describe("pickModel", () => {
 		expect(await pickModel(configWith(["anthropic", "openai"]), io)).toEqual({
 			result: "picked",
 			mode: "api-key",
-			model: { provider: "openai", id: "model-b", effort: "high", price: NO_PRICE },
+			model: { mode: "api-key", provider: "openai", id: "model-b", effort: "high", price: NO_PRICE },
 		});
 		expect(asked.map(({ title }) => title)).toEqual(["Provider", "openai model", "Effort"]);
 		expect(asked[0].labels).toEqual(["anthropic", "openai"]);
@@ -95,13 +117,13 @@ describe("pickModel", () => {
 		expect(await pickModel(configWith(["google"]), io)).toEqual({
 			result: "picked",
 			mode: "api-key",
-			model: { provider: "google", id: "model-a", effort: "provider-default", price: NO_PRICE },
+			model: { mode: "api-key", provider: "google", id: "model-a", effort: "provider-default", price: NO_PRICE },
 		});
 		expect(asked.map(({ title }) => title)).toEqual(["google model", "Effort"]);
 	});
 
 	test("starts each menu on the saved choice", async () => {
-		const saved: ModelSetting = { provider: "openai", id: "model-b", effort: "low", price: NO_PRICE };
+		const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-b", effort: "low", price: NO_PRICE };
 		const { io, asked } = scriptedIo([1, 1, 3]);
 
 		await pickModel(configWith(["anthropic", "openai"], saved), io);
@@ -110,7 +132,7 @@ describe("pickModel", () => {
 	});
 
 	test("keeps the price when the model stays the same, and clears it when the model changes", async () => {
-		const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
+		const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
 		const same = scriptedIo([0, 0]);
 		const other = scriptedIo([1, 0]);
 
@@ -133,14 +155,14 @@ describe("pickModel", () => {
 		});
 
 		test("keeps each price the user saved for the same model, and fills the blank ones", async () => {
-			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
+			const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
 			const { io } = scriptedIo([0, 0], MODELS, LISTED);
 
 			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 1, output: 2, cacheRead: 0.3, cacheWrite: "" } } });
 		});
 
 		test("fills a blank saved price for the same model from the list", async () => {
-			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
+			const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 			const { io } = scriptedIo([0, 0], MODELS, LISTED);
 
 			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 3, output: 15 } } });
@@ -162,7 +184,7 @@ describe("pickModel", () => {
 	});
 
 	test("starts on the first row when the saved choice isn't listed", async () => {
-		const saved: ModelSetting = { provider: "openai", id: "retired", effort: "", price: NO_PRICE };
+		const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "retired", effort: "", price: NO_PRICE };
 		const { io, asked } = scriptedIo([0, 0]);
 
 		await pickModel(configWith(["openai"], saved), io);
@@ -220,38 +242,16 @@ describe("pickModel", () => {
 
 			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
 
-			expect(await pickModel(configWith(["anthropic", "openai"]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { provider: "openai" } });
+			expect(await pickModel(configWith(["anthropic", "openai"]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { mode: "subscription", provider: "openai" } });
 			expect(modesAsked[0].labels[1]).toBe("Subscription token");
 			expect(asked.map(({ title }) => title)).toEqual(["openai model", "Effort"]);
 		});
-
-		// A plan mode for openai only, which records each sign-in.
-		function withPlan(io: PickerIo, ready: boolean, signedIn: SecretResult = { ok: true, secret: "token" }): string[] {
-			const signIns: string[] = [];
-			const plan: ModeSupport = {
-				ready: () => ready ? { ok: true } : { ok: false, reason: "Not signed in" },
-				signIn: {
-					label: "Continue with ChatGPT",
-					run: () => {
-						signIns.push("openai");
-
-						return Promise.resolve(signedIn);
-					},
-				},
-				listModels: () => Promise.resolve(MODELS),
-				model: () => ({ ok: false, error: "unused" }),
-			};
-
-			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
-
-			return signIns;
-		}
 
 		test("asks before signing in, with the sign-in row, even for one provider", async () => {
 			const { io, asked } = scriptedIo([0, 0, 0], MODELS, TOOL_FACTS, [1]);
 			const signIns = withPlan(io, false);
 
-			expect(await pickModel(configWith([]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { provider: "openai" } });
+			expect(await pickModel(configWith([]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { mode: "subscription", provider: "openai" } });
 			expect(asked[0]).toEqual({ title: "Provider", labels: ["Continue with ChatGPT"], start: 0 });
 			expect(signIns).toEqual(["openai"]);
 		});
@@ -266,7 +266,7 @@ describe("pickModel", () => {
 		});
 
 		test("warns when the sign-in fails, and doesn't offer the saved model", async () => {
-			const saved = { provider: "openai" as const, id: "model-a", effort: "" as const, price: NO_PRICE };
+			const saved: ModelSetting = { mode: "subscription", provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 			const { io, asked, warnings } = scriptedIo([0, 2], MODELS, TOOL_FACTS, [1]);
 
 			withPlan(io, false, { ok: false, error: "The browser never came back" });
@@ -278,7 +278,7 @@ describe("pickModel", () => {
 
 		test("shows no prices on a plan, and saves none, with no warning", async () => {
 			const priced: FactsResult = { ok: true, facts: { "openai/model-a": { ...TOOLS, pricing: { prompt: "0.000002", completion: "0.00001" } }, "openai/model-b": TOOLS } };
-			const saved = { provider: "openai" as const, id: "model-a", effort: "" as const, price: { ...NO_PRICE, input: 2, output: 10 } };
+			const saved: ModelSetting = { mode: "subscription", provider: "openai", id: "model-a", effort: "", price: { ...NO_PRICE, input: 2, output: 10 } };
 			const { io, asked, warnings } = scriptedIo([0, 0], MODELS, priced, [1]);
 
 			withPlan(io, true);
@@ -289,7 +289,7 @@ describe("pickModel", () => {
 		});
 
 		test("keeps the saved model on a plan without its price", async () => {
-			const saved = { provider: "openai" as const, id: "model-a", effort: "" as const, price: { ...NO_PRICE, input: 2, output: 10 } };
+			const saved: ModelSetting = { mode: "subscription", provider: "openai", id: "model-a", effort: "", price: { ...NO_PRICE, input: 2, output: 10 } };
 			const { io } = scriptedIo([2], { ok: false, error: "offline" }, TOOL_FACTS, [1]);
 
 			withPlan(io, true);
@@ -310,7 +310,7 @@ describe("pickModel", () => {
 		});
 
 		test("starts on the first level when the saved one isn't offered", async () => {
-			const saved: ModelSetting = { provider: "openai", id: "model-a", effort: "minimal", price: NO_PRICE };
+			const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "minimal", price: NO_PRICE };
 			const facts: FactsResult = { ok: true, facts: { "openai/model-a": { ...TOOLS, reasoning: { supported_efforts: ["low"] } } } };
 			const { io, asked } = scriptedIo([0, 0], MODELS, facts);
 
@@ -347,7 +347,7 @@ describe("pickModel", () => {
 
 	describe("after a failed list", () => {
 		const REFUSED: ListResult = { ok: false, error: "openai answered the model list with 401: invalid x-api-key" };
-		const SAVED: ModelSetting = { provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
+		const SAVED: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: NO_PRICE };
 
 		test("warns, then asks, starting on trying again", async () => {
 			const { io, asked, warnings } = scriptedIo([3], REFUSED);
@@ -355,7 +355,26 @@ describe("pickModel", () => {
 			await pickModel(configWith(["openai"], SAVED), io);
 
 			expect(warnings).toEqual(["openai answered the model list with 401: invalid x-api-key"]);
-			expect(asked).toEqual([{ title: "What now?", labels: ["Try again", "Pick another run mode", "Use model-a (openai)", "Quit"], start: 0 }]);
+			expect(asked).toEqual([{ title: "What now?", labels: ["Try again", "Pick another run mode", "Use model-a (openai, API key)", "Quit"], start: 0 }]);
+		});
+
+		test("uses the saved model in the run mode it was picked in", async () => {
+			const onPlan: ModelSetting = { ...SAVED, mode: "subscription" };
+			const { io, asked } = scriptedIo([2], REFUSED);
+
+			withPlan(io, true);
+
+			expect(await pickModel(configWith(["openai"], onPlan), io)).toEqual({ result: "kept", mode: "subscription", model: onPlan });
+			expect(asked[0].labels[2]).toBe("Use model-a (openai, Subscription token)");
+		});
+
+		test("leaves out the saved model when its own run mode can't play", async () => {
+			const { io, asked } = scriptedIo([2], REFUSED);
+
+			withPlan(io, false);
+
+			expect(await pickModel(configWith(["openai"], { ...SAVED, mode: "subscription" }), io)).toEqual({ result: "cancelled" });
+			expect(asked[0].labels).toEqual(["Try again", "Pick another run mode", "Quit"]);
 		});
 
 		test("uses the saved model only when the user picks it", async () => {
@@ -374,7 +393,7 @@ describe("pickModel", () => {
 		test("picks another provider in the same run mode when several have a key", async () => {
 			const { io, asked, modesAsked, listed } = scriptedIo([1, 0, 0, 0, 0], [REFUSED, MODELS]);
 
-			expect(await pickModel(configWith(["anthropic", "openai"], SAVED), io)).toMatchObject({ result: "picked", model: { provider: "anthropic" } });
+			expect(await pickModel(configWith(["anthropic", "openai"], SAVED), io)).toMatchObject({ result: "picked", model: { mode: "api-key", provider: "anthropic" } });
 			expect(asked[1].labels[0]).toBe("Pick another provider");
 			expect(modesAsked).toHaveLength(1);
 			expect(listed).toEqual(["openai openai-key", "anthropic anthropic-key"]);
@@ -423,16 +442,16 @@ describe("pickModel", () => {
 
 describe("savedModelWarning", () => {
 	test("says nothing when the saved model can play", () => {
-		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", realProviders())).toBeUndefined();
+		expect(savedModelWarning(configWith(["openai"], { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", realProviders())).toBeUndefined();
 	});
 
 	test("warns when no model is picked", () => {
-		expect(savedModelWarning(configWith(["openai"], { provider: "openai", id: "", effort: "", price: NO_PRICE }), "x.yaml", realProviders())).toMatch(/^No model is picked/);
+		expect(savedModelWarning(configWith(["openai"], { mode: "api-key", provider: "openai", id: "", effort: "", price: NO_PRICE }), "x.yaml", realProviders())).toMatch(/^No model is picked/);
 		expect(savedModelWarning(configWith(["openai"]), "x.yaml", realProviders())).toMatch(/^No model is picked/);
 	});
 
 	test("warns when the model's provider has no key", () => {
-		expect(savedModelWarning(configWith(["anthropic"], { provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", realProviders()))
+		expect(savedModelWarning(configWith(["anthropic"], { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: NO_PRICE }), "x.yaml", realProviders()))
 			.toMatch(/^The picked model is from openai, which has no API key/);
 	});
 });

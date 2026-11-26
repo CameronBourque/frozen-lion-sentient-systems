@@ -8,7 +8,7 @@ The four run modes differ in who runs the tool loop and how the user signs in.
 
 | Run mode | `RunMode` | Who runs the tool loop | Sign-in | Providers |
 | --- | --- | --- | --- | --- |
-| **API key** | `api-key` | The bridge's [agent loop](../agents/turn-loop.md), through the [model client](model-client.md) | An API key in `providers` in the [config file](settings.md) | Anthropic, OpenAI, Google |
+| **API key** | `api-key` | The bridge's [agent loop](../agents/turn-loop.md), through the [model client](model-client.md) | An API key in `providers` in the [config file](settings.md) | Anthropic, OpenAI, Google, xAI |
 | **Subscription token** | `subscription` | The bridge's agent loop, through the model client | The provider's browser sign-in for the user's plan | OpenAI, on a ChatGPT plan |
 | **Agent SDK** | `agent-sdk` | The provider's agent SDK | The provider's own login for the user's plan | Anthropic, behind a flag |
 | **CLI** | `cli` | The provider's CLI, started once per turn | The CLI's own login | None |
@@ -19,11 +19,11 @@ For a provider with more than one plan mode, the bridge offers the first that wo
 2. Agent SDK, when it passes the [parity check](#parity-check).
 3. CLI, when the provider has no agent SDK that passes, and its CLI passes the same check.
 
-[findings/plan-access/](../../findings/plan-access/README.md) has what each provider allows. Google offers no plan mode, so it is API key only.
+[findings/plan-access/](../../findings/plan-access/README.md) has what each provider allows. Google offers no plan mode, so it is API key only. xAI is API key only until xAI says whether the bridge may use its plan sign-in.
 
 ## Providers
 
-Each provider is one object in its own file in `src/model/providers/`: `anthropic.ts`, `openai.ts`, and `google.ts`. `providers(folder, log)` in `src/model/providers/index.ts` lists them.
+Each provider is one object in its own file in `src/model/providers/`: `anthropic.ts`, `openai.ts`, `google.ts`, and `xai.ts`. `providers(folder, log)` in `src/model/providers/index.ts` lists them.
 
 It takes the config file's folder and the logger, since OpenAI's token store keeps the plan's tokens in that folder and logs its warnings.
 
@@ -50,7 +50,9 @@ To add a provider, add its file and its entry in `providers`. To add a run mode 
 
 ## Picker
 
-The picker in [model-client.md](model-client.md#picker) starts with a **Run mode** menu that lists all four modes and **Quit**, starting on **API key**. **Quit** exits the bridge, as Ctrl+C does, and saves nothing. The bridge doesn't save the run mode, so each start asks again, and one run uses one mode.
+The [picker](picker.md) starts with a **Run mode** menu that lists all four modes and **Quit**, starting on **API key**. **Quit** exits the bridge, as Ctrl+C does, and saves nothing. Each start asks again, and one run uses one mode.
+
+A picked model is saved with its run mode, in `model.mode` in the [config file](settings.md). After a failed list, **Use** runs the saved model in that mode, not the one that failed, and the row names it.
 
 The picker finds a mode's providers in two passes over `providers`:
 
@@ -123,7 +125,8 @@ No provider uses the CLI mode yet, so its menu row reads `(not available yet)`. 
 | Four run modes in one menu, before the provider | Users choose how they pay before what they run. The modes have different sign-ins, and a provider can be in more than one |
 | A mode with no ready provider stays in the menu, marked not available | Each mode's step turns it on with one entry in a provider's `modes`. Users see what is coming instead of a menu that changes shape |
 | Each provider is one object that lists the run modes it supports | A new provider is one file, and a new mode is one entry, with no change to the picker. `credentialMode` shares the code of every mode that uses the bridge's loop with no base class, like the rest of the bridge's plain functions |
-| The bridge doesn't save the run mode, and the menu starts on **API key** | How to pay is a choice for each run, and the exe always has a console to ask in. A run mode for each subagent waits for the GUI |
+| The menu starts on **API key**, and the run mode is saved only with the model | How to pay is a choice for each run, and the exe always has a console to ask in. A run mode for each subagent waits for the GUI |
+| **Use** runs the saved model in the run mode it was picked in | A model picked on a plan may not be on the API, and the API key may not work. Running it in the failed mode spent a 401 on a model that only the plan could run |
 | A subscription token comes first, then an agent SDK, then a CLI | A token keeps the bridge's own loop, so nothing is lost. An SDK runs its own loop, and a CLI adds a process and output to parse |
 | An agent SDK or a CLI must pass the parity check | Users get the same game in every mode. A mode that loses the log, the limits, or the stop key isn't worth offering |
 | The Claude flag is a constant in the code, not a config setting | A setting would let anyone turn it on before Anthropic approves, which is the same as offering it. Tests turn it on through injection |

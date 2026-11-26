@@ -1,11 +1,11 @@
 // Chooses the model when the bridge starts: the picker in a terminal, or the
-// saved model without one. docs/design/core/model-client.md has the design.
+// saved model without one. docs/design/core/picker.md has the design.
 
 import type { Config } from "../config.js";
 import { saveModel } from "../load-config.js";
 import type { Logger } from "../log.js";
 import { type PickerIo, offeredProviders, pickModel, savedModelWarning } from "./picker.js";
-import { RUN_MODES, type RunMode, type RunModeRow } from "./providers/provider.js";
+import { type RunMode, runModeLabel } from "./providers/provider.js";
 
 // With no ask, there is no terminal to ask in.
 export interface ChooseIo {
@@ -16,9 +16,8 @@ export interface ChooseIo {
 
 function logChosen(logger: Logger, config: Config, mode: RunMode): void {
 	const { provider, id, effort } = config.model;
-	const { label } = RUN_MODES.find((row) => row.mode === mode) as RunModeRow;
 
-	logger.info("model_chosen", `Agents use ${provider} ${id} in ${label} mode, with ${effort === "" ? "the provider's default" : effort} effort`, { mode, provider, id, effort });
+	logger.info("model_chosen", `Agents use ${provider} ${id} in ${runModeLabel(mode)} mode, with ${effort === "" ? "the provider's default" : effort} effort`, { mode, provider, id, effort });
 }
 
 // Sets config.model to the choice, saves a new one, and logs the model agents

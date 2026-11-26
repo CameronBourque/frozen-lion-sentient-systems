@@ -92,7 +92,7 @@ describe("EXAMPLE_CONFIG", () => {
 	test("is a valid config with every provider and no keys", () => {
 		expect(parseConfig(EXAMPLE_CONFIG)).toEqual({
 			ok: true,
-			config: { schemaVersion: 1, logLevel: "decisions", providers: { anthropic: { apiKey: "" }, openai: { apiKey: "" }, google: { apiKey: "" } }, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES },
+			config: { schemaVersion: 1, logLevel: "decisions", providers: { anthropic: { apiKey: "" }, openai: { apiKey: "" }, google: { apiKey: "" }, xai: { apiKey: "" } }, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES },
 		});
 	});
 });
@@ -177,7 +177,7 @@ describe("startConfig", () => {
 });
 
 describe("saveModel", () => {
-	const MODEL = { provider: "google", id: "gemini-pro", effort: "medium", price: NO_PRICE } as const;
+	const MODEL = { mode: "api-key", provider: "google", id: "gemini-pro", effort: "medium", price: NO_PRICE } as const;
 	let folder: string;
 
 	beforeEach(() => {

@@ -38,7 +38,7 @@ describe("parseConfig", () => {
 				schemaVersion: 1,
 				logLevel: "debug",
 				providers: { anthropic: { apiKey: "key-a" }, openai: { apiKey: "key-b" } },
-				model: { provider: "openai", id: "some-model", effort: "high", price: NO_PRICE },
+				model: { mode: "api-key", provider: "openai", id: "some-model", effort: "high", price: NO_PRICE },
 				mcpPort: 5000,
 				journalEntries: 4,
 			},
@@ -49,6 +49,13 @@ describe("parseConfig", () => {
 		expect(parseConfig("schemaVersion: 1")).toEqual({
 			ok: true,
 			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES },
+		});
+	});
+
+	test("reads the run mode the model was picked in", () => {
+		expect(parseConfig("schemaVersion: 1\nmodel:\n  mode: subscription")).toMatchObject({
+			ok: true,
+			config: { model: { mode: "subscription" } },
 		});
 	});
 
@@ -77,7 +84,7 @@ describe("parseConfig", () => {
 	test("fills in a blank model for a partial model", () => {
 		expect(parseConfig("schemaVersion: 1\nmodel:\n  id: some-model")).toMatchObject({
 			ok: true,
-			config: { model: { provider: "", id: "some-model", effort: "", price: NO_PRICE } },
+			config: { model: { mode: "api-key", provider: "", id: "some-model", effort: "", price: NO_PRICE } },
 		});
 	});
 
@@ -127,7 +134,7 @@ describe("parseConfig", () => {
 });
 
 describe("withModel", () => {
-	const MODEL = { provider: "openai", id: "some-model", effort: "high", price: { input: 2.5, output: 10, cacheRead: 0.25, cacheWrite: "" } } as const;
+	const MODEL = { mode: "api-key", provider: "openai", id: "some-model", effort: "high", price: { input: 2.5, output: 10, cacheRead: 0.25, cacheWrite: "" } } as const;
 
 	// Each value keeps the quotes it had, and a number has none.
 	test("replaces the model and keeps the comments, in price too", () => {
@@ -135,6 +142,7 @@ describe("withModel", () => {
 			"# The model.",
 			"model:",
 			"  # Picked by the bridge.",
+			"  mode: api-key",
 			"  provider: \"\"",
 			"  id: \"\"",
 			"  effort: \"\"",
@@ -152,6 +160,7 @@ describe("withModel", () => {
 			"# The model.",
 			"model:",
 			"  # Picked by the bridge.",
+			"  mode: api-key",
 			"  provider: \"openai\"",
 			"  id: \"some-model\"",
 			"  effort: \"high\"",

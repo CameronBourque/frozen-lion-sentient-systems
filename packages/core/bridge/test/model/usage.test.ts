@@ -45,7 +45,7 @@ describe("callCost", () => {
 });
 
 describe("logModelCall", () => {
-	const MODEL: ModelSetting = { provider: "anthropic", id: "claude-x", effort: "", price: PRICE };
+	const MODEL: ModelSetting = { mode: "api-key", provider: "anthropic", id: "claude-x", effort: "", price: PRICE };
 
 	test("logs the tokens and the cost at the decisions level", () => {
 		const logger = new Logger("debug", "");
