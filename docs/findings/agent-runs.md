@@ -1,11 +1,12 @@
 # Agent runs
 
-Status: confirmed. Two runs of the phase 1 Claude Code gate, played in a running game on Windows.
+Status: confirmed. Two runs of the phase 1 Claude Code gate, and one run of the phase 2 agent loop, played in a running game on Windows.
 
-How a model plays the game through the MCP tools, with a person prompting each turn: the setup, what it called each turn, which calls failed and why, and what it had to guess. The second run passed the gate in [phase 1](../roadmap/phase-1/README.md).
+How a model plays the game through the MCP tools, with a person prompting each turn or with the bridge's agent loop: the setup, what it called each turn, which calls failed and why, and what it had to guess. The second run passed the gate in [phase 1](../roadmap/phase-1/README.md).
 
 ## Questions
 
+- Why do most calls of a turn on a ChatGPT plan read nothing from the prompt cache, when each call starts with the same system prompt and turn message? The [smoke test](../roadmap/phase-2/smoke-test.md) measures the cost per turn.
 - Does the agent read the state at the start of every turn when no one prompts it? In the second run, it skipped `get_state` on 3 of 11 prompts and called `end_turn` to find the blockers. The [agent loop](../roadmap/phase-2/agent-loop.md) reads the state for it.
 
 ## What we know now
@@ -64,7 +65,21 @@ The person then sent the turn prompt, and Claude Code took it as turn 10. Its fi
 
 `end_turn` had returned "The game took the request." before the game cancelled the end, and the state had no turn number.
 
-### What the runs changed
+### Agent loop run
+
+The bridge executable played with no one prompting it, for the [agent loop](../roadmap/phase-2/agent-loop.md) step's check. It ran from a folder with no `knowledge` folder, and read its 3 knowledge files from the executable.
+
+The model was `gpt-6.2-sol` on a ChatGPT plan, in the subscription token mode, with the provider's default effort. The game was a saved game on turn 1.
+
+The turn signal started turn 1 when the bridge connected, through the resync. The model founded Rome, wrote its plan, set production and research, moved its warrior, recorded a decision, and ended the turn in 28 s, with 8 model calls. Each action in the log had its reason.
+
+The next `AGENT_TURN` came 0.5 s after each end turn, so the bridge played on until it was stopped. On turn 2 the model recorded the result of turn 1's decision. On turn 5, `end_turn` came back blocked by a unit that needed orders, and the model was called again with the reason.
+
+The first call of a turn sent about 14,000 input tokens. Each later call in the turn sent the same start plus the new calls and results, up to about 18,500. Only 4 of the 24 calls read from the provider's prompt cache, 9,216 tokens each, and none of the calls on turn 1 did.
+
+The run used 10% of a ChatGPT Plus plan's 5-hour limit and 2% of its weekly limit, as the plan's usage page showed after it. Nothing else used the plan in that 5-hour window, and an earlier `npm run ask` check moved neither limit.
+
+At that rate, the 5-hour limit holds about 50 turns like these, and the weekly limit about 250. Later turns hold more state, so they cost more.
 
 Each problem got its own pull request before the second run, except the turn number, which came after it:
 
@@ -85,9 +100,12 @@ Each problem got its own pull request before the second run, except the turn num
 3. Send the turn 1 prompt, then the turn prompt at the start of each turn, until turn 11 starts.
 4. Read the transcript for each call and its result, and the bridge log for `Player 0's turn started` lines and `ERROR` lines.
 
+The agent loop run started the bridge executable with `--config` and the saved game loaded, picked the subscription token mode in the picker, and stopped the bridge with Ctrl+C. Its counts come from the bridge log's `model_call`, `action`, and `turn_ended` records.
+
 ## Results
 
 - **First run.** Turns 1 to 10, 53 calls, 40 actions with a reason, no `ERROR` lines, and 2 prompts that weren't the turn prompt. Run on Windows on 2026-11-19.
 - **Second run.** Turns 1 to 10, 56 calls, 46 actions with a reason, no `ERROR` lines, and only the turn prompt. The bridge log showed 10 turn starts and one start again, at the end of turn 9. Run on Windows on 2026-11-19.
+- **Agent loop run.** Turns 1 to 5 with no prompts, 24 model calls, 19 actions with a reason, 4 turns ended, no warnings or errors, and 10% of the 5-hour plan limit and 2% of the weekly one. Run on Windows on 2026-11-26.
 
-Date checked: running game on Windows on 2026-11-19.
+Date checked: running game on Windows on 2026-11-26.
