@@ -19,19 +19,24 @@ Plain code handles trivial cases without the LLM, such as fortifying idle units 
 
 The first signal for a player builds its agent: the system prompt, an in-process MCP server whose tools act for that player, and the player's memory folder. Later turns reuse it.
 
-One turn runs at a time for each agent. A signal for a turn that is still running logs `turn_skipped`. A turn that ends logs `turn_ended`, and one that throws logs `turn_failed` as a warning, so the bridge keeps running and the next signal tries again.
+One turn runs at a time for each agent. A signal for a turn that is still running logs `turn_skipped`, and so does a signal on a turn the agent already ended, as [one turn](#one-turn) says.
+
+A turn that ends logs `turn_ended`, and one that throws logs `turn_failed` as a warning, so the bridge keeps running and the next signal tries again.
 
 The agents play only in a run mode the [model client](../core/model-client.md) calls. In the Agent SDK and CLI modes, or with no model, the bridge logs `agents_off` once and plays no turns.
 
 ## One turn
 
-`playTurn(agent, context)` in `src/agents/loop.ts` plays one turn for one agent:
+`playTurn(agent, context, again)` in `src/agents/loop.ts` plays one turn for one agent:
 
 1. It reads the state for the agent's player. A state it can't read stops the turn before any model call.
-2. It reads the agent's [memory](../memory.md). On the agent's first turn after the bridge starts, it calls `startMemory`, so [stale memory](../memory.md#stale-memory) moves aside. On later turns, it calls `readMemory`. It logs each warning either returns as `memory_warning`.
-3. It sends the system prompt, the [turn message](prompt.md#two-calls), and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.
-4. It runs the reply's tool calls in order through the MCP server, and sends each result back, marked as an error when the tool failed. A blocked `end_turn` goes back the same way, so the model resolves the blocker and tries again.
-5. It calls the model again with the reply and the results added, until an `end_turn` goes through. The calls after it in the same reply don't run, because it is then another player's turn.
+2. It skips the turn when the agent already ended that game turn, so a later signal on the same turn, such as one from the resync, never sends a second end turn. It logs `turn_skipped` with the turn and calls no model.
+
+   An `again` signal still plays, because the game cancelled the end and the turn number stays the same. Only an end turn that goes through counts, so a turn that stops plays again on the next signal.
+3. It reads the agent's [memory](../memory.md). On the agent's first turn after the bridge starts, it calls `startMemory`, so [stale memory](../memory.md#stale-memory) moves aside. On later turns, it calls `readMemory`. It logs each warning either returns as `memory_warning`.
+4. It sends the system prompt, the [turn message](prompt.md#two-calls), and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.
+5. It runs the reply's tool calls in order through the MCP server, and sends each result back, marked as an error when the tool failed. A blocked `end_turn` goes back the same way, so the model resolves the blocker and tries again.
+6. It calls the model again with the reply and the results added, until an `end_turn` goes through, and keeps that game turn on the agent. The calls after it in the same reply don't run, because it is then another player's turn.
 
 The loop sends each reply back as the SDK's own messages, so a model's reasoning stays in the conversation. Anthropic refuses a tool call conversation with extended thinking that drops it.
 
@@ -96,4 +101,5 @@ The long-term result at a deep strategic review comes in a later phase.
 | The model names a record by an id that the bridge gives it | The turn and the text can repeat, and a number costs the fewest tokens |
 | The bridge plays every player that `AGENT_TURN` names, with no list of agents in the config | The core mod decides which players are agents, and agent slots save with the game, as [settings.md](../core/settings.md) says. A computer slot agent needs no bridge change |
 | The loop sends replies back as the SDK's own messages | The messages keep the model's reasoning, which Anthropic needs back in a tool call conversation with extended thinking |
+| The agent keeps the game turn it last ended, and skips a later signal on that turn | The turn signal drives the loop, so it needs no poll of the turn number and no timeout that a long AI turn could trip. A dropped end turn is the [forced end turn](../../roadmap/phase-2/forced-end-turn.md) step's case |
 | A reply with no tool call gets one nudge, and a second stops the turn | A model that only writes may still act when asked, and until the turn limits exist, the stop keeps a talking model from spending without end |

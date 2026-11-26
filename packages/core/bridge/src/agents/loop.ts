@@ -23,6 +23,8 @@ export interface Agent {
 	definitions: ToolDefinition[];
 	memoryFolder: string;
 	first: boolean;
+	// The game turn of its last end turn that went through.
+	endedTurn?: number;
 }
 
 export interface LoopContext {
@@ -34,16 +36,20 @@ export interface LoopContext {
 	now: () => Date;
 }
 
-// A turn that stops without end_turn leaves the game waiting on the agent.
+// A turn that stops without end_turn leaves the game waiting on the agent. A
+// skipped turn was already ended, so the game has moved on.
 export type TurnResult =
 	| { ended: true }
-	| { ended: false; reason: string };
+	| { ended: false; reason: string }
+	| { ended: false; skipped: true };
 
 const END_TURN = "end_turn";
 
 const NUDGE = "You wrote no tool call. Take your next action, or call end_turn when you are done.";
 
-export async function playTurn(agent: Agent, context: LoopContext): Promise<TurnResult> {
+// again is true when the game started the turn again after cancelling its
+// end, so the turn number stays the same and the agent plays it.
+export async function playTurn(agent: Agent, context: LoopContext, again = false): Promise<TurnResult> {
 	const { client, logger, now } = context;
 	const state = await readState(client, agent.playerID);
 
@@ -52,6 +58,15 @@ export async function playTurn(agent: Agent, context: LoopContext): Promise<Turn
 	}
 
 	const turn = state.value.turn;
+
+	// A signal on a turn the agent already ended, such as from the resync,
+	// would send a second end turn for it.
+	if (!again && agent.endedTurn === turn) {
+		logger.info("turn_skipped", `Player ${agent.playerID} already ended turn ${turn}`, { player: agent.playerID, turn });
+
+		return { ended: false, skipped: true };
+	}
+
 	// The first turn moves memory from another game aside.
 	const read = agent.first ? startMemory(agent.memoryFolder, turn, now()) : readMemory(agent.memoryFolder, now());
 
@@ -60,7 +75,13 @@ export async function playTurn(agent: Agent, context: LoopContext): Promise<Turn
 
 	const messages: ModelMessage[] = [{ role: "user", content: turnMessage({ state: state.value, memory: read.memory, journalEntries: context.journalEntries }) }];
 
-	return converse(agent, context, messages);
+	const result = await converse(agent, context, messages);
+
+	if (result.ended) {
+		agent.endedTurn = turn;
+	}
+
+	return result;
 }
 
 // Calls the model and runs its tool calls until end_turn goes through. A

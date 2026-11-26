@@ -43,7 +43,7 @@ export function turnSignal(context: SignalContext): (event: CoreEvent) => Promis
 
 			agents.set(playerId, agent);
 
-			const result = await playTurn(agent, context);
+			const result = await playTurn(agent, context, event.again);
 
 			if (result.ended) {
 				logger.info("turn_ended", `Player ${playerId} ended its turn`, { player: playerId });

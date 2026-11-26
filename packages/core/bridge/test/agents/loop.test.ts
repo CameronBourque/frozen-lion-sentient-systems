@@ -58,6 +58,14 @@ function endTurn(id: string, force: boolean): Content {
 	return { type: "tool-call", toolCallId: id, toolName: "end_turn", input: JSON.stringify({ reason: REASON, force }) };
 }
 
+// Moves the game to turn 2, and keeps the other answers.
+function nextTurn(): void {
+	answerStash(game, {
+		"SentientSystems_GetState(3)": { ...MINIMAL_STATE, turn: 2 },
+		"SentientSystems_EndTurn(3, true)": { ok: true },
+	});
+}
+
 function lua(): string[] {
 	return game.commands.map(({ lua: text }) => text);
 }
@@ -149,6 +157,50 @@ test("a state that can't be read stops the turn before the model is called", asy
 	expect(model.doStreamCalls).toEqual([]);
 });
 
+test("a signal on a turn the agent already ended is skipped, and sends no second end turn", async () => {
+	const info = vi.spyOn(logger, "info");
+	const player = await agent();
+	const model = scripted([reply([endTurn("call-1", true)])]);
+
+	await playTurn(player, context(model));
+
+	expect(await playTurn(player, context(model))).toEqual({ ended: false, skipped: true });
+	expect(model.doStreamCalls).toHaveLength(1);
+	expect(lua().filter((text) => text.includes("EndTurn"))).toHaveLength(1);
+	expect(info).toHaveBeenCalledWith("turn_skipped", "Player 3 already ended turn 1", { player: 3, turn: 1 });
+});
+
+test("the agent plays again once the turn number changes", async () => {
+	const player = await agent();
+	const model = scripted([reply([endTurn("call-1", true)]), reply([endTurn("call-2", true)])]);
+
+	await playTurn(player, context(model));
+	nextTurn();
+
+	expect(await playTurn(player, context(model))).toEqual({ ended: true });
+	expect(player.endedTurn).toBe(2);
+});
+
+test("a turn started again plays, though the agent already ended it", async () => {
+	const player = await agent();
+	const model = scripted([reply([endTurn("call-1", true)]), reply([endTurn("call-2", true)])]);
+
+	await playTurn(player, context(model));
+
+	expect(await playTurn(player, context(model), true)).toEqual({ ended: true });
+	expect(model.doStreamCalls).toHaveLength(2);
+});
+
+test("a turn that stops doesn't count as ended, so the next signal plays it", async () => {
+	const player = await agent();
+	const think: Content = { type: "text", text: "Hmm." };
+	const model = scripted([reply([think]), reply([think]), reply([endTurn("call-1", true)])]);
+
+	expect(await playTurn(player, context(model))).toMatchObject({ ended: false });
+	expect(player.endedTurn).toBeUndefined();
+	expect(await playTurn(player, context(model))).toEqual({ ended: true });
+});
+
 test("the first turn moves memory from another game aside, and later turns read it as it is", async () => {
 	const warn = vi.spyOn(logger, "warn");
 	const player = await agent(true);
@@ -161,6 +213,7 @@ test("the first turn moves memory from another game aside, and later turns read 
 	expect(fs.existsSync(player.memoryFolder)).toBe(false);
 
 	addJournalEntry(player.memoryFolder, { turn: 40, text: "Kept." });
+	nextTurn();
 
 	const model = scripted([reply([endTurn("call-1", true)])]);
 

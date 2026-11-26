@@ -94,11 +94,32 @@ test("each agent is built once, and later turns reuse it", async () => {
 	const onTurn = turnSignal(context(model));
 
 	await onTurn(TURN_3);
+	answerStash(game, {
+		"SentientSystems_GetState(3)": { ...MINIMAL_STATE, turn: 2 },
+		"SentientSystems_EndTurn(3, false)": { ok: true },
+	});
 	await onTurn(TURN_3);
 
 	expect(model.doStreamCalls).toHaveLength(2);
 	// The personality and the sweat level each warn, once.
 	expect(warn.mock.calls.filter(([event]) => event === "prompt_warning")).toHaveLength(2);
+});
+
+test("a second signal on a turn already ended plays nothing, and an again signal plays it", async () => {
+	const info = vi.spyOn(logger, "info");
+	const model = scripted([endTurn(), endTurn()]);
+	const onTurn = turnSignal(context(model));
+
+	await onTurn(TURN_3);
+	info.mockClear();
+	await onTurn(TURN_3);
+
+	expect(model.doStreamCalls).toHaveLength(1);
+	expect(info).not.toHaveBeenCalledWith("turn_ended", expect.anything(), expect.anything());
+
+	await onTurn({ ...TURN_3, again: true });
+
+	expect(model.doStreamCalls).toHaveLength(2);
 });
 
 test("a turn that stops logs no end", async () => {
