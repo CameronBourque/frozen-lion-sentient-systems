@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.36.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.35.0...core-v0.36.0) (2026-11-27)
+
+
+### Features
+
+* **core:** force the end turn at the turn limit ([#151](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/151)) ([1347943](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/13479431ccd4d448fdd3cc91bf334da25f2c364b))
+
 ## [0.35.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.34.0...core-v0.35.0) (2026-11-27)
 
 
