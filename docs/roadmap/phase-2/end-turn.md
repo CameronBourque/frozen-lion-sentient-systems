@@ -19,4 +19,4 @@ In a running game, the bridge executable plays 10 turns in a row with no manual 
 
 ## Record
 
-- The wait for the turn to change, the `again` case, and the game load, in [turn-loop.md](../../design/agents/turn-loop.md).
+- The wait for the turn to change and the `again` case in [turn-loop.md](../../design/agents/turn-loop.md#one-turn), and the game load and the wait for a silent game in [game-load.md](../../design/agents/game-load.md).

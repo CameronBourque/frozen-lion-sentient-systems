@@ -12,7 +12,7 @@ import { NO_MODEL } from "../../src/config.js";
 import { Logger } from "../../src/log.js";
 import { toolDefinitions } from "../../src/mcp/in-process.js";
 import { addJournalEntry } from "../../src/memory/store.js";
-import type { TunerClient } from "../../src/tuner/client.js";
+import { type TunerClient, TunerTimeoutError } from "../../src/tuner/client.js";
 import { answerStash, connectTools } from "../mcp/tools.js";
 import { type Content, reply, scripted, waitingForAbort } from "../model/mock-model.js";
 import { MINIMAL_STATE } from "../state/minimal-state.js";
@@ -246,6 +246,48 @@ test("a game load while the state is read cancels the turn before the model is c
 
 	expect(await playTurn(await agent(), context(model), { signal: controller.signal })).toEqual({ ended: false, cancelled: true });
 	expect(model.doStreamCalls).toEqual([]);
+});
+
+test("a call the silent game doesn't answer waits for the game, and a load during the wait cancels the turn", async () => {
+	const controller = new AbortController();
+	const run = client.run.bind(client);
+
+	// The game stops answering after the end turn.
+	vi.spyOn(client, "run").mockImplementation((state, lua) => (lua === "return" ? Promise.reject(new TunerTimeoutError("No reply from the tuner in 100 ms")) : run(state, lua)));
+	vi.spyOn(logger, "info").mockImplementation((event) => {
+		if (event === "game_silent") {
+			controller.abort();
+		}
+	});
+
+	const plan: Content = { type: "tool-call", toolCallId: "call-2", toolName: "update_plan", input: JSON.stringify({ plan: "For the old game." }) };
+	const model = scripted([reply([endTurn("call-1", false), plan])]);
+
+	expect(await playTurn(await agent(), { ...context(model), gameWaitMs: 5 }, { signal: controller.signal })).toEqual({ ended: false, cancelled: true });
+	expect(model.doStreamCalls).toHaveLength(1);
+	expect(fs.existsSync(path.join(folder, "plan.md"))).toBe(false);
+});
+
+test("a failed call waits for the game, and the turn goes on once it answers", async () => {
+	const info = vi.spyOn(logger, "info");
+	const run = client.run.bind(client);
+	let silences = 0;
+
+	// The first check after the blocked end turn gets no answer.
+	vi.spyOn(client, "run").mockImplementation((state, lua) => {
+		if (lua === "return" && silences === 0) {
+			silences += 1;
+
+			return Promise.reject(new TunerTimeoutError("No reply from the tuner in 100 ms"));
+		}
+
+		return run(state, lua);
+	});
+
+	const model = scripted([reply([endTurn("call-1", false)]), reply([endTurn("call-2", true)])]);
+
+	expect(await playTurn(await agent(), { ...context(model), gameWaitMs: 5 })).toEqual({ ended: true });
+	expect(info).toHaveBeenCalledWith("game_answers", expect.anything(), { player: 3 });
 });
 
 test("the first turn moves memory from another game aside, and later turns read it as it is", async () => {

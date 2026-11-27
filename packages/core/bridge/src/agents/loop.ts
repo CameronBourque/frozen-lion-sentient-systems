@@ -12,6 +12,7 @@ import { type ModelTarget, type ToolCall, type ToolDefinition, callModel } from 
 import { logModelCall } from "../model/usage.js";
 import { readState } from "../state/state.js";
 import type { TunerClient } from "../tuner/client.js";
+import { waitForGame } from "./game-wait.js";
 import { turnMessage } from "./prompt.js";
 
 // What stays the same for an agent from turn to turn. first is true until
@@ -34,6 +35,8 @@ export interface LoopContext {
 	model: ModelSetting;
 	journalEntries: number;
 	now: () => Date;
+	// How long a turn waits between checks on a game that doesn't answer.
+	gameWaitMs?: number;
 }
 
 // A turn that stops without end_turn leaves the game waiting on the agent. A
@@ -130,7 +133,7 @@ async function converse(agent: Agent, context: LoopContext, messages: ModelMessa
 
 		nudged = false;
 
-		const ran = await runCalls(agent, logger, result.reply.toolCalls, signal);
+		const ran = await runCalls(agent, context, result.reply.toolCalls, signal);
 
 		if (ran === "cancelled") {
 			return cancelTurn(logger, agent);
@@ -147,7 +150,8 @@ async function converse(agent: Agent, context: LoopContext, messages: ModelMessa
 // Runs the calls in order. Once end_turn goes through, it's another
 // player's turn, so the rest don't run. After a game load, the rest would act
 // in the new game, so they don't run either.
-async function runCalls(agent: Agent, logger: Logger, calls: ToolCall[], signal: AbortSignal | undefined): Promise<{ ended: true } | { ended: false; message: ToolModelMessage } | "cancelled"> {
+async function runCalls(agent: Agent, context: LoopContext, calls: ToolCall[], signal: AbortSignal | undefined): Promise<{ ended: true } | { ended: false; message: ToolModelMessage } | "cancelled"> {
+	const { client, logger } = context;
 	const message: ToolModelMessage = { role: "tool", content: [] };
 
 	for (const call of calls) {
@@ -169,6 +173,12 @@ async function runCalls(agent: Agent, logger: Logger, calls: ToolCall[], signal:
 			toolName: call.name,
 			output: { type: output.isError ? "error-text" : "text", value: output.text },
 		});
+
+		// A failed call may mean the game stopped answering, and the next
+		// call or model call would only fail the same way.
+		if (output.isError && !await waitForGame(client, logger, agent.playerID, signal, context.gameWaitMs)) {
+			return "cancelled";
+		}
 	}
 
 	return { ended: false, message };
