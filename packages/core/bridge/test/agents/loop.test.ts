@@ -365,6 +365,20 @@ test("a game load during the model call cancels the turn, without a stop warning
 	expect(warn).not.toHaveBeenCalledWith("turn_stopped", expect.anything(), expect.anything());
 });
 
+test("a stop during the model call cancels the turn and says the bridge is stopping", async () => {
+	const info = vi.spyOn(logger, "info");
+	const controller = new AbortController();
+	const { model, started } = waitingForAbort([]);
+	const turn = playTurn(await agent(), context(model), { signal: controller.signal });
+
+	await started;
+	controller.abort("stop");
+
+	expect(await turn).toEqual({ ended: false, cancelled: true });
+	expect(info).toHaveBeenCalledWith("turn_cancelled", "Player 3's turn was cancelled, because the bridge is stopping", { player: 3 });
+	expect(game.commands.some(({ lua }) => lua.includes("EndTurn"))).toBe(false);
+});
+
 test("a game load during a tool call runs none of the reply's later calls", async () => {
 	const controller = new AbortController();
 	const answer = game.onCommand;

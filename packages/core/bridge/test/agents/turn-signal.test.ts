@@ -64,7 +64,7 @@ function sent(): string[] {
 test("a turn signal plays that player's turn, with tools that act for it", async () => {
 	const info = vi.spyOn(logger, "info");
 
-	await turnSignal(context(scripted([endTurn()])))(TURN_3);
+	await turnSignal(context(scripted([endTurn()]))).onEvent(TURN_3);
 
 	expect(sent().some((lua) => lua.includes("SentientSystems_EndTurn(3, false)"))).toBe(true);
 	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended turn 1", { player: 3, turn: 1 });
@@ -73,7 +73,7 @@ test("a turn signal plays that player's turn, with tools that act for it", async
 test("other events start no turn", async () => {
 	const model = scripted([]);
 
-	await turnSignal(context(model))({ type: "load_ready" });
+	await turnSignal(context(model)).onEvent({ type: "load_ready" });
 
 	expect(model.doStreamCalls).toEqual([]);
 	expect(sent()).toEqual([]);
@@ -82,7 +82,7 @@ test("other events start no turn", async () => {
 test("a signal while the player's turn is still running is skipped", async () => {
 	const info = vi.spyOn(logger, "info");
 	const model = scripted([endTurn()]);
-	const onTurn = turnSignal(context(model));
+	const { onEvent: onTurn } = turnSignal(context(model));
 
 	await Promise.all([onTurn(TURN_3), onTurn({ ...TURN_3, again: true })]);
 
@@ -93,7 +93,7 @@ test("a signal while the player's turn is still running is skipped", async () =>
 test("each agent is built once, and later turns reuse it", async () => {
 	const warn = vi.spyOn(logger, "warn");
 	const model = scripted([endTurn(), endTurn()]);
-	const onTurn = turnSignal(context(model));
+	const { onEvent: onTurn } = turnSignal(context(model));
 
 	await onTurn(TURN_3);
 	answerStash(game, {
@@ -110,7 +110,7 @@ test("each agent is built once, and later turns reuse it", async () => {
 test("a second signal on a turn already ended plays nothing, and an again signal plays it", async () => {
 	const info = vi.spyOn(logger, "info");
 	const model = scripted([endTurn(), endTurn()]);
-	const onTurn = turnSignal(context(model));
+	const { onEvent: onTurn } = turnSignal(context(model));
 
 	await onTurn(TURN_3);
 	info.mockClear();
@@ -127,7 +127,7 @@ test("a second signal on a turn already ended plays nothing, and an again signal
 test("a game load cancels the running turn, and the next signal plays the loaded game's turn", async () => {
 	const info = vi.spyOn(logger, "info");
 	const { model, started } = waitingForAbort([endTurn()]);
-	const onTurn = turnSignal(context(model));
+	const { onEvent: onTurn } = turnSignal(context(model));
 	const cancelled = onTurn(TURN_3);
 
 	await started;
@@ -142,7 +142,7 @@ test("a game load cancels the running turn, and the next signal plays the loaded
 test("after a game load, the agent plays a turn it already ended, and checks its memory again", async () => {
 	const warn = vi.spyOn(logger, "warn");
 	const model = scripted([endTurn(), endTurn()]);
-	const onTurn = turnSignal(context(model));
+	const { onEvent: onTurn } = turnSignal(context(model));
 
 	await onTurn(TURN_3);
 	addJournalEntry(path.join(root, "player-3"), { turn: 1, text: "Before the load." });
@@ -157,7 +157,7 @@ test("after a game load, the agent plays a turn it already ended, and checks its
 test("two signals after a cancelled turn play the loaded turn once", async () => {
 	const info = vi.spyOn(logger, "info");
 	const { model, started } = waitingForAbort([endTurn()]);
-	const onTurn = turnSignal(context(model));
+	const { onEvent: onTurn } = turnSignal(context(model));
 	const cancelled = onTurn(TURN_3);
 
 	await started;
@@ -168,11 +168,43 @@ test("two signals after a cancelled turn play the loaded turn once", async () =>
 	expect(info).toHaveBeenCalledWith("turn_skipped", "Player 3's turn is already being played", { player: 3 });
 });
 
+test("a stop cancels a model call that never answers, sends no end turn, and settles once the turn ends", async () => {
+	const info = vi.spyOn(logger, "info");
+	const { model, started } = waitingForAbort([endTurn()]);
+	const { onEvent, stop } = turnSignal(context(model));
+	const turn = onEvent(TURN_3);
+
+	await started;
+	await stop();
+
+	expect(info).toHaveBeenCalledWith("turn_cancelled", "Player 3's turn was cancelled, because the bridge is stopping", { player: 3 });
+	expect(sent().some((lua) => lua.includes("SentientSystems_EndTurn"))).toBe(false);
+
+	await turn;
+});
+
+test("no turn starts after a stop, even one waiting on a cancelled turn", async () => {
+	const { model, started } = waitingForAbort([endTurn()]);
+	const { onEvent, stop } = turnSignal(context(model));
+	const cancelled = onEvent(TURN_3);
+
+	await started;
+	await onEvent({ type: "game_ready", turn: 1 });
+
+	const waiting = onEvent(TURN_3);
+
+	await stop();
+	await Promise.all([cancelled, waiting, onEvent(TURN_3)]);
+
+	expect(model.doStreamCalls).toHaveLength(1);
+	expect(sent().some((lua) => lua.includes("SentientSystems_EndTurn"))).toBe(false);
+});
+
 test("a turn that stops logs no end", async () => {
 	const info = vi.spyOn(logger, "info");
 	const thinking = (): StreamResult => reply([{ type: "text", text: "Hmm." }]);
 
-	await turnSignal(context(scripted([thinking(), thinking()])))(TURN_3);
+	await turnSignal(context(scripted([thinking(), thinking()]))).onEvent(TURN_3);
 
 	expect(info).not.toHaveBeenCalledWith("turn_ended", expect.anything(), expect.anything());
 });
@@ -192,7 +224,7 @@ test("a turn that throws warns, and the next signal tries again", async () => {
 	};
 
 	const model = scripted([endTurn()]);
-	const onTurn = turnSignal(context(model, memory));
+	const { onEvent: onTurn } = turnSignal(context(model, memory));
 
 	await onTurn(TURN_3);
 
