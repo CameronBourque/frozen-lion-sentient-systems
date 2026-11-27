@@ -330,7 +330,7 @@ test("a turn at its token limit ends with force, and the reply's tool calls don'
 test("a turn at its cost limit ends with force", async () => {
 	const warn = vi.spyOn(logger, "warn");
 	const model = scripted([reply([endTurn("call-1", false)])]);
-	const priced = { ...NO_MODEL, price: { input: 1000, output: 1000, cacheRead: "", cacheWrite: "" } } as const;
+	const priced = { ...NO_MODEL, price: { input: 1000, output: 1000, cacheRead: -1, cacheWrite: -1 } } as const;
 
 	expect(await playTurn(await agent(), context(model, { costPerTurn: 0.01 }, priced))).toEqual({ ended: true });
 	expect(forcedEnds()).toHaveLength(1);
@@ -362,7 +362,7 @@ test("a run at its token limit stops the run without an end turn, ahead of the t
 
 test("a run at its cost limit stops the run, with the model's price", async () => {
 	const model = scripted([reply([endTurn("call-1", true)])]);
-	const priced = { ...NO_MODEL, price: { input: 1000, output: 1000, cacheRead: "", cacheWrite: "" } } as const;
+	const priced = { ...NO_MODEL, price: { input: 1000, output: 1000, cacheRead: -1, cacheWrite: -1 } } as const;
 	const shared = context(model, { costPerRun: 0.01 }, priced);
 
 	expect(await playTurn(await agent(), shared)).toEqual({ ended: false, reason: "The run reached the cost per run limit of $0.01", stopRun: true });

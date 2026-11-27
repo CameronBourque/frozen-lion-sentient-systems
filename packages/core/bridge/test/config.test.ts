@@ -102,6 +102,16 @@ describe("parseConfig", () => {
 		expect(errorsFor("schemaVersion: 1\nmodel:\n  effort: huge")[0]).toMatch(/^model\.effort: /);
 	});
 
+	test("reads a blank price from an older file as -1, and names a price that is wrong", () => {
+		expect(parseConfig("schemaVersion: 1\nmodel:\n  price:\n    input: \"\"\n    output: 15\n    cacheRead: -1")).toMatchObject({
+			ok: true,
+			config: { model: { price: { input: -1, output: 15, cacheRead: -1, cacheWrite: -1 } } },
+		});
+		expect(parseConfig("schemaVersion: 1\nmodel:\n  price:\n    input: 0")).toMatchObject({ ok: true, config: { model: { price: { input: 0 } } } });
+		expect(errorsFor("schemaVersion: 1\nmodel:\n  price:\n    input: \"3\"")).toEqual(["model.price.input: Write -1 for no price, or a dollar amount of 0 or more, with no quotes"]);
+		expect(errorsFor("schemaVersion: 1\nmodel:\n  price:\n    output: -2")[0]).toMatch(/^model\.price\.output: /);
+	});
+
 	test("names mcpPort when it isn't a port", () => {
 		expect(errorsFor("schemaVersion: 1\nmcpPort: 70000")[0]).toMatch(/^mcpPort: /);
 		expect(errorsFor("schemaVersion: 1\nmcpPort: 43.5")[0]).toMatch(/^mcpPort: /);
@@ -164,7 +174,7 @@ describe("parseConfig", () => {
 });
 
 describe("withModel", () => {
-	const MODEL = { mode: "api-key", provider: "openai", id: "some-model", effort: "high", price: { input: 2.5, output: 10, cacheRead: 0.25, cacheWrite: "" } } as const;
+	const MODEL = { mode: "api-key", provider: "openai", id: "some-model", effort: "high", price: { input: 2.5, output: 10, cacheRead: 0.25, cacheWrite: -1 } } as const;
 
 	// Each value keeps the quotes it had, and a number has none.
 	test("replaces the model and keeps the comments, in price too", () => {
@@ -200,7 +210,8 @@ describe("withModel", () => {
 			"    input: 2.5",
 			"    output: 10",
 			"    cacheRead: 0.25",
-			"    cacheWrite: \"\"",
+			// An older file's blank price becomes -1 when the model is saved.
+			"    cacheWrite: -1",
 			"",
 		].join("\n"));
 	});

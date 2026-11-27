@@ -53,9 +53,24 @@ const EFFORT_LEVELS: Record<Effort, true> = {
 
 export const EFFORTS = Object.keys(EFFORT_LEVELS) as Effort[];
 
-// US dollars per million tokens, blank when the user doesn't know it. No API
-// gives a price, so the user copies it from the provider's pricing page.
-const PER_MILLION = z.union([z.literal(""), z.number().nonnegative()]).default("");
+// A number setting with this value is unset: no price, or no limit. A number,
+// not a blank string, so a user who quotes a number gets an error.
+export const UNSET = -1;
+
+// Every bad value gets the same error, which says how to write a good one.
+function numberOrUnset(unset: string, valid: (value: number) => boolean, what: string): z.ZodNumber {
+	const error = `Write ${UNSET} for ${unset}, or ${what}, with no quotes`;
+
+	return z.number({ error }).refine((value) => value === UNSET || valid(value), { error });
+}
+
+// US dollars per million tokens, unset when the user doesn't know it. No API
+// gives a price, so the user copies it from the provider's pricing page. A
+// blank string was the unset price before, and older files still hold it.
+const PER_MILLION = z.preprocess(
+	(value) => (value === "" ? UNSET : value),
+	numberOrUnset("no price", (value) => Number.isFinite(value) && value >= 0, "a dollar amount of 0 or more"),
+).default(UNSET);
 
 // Cached input is read from, or written to, the provider's prompt cache,
 // which has its own prices.
@@ -68,7 +83,7 @@ const PRICE = z.strictObject({
 
 export type Price = z.infer<typeof PRICE>;
 
-export const NO_PRICE: Price = { input: "", output: "", cacheRead: "", cacheWrite: "" };
+export const NO_PRICE: Price = { input: UNSET, output: UNSET, cacheRead: UNSET, cacheWrite: UNSET };
 
 // Blank until the user picks, which the picker then asks for. The run mode is
 // the one the model was picked in, so keeping the model keeps how it pays.
@@ -84,33 +99,22 @@ export type ModelSetting = z.infer<typeof MODEL>;
 
 export const NO_MODEL: ModelSetting = { mode: "api-key", provider: "", id: "", effort: "", price: NO_PRICE };
 
-// A spending limit with this value has no limit. A number, not a blank
-// string, so a user who quotes a number gets an error.
-export const NO_LIMIT = -1;
-
 // A late-game turn moves many units and runs many cities, so the actions per
 // turn leave room for it. There is no spending limit until the user sets one.
 export const DEFAULT_LIMITS = {
 	retriesPerAction: 3,
 	actionsPerTurn: 250,
 	turnMinutes: 15,
-	tokensPerTurn: NO_LIMIT,
-	tokensPerRun: NO_LIMIT,
-	costPerTurn: NO_LIMIT,
-	costPerRun: NO_LIMIT,
+	tokensPerTurn: UNSET,
+	tokensPerRun: UNSET,
+	costPerTurn: UNSET,
+	costPerRun: UNSET,
 };
 
-// Every bad value gets the same error, which says how to write a good one.
-function spendLimit(valid: (value: number) => boolean, what: string): z.ZodDefault<z.ZodNumber> {
-	const error = `Write ${NO_LIMIT} for no limit, or ${what} above 0, with no quotes`;
-
-	return z.number({ error }).refine((value) => value === NO_LIMIT || (value > 0 && valid(value)), { error }).default(NO_LIMIT);
-}
-
-const TOKEN_LIMIT = spendLimit(Number.isInteger, "a whole number");
+const TOKEN_LIMIT = numberOrUnset("no limit", (value) => Number.isInteger(value) && value > 0, "a whole number above 0").default(UNSET);
 
 // In US dollars, which needs the model's price.
-const COST_LIMIT = spendLimit(Number.isFinite, "a dollar amount");
+const COST_LIMIT = numberOrUnset("no limit", (value) => Number.isFinite(value) && value > 0, "a dollar amount above 0").default(UNSET);
 
 // When the loop reaches a turn limit, it ends the turn, so one stuck turn can't
 // stop a game. A run limit stops the bridge.

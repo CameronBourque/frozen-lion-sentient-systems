@@ -5,7 +5,7 @@ import { addSpend, describeSpend, noSpend, reachedSpendLimit, spendWarnings } fr
 import { DEFAULT_LIMITS, type Limits, NO_PRICE, type Price } from "../../src/config.js";
 
 const USAGE = { inputTokens: 1000, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 500 };
-const PRICE: Price = { input: 3, output: 15, cacheRead: "", cacheWrite: "" };
+const PRICE: Price = { input: 3, output: 15, cacheRead: -1, cacheWrite: -1 };
 
 function limits(set: Partial<Limits>): Limits {
 	return { ...DEFAULT_LIMITS, ...set };
@@ -72,7 +72,7 @@ describe("spendWarnings", () => {
 			expect.stringMatching(/^limits\.costPerTurn needs the input and output prices/) as unknown,
 			expect.stringMatching(/^limits\.costPerRun needs the input and output prices/) as unknown,
 		]);
-		expect(spendWarnings(limits({ costPerRun: 5 }), { ...PRICE, output: "" })).toHaveLength(1);
+		expect(spendWarnings(limits({ costPerRun: 5 }), { ...PRICE, output: -1 })).toHaveLength(1);
 	});
 
 	test("has no warning for limits that can apply", () => {

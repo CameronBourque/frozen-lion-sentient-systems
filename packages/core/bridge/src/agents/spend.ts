@@ -1,9 +1,9 @@
 // What the model calls spend in tokens and dollars, and the spending limit the
 // spend reaches. docs/design/agents/turn-loop/stopping.md has the design.
 
-import { type Limits, NO_LIMIT, type Price } from "../config.js";
+import { type Limits, type Price, UNSET } from "../config.js";
 import type { Usage } from "../model/client.js";
-import { callCost } from "../model/usage.js";
+import { callCost, hasPrice } from "../model/usage.js";
 
 // cost counts only the calls with a price.
 export interface Spend {
@@ -30,9 +30,9 @@ export function addSpend(spend: Spend, usage: Usage, price: Price): void {
 	spend.cost += callCost(usage, price) ?? 0;
 }
 
-// Every check goes through here, since a spend is always at or above NO_LIMIT.
+// Every check goes through here, since a spend is always at or above UNSET.
 function reaches(spent: number, limit: number): boolean {
-	return limit !== NO_LIMIT && spent >= limit;
+	return limit !== UNSET && spent >= limit;
 }
 
 // The token limit wins when the spend reaches both.
@@ -53,13 +53,13 @@ export function describeSpend(spend: Spend): string {
 // A cost limit with no price never counts a dollar, so it never stops the
 // agent. With no limit at all, the agent spends until the stop key.
 export function spendWarnings(limits: Limits, price: Price): string[] {
-	const set = Object.values(SPEND_LIMITS).flat().filter((limit) => limits[limit] !== NO_LIMIT);
+	const set = Object.values(SPEND_LIMITS).flat().filter((limit) => limits[limit] !== UNSET);
 
 	if (set.length === 0) {
 		return ["No spending limit is set, so the agents spend until you stop the bridge. Set one in limits in the config file"];
 	}
 
-	if (price.input !== "" && price.output !== "") {
+	if (hasPrice(price)) {
 		return [];
 	}
 

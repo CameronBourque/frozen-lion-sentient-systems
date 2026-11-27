@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, NO_LIMIT, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, UNSET, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 import { RUN_MODE_NAMES } from "./model/providers/provider.js";
 
@@ -42,12 +42,13 @@ model:
   effort: ""
   # The model's price in US dollars per million tokens. The picker fills it from a public price
   # list, and you can change it. With a price, the log shows each call's cost. Picking another
-  # model replaces it.
+  # model replaces it. ${UNSET} is no price, and a cache price of ${UNSET} uses the input price. Write
+  # each price as a plain number, with no quotes.
   price:
-    input: ""
-    output: ""
-    cacheRead: ""
-    cacheWrite: ""
+    input: ${UNSET}
+    output: ${UNSET}
+    cacheRead: ${UNSET}
+    cacheWrite: ${UNSET}
 
 # The port where the bridge serves its MCP tools when it starts with --mcp, for Claude Code and
 # the MCP Inspector. Change it if another program uses it.
@@ -65,16 +66,16 @@ journalEntries: ${DEFAULT_JOURNAL_ENTRIES}
 # The spending limits cap the model calls, so an agent never spends more than you allow. Tokens
 # count input and output. Cost is in US dollars, and needs the model's price. A turn that reaches
 # its limit ends as it does at the limits above. A run, which is one start of the bridge, stops at
-# its limit, and the game waits on the agent's turn until you start the bridge again. ${NO_LIMIT} is no
+# its limit, and the game waits on the agent's turn until you start the bridge again. ${UNSET} is no
 # limit. Write each limit as a plain number, with no quotes.
 limits:
   retriesPerAction: ${DEFAULT_LIMITS.retriesPerAction}
   actionsPerTurn: ${DEFAULT_LIMITS.actionsPerTurn}
   turnMinutes: ${DEFAULT_LIMITS.turnMinutes}
-  tokensPerTurn: ${NO_LIMIT}
-  tokensPerRun: ${NO_LIMIT}
-  costPerTurn: ${NO_LIMIT}
-  costPerRun: ${NO_LIMIT}
+  tokensPerTurn: ${UNSET}
+  tokensPerRun: ${UNSET}
+  costPerTurn: ${UNSET}
+  costPerRun: ${UNSET}
 `;
 
 // Where the bridge runs from. In development, tsx runs the bridge with

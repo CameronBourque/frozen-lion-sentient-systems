@@ -108,7 +108,7 @@ An agent SDK or a CLI becomes a run mode for a provider only when it does everyt
 - an `abortController` that the stop key aborts,
 - `model` and `effort` from the config file.
 
-The SDK's `total_cost_usd` is an estimate at API prices, not what a plan costs, so the price stays blank, as with a subscription token.
+The SDK's `total_cost_usd` is an estimate at API prices, not what a plan costs, so the price stays unset, as with a subscription token.
 
 `CLAUDE_AGENT_SDK_ENABLED` in `src/model/providers/anthropic.ts` is `false`. While it is, Anthropic's `modes` has no agent SDK entry, so the mode reads `(not available yet)`.
 
@@ -131,4 +131,4 @@ No provider uses the CLI mode yet, so its menu row reads `(not available yet)`. 
 | An agent SDK or a CLI must pass the parity check | Users get the same game in every mode. A mode that loses the log, the limits, or the stop key isn't worth offering |
 | The Claude flag is a constant in the code, not a config setting | A setting would let anyone turn it on before Anthropic approves, which is the same as offering it. Tests turn it on through injection |
 | `signIn` is an optional part of `ModeSupport`, and the picker calls it when the mode has one | Only a subscription token mode signs in. A new plan provider is still one entry, with no change to the picker |
-| A plan mode leaves the price blank | A plan has no price per token. An estimate at API prices would make cost limits stop runs that cost the user nothing more |
+| A plan mode leaves the price unset | A plan has no price per token. An estimate at API prices would make cost limits stop runs that cost the user nothing more |

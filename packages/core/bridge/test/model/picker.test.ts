@@ -133,7 +133,7 @@ describe("pickModel", () => {
 	});
 
 	test("keeps the price when the model stays the same, and clears it when the model changes", async () => {
-		const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
+		const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: -1, cacheWrite: -1 } };
 		const same = scriptedIo([0, 0]);
 		const other = scriptedIo([1, 0]);
 
@@ -156,10 +156,10 @@ describe("pickModel", () => {
 		});
 
 		test("keeps each price the user saved for the same model, and fills the blank ones", async () => {
-			const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: "", cacheWrite: "" } };
+			const saved: ModelSetting = { mode: "api-key", provider: "openai", id: "model-a", effort: "", price: { input: 1, output: 2, cacheRead: -1, cacheWrite: -1 } };
 			const { io } = scriptedIo([0, 0], MODELS, LISTED);
 
-			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 1, output: 2, cacheRead: 0.3, cacheWrite: "" } } });
+			expect(await pickModel(configWith(["openai"], saved), io)).toMatchObject({ model: { price: { input: 1, output: 2, cacheRead: 0.3, cacheWrite: -1 } } });
 		});
 
 		test("fills a blank saved price for the same model from the list", async () => {
