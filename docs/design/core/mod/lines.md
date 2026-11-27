@@ -33,6 +33,8 @@ The UI script prints two lines during a load:
 - **`LOAD_READY`.** `Events.LoadGameViewStateDone` prints it when the loading screen shows its button. The tuner carries the line, but runs no commands until the click.
 - **`GAME_READY <turn>`.** `Events.LoadScreenClose` prints it, with the turn from `Game.GetCurrentGameTurn()`, when the button is clicked, by the player or by the game. Commands work from then on.
 
+  In two loads the turn was one less than the state's, as [agent-runs.md](../../../findings/agent-runs.md#end-turn-run) says, so the bridge reads the turn from the state.
+
 The socket resets right after the click, and the `GAME_READY` line reaches the bridge first. In hotseat and other games where the game clicks the button, the two lines come one right after the other. See [findings/lua/state-list.md](../../../findings/lua/state-list.md#state-list-over-a-session).
 
 ## Errors
