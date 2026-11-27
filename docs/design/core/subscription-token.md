@@ -21,7 +21,7 @@ The bridge's loop and the [model client](model-client.md) stay the same. The pro
 
   The ID token stays when a spent refresh clears the tokens, so the next sign-in can still send it.
 
-  The terminal bridge saves the tokens with no question. A GUI will ask the user to opt in to saving them, and without it the user signs in on each start.
+  The terminal bridge saves the tokens with no question. The [bridge GUI](../../roadmap/phase-3/README.md) will ask the user to opt in to saving them, and without it the user signs in on each start.
 - **Refresh.** Before each request, the bridge checks the access token's expiry. With less than a minute left, it refreshes the token first. A request that comes during a refresh waits for that refresh, so only one runs at a time.
 
   A request refused with 401 refreshes once and tries again, unless another request already replaced that token. A refresh refused as spent, such as `invalid_grant`, clears the tokens, and `invalid_client` clears the client ID too. The picker then asks to sign in again on the next start.

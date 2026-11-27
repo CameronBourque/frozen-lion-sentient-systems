@@ -14,7 +14,7 @@ This phase makes the mods usable by a nontechnical user and ships the first rele
 - Launcher shortcut that starts the bridge and the game
 - First-run `EnableTuner` setup, with permission
 - In-game API key setting
-- A stop button and spending limit settings in the game, so a user without the bridge's console can [stop an agent](../../design/agents/turn-loop/stopping.md)
+- A stop button and spending limit settings in the game, so a player can [stop an agent](../../design/agents/turn-loop/stopping.md) without leaving the game. Decide whether it is still needed beside the [bridge GUI](../phase-3/README.md)'s stop button.
 - Missing-bridge message and bridge self-update
 - Bridge release on GitHub and mod upload to the Workshop
 
