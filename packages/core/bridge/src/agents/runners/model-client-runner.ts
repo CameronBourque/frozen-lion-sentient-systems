@@ -4,12 +4,9 @@
 
 import type { ModelMessage, ToolModelMessage } from "ai";
 import { callTool } from "../../mcp/in-process.js";
-import { type ModelTarget, type ToolCall, type Usage, callModel } from "../../model/client.js";
+import { type ModelTarget, type ToolCall, callModel } from "../../model/client.js";
 import { logModelCall } from "../../model/usage.js";
-import { addSpend, reachedSpendLimit } from "../spend.js";
-import { type AgentRunner, type TurnEnd, type TurnRun, afterCall, beforeCall, startRun } from "./shared.js";
-
-const NUDGE = "You wrote no tool call. Take your next action, or call end_turn when you are done.";
+import { type AgentRunner, NUDGE, type TurnEnd, type TurnRun, afterCall, beforeCall, countNoToolCall, spendCall, startRun } from "./shared.js";
 
 // The model call failure that stops the run: a plan's usage limit, which fails
 // every call until the plan resets.
@@ -30,7 +27,7 @@ export function modelClientRunner(target: ModelTarget): AgentRunner {
 // Calls the model and runs its tool calls until end_turn goes through, or
 // the turn reaches a limit. A reply with no tool call gets a nudge.
 async function converse(run: TurnRun, target: ModelTarget, messages: ModelMessage[]): Promise<TurnEnd> {
-	const { agent, context, signal, tally } = run;
+	const { agent, signal } = run;
 
 	for (;;) {
 		const result = await callModel(target, { system: agent.system, messages, tools: agent.definitions, signal });
@@ -44,7 +41,7 @@ async function converse(run: TurnRun, target: ModelTarget, messages: ModelMessag
 			return { failed: result.error, stopRun: result.kind === RUN_FAILURE };
 		}
 
-		logModelCall(context.logger, context.model, result.reply.usage);
+		logModelCall(run.context.logger, run.context.model, result.reply.usage);
 
 		const spent = spendCall(run, result.reply.usage);
 
@@ -55,10 +52,10 @@ async function converse(run: TurnRun, target: ModelTarget, messages: ModelMessag
 		messages.push(...result.reply.messages);
 
 		if (result.reply.toolCalls.length === 0) {
-			tally.failures += 1;
+			const limit = countNoToolCall(run);
 
-			if (tally.failures > context.limits.retriesPerAction) {
-				return { limit: "retriesPerAction" };
+			if (limit !== undefined) {
+				return limit;
 			}
 
 			messages.push({ role: "user", content: NUDGE });
@@ -73,24 +70,6 @@ async function converse(run: TurnRun, target: ModelTarget, messages: ModelMessag
 
 		messages.push(ran);
 	}
-}
-
-// Adds the call to the turn's and the run's spend. At a spending limit, the
-// reply's tool calls don't run. A run at its limit stops, which wins over a
-// turn at its limit, since a forced end would start more turns.
-function spendCall({ context, tally }: TurnRun, usage: Usage): TurnEnd | undefined {
-	addSpend(tally.spend, usage, context.model.price);
-	addSpend(context.runSpend, usage, context.model.price);
-
-	const runLimit = reachedSpendLimit(context.runSpend, context.limits, "run");
-
-	if (runLimit !== undefined) {
-		return { runLimit };
-	}
-
-	const limit = reachedSpendLimit(tally.spend, context.limits, "turn");
-
-	return limit === undefined ? undefined : { limit };
 }
 
 // Runs the calls in order, and stops at the first that ends the turn.

@@ -3,10 +3,10 @@
 
 import type { Limits } from "../../config.js";
 import type { ToolOutput } from "../../mcp/in-process.js";
-import type { ToolDefinition } from "../../model/client.js";
+import type { ToolDefinition, Usage } from "../../model/client.js";
 import { waitForGame } from "../game-wait.js";
 import type { Agent, LoopContext } from "../loop.js";
-import { type Spend, type SpendLimit, noSpend } from "../spend.js";
+import { type Spend, type SpendLimit, addSpend, noSpend, reachedSpendLimit } from "../spend.js";
 
 // What a runner gets for one turn. limits are in context.
 export interface RunnerTurn {
@@ -38,6 +38,8 @@ export interface AgentRunner {
 }
 
 const END_TURN = "end_turn";
+
+export const NUDGE = "You wrote no tool call. Take your next action, or call end_turn when you are done.";
 
 // What a turn has spent against its limits. failures counts the failed
 // actions in a row, and the replies with no tool call.
@@ -116,4 +118,30 @@ function countAction(tally: Tally, failed: boolean, limits: Limits): keyof Limit
 	}
 
 	return tally.actions >= limits.actionsPerTurn ? "actionsPerTurn" : undefined;
+}
+
+// Adds a model call to the turn's and the run's spend. At a spending limit, no
+// more tool calls run. A run at its limit stops, which wins over a turn at its
+// limit, since a forced end would start more turns.
+export function spendCall({ context, tally }: TurnRun, usage: Usage): TurnEnd | undefined {
+	addSpend(tally.spend, usage, context.model.price);
+	addSpend(context.runSpend, usage, context.model.price);
+
+	const runLimit = reachedSpendLimit(context.runSpend, context.limits, "run");
+
+	if (runLimit !== undefined) {
+		return { runLimit };
+	}
+
+	const limit = reachedSpendLimit(tally.spend, context.limits, "turn");
+
+	return limit === undefined ? undefined : { limit };
+}
+
+// A reply with no tool call counts as a failure, like a failed action, and
+// past the retries limit it ends the turn.
+export function countNoToolCall({ context, tally }: TurnRun): TurnEnd | undefined {
+	tally.failures += 1;
+
+	return tally.failures > context.limits.retriesPerAction ? { limit: "retriesPerAction" } : undefined;
 }

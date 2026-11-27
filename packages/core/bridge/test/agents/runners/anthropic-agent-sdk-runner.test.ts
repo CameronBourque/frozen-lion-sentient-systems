@@ -8,6 +8,7 @@ import type { SDKMessage } from "@anthropic-ai/claude-agent-sdk";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { anthropicAgentSdkRunner } from "../../../src/agents/runners/anthropic-agent-sdk-runner.js";
 import { type LoopContext, playTurn } from "../../../src/agents/loop.js";
+import { NUDGE } from "../../../src/agents/runners/shared.js";
 import { noSpend } from "../../../src/agents/spend.js";
 import { DEFAULT_LIMITS, type Limits, type ModelSetting, NO_MODEL } from "../../../src/config.js";
 import { Logger } from "../../../src/log.js";
@@ -17,7 +18,7 @@ import { answerStash } from "../../mcp/tools.js";
 import { MINIMAL_STATE } from "../../state/minimal-state.js";
 import { type FakeGame, startGame } from "../../tuner/fake-game.js";
 import { SYSTEM, testAgent } from "../agent.js";
-import { type FakeCall, type FakeQuery, type FakeScript, fakeQuery } from "./fake-agent-sdk-query.js";
+import { type FakeCall, type FakeQuery, type FakeScript, SUCCESS, fakeQuery } from "./fake-agent-sdk-query.js";
 
 const REASON = "Nothing left to do.";
 
@@ -94,7 +95,8 @@ test("the query keeps to the bridge's prompt and tools, and runs in the memory f
 
 	expect(await playTurn(await testAgent(client, logger, folder), context(fake, {}, setting))).toEqual({ ended: true });
 
-	const [{ prompt, options }] = fake.params;
+	const [options] = fake.options;
+	const [prompt] = fake.prompts;
 
 	expect(prompt).toContain("turn");
 	expect(options).toMatchObject({ systemPrompt: SYSTEM, tools: [], strictMcpConfig: true, settingSources: [], cwd: folder, persistSession: false, permissionMode: "dontAsk", model: "claude-opus-5-5", effort: "high" });
@@ -108,8 +110,8 @@ test("a blank model and the provider's default effort leave the SDK's defaults",
 
 	await playTurn(await testAgent(client, logger, folder), context(fake, {}, { ...NO_MODEL, effort: "provider-default" }));
 
-	expect(fake.params[0].options).not.toHaveProperty("model");
-	expect(fake.params[0].options).not.toHaveProperty("effort");
+	expect(fake.options[0]).not.toHaveProperty("model");
+	expect(fake.options[0]).not.toHaveProperty("effort");
 });
 
 test("an end turn that goes through ends the turn, and the calls after it don't run", async () => {
@@ -183,7 +185,7 @@ test("a stop while the model works cancels the turn, and sends no end turn", asy
 	const fake = fakeQuery({ calls: [], hang: true });
 	const turn = playTurn(await testAgent(client, logger, folder), context(fake), { signal: controller.signal });
 
-	await vi.waitFor(() => expect(fake.params).toHaveLength(1));
+	await vi.waitFor(() => expect(fake.options).toHaveLength(1));
 	controller.abort("stop");
 
 	expect(await turn).toEqual({ ended: false, cancelled: true });
@@ -245,13 +247,22 @@ test("a failed call waits for a silent game, and a load during the wait cancels 
 	expect(fake.called).toEqual(["end_turn"]);
 });
 
-test("a model that stops without an end turn stops the turn, and sends no end turn", async () => {
-	const warn = vi.spyOn(logger, "warn");
-	const { result } = await play({ calls: [RESEARCH] });
+test("a reply with no tool call gets the nudge in the same session, and the model acts", async () => {
+	endTurnGoesThrough();
 
-	expect(result).toEqual({ ended: false, reason: "The model stopped without calling end_turn" });
-	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.stringContaining("without calling end_turn"), expect.anything());
-	expect(forcedEnds()).toEqual([]);
+	const { fake, result } = await play({ calls: [], rounds: [{ calls: [END_TURN] }] });
+
+	expect(result).toEqual({ ended: true });
+	expect(fake.prompts).toEqual([expect.stringContaining("turn") as unknown, NUDGE]);
+	expect(fake.options).toHaveLength(1);
+});
+
+test("replies with no tool call count as failures, and past the retries limit the turn ends with force", async () => {
+	const { fake, result } = await play({ calls: [] }, { retriesPerAction: 1 });
+
+	expect(result).toEqual({ ended: true });
+	expect(fake.prompts).toHaveLength(2);
+	expect(forcedEnds()).toHaveLength(1);
 });
 
 test("a run with no result message stops the turn too", async () => {
@@ -280,5 +291,54 @@ test("a port the tools can't be served on stops the turn before the SDK starts",
 	const { fake, result } = await play({ calls: [END_TURN] });
 
 	expect(result).toEqual({ ended: false, reason: "The game's tools couldn't be served to the Agent SDK" });
-	expect(fake.params).toEqual([]);
+	expect(fake.options).toEqual([]);
+});
+
+// One model call, which the SDK sends as two messages with the same id.
+function modelCall(id: string, input: number, cacheRead: number, cacheWrite: number): SDKMessage[] {
+	const message = { type: "assistant", message: { id, usage: { input_tokens: input, cache_read_input_tokens: cacheRead, cache_creation_input_tokens: cacheWrite, output_tokens: 1 } } } as unknown as SDKMessage;
+
+	return [message, message];
+}
+
+// The result's output is the session's total so far.
+function resultWithOutput(outputTokens: number): SDKMessage {
+	return { ...SUCCESS, usage: { output_tokens: outputTokens } } as SDKMessage;
+}
+
+test("each model call counts once against the spend, and each round logs as one call with its output", async () => {
+	endTurnGoesThrough();
+
+	const decision = vi.spyOn(logger, "decision");
+	const fake = fakeQuery({ assistant: modelCall("m1", 100, 20, 5), calls: [], result: resultWithOutput(40), rounds: [{ assistant: modelCall("m2", 10, 0, 0), calls: [END_TURN], result: resultWithOutput(70) }] });
+	const turn = context(fake);
+
+	expect(await playTurn(await testAgent(client, logger, folder), turn)).toEqual({ ended: true });
+	// The second round's result never comes, since end_turn ends the run.
+	expect(turn.runSpend.tokens).toBe(125 + 40 + 10);
+	expect(decision).toHaveBeenCalledWith("model_call", ": 125 input (20 read from the cache, 5 written to it) and 40 output tokens", expect.anything());
+});
+
+test("the output a round adds is the change in the session's total", async () => {
+	const fake = fakeQuery({ calls: [], result: resultWithOutput(40), rounds: [{ calls: [], result: resultWithOutput(70) }] });
+	const turn = context(fake, { retriesPerAction: 1 });
+
+	await playTurn(await testAgent(client, logger, folder), turn);
+
+	expect(turn.runSpend.tokens).toBe(70);
+});
+
+test("a turn at its token limit ends with force, and the round's calls don't run", async () => {
+	const { fake, result } = await play({ assistant: modelCall("m1", 100, 0, 0), calls: [RESEARCH] }, { tokensPerTurn: 100 });
+
+	expect(result).toEqual({ ended: true });
+	expect(fake.called).toEqual([]);
+	expect(forcedEnds()).toHaveLength(1);
+});
+
+test("a run at its token limit stops the run without an end turn", async () => {
+	const { result } = await play({ assistant: modelCall("m1", 100, 0, 0), calls: [RESEARCH] }, { tokensPerRun: 50 });
+
+	expect(result).toEqual({ ended: false, reason: "The run reached the tokens per run limit of 50", stopRun: true });
+	expect(forcedEnds()).toEqual([]);
 });

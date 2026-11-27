@@ -14,58 +14,103 @@ export interface FakeCall {
 	outside?: true;
 }
 
-// hang waits for the abort after the calls, as a model that never answers.
-// result is the message the run ends with, or a throw in its place.
-export interface FakeScript {
-	calls: FakeCall[];
-	hang?: true;
+// One reply round: the assistant messages it sends, the calls it makes, and
+// the result it ends with.
+export interface FakeRound {
+	assistant?: SDKMessage[];
+	calls?: FakeCall[];
 	result?: SDKMessage;
+}
+
+// The first round plays on the turn message, and each of rounds on the next
+// prompt, such as a nudge. A prompt past the last round gets a round with no
+// call. hang waits for the abort after the first round's calls, as a model
+// that never answers, and throws ends the run in place of its result.
+export interface FakeScript extends FakeRound {
+	rounds?: FakeRound[];
+	hang?: true;
 	throws?: Error;
 }
 
 export interface FakeQuery {
 	query: QueryFunction;
-	params: { prompt: string; options: Options }[];
+	options: Options[];
+	// The text of each prompt the run read.
+	prompts: string[];
 	// The tools the run called, by the bridge's name.
 	called: string[];
 }
 
-const SUCCESS = { type: "result", subtype: "success" } as SDKMessage;
+const INIT = { type: "system", subtype: "init" } as SDKMessage;
+
+export const SUCCESS = { type: "result", subtype: "success", usage: { output_tokens: 0 } } as SDKMessage;
 
 export function fakeQuery(script: FakeScript): FakeQuery {
-	const fake: FakeQuery = { query: (params) => play(fake, script, params), params: [], called: [] };
+	const fake: FakeQuery = { query: (params) => play(fake, script, params), options: [], prompts: [], called: [] };
 
 	return fake;
 }
 
-async function* play(fake: FakeQuery, script: FakeScript, params: { prompt: string; options: Options }): AsyncGenerator<SDKMessage> {
-	fake.params.push(params);
+async function* play(fake: FakeQuery, script: FakeScript, { prompt, options }: Parameters<QueryFunction>[0]): AsyncGenerator<SDKMessage> {
+	fake.options.push(options);
 
-	const { options } = params;
+	const prompts = prompt[Symbol.asyncIterator]();
+
+	// Returns false once the runner closes the prompt.
+	const readPrompt = async (): Promise<boolean> => {
+		const next = await prompts.next();
+
+		if (next.done === true) {
+			return false;
+		}
+
+		fake.prompts.push(next.value.message.content as string);
+
+		return true;
+	};
+
 	const { url } = options.mcpServers?.[SERVER_NAME] as { url: string };
 	const client = new Client({ name: "fake-sdk", version: "1.0.0" });
 
 	await client.connect(new StreamableHTTPClientTransport(new URL(url)));
+	await readPrompt();
 
 	try {
-		for (const [index, call] of script.calls.entries()) {
-			// A hook that ends the run still gets the SDK's result.
-			if (!await playCall(fake, options, call, `call-${index}`, client)) {
-				yield SUCCESS;
+		const rounds: FakeRound[] = [script, ...(script.rounds ?? [])];
 
+		yield INIT;
+
+		for (let index = 0; ; index += 1) {
+			const round = rounds[index] ?? {};
+
+			yield* round.assistant ?? [];
+
+			for (const [call, fakeCall] of (round.calls ?? []).entries()) {
+				// A hook that ends the run still gets the SDK's result.
+				if (!await playCall(fake, options, fakeCall, `call-${index}-${call}`, client)) {
+					yield SUCCESS;
+
+					return;
+				}
+			}
+
+			if (index === 0 && script.hang === true) {
+				await aborted(options.abortController!.signal);
+			}
+
+			if (index === 0 && script.throws !== undefined) {
+				throw script.throws;
+			}
+
+			// The SDK reads the next prompt before the runner sends it.
+			const nextPrompt = readPrompt();
+
+			yield round.result ?? SUCCESS;
+
+			if (!await nextPrompt) {
 				return;
 			}
 		}
-
-		if (script.hang === true) {
-			await aborted(options.abortController!.signal);
-		}
-
-		if (script.throws !== undefined) {
-			throw script.throws;
-		}
-
-		yield script.result ?? SUCCESS;
 	} finally {
 		await client.close();
 	}

@@ -66,6 +66,8 @@ Every runner plays each tool call through the same two steps in `src/agents/runn
 - `beforeCall` ends the turn after an abort, so no call acts in a new game or a stopped run.
 - `afterCall` logs the call as `tool_call`, ends the turn after an `end_turn` that goes through, counts an action against the turn limits, and waits for a [silent game](../game-load.md#silent-game) after a failed call.
 
+They share two more steps around the model's replies. `spendCall` adds a call to the turn's and the run's spend, and ends the turn at a spending limit. `countNoToolCall` counts a reply with no tool call as a failure, which gets `NUDGE`.
+
 `modelClientRunner(target)` in `model-client-runner.ts` is the bridge's own loop, which calls the model through the [model client](../../core/model-client.md). The API key and subscription token modes build it with their model:
 
 1. It sends the system prompt, the turn message, and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.

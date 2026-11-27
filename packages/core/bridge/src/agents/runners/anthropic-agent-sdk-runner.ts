@@ -3,15 +3,18 @@
 // docs/design/core/anthropic-agent-sdk-runner.md has the design.
 
 import fs from "node:fs";
-import { type EffortLevel, type HookCallback, type HookInput, type HookJSONOutput, type Options, type PostToolUseFailureHookInput, type PostToolUseHookInput, type PreToolUseHookInput, type SDKMessage, query as sdkQuery } from "@anthropic-ai/claude-agent-sdk";
+import type { EffortLevel, HookCallback, HookInput, HookJSONOutput, Options, PostToolUseFailureHookInput, PostToolUseHookInput, PreToolUseHookInput, SDKAssistantMessage, SDKMessage, SDKResultSuccess, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
+import { query as sdkQuery } from "@anthropic-ai/claude-agent-sdk";
 import type { ModelSetting } from "../../config.js";
 import { startMcpHttp } from "../../mcp/http.js";
 import type { ToolOutput } from "../../mcp/in-process.js";
+import type { Usage } from "../../model/client.js";
+import { logModelCall } from "../../model/usage.js";
 import { SERVER_NAME } from "../../mcp/server.js";
-import { type AgentRunner, type TurnEnd, type TurnRun, afterCall, beforeCall, startRun } from "./shared.js";
+import { type AgentRunner, NUDGE, type TurnEnd, type TurnRun, afterCall, beforeCall, countNoToolCall, spendCall, startRun } from "./shared.js";
 
 // The SDK's query(), or a fake that a test passes in.
-export type QueryFunction = (params: { prompt: string; options: Options }) => AsyncIterable<SDKMessage>;
+export type QueryFunction = (params: { prompt: AsyncIterable<SDKUserMessage>; options: Options }) => AsyncIterable<SDKMessage>;
 
 // The model and the effort the runner plays with, from config.model.
 export type AgentSdkModel = Pick<ModelSetting, "id" | "effort">;
@@ -26,10 +29,24 @@ const NO_END_TURN = "The model stopped without calling end_turn";
 // The efforts that leave the SDK's own default.
 const NO_EFFORT = new Set<AgentSdkModel["effort"]>(["", "provider-default"]);
 
-// A turn's shared run, and the end a hook found, once the run should stop.
+// The messages the runner sends into the session: the turn message, and a
+// nudge after each reply with no tool call.
+interface Prompt {
+	messages: AsyncIterable<SDKUserMessage>;
+	send: (text: string) => void;
+	close: () => void;
+}
+
+// A turn's shared run, and the end a hook or a spend found, once the run
+// should stop. counted holds the model calls already counted, and the round
+// holds the usage since the last result, whose output comes with the result.
 interface SdkRun {
 	run: TurnRun;
+	prompt: Prompt;
 	end?: TurnEnd;
+	counted: Set<string>;
+	round: Usage;
+	outputTokens: number;
 }
 
 type HookOutcome = Promise<HookJSONOutput>;
@@ -42,8 +59,8 @@ const GO_ON: HookJSONOutput = {};
 export function anthropicAgentSdkRunner(model: AgentSdkModel, query: QueryFunction = sdkQuery): AgentRunner {
 	return {
 		runTurn: async ({ agent, message, context }, signal) => {
-			const sdkRun: SdkRun = { run: startRun(agent, context, signal) };
-			const end = await runQuery(query, model, sdkRun, message);
+			const sdkRun: SdkRun = { run: startRun(agent, context, signal), prompt: prompt(message), counted: new Set(), round: noUsage(), outputTokens: 0 };
+			const end = await runQuery(query, model, sdkRun);
 
 			return { end, spend: sdkRun.run.tally.spend };
 		},
@@ -52,7 +69,7 @@ export function anthropicAgentSdkRunner(model: AgentSdkModel, query: QueryFuncti
 
 // Each turn serves the agent's tools on a free port, and closes it after, so
 // no port stays open between turns.
-async function runQuery(query: QueryFunction, model: AgentSdkModel, sdkRun: SdkRun, message: string): Promise<TurnEnd> {
+async function runQuery(query: QueryFunction, model: AgentSdkModel, sdkRun: SdkRun): Promise<TurnEnd> {
 	const { agent, signal } = sdkRun.run;
 	const http = await startMcpHttp(0, agent.toolContext);
 
@@ -71,11 +88,12 @@ async function runQuery(query: QueryFunction, model: AgentSdkModel, sdkRun: SdkR
 	}
 
 	try {
-		return await readMessages(query({ prompt: message, options: queryOptions(sdkRun, model, http.url, abortController) }), sdkRun);
+		return await readMessages(query({ prompt: sdkRun.prompt.messages, options: queryOptions(sdkRun, model, http.url, abortController) }), sdkRun);
 	} catch (error) {
 		return signal.aborted ? { aborted: true } : { failed: `The Agent SDK failed: ${String(error)}`, stopRun: false };
 	} finally {
 		signal.removeEventListener("abort", abort);
+		sdkRun.prompt.close();
 		abortController.abort();
 		await http.close();
 	}
@@ -115,20 +133,128 @@ function hook<Input extends HookInput>(sdkRun: SdkRun, handle: (sdkRun: SdkRun, 
 	return (input) => handle(sdkRun, input as Input);
 }
 
-// The run ends at the turn's end, so a result with no end means the model
-// stopped on its own.
+// Reads the session until the turn's end. Each result is a reply with no tool
+// call, which counts as a failure and gets the nudge, as in the bridge's own
+// loop.
 async function readMessages(messages: AsyncIterable<SDKMessage>, sdkRun: SdkRun): Promise<TurnEnd> {
 	for await (const message of messages) {
+		sdkRun.end ??= readMessage(sdkRun, message);
+
 		if (sdkRun.end !== undefined) {
 			break;
-		}
-
-		if (message.type === "result") {
-			return message.subtype === "success" ? { failed: NO_END_TURN, stopRun: false } : { failed: `The Agent SDK stopped: ${message.errors.join("; ")}`, stopRun: false };
 		}
 	}
 
 	return sdkRun.end ?? (sdkRun.run.signal.aborted ? { aborted: true } : { failed: NO_END_TURN, stopRun: false });
+}
+
+function readMessage(sdkRun: SdkRun, message: SDKMessage): TurnEnd | undefined {
+	if (message.type === "assistant") {
+		return countCall(sdkRun, message);
+	}
+
+	if (message.type !== "result") {
+		return undefined;
+	}
+
+	if (message.subtype !== "success") {
+		return { failed: `The Agent SDK stopped: ${message.errors.join("; ")}`, stopRun: false };
+	}
+
+	const end = countRound(sdkRun, message) ?? countNoToolCall(sdkRun.run);
+
+	if (end === undefined) {
+		sdkRun.prompt.send(NUDGE);
+	}
+
+	return end;
+}
+
+// Each model call counts against the spending limits as it comes, so a long
+// round stops at a limit. Its output is a placeholder until the result, and
+// the SDK may send one call in several messages.
+function countCall(sdkRun: SdkRun, { message }: SDKAssistantMessage): TurnEnd | undefined {
+	if (sdkRun.counted.has(message.id)) {
+		return undefined;
+	}
+
+	sdkRun.counted.add(message.id);
+
+	const cacheReadTokens = message.usage.cache_read_input_tokens ?? 0;
+	const cacheWriteTokens = message.usage.cache_creation_input_tokens ?? 0;
+	// The bridge counts every input token, and Anthropic only the uncached.
+	const usage: Usage = { inputTokens: message.usage.input_tokens + cacheReadTokens + cacheWriteTokens, cacheReadTokens, cacheWriteTokens, outputTokens: 0 };
+
+	addUsage(sdkRun.round, usage);
+
+	return spendCall(sdkRun.run, usage);
+}
+
+// The result's output is the session's total so far, so the round's output is
+// what it added. The round logs as one model call.
+function countRound(sdkRun: SdkRun, { usage }: SDKResultSuccess): TurnEnd | undefined {
+	const outputTokens = usage.output_tokens - sdkRun.outputTokens;
+	const round = { ...sdkRun.round, outputTokens };
+
+	sdkRun.outputTokens = usage.output_tokens;
+	sdkRun.round = noUsage();
+	logModelCall(sdkRun.run.context.logger, sdkRun.run.context.model, round);
+
+	return spendCall(sdkRun.run, { ...noUsage(), outputTokens });
+}
+
+function noUsage(): Usage {
+	return { inputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 0 };
+}
+
+function addUsage(total: Usage, usage: Usage): void {
+	total.inputTokens += usage.inputTokens;
+	total.cacheReadTokens += usage.cacheReadTokens;
+	total.cacheWriteTokens += usage.cacheWriteTokens;
+}
+
+// The session stays open while the prompt does, so the nudge goes into the
+// same context.
+function prompt(first: string): Prompt {
+	const waiting = [first];
+	let wake: (() => void) | undefined;
+	let closed = false;
+
+	async function* messages(): AsyncGenerator<SDKUserMessage> {
+		for (;;) {
+			const text = waiting.shift();
+
+			if (text !== undefined) {
+				yield { type: "user", message: { role: "user", content: text }, parent_tool_use_id: null };
+				continue;
+			}
+
+			if (closed) {
+				return;
+			}
+
+			await new Promise<void>((resolve) => {
+				wake = resolve;
+			});
+		}
+	}
+
+	const wakeUp = (): void => {
+		wake?.();
+		wake = undefined;
+	};
+
+	return {
+		messages: messages(),
+		send: (text) => {
+			waiting.push(text);
+			wakeUp();
+		},
+		close: () => {
+			closed = true;
+			wakeUp();
+		},
+	};
 }
 
 // Only the bridge's tools run. After an abort, the call is denied too.
