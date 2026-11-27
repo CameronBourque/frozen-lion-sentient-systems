@@ -2,7 +2,7 @@
 
 Status: confirmed. The natural wonder, natural disaster, project built, and rock band popups are confirmed in a running game with Gathering Storm, with calls sent through the tuner.
 
-So is the core mod's close of each. The wonder built popup is in [end-turn.md](end-turn.md#with-the-wonder-built-popup-up).
+So is the core mod's close of each. The wonder built popup is in [end-turn-holds.md](end-turn-holds.md#with-the-wonder-built-popup-up).
 
 The popups that lock the engine's event queue and wait for a click, and the steps that close each one from `SentientSystemsCore_UI`. Closing them for an agent player is [popups for agent players](../../roadmap/phase-1/done/popups.md#popups-for-agent-players). The popups that hold nothing are in [plain-popups.md](plain-popups.md).
 

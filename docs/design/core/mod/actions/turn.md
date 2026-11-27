@@ -16,7 +16,7 @@ The action leaves out the three unit blockers, `ENDTURN_BLOCKING_UNITS`, `ENDTUR
 
 The action fails while any diplomacy session is open with the player, with or without `force`, and names the player. A deal points to the deal response, and any other session to the session response.
 
-The open session comes from `SentientSystems_FindOpenSession`, which the war and peace actions use too. See [with a leader screen up](../../../../findings/actions/end-turn.md#with-a-leader-screen-up).
+The open session comes from `SentientSystems_FindOpenSession`, which the war and peace actions use too. See [with a leader screen up](../../../../findings/actions/end-turn-holds.md#with-a-leader-screen-up).
 
 The action keeps the turn of its last request, and fails for a second call in that turn, with or without `force`. The turn is kept in the UI script's Lua state, so a reload clears it.
 
