@@ -4,7 +4,7 @@ How Anthropic's Claude agents play through `@anthropic-ai/claude-agent-sdk`, in 
 
 ## Options
 
-`anthropicAgentSdkRunner(model, query)` in `src/agents/anthropic-agent-sdk-runner.ts` builds the runner with the model and effort from `config.model`, as the Agent SDK mode's `runner` will. A test passes a fake `query()`. The runner calls `query()` with:
+`anthropicAgentSdkRunner(model, query)` in `src/agents/runners/anthropic-agent-sdk-runner.ts` builds the runner with the model and effort from `config.model`, as the Agent SDK mode's `runner` will. A test passes a fake `query()`. The runner calls `query()` with:
 
 - `systemPrompt` set to the system prompt, and the turn message as the prompt,
 - `tools: []`, the bridge's MCP server in `mcpServers`, `strictMcpConfig: true`, and `settingSources: []`,

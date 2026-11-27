@@ -8,7 +8,7 @@ import { APICallError } from "ai";
 import type { MockLanguageModelV4 } from "ai/test";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { type Agent, type LoopContext, playTurn } from "../../src/agents/loop.js";
-import { bridgeRunner } from "../../src/agents/runner.js";
+import { modelClientRunner } from "../../src/agents/runners/model-client-runner.js";
 import { noSpend } from "../../src/agents/spend.js";
 import { DEFAULT_LIMITS, type Limits, type ModelSetting, NO_MODEL } from "../../src/config.js";
 import { USAGE_LIMIT_CODE } from "../../src/model/client.js";
@@ -51,7 +51,7 @@ function agent(first = false): Promise<Agent> {
 }
 
 function context(model: MockLanguageModelV4, limits: Partial<Limits> = {}, setting: ModelSetting = NO_MODEL): LoopContext {
-	return { client, logger, runner: bridgeRunner({ model, provider: "anthropic", mode: "api-key", effort: "" }), model: setting, journalEntries: 5, limits: { ...DEFAULT_LIMITS, ...limits }, runSpend: noSpend(), now: () => new Date("2026-11-25T12:00:00Z") };
+	return { client, logger, runner: modelClientRunner({ model, provider: "anthropic", mode: "api-key", effort: "" }), model: setting, journalEntries: 5, limits: { ...DEFAULT_LIMITS, ...limits }, runSpend: noSpend(), now: () => new Date("2026-11-25T12:00:00Z") };
 }
 
 function endTurn(id: string, force: boolean): Content {

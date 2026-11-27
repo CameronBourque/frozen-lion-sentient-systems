@@ -1,0 +1,119 @@
+// What every runner shares: the shape of a runner, and the steps that play one
+// tool call. docs/design/agents/turn-loop/README.md#runners has the design.
+
+import type { Limits } from "../../config.js";
+import type { ToolOutput } from "../../mcp/in-process.js";
+import type { ToolDefinition } from "../../model/client.js";
+import { waitForGame } from "../game-wait.js";
+import type { Agent, LoopContext } from "../loop.js";
+import { type Spend, type SpendLimit, noSpend } from "../spend.js";
+
+// What a runner gets for one turn. limits are in context.
+export interface RunnerTurn {
+	agent: Agent;
+	message: string;
+	context: LoopContext;
+}
+
+// How a runner's turn ended. The runner only reports it, and the turn loop
+// ends the turn with force, logs, or cancels. aborted means the signal
+// aborted, and its reason says why.
+export type TurnEnd =
+	| { ended: true }
+	| { limit: keyof Limits }
+	| { runLimit: SpendLimit }
+	| { failed: string; stopRun: boolean }
+	| { aborted: true };
+
+// spend is what the turn's model calls spent.
+export interface RunnerResult {
+	end: TurnEnd;
+	spend: Spend;
+}
+
+// signal aborts at the time limit, a game load, or a stop, and the runner
+// stops the call in progress.
+export interface AgentRunner {
+	runTurn: (turn: RunnerTurn, signal: AbortSignal) => Promise<RunnerResult>;
+}
+
+const END_TURN = "end_turn";
+
+// What a turn has spent against its limits. failures counts the failed
+// actions in a row, and the replies with no tool call.
+interface Tally {
+	actions: number;
+	failures: number;
+	spend: Spend;
+}
+
+// What the calls of one turn share, in every runner.
+export interface TurnRun {
+	agent: Agent;
+	context: LoopContext;
+	signal: AbortSignal;
+	actions: Set<string>;
+	tally: Tally;
+}
+
+export function startRun(agent: Agent, context: LoopContext, signal: AbortSignal): TurnRun {
+	return { agent, context, signal, actions: actionTools(agent.definitions), tally: { actions: 0, failures: 0, spend: noSpend() } };
+}
+
+// The action tools are the ones with a reason, which every action takes.
+function actionTools(definitions: ToolDefinition[]): Set<string> {
+	return new Set(definitions.filter(({ inputSchema }) => inputSchema.properties?.reason !== undefined).map(({ name }) => name));
+}
+
+// After an abort, a call would act in a new game or a stopped run, so it
+// doesn't run. An abort waits for the call in progress, so no Lua command is
+// cut off.
+export function beforeCall({ signal }: TurnRun): TurnEnd | undefined {
+	return signal.aborted ? { aborted: true } : undefined;
+}
+
+// Logs a call that ran, and returns the end it brings, if any. Once end_turn
+// goes through, it's another player's turn, so no later call runs, and none
+// runs past a limit.
+export async function afterCall(run: TurnRun, name: string, input: unknown, output: ToolOutput): Promise<TurnEnd | undefined> {
+	const { agent, context, signal, actions, tally } = run;
+	const { client, logger } = context;
+
+	// The failure is the text the model gets, which says why, such as a
+	// game that didn't answer. The message keeps its first line.
+	const outcome = output.isError ? `failed: ${output.text.split("\n")[0]}` : "done";
+
+	logger.debug("tool_call", `${name}: ${outcome}`, { player: agent.playerID, tool: name, input, ok: !output.isError, ...(output.isError ? { failure: output.text } : {}) });
+
+	if (name === END_TURN && !output.isError) {
+		return { ended: true };
+	}
+
+	const limit = actions.has(name) ? countAction(tally, output.isError, context.limits) : undefined;
+
+	if (limit !== undefined) {
+		return { limit };
+	}
+
+	// A failed call may mean the game stopped answering, and the next call
+	// or model call would only fail the same way. The wait ends only when the
+	// game answers or the turn's signal aborts.
+	if (output.isError && !await waitForGame(client, logger, agent.playerID, signal, context.gameWaitMs)) {
+		return { aborted: true };
+	}
+
+	return undefined;
+}
+
+// Adds an action to the tally, and returns the limit it reaches, if any. A
+// success resets the failures in a row.
+function countAction(tally: Tally, failed: boolean, limits: Limits): keyof Limits | undefined {
+	tally.actions += 1;
+	tally.failures = failed ? tally.failures + 1 : 0;
+
+	if (tally.failures > limits.retriesPerAction) {
+		return "retriesPerAction";
+	}
+
+	return tally.actions >= limits.actionsPerTurn ? "actionsPerTurn" : undefined;
+}

@@ -40,7 +40,7 @@ A run mode missing from a provider's `modes` isn't available for that provider.
 
 `agentRunner(config, mode, providers)` in `src/model/target.ts` finds the chosen provider's mode and builds its runner, and the bridge plays every turn with it. `modelTarget` finds the same mode and builds its model target, for a single call.
 
-`credentialMode(name, mode, credential, factory, lister)` in `src/model/providers/mode.ts` builds a `CallModeSupport` from three parts. Its runner is `bridgeRunner`, with the model target from the factory:
+`credentialMode(name, mode, credential, factory, lister)` in `src/model/providers/mode.ts` builds a `CallModeSupport` from three parts. Its runner is `modelClientRunner`, with the model target from the factory:
 
 - a `Credential`, whose `ready` says whether it is ready, `source` gives what a model is built from, and `secret` gives the string a request sends now, or why it can't, such as a refused refresh,
 - a factory, which builds the model from the credential's source through the provider's AI SDK package,
@@ -84,7 +84,7 @@ The bridge's loop and the model client stay the same, and the provider model get
 
 The agent SDK and CLI modes run their own tool loop, so they replace the bridge's agent loop for a turn. The model client stays out of it.
 
-An `AgentRunner` in `src/agents/runner.ts` runs one turn. `runTurn(turn, signal)` takes the system prompt, the turn message, the MCP tools, and the turn limits. It returns how the turn ended and its usage. [turn-loop/](../agents/turn-loop/README.md#runners) has the interface.
+An `AgentRunner` in `src/agents/runners/` runs one turn. `runTurn(turn, signal)` takes the system prompt, the turn message, the MCP tools, and the turn limits. It returns how the turn ended and its usage. [turn-loop/](../agents/turn-loop/README.md#runners) has the interface.
 
 The API key and subscription token modes share one runner, the bridge's own loop. Each agent SDK and each CLI adds one.
 

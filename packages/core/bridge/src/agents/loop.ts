@@ -12,7 +12,7 @@ import type { ToolDefinition } from "../model/client.js";
 import { readState } from "../state/state.js";
 import type { TunerClient } from "../tuner/client.js";
 import { turnMessage } from "./prompt.js";
-import type { AgentRunner, TurnEnd } from "./runner.js";
+import type { AgentRunner, TurnEnd } from "./runners/shared.js";
 import type { Spend } from "./spend.js";
 
 // What stays the same for an agent from turn to turn. first is true until

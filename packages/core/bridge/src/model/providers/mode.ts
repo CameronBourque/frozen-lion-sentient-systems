@@ -3,7 +3,7 @@
 // docs/design/core/run-modes.md has the design.
 
 import type { LanguageModel } from "ai";
-import { bridgeRunner } from "../../agents/runner.js";
+import { modelClientRunner } from "../../agents/runners/model-client-runner.js";
 import type { Config, Provider } from "../../config.js";
 import type { CallMode } from "../client.js";
 import { type Lister, listModels } from "../list-models.js";
@@ -45,7 +45,7 @@ export function credentialMode<Source>(name: Provider, mode: CallMode, credentia
 			const { id, effort } = config.model;
 			const built = model(config, id);
 
-			return built.ok ? { ok: true, runner: bridgeRunner({ model: built.model, provider: name, mode, effort }) } : built;
+			return built.ok ? { ok: true, runner: modelClientRunner({ model: built.model, provider: name, mode, effort }) } : built;
 		},
 	};
 }

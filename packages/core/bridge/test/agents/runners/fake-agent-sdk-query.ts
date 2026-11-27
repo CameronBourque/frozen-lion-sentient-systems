@@ -3,9 +3,9 @@
 
 import type { HookEvent, HookInput, Options, SDKMessage, SyncHookJSONOutput } from "@anthropic-ai/claude-agent-sdk";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import type { QueryFunction } from "../../src/agents/anthropic-agent-sdk-runner.js";
-import { callTool } from "../../src/mcp/in-process.js";
-import { SERVER_NAME } from "../../src/mcp/server.js";
+import type { QueryFunction } from "../../../src/agents/runners/anthropic-agent-sdk-runner.js";
+import { callTool } from "../../../src/mcp/in-process.js";
+import { SERVER_NAME } from "../../../src/mcp/server.js";
 
 // outside names a tool that isn't the bridge's, such as a built-in one.
 export interface FakeCall {

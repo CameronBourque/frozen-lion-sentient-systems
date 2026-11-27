@@ -4,11 +4,11 @@
 
 import fs from "node:fs";
 import { type EffortLevel, type HookCallback, type HookInput, type HookJSONOutput, type Options, type PostToolUseFailureHookInput, type PostToolUseHookInput, type PreToolUseHookInput, type SDKMessage, query as sdkQuery } from "@anthropic-ai/claude-agent-sdk";
-import type { ModelSetting } from "../config.js";
-import { startMcpHttp } from "../mcp/http.js";
-import type { ToolOutput } from "../mcp/in-process.js";
-import { SERVER_NAME } from "../mcp/server.js";
-import { type AgentRunner, type TurnEnd, type TurnRun, afterCall, beforeCall, startRun } from "./runner.js";
+import type { ModelSetting } from "../../config.js";
+import { startMcpHttp } from "../../mcp/http.js";
+import type { ToolOutput } from "../../mcp/in-process.js";
+import { SERVER_NAME } from "../../mcp/server.js";
+import { type AgentRunner, type TurnEnd, type TurnRun, afterCall, beforeCall, startRun } from "./shared.js";
 
 // The SDK's query(), or a fake that a test passes in.
 export type QueryFunction = (params: { prompt: string; options: Options }) => AsyncIterable<SDKMessage>;

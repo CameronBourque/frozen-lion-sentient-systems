@@ -2,7 +2,7 @@
 // does. docs/design/core/run-modes.md has the design.
 
 import type { LanguageModel } from "ai";
-import type { AgentRunner } from "../../agents/runner.js";
+import type { AgentRunner } from "../../agents/runners/shared.js";
 import type { Config, Provider } from "../../config.js";
 import type { CallMode } from "../client.js";
 import type { Fetch, ListResult } from "../list-models.js";
