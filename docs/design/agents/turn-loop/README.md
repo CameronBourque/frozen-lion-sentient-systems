@@ -17,7 +17,13 @@ The loop starts when the bridge sees the turn-start event for an agent slot. It 
 3. Take the agent's other actions.
 4. End the turn.
 
-The model gives every unit order, including fortify and auto-explore. Plain code gives none on its own. Quick movement and quick combat stay on during agent turns. [Standing orders](../../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
+The model gives every unit order, including fortify and auto-explore. Plain code gives none on its own. Quick movement and quick combat stay on during agent turns, as [game options](#game-options) says. [Standing orders](../../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
+
+## Game options
+
+Two game options slow an agent's turn when they're off: `QuickMovement` and `QuickCombat`, the quick movement and quick combat options in the game's Gameplay options. Each unit move or fight then plays its full animation before the next action.
+
+When an agent turn starts, the core mod checks both and prints an `OPTION_OFF` line for each one that's off, before the turn signal, as [lines.md](../../core/mod/lines.md#turn-events) says. The bridge logs it as an `option_off` warning and plays the turn anyway. Nothing turns the options on, because they're the user's settings.
 
 ## Turn signal
 

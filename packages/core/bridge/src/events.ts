@@ -16,6 +16,9 @@ export type CoreEvent =
 	// The loading screen's button was clicked, by the player or the game, so
 	// commands run from now on.
 	| { type: "game_ready"; turn: number }
+	// A game option that slows an agent's turn is off, by its UserConfiguration
+	// key.
+	| { type: "option_off"; option: string }
 	// A Lua error that SentientSystems_CatchErrors caught in a core mod event
 	// handler.
 	| { type: "error"; handler: string; message: string; traceback?: string };
@@ -44,6 +47,8 @@ const VERSION = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
 const CONTEXT = /^\w+$/;
 // An event handler's name.
 const HANDLER = /^\w+$/;
+// A game option's key in UserConfiguration.
+const OPTION = /^\w+$/;
 // The escapes SentientSystems_CatchErrors writes, so an error with newlines
 // fits on one line: "\\" for a backslash, "\n" for a newline, and "\p" for a
 // percent sign, which the game's log would read as a printf format code.
@@ -119,6 +124,13 @@ export const KINDS: Kind[] = [
 			: `GAME_READY needs one turn, and got "${args.join(" ")}"`,
 	},
 	{
+		name: "OPTION_OFF",
+		example: "[SENTIENTSYSTEMS] OPTION_OFF QuickCombat",
+		parse: (args) => args.length === 1 && OPTION.test(args[0])
+			? { type: "option_off", option: args[0] }
+			: `OPTION_OFF needs one option, and got "${args.join(" ")}"`,
+	},
+	{
 		name: "ERROR",
 		example: "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated attempt to index a nil value",
 		parse: parseError,
@@ -158,6 +170,13 @@ export function describeEvent(event: CoreEvent): EventLog {
 			return { level: "info", event: "load_ready", msg: "The game has loaded, and waits for the click on the loading screen's button", fields: {} };
 		case "game_ready":
 			return { level: "info", event: "game_ready", msg: `The game is ready on turn ${event.turn}`, fields: { turn: event.turn } };
+		case "option_off":
+			return {
+				level: "warn",
+				event: "option_off",
+				msg: `The game option ${event.option} is off, so the agent's turns run slower. Turn it on in the game's Gameplay options`,
+				fields: { option: event.option },
+			};
 		case "error":
 			return {
 				level: "error",
