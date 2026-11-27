@@ -102,7 +102,9 @@ It ended turns 1 to 10 in a row with no help, with 41 model calls, 48 tool calls
 
 The game cancelled the end of turns 5 and 7, and sent `AGENT_TURN 0 again` 0.5 s after each. Each time the model gave the warrior new orders and ended the turn again, and only one new turn followed.
 
-One `get_choices` call failed on turn 1, with a city ID that wasn't Rome's, and the model fixed it on the next call.
+One `get_choices` call failed on turn 1, right after the model founded Rome, with city ID 1. Rome's ID was 65536.
+
+The `found_city` result said only that the game took the request, and the turn's state was read before Rome existed, so the model had to guess. Its next call left out the city and went through, and later turns used Rome's ID from the state.
 
 The calls sent about 691,000 input tokens and 2,300 output tokens. 13 of the 41 calls read from the prompt cache, 123,000 tokens in all. The run used 16% of the 5-hour plan limit and 2% of the weekly one. At that rate, the 5-hour limit holds about 60 turns like these.
 

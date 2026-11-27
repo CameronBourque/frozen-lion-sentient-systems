@@ -11,6 +11,8 @@ Today `sendAction` in `src/actions/actions.ts` reads `{ ok: true }` or `{ ok: fa
 
    The records are the unit after a move or an order, the city after production or a purchase, and the blockers after every action. Say how the core mod waits for the effect from task 1. Commit: `docs: design the action changes`.
 3. **Units.** Return the changed unit from the unit actions, and show `changed` as JSON in the tool result in place of "The game took the request." Commit: `feat(core): report the unit an action changed`.
+
+   `found_city` returns the new city, because the settler is gone and the turn's state was read before the city existed. In the [end turn run](../../findings/agent-runs.md#end-turn-run), the model guessed the new city's ID for `get_choices`, and the call failed.
 4. **Cities.** Return the changed city from the city actions. Commit: `feat(core): report the city an action changed`.
 5. **Blockers.** Return the blockers after every action. Update `rules/play.md` to say an action's result shows what changed. Commit: `feat(core): report the blockers after each action`.
 
