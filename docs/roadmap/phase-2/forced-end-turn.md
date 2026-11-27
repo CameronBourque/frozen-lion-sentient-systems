@@ -1,6 +1,6 @@
 # Forced end turn
 
-Give the agent another try when `end_turn` names a blocker, and force the end of the turn when the loop hits a [turn limit](turn-limits.md). The design is in [failure handling](../../design/agents/turn-loop.md#failure-handling). Part of [phase 2](README.md).
+Give the agent another try when `end_turn` names a blocker, and force the end of the turn when the loop hits a turn limit. The design is in [failure handling](../../design/agents/turn-loop.md#failure-handling). Part of [phase 2](README.md).
 
 ## Tasks
 
