@@ -7,7 +7,7 @@ import { endTurn } from "../actions/turn.js";
 import type { Limits, ModelSetting } from "../config.js";
 import type { LogFields, Logger } from "../log.js";
 import { readMemory, startMemory } from "../memory/store.js";
-import type { ModelTarget, ToolDefinition } from "../model/client.js";
+import type { ToolDefinition } from "../model/client.js";
 import { readState } from "../state/state.js";
 import type { TunerClient } from "../tuner/client.js";
 import { turnMessage } from "./prompt.js";
@@ -31,7 +31,6 @@ export interface LoopContext {
 	client: TunerClient;
 	logger: Logger;
 	runner: AgentRunner;
-	target: ModelTarget;
 	model: ModelSetting;
 	journalEntries: number;
 	limits: Limits;

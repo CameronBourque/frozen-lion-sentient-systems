@@ -4,7 +4,7 @@
 import type { ModelMessage, ToolModelMessage } from "ai";
 import type { Limits } from "../config.js";
 import { type ToolOutput, callTool } from "../mcp/in-process.js";
-import { type ToolCall, type ToolDefinition, type Usage, callModel } from "../model/client.js";
+import { type ModelTarget, type ToolCall, type ToolDefinition, type Usage, callModel } from "../model/client.js";
 import { logModelCall } from "../model/usage.js";
 import { waitForGame } from "./game-wait.js";
 import type { Agent, LoopContext } from "./loop.js";
@@ -64,15 +64,17 @@ export interface TurnRun {
 	tally: Tally;
 }
 
-// The API key and subscription token modes share it.
-export const bridgeRunner: AgentRunner = {
-	runTurn: async ({ agent, message, context }, signal) => {
-		const run = startRun(agent, context, signal);
-		const end = await converse(run, [{ role: "user", content: message }]);
+// The API key and subscription token modes share it, each with its model.
+export function bridgeRunner(target: ModelTarget): AgentRunner {
+	return {
+		runTurn: async ({ agent, message, context }, signal) => {
+			const run = startRun(agent, context, signal);
+			const end = await converse(run, target, [{ role: "user", content: message }]);
 
-		return { end, spend: run.tally.spend };
-	},
-};
+			return { end, spend: run.tally.spend };
+		},
+	};
+}
 
 export function startRun(agent: Agent, context: LoopContext, signal: AbortSignal): TurnRun {
 	return { agent, context, signal, actions: actionTools(agent.definitions), tally: { actions: 0, failures: 0, spend: noSpend() } };
@@ -85,11 +87,11 @@ function actionTools(definitions: ToolDefinition[]): Set<string> {
 
 // Calls the model and runs its tool calls until end_turn goes through, or
 // the turn reaches a limit. A reply with no tool call gets a nudge.
-async function converse(run: TurnRun, messages: ModelMessage[]): Promise<TurnEnd> {
+async function converse(run: TurnRun, target: ModelTarget, messages: ModelMessage[]): Promise<TurnEnd> {
 	const { agent, context, signal, tally } = run;
 
 	for (;;) {
-		const result = await callModel(context.target, { system: agent.system, messages, tools: agent.definitions, signal });
+		const result = await callModel(target, { system: agent.system, messages, tools: agent.definitions, signal });
 
 		// An aborted call fails, and that failure isn't the model's.
 		if (signal.aborted) {

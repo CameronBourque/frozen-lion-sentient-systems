@@ -64,7 +64,7 @@ Every runner plays each tool call through the same two steps in `src/agents/runn
 - `beforeCall` ends the turn after an abort, so no call acts in a new game or a stopped run.
 - `afterCall` logs the call as `tool_call`, ends the turn after an `end_turn` that goes through, counts an action against the turn limits, and waits for a [silent game](../game-load.md#silent-game) after a failed call.
 
-`bridgeRunner` is the bridge's own loop, for the API key and subscription token modes:
+`bridgeRunner(target)` is the bridge's own loop, which the API key and subscription token modes build with their model:
 
 1. It sends the system prompt, the turn message, and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.
 2. It runs the reply's tool calls in order through the MCP server, and sends each result back, marked as an error when the tool failed. A blocked `end_turn` goes back the same way, so the model resolves the blocker and tries again.

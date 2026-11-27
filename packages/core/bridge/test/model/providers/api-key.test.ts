@@ -4,11 +4,11 @@
 
 import { describe, expect, test } from "vitest";
 import { KEY_VARIABLES } from "../../../src/config.js";
-import type { ModeSupport } from "../../../src/model/providers/provider.js";
+import type { CallModeSupport } from "../../../src/model/providers/provider.js";
 import { configWithKeys, realProviders } from "../fake-providers.js";
 
 describe.each(realProviders())("$name", ({ name, modes }) => {
-	const mode = modes["api-key"] as ModeSupport;
+	const mode = modes["api-key"] as CallModeSupport;
 	const missing = `No API key for ${name}. Set providers.${name}.apiKey in the config file, or ${KEY_VARIABLES[name]}`;
 
 	test("is ready and builds the model with the key from the config", () => {
@@ -33,7 +33,7 @@ describe.each(realProviders())("$name", ({ name, modes }) => {
 test("names each provider's own model", () => {
 	const config = configWithKeys({ anthropic: { apiKey: "a" }, openai: { apiKey: "b" }, google: { apiKey: "c" }, xai: { apiKey: "d" } });
 	const names = realProviders().map(({ modes }) => {
-		const result = (modes["api-key"] as ModeSupport).model(config, "m");
+		const result = (modes["api-key"] as CallModeSupport).model(config, "m");
 
 		return result.ok && typeof result.model === "object" ? result.model.provider : undefined;
 	});

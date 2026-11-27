@@ -49,8 +49,7 @@ function context(model: MockLanguageModelV4, memory = (playerID: number) => path
 	return {
 		client,
 		logger,
-		runner: bridgeRunner,
-		target: { model, provider: "anthropic", mode: "api-key", effort: "" },
+		runner: bridgeRunner({ model, provider: "anthropic", mode: "api-key", effort: "" }),
 		model: NO_MODEL,
 		journalEntries: 5,
 		limits: DEFAULT_LIMITS,

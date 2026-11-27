@@ -8,7 +8,7 @@ import type { ListResult } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 import type { SecretResult } from "../../src/model/providers/mode.js";
-import type { ModeSupport } from "../../src/model/providers/provider.js";
+import type { CallModeSupport } from "../../src/model/providers/provider.js";
 import { providersListing, realProviders } from "./fake-providers.js";
 
 const MODELS: ListResult = {
@@ -78,7 +78,7 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[
 // A plan mode for openai only, which records each sign-in.
 function withPlan(io: PickerIo, ready: boolean, signedIn: SecretResult = { ok: true, secret: "token" }): string[] {
 	const signIns: string[] = [];
-	const plan: ModeSupport = {
+	const plan: CallModeSupport = {
 		ready: () => ready ? { ok: true } : { ok: false, reason: "Not signed in" },
 		signIn: {
 			label: "Continue with ChatGPT",
@@ -90,6 +90,7 @@ function withPlan(io: PickerIo, ready: boolean, signedIn: SecretResult = { ok: t
 		},
 		listModels: () => Promise.resolve(MODELS),
 		model: () => ({ ok: false, error: "unused" }),
+		runner: () => ({ ok: false, error: "unused" }),
 	};
 
 	io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
@@ -234,10 +235,11 @@ describe("pickModel", () => {
 		});
 
 		test("offers only the providers that have the mode", async () => {
-			const plan: ModeSupport = {
+			const plan: CallModeSupport = {
 				ready: () => ({ ok: true }),
 				listModels: () => Promise.resolve(MODELS),
 				model: () => ({ ok: false, error: "unused" }),
+				runner: () => ({ ok: false, error: "unused" }),
 			};
 			const { io, asked, modesAsked } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [1]);
 
@@ -294,7 +296,7 @@ describe("pickModel", () => {
 			const { io } = scriptedIo([2], { ok: false, error: "offline" }, TOOL_FACTS, [1]);
 
 			withPlan(io, true);
-			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: { ...provider.modes.subscription as ModeSupport, listModels: () => Promise.resolve({ ok: false as const, error: "offline" }) } } } : provider);
+			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: { ...provider.modes.subscription as CallModeSupport, listModels: () => Promise.resolve({ ok: false as const, error: "offline" }) } } } : provider);
 
 			expect(await pickModel(configWith([], saved), io)).toEqual({ result: "kept", mode: "subscription", model: { ...saved, price: NO_PRICE } });
 		});

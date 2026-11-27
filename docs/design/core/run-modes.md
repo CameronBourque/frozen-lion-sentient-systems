@@ -32,11 +32,15 @@ The object's type is `ProviderDef` in `src/model/providers/provider.ts`. It has 
 - `ready(config)`, which says whether the provider can play in that mode, or why not, such as a missing API key,
 - `signIn`, only in a subscription token mode, with the `label` of its row in the provider menu, and `run()`, which gets a valid token: the saved one, a refreshed one, or one from the browser sign-in,
 - `listModels(config)`, which lists the models for the picker,
-- `model(config, id)`, which builds the model for the model client.
+- `runner(config)`, which builds the [runner](#runners) that plays the agents' turns with the model in `config.model`, or says why it can't.
 
-A run mode missing from a provider's `modes` isn't available for that provider. An agent SDK or a CLI mode gives its [runner](#runners) in place of `model`.
+The API key and subscription token modes are a `CallModeSupport`, which also has `model(config, id)`. It builds the model alone, for a single call such as `npm run ask`. An agent SDK or a CLI mode has no `model`, since the model client can't call it.
 
-`credentialMode(name, credential, factory, lister)` in `src/model/providers/mode.ts` builds a `ModeSupport` from three parts:
+A run mode missing from a provider's `modes` isn't available for that provider.
+
+`agentRunner(config, mode, providers)` in `src/model/target.ts` finds the chosen provider's mode and builds its runner, and the bridge plays every turn with it. `modelTarget` finds the same mode and builds its model target, for a single call.
+
+`credentialMode(name, mode, credential, factory, lister)` in `src/model/providers/mode.ts` builds a `CallModeSupport` from three parts. Its runner is `bridgeRunner`, with the model target from the factory:
 
 - a `Credential`, whose `ready` says whether it is ready, `source` gives what a model is built from, and `secret` gives the string a request sends now, or why it can't, such as a refused refresh,
 - a factory, which builds the model from the credential's source through the provider's AI SDK package,
@@ -118,5 +122,6 @@ No provider uses the CLI mode yet, so its menu row reads `(not available yet)`. 
 | A subscription token comes first, then an agent SDK, then a CLI | A token keeps the bridge's own loop, so nothing is lost. An SDK runs its own loop, and a CLI adds a process and output to parse |
 | An agent SDK or a CLI must pass the parity check | Users get the same game in every mode. A mode that loses the log, the limits, or the stop key isn't worth offering |
 | The Claude flag is a constant in the code, not a config setting | A setting would let anyone turn it on before Anthropic approves, which is the same as offering it. Tests turn it on through injection |
+| Every run mode builds its own runner, and only a call mode builds a model | The bridge plays every mode the same way, with no case for who runs the tool loop. A new agent SDK is one entry in `modes`, like a new provider |
 | `signIn` is an optional part of `ModeSupport`, and the picker calls it when the mode has one | Only a subscription token mode signs in. A new plan provider is still one entry, with no change to the picker |
 | A plan mode leaves the price unset | A plan has no price per token. An estimate at API prices would make cost limits stop runs that cost the user nothing more |

@@ -12,7 +12,7 @@ import { signIn } from "../sign-in/openai.js";
 import { type OpenAITokens, type TokenIo, openAITokens } from "../sign-in/openai-tokens.js";
 import { apiKeyMode } from "./api-key.js";
 import { type Credential, credentialMode } from "./mode.js";
-import type { ModeSupport, ProviderDef } from "./provider.js";
+import type { CallModeSupport, ProviderDef } from "./provider.js";
 
 // OpenAI lists each dated snapshot beside its alias, which doubles the menu.
 // Newer snapshots end in the full date, and older ones in the month and day,
@@ -134,13 +134,13 @@ function subscriptionCredential(tokens: OpenAITokens): Credential<OpenAITokens> 
 
 // The base URL is fixed, so OPENAI_BASE_URL can't send the plan's token to
 // another server.
-export function subscriptionMode(tokens: OpenAITokens, send: Send = fetch): ModeSupport {
+export function subscriptionMode(tokens: OpenAITokens, send: Send = fetch): CallModeSupport {
 	const factory = (store: OpenAITokens) => (modelId: string) => wrapLanguageModel({
 		model: createOpenAI({ baseURL: OPENAI_API_URL, apiKey: () => currentToken(store), fetch: subscriptionFetch(store, send) })(modelId),
 		middleware: SUBSCRIPTION_MIDDLEWARE,
 	});
 
-	return credentialMode("openai", subscriptionCredential(tokens), factory, SUBSCRIPTION_LISTER);
+	return credentialMode("openai", "subscription", subscriptionCredential(tokens), factory, SUBSCRIPTION_LISTER);
 }
 
 // The folder is the config file's, where the plan's tokens are saved.

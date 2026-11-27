@@ -54,7 +54,7 @@ async function agent(first = false): Promise<Agent> {
 }
 
 function context(model: MockLanguageModelV4, limits: Partial<Limits> = {}, setting: ModelSetting = NO_MODEL): LoopContext {
-	return { client, logger, runner: bridgeRunner, target: { model, provider: "anthropic", mode: "api-key", effort: "" }, model: setting, journalEntries: 5, limits: { ...DEFAULT_LIMITS, ...limits }, runSpend: noSpend(), now: () => new Date("2026-11-25T12:00:00Z") };
+	return { client, logger, runner: bridgeRunner({ model, provider: "anthropic", mode: "api-key", effort: "" }), model: setting, journalEntries: 5, limits: { ...DEFAULT_LIMITS, ...limits }, runSpend: noSpend(), now: () => new Date("2026-11-25T12:00:00Z") };
 }
 
 function endTurn(id: string, force: boolean): Content {

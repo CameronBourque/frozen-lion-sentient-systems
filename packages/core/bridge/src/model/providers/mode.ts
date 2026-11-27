@@ -3,9 +3,11 @@
 // docs/design/core/run-modes.md has the design.
 
 import type { LanguageModel } from "ai";
+import { bridgeRunner } from "../../agents/runner.js";
 import type { Config, Provider } from "../../config.js";
+import type { CallMode } from "../client.js";
 import { type Lister, listModels } from "../list-models.js";
-import type { ModeSupport, Ready } from "./provider.js";
+import type { CallModeSupport, ModelResult, Ready } from "./provider.js";
 
 export type SecretResult =
 	| { ok: true; secret: string }
@@ -23,7 +25,14 @@ export interface Credential<Source> {
 
 export type Factory<Source> = (source: Source) => (modelId: string) => LanguageModel;
 
-export function credentialMode<Source>(name: Provider, credential: Credential<Source>, factory: Factory<Source>, lister: Lister): ModeSupport {
+// The mode plays turns through the bridge's own loop, with the model.
+export function credentialMode<Source>(name: Provider, mode: CallMode, credential: Credential<Source>, factory: Factory<Source>, lister: Lister): CallModeSupport {
+	const model = (config: Config, modelId: string): ModelResult => {
+		const checked = credential.ready(config);
+
+		return checked.ok ? { ok: true, model: factory(credential.source(config))(modelId) } : { ok: false, error: checked.reason };
+	};
+
 	return {
 		ready: credential.ready,
 		listModels: async (config, fetchPage) => {
@@ -31,10 +40,12 @@ export function credentialMode<Source>(name: Provider, credential: Credential<So
 
 			return secret.ok ? listModels(name, lister, secret.secret, fetchPage) : { ok: false, error: secret.error };
 		},
-		model: (config, modelId) => {
-			const checked = credential.ready(config);
+		model,
+		runner: (config) => {
+			const { id, effort } = config.model;
+			const built = model(config, id);
 
-			return checked.ok ? { ok: true, model: factory(credential.source(config))(modelId) } : { ok: false, error: checked.reason };
+			return built.ok ? { ok: true, runner: bridgeRunner({ model: built.model, provider: name, mode, effort }) } : built;
 		},
 	};
 }
