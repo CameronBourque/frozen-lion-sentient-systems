@@ -1,6 +1,6 @@
 // Starts the bridge: reads the config, asks for the model, connects to the
-// tuner, logs each core mod event to a file per game, plays each agent's turn
-// on its signal, and serves the MCP tools with --mcp, until Ctrl+C.
+// tuner, logs each core mod event to a file per game, and plays each agent's
+// turn on its signal. With --mcp, it serves the MCP tools and plays no turns.
 
 import path from "node:path";
 import { getAsset, getAssetKeys, isSea } from "node:sea";
@@ -82,11 +82,13 @@ const ask = process.stdin.isTTY ? (title: string, labels: string[], start: numbe
 
 const offered = providers(path.dirname(started.path), logger);
 
-// No top-level await, because the executable's bundle is CommonJS.
-void chooseModel(started.config, started.path, logger, { ask, providers: offered, facts: () => cachedFacts(factsCachePath(started.path)) }).then((mode) => {
+// Asks for the model and sets the agent loop to play each agent's turn with
+// it. Returns false when the person quits the picker.
+const startAgents = async (): Promise<boolean> => {
+	const mode = await chooseModel(started.config, started.path, logger, { ask, providers: offered, facts: () => cachedFacts(factsCachePath(started.path)) });
+
 	if (mode === undefined) {
-		logger.closeFile();
-		process.exit(0);
+		return false;
 	}
 
 	const target = modelTarget(started.config, mode, offered);
@@ -97,6 +99,24 @@ void chooseModel(started.config, started.path, logger, { ask, providers: offered
 		onTurn = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, now: () => new Date(), knowledge, memory });
 	} else {
 		logger.warn("agents_off", `Agents won't play their turns: ${target.error}`, { reason: target.error });
+	}
+
+	return true;
+};
+
+// With --mcp, the MCP client plays the turns, so a model playing them too would
+// act on the same turn and cost model calls.
+const skipAgents = (): Promise<boolean> => {
+	logger.info("agents_off", "Agents won't play their turns, because the MCP client plays them with --mcp", { reason: "mcp" });
+
+	return Promise.resolve(true);
+};
+
+// No top-level await, because the executable's bundle is CommonJS.
+void (started.mcp ? skipAgents() : startAgents()).then((go) => {
+	if (!go) {
+		logger.closeFile();
+		process.exit(0);
 	}
 
 	logger.info("started", "Sentient Systems bridge. Waiting for the game's tuner. Press Ctrl+C to stop.");
