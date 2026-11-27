@@ -177,13 +177,16 @@ end
 Events.LoadGameViewStateDone.Add(SentientSystems_CatchErrors("TurnOffTechAndCivicPopups", TurnOffTechAndCivicPopups))
 
 -- Prints the turn signal again for each agent player whose turn is active now,
--- so a bridge that connects in the middle of a turn learns of it. Prints
+-- after the lines for the fast turn options that are off, so a bridge that
+-- connects in the middle of a turn learns of it. After a load, the turn event
+-- may not fire, and this is the only turn start the bridge sees. Prints
 -- nothing between turns or during AI turns. PlayerManager.GetAlive() lists
 -- every living player, AI and city-states too, so the loop needs no change when
 -- agents can play other slots.
 function SentientSystems_Resync()
 	for _, player in ipairs(PlayerManager.GetAlive()) do
 		if IsAgentPlayer(player) and player:IsTurnActive() then
+			PrintOptionsOff()
 			SentientSystems_Print("AGENT_TURN", player:GetID())
 		end
 	end

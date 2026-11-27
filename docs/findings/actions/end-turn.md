@@ -58,6 +58,10 @@ The turn signal now clears the request. From the turn 5 save, the same end start
 
 A load fires the event with `isFirstTime` true. In `Lua.log`, the event printed `AGENT_TURN 0` right after `GAME_READY 4`, and the resync printed it again. The bridge got only the resync's line, because the event fired during the socket reset. Confirmed on Windows on 2026-11-19.
 
+A load of a turn 1 save printed no `AGENT_TURN` from the event at all. In `Lua.log`, `GAME_READY 1` came next to the resync's `AGENT_TURN 0`, with no line between them from the event.
+
+So a check that must run at each turn start runs in the resync too. Seen once, on Windows on 2026-11-27. Why the event didn't fire is open.
+
 ## Method
 
 Run each step through the tuner, and record the Lua state you ran it in.

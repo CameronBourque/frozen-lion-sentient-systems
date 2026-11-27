@@ -404,7 +404,21 @@ describe("SentientSystems_Resync", function()
 		assert.same({ "[SENTIENTSYSTEMS] AGENT_TURN 0" }, env.printed)
 	end)
 
-	it("prints nothing between turns", function()
+	-- The game read 0 for both options when they were off, on 2026-11-27.
+	it("prints OPTION_OFF before AGENT_TURN for an option that's off", function()
+		env.options = { QuickMovement = 1, QuickCombat = 0 }
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		env.SentientSystems_Resync()
+
+		assert.same({
+			"[SENTIENTSYSTEMS] OPTION_OFF QuickCombat",
+			"[SENTIENTSYSTEMS] AGENT_TURN 0",
+		}, env.printed)
+	end)
+
+	it("prints nothing between turns, even with an option off", function()
+		env.options = { QuickMovement = 0, QuickCombat = 0 }
 		SetPlayers({ [0] = Player(0, true, false) })
 
 		env.SentientSystems_Resync()

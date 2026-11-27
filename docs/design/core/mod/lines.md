@@ -14,13 +14,17 @@ The UI script listens for `Events.PlayerTurnActivated` and prints `AGENT_TURN <p
 
 When the event's `isFirstTime` is false, the line is `AGENT_TURN <playerID> again`. The game fires the event again when it cancels the end of a turn, such as when a queued move stops short. The bridge logs that the turn started again. See [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-a-queued-move-that-stops-short).
 
-Before the turn line, the script prints `OPTION_OFF <option>` for each [fast turn option](../../agents/turn-loop/README.md#game-options) that's off. It reads each option with `UserConfiguration.GetValue(<option>)`, and counts `false` and `0` as off. A `nil` value prints nothing. The bridge logs the line as an `option_off` warning.
+Before the turn line, the script prints `OPTION_OFF <option>` for each [fast turn option](../../agents/turn-loop/README.md#game-options) that's off.
+
+It reads each option with `UserConfiguration.GetValue(<option>)`, which returned the number `0` for an option that was off, on Windows on 2026-11-27. The check counts `false` and `0` as off, and a `nil` value prints nothing. The bridge logs the line as an `option_off` warning.
 
 One function, `IsAgentPlayer`, decides which players are agent players. For now it picks the human players. When agents can play any slot, only that function changes.
 
 ## Resync
 
-`SentientSystems_Resync()` in the UI script prints `AGENT_TURN <playerID>` for each living agent player whose turn is active, the same line the turn event prints. Between turns it prints nothing.
+`SentientSystems_Resync()` in the UI script prints `AGENT_TURN <playerID>` for each living agent player whose turn is active, after the same `OPTION_OFF` lines, as the turn event does. Between turns it prints nothing.
+
+After a load, the turn event can fire during the socket reset or not at all, so the resync's lines may be the only turn start the bridge gets. See [end-turn.md](../../../findings/actions/end-turn.md#with-a-queued-move-that-stops-short).
 
 The bridge calls it when it connects, so a restart in the middle of a turn doesn't miss the turn.
 
