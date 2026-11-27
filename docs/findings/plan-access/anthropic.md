@@ -1,6 +1,6 @@
 # Anthropic plan access
 
-Status: unconfirmed. Read from Anthropic's docs on 2026-11-22, with no call tested.
+Status: question 1 confirmed by a call on 2026-11-27. The rest was read from Anthropic's docs on 2026-11-22, with no call tested.
 
 What Anthropic's terms and the Claude Agent SDK allow for a user's Claude plan. Part of [plan access](README.md).
 
@@ -29,6 +29,22 @@ What Anthropic's terms and the Claude Agent SDK allow for a user's Claude plan. 
 
 ## Results
 
-None yet.
+### Question 1
 
-Date checked: 2026-11-22.
+Yes. Checked on 2026-11-27 with `@anthropic-ai/claude-agent-sdk` 0.3.332, which runs Claude Code 2.1.332.
+
+The `query()` had `tools: []`, `settingSources: []`, `strictMcpConfig: true`, and the bridge's MCP server over HTTP. It ran from the repo root with `ANTHROPIC_API_KEY` set, and stopped after the init message, before any model call.
+
+- **Tools.** The init message listed the bridge's 48 tools, each as `mcp__sentient-systems__<name>`, and no built-in tool.
+- **Login.** `apiKeySource` was `ANTHROPIC_API_KEY`, so no plan login was used.
+- **MCP server.** `sentient-systems` was `connected`, with `source` `dynamic`.
+- **Model.** With no `model` set, it was `claude-opus-5-5`.
+- **Skills and plugins.** It still listed the SDK's bundled skills and slash commands, and four built-in plugins, one of them `cc-plugin-agents-md`. With no built-in tool, the model has no tool that runs a skill.
+
+  The init message doesn't say whether `cc-plugin-agents-md` loaded the repo's `AGENTS.md`. The [parity check](../../design/core/run-modes.md#parity-check) bars that, so the Claude runner's live turn must show it doesn't.
+
+### Question 2
+
+Not checked yet.
+
+Date checked: 2026-11-27.
