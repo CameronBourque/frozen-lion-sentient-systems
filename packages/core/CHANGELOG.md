@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.35.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.34.0...core-v0.35.0) (2026-11-27)
+
+
+### Features
+
+* **core:** add turn limits ([#149](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/149)) ([ab911fe](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/ab911fe13380ce7a8c0addc286331ffbb75ce89b))
+
 ## [0.34.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.33.2...core-v0.34.0) (2026-11-27)
 
 
