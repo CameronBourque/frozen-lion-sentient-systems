@@ -6,6 +6,7 @@ import type { Client } from "@modelcontextprotocol/client";
 import { endTurn } from "../actions/turn.js";
 import type { Limits, ModelSetting } from "../config.js";
 import type { LogFields, Logger } from "../log.js";
+import type { ToolContext } from "../mcp/context.js";
 import { readMemory, startMemory } from "../memory/store.js";
 import type { ToolDefinition } from "../model/client.js";
 import { readState } from "../state/state.js";
@@ -22,6 +23,8 @@ export interface Agent {
 	tools: Client;
 	definitions: ToolDefinition[];
 	memoryFolder: string;
+	// What the tools act with, for a runner that serves them over HTTP.
+	toolContext: ToolContext;
 	first: boolean;
 	// The game turn of its last end turn that went through.
 	endedTurn?: number;

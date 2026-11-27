@@ -41,7 +41,7 @@ The `query()` had `tools: []`, `settingSources: []`, `strictMcpConfig: true`, an
 - **Model.** With no `model` set, it was `claude-opus-5-5`.
 - **Skills and plugins.** It still listed the SDK's bundled skills and slash commands, and four built-in plugins, one of them `cc-plugin-agents-md`. With no built-in tool, the model has no tool that runs a skill.
 
-  The init message doesn't say whether `cc-plugin-agents-md` loaded the repo's `AGENTS.md`. The [parity check](../../design/core/run-modes.md#parity-check) bars that, so the [Claude runner](../../design/core/claude-runner.md) sets `cwd` to a folder with no `AGENTS.md`.
+  The init message doesn't say whether `cc-plugin-agents-md` loaded the repo's `AGENTS.md`. The [parity check](../../design/core/run-modes.md#parity-check) bars that, so the [Anthropic Agent SDK runner](../../design/core/anthropic-agent-sdk-runner.md) sets `cwd` to a folder with no `AGENTS.md`.
 
 ### Question 2
 

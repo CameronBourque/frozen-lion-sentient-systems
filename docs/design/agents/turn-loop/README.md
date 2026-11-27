@@ -70,6 +70,8 @@ Every runner plays each tool call through the same two steps in `src/agents/runn
 2. It runs the reply's tool calls in order through the MCP server, and sends each result back, marked as an error when the tool failed. A blocked `end_turn` goes back the same way, so the model resolves the blocker and tries again.
 3. It calls the model again with the reply and the results added, until an `end_turn` goes through. The calls after it in the same reply don't run, because it is then another player's turn.
 
+`anthropicAgentSdkRunner` plays a Claude turn through the Agent SDK's own loop, with hooks that keep the same limits, as [anthropic-agent-sdk-runner.md](../../core/anthropic-agent-sdk-runner.md) says.
+
 An aborted `signal` cancels the turn after the state read, during the model call, or before the next tool call, so no call from the old game acts in the new one. After a failed tool call, the turn waits for a [silent game](../game-load.md#silent-game) before it goes on.
 
 The loop sends each reply back as the SDK's own messages, so a model's reasoning stays in the conversation. Anthropic refuses a tool call conversation with extended thinking that drops it.

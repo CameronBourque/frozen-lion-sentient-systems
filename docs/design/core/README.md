@@ -10,7 +10,7 @@ Core is the core mod and the bridge. The core mod is the in-game Lua, and the br
 | [model-client.md](model-client.md) | How the bridge calls a model through one interface over every provider |
 | [picker.md](picker.md) | How you pick the run mode, provider, model, and effort when the bridge starts, and where the model's price comes from |
 | [run-modes.md](run-modes.md) | How agents reach a model: an API key, a subscription token, an agent SDK, or a CLI |
-| [claude-runner.md](claude-runner.md) | How Claude agents play through the Agent SDK: the `query()` options, the sign-in menu, and the flag |
+| [anthropic-agent-sdk-runner.md](anthropic-agent-sdk-runner.md) | How Anthropic agents play through the Claude Agent SDK: the `query()` options, the sign-in menu, and the flag |
 | [subscription-token.md](subscription-token.md) | How agents play on a ChatGPT plan: the browser sign-in, the token refresh, and the plan calls |
 | [logs.md](logs.md) | The bridge's log records, levels, and log files |
 | [settings.md](settings.md) | The bridge's config file |

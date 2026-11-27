@@ -67,7 +67,7 @@ The menus after it depend on the mode:
 
 - **API key.** Provider, model, and effort, as today.
 - **Subscription token.** Provider, then the mode's `signIn`, then model and effort from the provider's own list. A signed-out provider's row shows its sign-in label, such as "Continue with ChatGPT". A failed sign-in warns with its reason and shows the **What now?** menu.
-- **Agent SDK.** Provider, a login check, the [sign-in](claude-runner.md#sign-in) menu when there is both a key and a login, then model and effort from the SDK's list.
+- **Agent SDK.** Provider, a login check, the [sign-in](anthropic-agent-sdk-runner.md#sign-in) menu when there is both a key and a login, then model and effort from the SDK's list.
 - **CLI.** Provider, a check that the CLI is installed and logged in, then model and effort.
 
 A provider menu with one provider is skipped, unless that provider needs a sign-in, so the browser never opens before the user picks its row.
@@ -102,9 +102,9 @@ An agent SDK or a CLI becomes a run mode for a provider only when it does everyt
 - take the model and the effort, and list the models,
 - start a fresh context each turn.
 
-### Claude runner
+### Anthropic Agent SDK runner
 
-`@anthropic-ai/claude-agent-sdk` passes the check on its docs. [claude-runner.md](claude-runner.md) has its options, its sign-in, and the flag that keeps it off until Anthropic approves.
+`@anthropic-ai/claude-agent-sdk` passes the check on its docs. [anthropic-agent-sdk-runner.md](anthropic-agent-sdk-runner.md) has its options, its sign-in, and the flag that keeps it off until Anthropic approves.
 
 ### CLI
 

@@ -13,15 +13,14 @@ import { noSpend } from "../../src/agents/spend.js";
 import { DEFAULT_LIMITS, type Limits, type ModelSetting, NO_MODEL } from "../../src/config.js";
 import { USAGE_LIMIT_CODE } from "../../src/model/client.js";
 import { Logger } from "../../src/log.js";
-import { toolDefinitions } from "../../src/mcp/in-process.js";
 import { addJournalEntry } from "../../src/memory/store.js";
 import { type TunerClient, TunerTimeoutError } from "../../src/tuner/client.js";
-import { answerStash, connectTools } from "../mcp/tools.js";
+import { answerStash } from "../mcp/tools.js";
 import { type Content, reply, scripted, waitingForAbort } from "../model/mock-model.js";
 import { MINIMAL_STATE } from "../state/minimal-state.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
+import { SYSTEM, testAgent } from "./agent.js";
 
-const SYSTEM = "You play Civilization VI.";
 const REASON = "Nothing left to do.";
 
 let game: FakeGame;
@@ -47,10 +46,8 @@ afterEach(() => {
 	fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 });
 });
 
-async function agent(first = false): Promise<Agent> {
-	const tools = await connectTools(client, undefined, logger, () => folder);
-
-	return { playerID: 3, system: SYSTEM, tools, definitions: await toolDefinitions(tools), memoryFolder: folder, first };
+function agent(first = false): Promise<Agent> {
+	return testAgent(client, logger, folder, first);
 }
 
 function context(model: MockLanguageModelV4, limits: Partial<Limits> = {}, setting: ModelSetting = NO_MODEL): LoopContext {

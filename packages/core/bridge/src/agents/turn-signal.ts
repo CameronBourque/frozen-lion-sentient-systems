@@ -4,7 +4,7 @@
 
 import type { CoreEvent } from "../events.js";
 import type { Knowledge } from "../knowledge.js";
-import type { MemorySource } from "../mcp/context.js";
+import type { MemorySource, ToolContext } from "../mcp/context.js";
 import { connectClient, toolDefinitions } from "../mcp/in-process.js";
 import { createServer } from "../mcp/server.js";
 import { DEFAULT_PROFILE, systemPrompt } from "./prompt.js";
@@ -134,7 +134,8 @@ async function buildAgent(context: SignalContext, playerID: number): Promise<Age
 
 	system.warnings.forEach((warning) => logger.warn("prompt_warning", warning, { player: playerID }));
 
-	const tools = await connectClient(createServer({ client, player: () => Promise.resolve({ ok: true, playerID }), memory, logger }));
+	const toolContext: ToolContext = { client, player: () => Promise.resolve({ ok: true, playerID }), memory, logger };
+	const tools = await connectClient(createServer(toolContext));
 
-	return { playerID, system: system.text, tools, definitions: await toolDefinitions(tools), memoryFolder: memory(playerID), first: true };
+	return { playerID, system: system.text, tools, definitions: await toolDefinitions(tools), memoryFolder: memory(playerID), toolContext, first: true };
 }
