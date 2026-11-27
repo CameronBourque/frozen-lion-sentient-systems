@@ -60,3 +60,28 @@ export function replying(make: () => StreamResult): MockLanguageModelV4 {
 export function scripted(replies: StreamResult[]): MockLanguageModelV4 {
 	return new MockLanguageModelV4({ doStream: () => Promise.resolve(replies.shift() ?? done()) });
 }
+
+// A model whose first call waits until it is aborted, and fails then, as a
+// provider's call does. Each later call gives the next reply. started
+// settles once the first call begins.
+export function waitingForAbort(replies: StreamResult[]): { model: MockLanguageModelV4; started: Promise<void> } {
+	const { promise: started, resolve } = Promise.withResolvers<void>();
+	let first = true;
+
+	const model = new MockLanguageModelV4({
+		doStream: ({ abortSignal }) => {
+			if (!first) {
+				return Promise.resolve(replies.shift() ?? done());
+			}
+
+			first = false;
+			resolve();
+
+			return new Promise((_, reject) => {
+				abortSignal?.addEventListener("abort", () => reject(new Error("The call was aborted")));
+			});
+		},
+	});
+
+	return { model, started };
+}

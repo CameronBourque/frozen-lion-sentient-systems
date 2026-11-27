@@ -100,3 +100,17 @@ On 2026-11-26, the bridge executable, alone in an empty folder, played turn 1 of
 - The turn signal and one turn are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#turn-signal).
 - `connectClient`, `toolDefinitions`, and `callTool` are in [design/core/mcp-server.md](../../design/core/mcp-server.md), and the reply's messages are in [design/core/model-client.md](../../design/core/model-client.md).
 - The live run, its tokens, its plan usage, and the prompt cache question are in [findings/agent-runs.md](../../findings/agent-runs.md#agent-loop-run).
+
+## End turn
+
+Pull request: feat(core): play turn after turn.
+
+It made the agent loop play turn after turn. Each agent keeps the game turn it last ended and skips a later signal on that turn, and a turn the game starts again tells the model it is still the same turn.
+
+A game load cancels the running turn and resets the agents, and a turn waits while the game doesn't answer, so no model call goes to a game that is loading. `turn_ended` logs the game turn, and a failed tool call logs why it failed.
+
+On 2026-11-26, the bridge executable ended turns 1 to 10 in a row with no manual help, and logged each tool call and each action with its reason. Two cancelled ends played again once each, and a load mid-turn cancelled the turn and replayed the loaded turn.
+
+- The turn change, the `again` case, and the tool call log are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#one-turn), and the turn message's `again` line in [design/agents/prompt.md](../../design/agents/prompt.md#two-calls).
+- The cancel, the reset, and the wait for a silent game are in [design/agents/game-load.md](../../design/agents/game-load.md), and the stale memory check after a load in [design/memory.md](../../design/memory.md#stale-memory).
+- The run, its tokens, its plan usage, and the load signal's turn are in [findings/agent-runs.md](../../findings/agent-runs.md#end-turn-run).

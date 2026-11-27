@@ -1,6 +1,6 @@
 # Agent runs
 
-Status: confirmed. Two runs of the phase 1 Claude Code gate, and one run of the phase 2 agent loop, played in a running game on Windows.
+Status: confirmed. Two runs of the phase 1 Claude Code gate, and two runs of the phase 2 agent loop, played in a running game on Windows.
 
 How a model plays the game through the MCP tools, with a person prompting each turn or with the bridge's agent loop: the setup, what it called each turn, which calls failed and why, and what it had to guess. The second run passed the gate in [phase 1](../roadmap/phase-1/README.md).
 
@@ -8,6 +8,7 @@ How a model plays the game through the MCP tools, with a person prompting each t
 
 - Why do most calls of a turn on a ChatGPT plan read nothing from the prompt cache, when each call starts with the same system prompt and turn message? The [smoke test](../roadmap/phase-2/smoke-test.md) measures the cost per turn.
 - Does the agent read the state at the start of every turn when no one prompts it? In the second run, it skipped `get_state` on 3 of 11 prompts and called `end_turn` to find the blockers. The [agent loop](../design/agents/turn-loop.md#one-turn) reads the state for it.
+- Does `GAME_READY` always carry one turn less than the turn that starts after the load, and why? The end turn run saw it on two loads.
 
 ## What we know now
 
@@ -93,6 +94,32 @@ Each problem got its own pull request before the second run, except the turn num
 | North and south swapped in the reasons | `fix(core): say which way the map's coordinates run` |
 | The turn count off by one after a cancelled end | `feat(core): add the current turn to the state` |
 
+### End turn run
+
+The bridge executable played turn after turn, for the [end turn](../roadmap/phase-2/done.md#end-turn) step's check. It ran from an empty folder with `logLevel: debug`, on the same model, plan, and effort as the agent loop run, and the same saved game.
+
+It ended turns 1 to 10 in a row with no help, with 41 model calls, 48 tool calls, and 38 actions, each with its reason. No record was a warning or an error.
+
+The game cancelled the end of turns 5 and 7, and sent `AGENT_TURN 0 again` 0.5 s after each. Each time the model gave the warrior new orders and ended the turn again, and only one new turn followed.
+
+One `get_choices` call failed on turn 1, right after the model founded Rome, with city ID 1. Rome's ID was 65536.
+
+The `found_city` result said only that the game took the request, and the turn's state was read before Rome existed, so the model had to guess. Its next call left out the city and went through, and later turns used Rome's ID from the state.
+
+The calls sent about 691,000 input tokens and 2,300 output tokens. 13 of the 41 calls read from the prompt cache, 123,000 tokens in all. The run used 16% of the 5-hour plan limit and 2% of the weekly one. At that rate, the 5-hour limit holds about 60 turns like these.
+
+Two loads during the agent's turn then checked the [game load](../design/agents/game-load.md). In the first, the game stopped answering about a minute before `GAME_READY`, from when the load began. Each tool call waited out the tuner's 10 s timeout and failed, and the model was called again after each failure.
+
+7 model calls, about 150,000 input tokens, went to a game that didn't answer, before the cancel came.
+
+A second load spent 2 more calls, about 43,000 tokens. Both loads used 9% of the 5-hour limit and 1% of the weekly one, with the turns played after them. The cancel itself worked each time: `turn_cancelled` came right after `GAME_READY`, and the turn after the reconnect played normally.
+
+The [silent game](../design/agents/game-load.md#silent-game) wait came from that run.
+
+In the rerun, the agent ended turn 9, and during turn 10 the person loaded the autosave of turn 9. A `set_civic` call timed out, the turn logged `game_silent`, and no model call went out until `GAME_READY` cancelled the turn. The agent then played turn 9 again and ended it.
+
+`GAME_READY` carried one turn less than the state in two loads. One said turn 9 before turn 10 played, and the rerun said turn 8 before turn 9 played. The bridge doesn't use that turn for anything yet.
+
 ## Method
 
 1. Start a new game with the smoke test preset and its seeds, and start the bridge with `npm run mcp`.
@@ -102,10 +129,17 @@ Each problem got its own pull request before the second run, except the turn num
 
 The agent loop run started the bridge executable with `--config` and the saved game loaded, picked the subscription token mode in the picker, and stopped the bridge with Ctrl+C. Its counts come from the bridge log's `model_call`, `action`, and `turn_ended` records.
 
+The end turn run ran the bridge executable from an empty folder with `logLevel: debug`, started before the game, and loaded the saved game.
+
+Each load used the game's own load menu during the agent's turn. Its counts come from the `model_call`, `tool_call`, `action`, `turn`, `turn_ended`, `turn_cancelled`, and `game_silent` records.
+
 ## Results
 
 - **First run.** Turns 1 to 10, 53 calls, 40 actions with a reason, no `ERROR` lines, and 2 prompts that weren't the turn prompt. Run on Windows on 2026-11-19.
 - **Second run.** Turns 1 to 10, 56 calls, 46 actions with a reason, no `ERROR` lines, and only the turn prompt. The bridge log showed 10 turn starts and one start again, at the end of turn 9. Run on Windows on 2026-11-19.
 - **Agent loop run.** Turns 1 to 5 with no prompts, 24 model calls, 19 actions with a reason, 4 turns ended, no warnings or errors, and 10% of the 5-hour plan limit and 2% of the weekly one. Run on Windows on 2026-11-26.
+- **End turn run.** Turns 1 to 10 in a row with no help, 41 model calls, 38 actions with a reason, 2 ends that the game cancelled and the agent ended again, no warnings or errors, and 16% of the 5-hour limit and 2% of the weekly one.
+
+  Two loads mid-turn cancelled the turn, and after the silent game wait, no model call went to a game that didn't answer. Run on Windows on 2026-11-26.
 
 Date checked: running game on Windows on 2026-11-26.

@@ -10,9 +10,10 @@ import { type SignalContext, turnSignal } from "../../src/agents/turn-signal.js"
 import { NO_MODEL } from "../../src/config.js";
 import type { CoreEvent } from "../../src/events.js";
 import { Logger } from "../../src/log.js";
+import { addJournalEntry } from "../../src/memory/store.js";
 import type { TunerClient } from "../../src/tuner/client.js";
 import { answerStash } from "../mcp/tools.js";
-import { type StreamResult, reply, scripted } from "../model/mock-model.js";
+import { type StreamResult, reply, scripted, waitingForAbort } from "../model/mock-model.js";
 import { MINIMAL_STATE } from "../state/minimal-state.js";
 import { type FakeGame, startGame } from "../tuner/fake-game.js";
 
@@ -65,13 +66,13 @@ test("a turn signal plays that player's turn, with tools that act for it", async
 	await turnSignal(context(scripted([endTurn()])))(TURN_3);
 
 	expect(sent().some((lua) => lua.includes("SentientSystems_EndTurn(3, false)"))).toBe(true);
-	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended its turn", { player: 3 });
+	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended turn 1", { player: 3, turn: 1 });
 });
 
 test("other events start no turn", async () => {
 	const model = scripted([]);
 
-	await turnSignal(context(model))({ type: "game_ready", turn: 1 });
+	await turnSignal(context(model))({ type: "load_ready" });
 
 	expect(model.doStreamCalls).toEqual([]);
 	expect(sent()).toEqual([]);
@@ -94,11 +95,76 @@ test("each agent is built once, and later turns reuse it", async () => {
 	const onTurn = turnSignal(context(model));
 
 	await onTurn(TURN_3);
+	answerStash(game, {
+		"SentientSystems_GetState(3)": { ...MINIMAL_STATE, turn: 2 },
+		"SentientSystems_EndTurn(3, false)": { ok: true },
+	});
 	await onTurn(TURN_3);
 
 	expect(model.doStreamCalls).toHaveLength(2);
 	// The personality and the sweat level each warn, once.
 	expect(warn.mock.calls.filter(([event]) => event === "prompt_warning")).toHaveLength(2);
+});
+
+test("a second signal on a turn already ended plays nothing, and an again signal plays it", async () => {
+	const info = vi.spyOn(logger, "info");
+	const model = scripted([endTurn(), endTurn()]);
+	const onTurn = turnSignal(context(model));
+
+	await onTurn(TURN_3);
+	info.mockClear();
+	await onTurn(TURN_3);
+
+	expect(model.doStreamCalls).toHaveLength(1);
+	expect(info).not.toHaveBeenCalledWith("turn_ended", expect.anything(), expect.anything());
+
+	await onTurn({ ...TURN_3, again: true });
+
+	expect(model.doStreamCalls).toHaveLength(2);
+});
+
+test("a game load cancels the running turn, and the next signal plays the loaded game's turn", async () => {
+	const info = vi.spyOn(logger, "info");
+	const { model, started } = waitingForAbort([endTurn()]);
+	const onTurn = turnSignal(context(model));
+	const cancelled = onTurn(TURN_3);
+
+	await started;
+	await onTurn({ type: "game_ready", turn: 1 });
+	await Promise.all([cancelled, onTurn(TURN_3)]);
+
+	expect(info).toHaveBeenCalledWith("turn_cancelled", expect.anything(), { player: 3 });
+	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended turn 1", { player: 3, turn: 1 });
+	expect(model.doStreamCalls).toHaveLength(2);
+});
+
+test("after a game load, the agent plays a turn it already ended, and checks its memory again", async () => {
+	const warn = vi.spyOn(logger, "warn");
+	const model = scripted([endTurn(), endTurn()]);
+	const onTurn = turnSignal(context(model));
+
+	await onTurn(TURN_3);
+	addJournalEntry(path.join(root, "player-3"), { turn: 1, text: "Before the load." });
+	await onTurn({ type: "game_ready", turn: 1 });
+	await onTurn(TURN_3);
+
+	expect(model.doStreamCalls).toHaveLength(2);
+	// Memory on turn 1 belongs to another game, so the load moves it aside.
+	expect(warn).toHaveBeenCalledWith("memory_warning", expect.stringContaining("another game"), { player: 3 });
+});
+
+test("two signals after a cancelled turn play the loaded turn once", async () => {
+	const info = vi.spyOn(logger, "info");
+	const { model, started } = waitingForAbort([endTurn()]);
+	const onTurn = turnSignal(context(model));
+	const cancelled = onTurn(TURN_3);
+
+	await started;
+	await onTurn({ type: "game_ready", turn: 1 });
+	await Promise.all([cancelled, onTurn(TURN_3), onTurn(TURN_3)]);
+
+	expect(model.doStreamCalls).toHaveLength(2);
+	expect(info).toHaveBeenCalledWith("turn_skipped", "Player 3's turn is already being played", { player: 3 });
 });
 
 test("a turn that stops logs no end", async () => {

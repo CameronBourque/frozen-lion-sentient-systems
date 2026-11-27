@@ -32,7 +32,7 @@ The [MCP server](core/mcp-server.md) gets the folder from its context's `memory`
 
 ## Stale memory
 
-Until checkpoint IDs exist, `startMemory` checks the memory on the agent's first turn after the bridge starts. Memory with an entry or record from a later turn, or any memory on turn 1, belongs to another game or a later save.
+Until checkpoint IDs exist, `startMemory` checks the memory on the agent's first turn after the bridge starts or a game loads. Memory with an entry or record from a later turn, or any memory on turn 1, belongs to another game or a later save.
 
 The bridge then moves the folder to `player-<ID>.old-<time>`, warns, and starts the agent with empty memory. Nothing is deleted.
 

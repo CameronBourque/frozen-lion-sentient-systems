@@ -20,6 +20,7 @@ export interface ModelRequest {
 	system: string;
 	messages: ModelMessage[];
 	tools: ToolDefinition[];
+	signal?: AbortSignal;
 }
 
 export interface ToolCall {
@@ -174,6 +175,7 @@ export async function callModel({ model, provider, mode, effort }: ModelTarget, 
 			messages: request.messages,
 			tools: toToolSet(request.tools),
 			maxRetries: MAX_RETRIES,
+			abortSignal: request.signal,
 			onError: ({ error }) => {
 				streamError ??= { error };
 			},
@@ -205,7 +207,7 @@ export async function callModel({ model, provider, mode, effort }: ModelTarget, 
 		};
 	} catch (error) {
 		// The reply's promises reject with no onError call when the call is
-		// aborted, which the stop key will do.
+		// aborted, as a game load does.
 		return modelFailure(provider, mode, error);
 	}
 }
