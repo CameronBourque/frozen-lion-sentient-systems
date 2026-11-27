@@ -44,9 +44,9 @@ An aborted `signal` cancels the turn after the state read, during the model call
 
 The loop sends each reply back as the SDK's own messages, so a model's reasoning stays in the conversation. Anthropic refuses a tool call conversation with extended thinking that drops it.
 
-A reply with no tool call gets one nudge to act or to call `end_turn`. A second in a row stops the turn. The [turn limits](../../roadmap/phase-2/turn-limits.md) step replaces this with limits per turn.
+A reply with no tool call gets a nudge to act or to call `end_turn`. It counts as a failure against the [turn limits](#failure-handling).
 
-A failed model call stops the turn with the failure's message. A turn that stops logs `turn_stopped` as a warning, and sends no end turn, so the game waits on the agent. The [forced end turn](../../roadmap/phase-2/forced-end-turn.md) step ends it instead.
+A failed model call or a [turn limit](#failure-handling) stops the turn with a message that says why. A turn that stops logs `turn_stopped` as a warning, and sends no end turn, so the game waits on the agent. The [forced end turn](../../roadmap/phase-2/forced-end-turn.md) step ends it instead.
 
 The action tools log each action with its `reason`, and the loop logs every tool call at the debug level as `tool_call`. Each model call logs its tokens and cost as `model_call`.
 
@@ -64,7 +64,17 @@ Every action tool has a required `reason` field. See [narration-and-messaging.md
 
 ## Failure handling
 
-When an action fails, the agent gets the reason and decides again. The loop limits retries per action, actions per turn, and time per turn. When the loop hits a limit, it ends the turn and logs a failure. One stuck turn then cannot stop a game.
+When an action fails, the agent gets the reason and decides again. The loop limits retries per action, actions per turn, and time per turn. When the loop hits a limit, it stops the turn and logs `turn_stopped` as a warning, with the limit's name in `limit`. One stuck turn then cannot stop a game.
+
+`limits` in the [config file](../core/settings.md) sets the three limits:
+
+| Field | Default | What it counts |
+| --- | --- | --- |
+| `retriesPerAction` | `3` | Failed actions in a row, and replies with no tool call. An action that goes through resets the count. A fourth failure in a row stops the turn at the default |
+| `actionsPerTurn` | `250` | Calls to the action tools, the tools with a `reason` field, whether they fail or go through. Tools that read the state, look up rules, or change memory don't count |
+| `turnMinutes` | `15` | Time from the first model call of the turn. The limit aborts the model call in progress |
+
+A blocked `end_turn` counts as a failed action, and one that goes through ends the turn even at the actions limit. Until the [forced end turn](../../roadmap/phase-2/forced-end-turn.md) step, a turn at a limit sends no end turn. A [game load](game-load.md) still cancels the turn, and doesn't stop it.
 
 ## Stopping
 
@@ -108,4 +118,8 @@ The long-term result at a deep strategic review comes in a later phase.
 | The bridge plays every player that `AGENT_TURN` names, with no list of agents in the config | The core mod decides which players are agents, and agent slots save with the game, as [settings.md](../core/settings.md) says. A computer slot agent needs no bridge change |
 | The loop sends replies back as the SDK's own messages | The messages keep the model's reasoning, which Anthropic needs back in a tool call conversation with extended thinking |
 | The agent keeps the game turn it last ended, and skips a later signal on that turn | The turn signal drives the loop, so it needs no poll of the turn number and no timeout that a long AI turn could trip. A dropped end turn is the [forced end turn](../../roadmap/phase-2/forced-end-turn.md) step's case |
-| A reply with no tool call gets one nudge, and a second stops the turn | A model that only writes may still act when asked, and until the turn limits exist, the stop keeps a talking model from spending without end |
+| A reply with no tool call gets a nudge, and counts as a failure | A model that only writes may still act when asked, and one that only talks stops after a few replies |
+| Only the action tools count against the actions limit | A turn reads the state and the rules many times between actions |
+| Failures in a row count, and a success resets them | A model that tries a new input after each failure is still stuck |
+| The time limit aborts the model call in progress | A long reasoning call would otherwise run a whole call past the limit |
+| `actionsPerTurn` defaults to `250` | A late-game turn moves many units and runs many cities. A limit that scales with the empire waits for a measured late-game turn |

@@ -3,7 +3,7 @@
 // once it runs out.
 
 import { describe, expect, test } from "vitest";
-import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
 import type { ListResult } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
@@ -32,6 +32,7 @@ function configWith(keys: string[], model: ModelSetting = NO_MODEL): Config {
 		model,
 		mcpPort: DEFAULT_MCP_PORT,
 		journalEntries: DEFAULT_JOURNAL_ENTRIES,
+		limits: DEFAULT_LIMITS,
 	};
 }
 

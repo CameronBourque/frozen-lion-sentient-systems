@@ -1,11 +1,11 @@
 // Plays one agent turn: reads the state and memory, sends the turn message,
-// and runs the model's tool calls until end_turn goes through.
+// and runs the model's tool calls until end_turn goes through or a limit.
 // docs/design/agents/turn-loop.md has the design.
 
 import type { Client } from "@modelcontextprotocol/client";
 import type { ModelMessage, ToolModelMessage } from "ai";
-import type { ModelSetting } from "../config.js";
-import type { Logger } from "../log.js";
+import type { Limits, ModelSetting } from "../config.js";
+import type { LogFields, Logger } from "../log.js";
 import { callTool } from "../mcp/in-process.js";
 import { readMemory, startMemory } from "../memory/store.js";
 import { type ModelTarget, type ToolCall, type ToolDefinition, callModel } from "../model/client.js";
@@ -34,6 +34,7 @@ export interface LoopContext {
 	target: ModelTarget;
 	model: ModelSetting;
 	journalEntries: number;
+	limits: Limits;
 	now: () => Date;
 	// How long a turn waits between checks on a game that doesn't answer.
 	gameWaitMs?: number;
@@ -58,6 +59,36 @@ export interface TurnOptions {
 const END_TURN = "end_turn";
 
 const NUDGE = "You wrote no tool call. Take your next action, or call end_turn when you are done.";
+
+// How each limit reads in the log when the turn reaches it.
+const LIMIT_TEXT: Record<keyof Limits, (value: number) => string> = {
+	retriesPerAction: (value) => `It reached the retries per action limit of ${value}, with ${value + 1} failures in a row`,
+	actionsPerTurn: (value) => `It reached the actions per turn limit of ${value}`,
+	turnMinutes: (value) => `It reached the time per turn limit of ${value} minutes`,
+};
+
+// What a turn has spent against its limits. failures counts the failed
+// actions in a row, and the replies with no tool call.
+interface Tally {
+	actions: number;
+	failures: number;
+}
+
+// The signal that ends the turn, at the time limit or a game load, and the
+// game-load signal alone, which tells the two apart.
+interface Signals {
+	turn: AbortSignal;
+	load: AbortSignal | undefined;
+}
+
+// What the calls of one turn share.
+interface TurnRun {
+	agent: Agent;
+	context: LoopContext;
+	signals: Signals;
+	actions: Set<string>;
+	tally: Tally;
+}
 
 // A turn started again keeps its turn number, so the agent plays it and is
 // told so.
@@ -91,7 +122,7 @@ export async function playTurn(agent: Agent, context: LoopContext, { again = fal
 
 	const messages: ModelMessage[] = [{ role: "user", content: turnMessage({ state: state.value, memory: read.memory, journalEntries: context.journalEntries, again }) }];
 
-	const result = await converse(agent, context, messages, signal);
+	const result = await converseInTime(agent, context, messages, signal);
 
 	if (result.ended) {
 		agent.endedTurn = turn;
@@ -100,63 +131,80 @@ export async function playTurn(agent: Agent, context: LoopContext, { again = fal
 	return result;
 }
 
-// Calls the model and runs its tool calls until end_turn goes through. A
-// reply with no tool call gets one nudge, and a second in a row stops.
-async function converse(agent: Agent, context: LoopContext, messages: ModelMessage[], signal: AbortSignal | undefined): Promise<TurnResult> {
-	const { logger } = context;
-	let nudged = false;
+// The turn's signal aborts at the time limit too, so it stops the model call
+// in progress.
+async function converseInTime(agent: Agent, context: LoopContext, messages: ModelMessage[], load: AbortSignal | undefined): Promise<TurnResult> {
+	const clock = new AbortController();
+	const timer = setTimeout(() => clock.abort(), context.limits.turnMinutes * 60_000);
+	const turn = load === undefined ? clock.signal : AbortSignal.any([load, clock.signal]);
+
+	try {
+		return await converse({ agent, context, signals: { turn, load }, actions: actionTools(agent.definitions), tally: { actions: 0, failures: 0 } }, messages);
+	} finally {
+		clearTimeout(timer);
+	}
+}
+
+// The action tools are the ones with a reason, which every action takes.
+function actionTools(definitions: ToolDefinition[]): Set<string> {
+	return new Set(definitions.filter(({ inputSchema }) => inputSchema.properties?.reason !== undefined).map(({ name }) => name));
+}
+
+// Calls the model and runs its tool calls until end_turn goes through, or
+// the turn reaches a limit. A reply with no tool call gets a nudge.
+async function converse(run: TurnRun, messages: ModelMessage[]): Promise<TurnResult> {
+	const { agent, context, signals, tally } = run;
 
 	for (;;) {
-		const result = await callModel(context.target, { system: agent.system, messages, tools: agent.definitions, signal });
-
+		const result = await callModel(context.target, { system: agent.system, messages, tools: agent.definitions, signal: signals.turn });
 		// An aborted call fails, and that failure isn't the model's.
-		if (signal?.aborted === true) {
-			return cancelTurn(logger, agent);
+		const ended = endedBySignal(run);
+
+		if (ended !== undefined) {
+			return ended;
 		}
 
 		if (!result.ok) {
-			return stopTurn(logger, agent, result.error);
+			return stopTurn(context.logger, agent, result.error);
 		}
 
-		logModelCall(logger, context.model, result.reply.usage);
+		logModelCall(context.logger, context.model, result.reply.usage);
 		messages.push(...result.reply.messages);
 
 		if (result.reply.toolCalls.length === 0) {
-			if (nudged) {
-				return stopTurn(logger, agent, `The model called no tool twice in a row. It wrote: ${result.reply.text}`);
+			tally.failures += 1;
+
+			if (tally.failures > context.limits.retriesPerAction) {
+				return reachLimit(run, "retriesPerAction");
 			}
 
-			nudged = true;
 			messages.push({ role: "user", content: NUDGE });
 			continue;
 		}
 
-		nudged = false;
+		const ran = await runCalls(run, result.reply.toolCalls);
 
-		const ran = await runCalls(agent, context, result.reply.toolCalls, signal);
-
-		if (ran === "cancelled") {
-			return cancelTurn(logger, agent);
+		if ("ended" in ran) {
+			return ran;
 		}
 
-		if (ran.ended) {
-			return { ended: true };
-		}
-
-		messages.push(ran.message);
+		messages.push(ran);
 	}
 }
 
 // Runs the calls in order. Once end_turn goes through, it's another
 // player's turn, so the rest don't run. After a game load, the rest would act
-// in the new game, so they don't run either.
-async function runCalls(agent: Agent, context: LoopContext, calls: ToolCall[], signal: AbortSignal | undefined): Promise<{ ended: true } | { ended: false; message: ToolModelMessage } | "cancelled"> {
+// in the new game, so they don't run either, and none run past a limit.
+async function runCalls(run: TurnRun, calls: ToolCall[]): Promise<TurnResult | ToolModelMessage> {
+	const { agent, context, signals, actions, tally } = run;
 	const { client, logger } = context;
 	const message: ToolModelMessage = { role: "tool", content: [] };
 
 	for (const call of calls) {
-		if (signal?.aborted === true) {
-			return "cancelled";
+		const ended = endedBySignal(run);
+
+		if (ended !== undefined) {
+			return ended;
 		}
 
 		const output = await callTool(agent.tools, call.name, call.input);
@@ -171,6 +219,12 @@ async function runCalls(agent: Agent, context: LoopContext, calls: ToolCall[], s
 			return { ended: true };
 		}
 
+		const limit = actions.has(call.name) ? countAction(tally, output.isError, context.limits) : undefined;
+
+		if (limit !== undefined) {
+			return reachLimit(run, limit);
+		}
+
 		message.content.push({
 			type: "tool-result",
 			toolCallId: call.id,
@@ -179,13 +233,40 @@ async function runCalls(agent: Agent, context: LoopContext, calls: ToolCall[], s
 		});
 
 		// A failed call may mean the game stopped answering, and the next
-		// call or model call would only fail the same way.
-		if (output.isError && !await waitForGame(client, logger, agent.playerID, signal, context.gameWaitMs)) {
-			return "cancelled";
+		// call or model call would only fail the same way. The wait ends
+		// only when the game answers or the turn's signal aborts.
+		if (output.isError && !await waitForGame(client, logger, agent.playerID, signals.turn, context.gameWaitMs)) {
+			return endedBySignal(run) as TurnResult;
 		}
 	}
 
-	return { ended: false, message };
+	return message;
+}
+
+// Adds an action to the tally, and returns the limit it reaches, if any. A
+// success resets the failures in a row.
+function countAction(tally: Tally, failed: boolean, limits: Limits): keyof Limits | undefined {
+	tally.actions += 1;
+	tally.failures = failed ? tally.failures + 1 : 0;
+
+	if (tally.failures > limits.retriesPerAction) {
+		return "retriesPerAction";
+	}
+
+	return tally.actions >= limits.actionsPerTurn ? "actionsPerTurn" : undefined;
+}
+
+// A game load cancels the turn, and the time limit stops it.
+function endedBySignal(run: TurnRun): TurnResult | undefined {
+	if (run.signals.load?.aborted === true) {
+		return cancelTurn(run.context.logger, run.agent);
+	}
+
+	return run.signals.turn.aborted ? reachLimit(run, "turnMinutes") : undefined;
+}
+
+function reachLimit({ agent, context }: TurnRun, limit: keyof Limits): TurnResult {
+	return stopTurn(context.logger, agent, LIMIT_TEXT[limit](context.limits[limit]), { limit });
 }
 
 function cancelTurn(logger: Logger, agent: Agent): TurnResult {
@@ -194,8 +275,8 @@ function cancelTurn(logger: Logger, agent: Agent): TurnResult {
 	return { ended: false, cancelled: true };
 }
 
-function stopTurn(logger: Logger, agent: Agent, reason: string): TurnResult {
-	logger.warn("turn_stopped", `Player ${agent.playerID}'s turn stopped without an end turn: ${reason}`, { player: agent.playerID, reason });
+function stopTurn(logger: Logger, agent: Agent, reason: string, fields: LogFields = {}): TurnResult {
+	logger.warn("turn_stopped", `Player ${agent.playerID}'s turn stopped without an end turn: ${reason}`, { player: agent.playerID, reason, ...fields });
 
 	return { ended: false, reason };
 }

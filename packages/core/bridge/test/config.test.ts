@@ -1,7 +1,7 @@
 // Tests for config.ts.
 
 import { describe, expect, test } from "vitest";
-import { DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT, NO_MODEL, NO_PRICE, parseConfig, withEnvironmentKeys, withModel } from "../src/config.js";
+import { DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, NO_MODEL, NO_PRICE, parseConfig, withEnvironmentKeys, withModel } from "../src/config.js";
 
 // Returns the errors for a file the test expects to fail.
 function errorsFor(text: string): string[] {
@@ -30,6 +30,10 @@ describe("parseConfig", () => {
 			"  effort: high",
 			"mcpPort: 5000",
 			"journalEntries: 4",
+			"limits:",
+			"  retriesPerAction: 2",
+			"  actionsPerTurn: 40",
+			"  turnMinutes: 2.5",
 		].join("\n");
 
 		expect(parseConfig(text)).toEqual({
@@ -41,6 +45,7 @@ describe("parseConfig", () => {
 				model: { mode: "api-key", provider: "openai", id: "some-model", effort: "high", price: NO_PRICE },
 				mcpPort: 5000,
 				journalEntries: 4,
+				limits: { retriesPerAction: 2, actionsPerTurn: 40, turnMinutes: 2.5 },
 			},
 		});
 	});
@@ -48,7 +53,7 @@ describe("parseConfig", () => {
 	test("fills in the defaults for a file with only the schema version", () => {
 		expect(parseConfig("schemaVersion: 1")).toEqual({
 			ok: true,
-			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES },
+			config: { schemaVersion: 1, logLevel: "decisions", providers: {}, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES, limits: DEFAULT_LIMITS },
 		});
 	});
 
@@ -101,6 +106,19 @@ describe("parseConfig", () => {
 	test("names journalEntries when it isn't a whole number of 0 or more", () => {
 		expect(errorsFor("schemaVersion: 1\njournalEntries: -1")[0]).toMatch(/^journalEntries: /);
 		expect(errorsFor("schemaVersion: 1\njournalEntries: 2.5")[0]).toMatch(/^journalEntries: /);
+	});
+
+	test("names the limit that is out of range", () => {
+		expect(errorsFor("schemaVersion: 1\nlimits:\n  retriesPerAction: -1")[0]).toMatch(/^limits\.retriesPerAction: /);
+		expect(errorsFor("schemaVersion: 1\nlimits:\n  actionsPerTurn: 0")[0]).toMatch(/^limits\.actionsPerTurn: /);
+		expect(errorsFor("schemaVersion: 1\nlimits:\n  turnMinutes: 0")[0]).toMatch(/^limits\.turnMinutes: /);
+	});
+
+	test("fills in the limits a file leaves out", () => {
+		expect(parseConfig("schemaVersion: 1\nlimits:\n  actionsPerTurn: 1")).toMatchObject({
+			ok: true,
+			config: { limits: { ...DEFAULT_LIMITS, actionsPerTurn: 1 } },
+		});
 	});
 
 	test("names the full path of a provider's bad key", () => {
@@ -189,7 +207,7 @@ describe("withModel", () => {
 });
 
 describe("withEnvironmentKeys", () => {
-	const BASE = { schemaVersion: 1, logLevel: "decisions", model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES } as const;
+	const BASE = { schemaVersion: 1, logLevel: "decisions", model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES, limits: DEFAULT_LIMITS } as const;
 
 	test("fills a blank or missing key from its variable", () => {
 		const config = { ...BASE, providers: { anthropic: { apiKey: "" } } };

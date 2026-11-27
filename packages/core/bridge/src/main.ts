@@ -94,7 +94,7 @@ void chooseModel(started.config, started.path, logger, { ask, providers: offered
 	if (target.ok) {
 		const { config } = started;
 
-		onTurn = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, now: () => new Date(), knowledge, memory });
+		onTurn = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, now: () => new Date(), knowledge, memory });
 	} else {
 		logger.warn("agents_off", `Agents won't play their turns: ${target.error}`, { reason: target.error });
 	}
