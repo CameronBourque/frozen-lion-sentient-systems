@@ -77,6 +77,10 @@ The action now refuses while a session is open. On turn 97, with Vietnam's promi
 
 During the AI turns that followed, a Cree deal held the turn. Confirmed on Windows on 2026-11-13.
 
+A forced end skips every blocker and every unit that needs orders, and its result lists them. With `actionsPerTurn` set to `1`, the bridge forced the end of turn 1 after a `unit_action` that founded a city, and the result listed units 65536 and 131073 and no other blocker.
+
+On turn 2, after a `set_research`, it listed `ENDTURN_BLOCKING_PRODUCTION` and unit 131073. Both turns ended, and turn 3 began. Confirmed on Windows on 2026-11-27.
+
 ### With a queued move that stops short
 
 Ending the turn runs the units' queued moves first. On turn 5 of a duel map, a warrior's queued move toward an ocean tile stopped short, and the unit needed orders again. The game cancelled the end, and `AGENT_TURN 0` printed 0.2 s after the request, with the turn still at 5.
@@ -97,6 +101,7 @@ Run each step through the tuner, and record the Lua state you ran it in.
 2. **Run the action.** With a blocker left, call `endTurn` from `packages/core/bridge/src/actions/turn.ts` without `force`, then with `force`, then with `force` again. Check the reason, the end of the turn, and the refusal.
 3. **End the turn with a leader screen up.** Declare war on a major civ with `SentientSystems_DeclareWar`, then send the request. Read `Game.GetCurrentGameTurn()` and `Players[0]:IsTurnActive()` 10 s later.
 4. **Act with the wonder built popup up.** Force a wonder to finish, so the popup opens. Send a move and `SentientSystems_EndTurn(0, true)`, and read the unit and the turn. Then release the lock's event ID from `Lua.log` with the steps of `Close`, and read them again.
+5. **Force the end at a limit.** Set `actionsPerTurn` to `1` in the config file, and run the bridge on a new game. Check that each turn ends and the log names what it skipped.
 
 ## Results
 
@@ -117,5 +122,6 @@ The bridge ran this step in a single-player game, with one city and one unit.
 | `end_turn` on turn 5, with a warrior's queued move toward an ocean tile | `SentientSystemsCore_UI` | `{"ok":true}`, then `AGENT_TURN 0` 0.2 s later on turn 5. The next three calls failed with "You already ended turn 5." | 2026-11-19 |
 | The same end from the turn 5 save with the fix, then `move_unit` and `end_turn` | `SentientSystemsCore_UI` | The turn started again 0.27 s later. The second call ended it, and turn 6 began | 2026-11-19 |
 | A load of the turn 5 save, then the same end, `move_unit`, and `end_turn`, with the `isFirstTime` line | `SentientSystemsCore_UI` | In `Lua.log`, `AGENT_TURN 0` from the event and the resync after the load, `AGENT_TURN 0 again` after the first end, and `AGENT_TURN 0` for turn 6 | 2026-11-19 |
+| The bridge's forced end at the actions per turn limit of 1, on turns 1 and 2 of a new game | `SentientSystemsCore_UI` | Turn 1 skipped units 65536 and 131073. Turn 2 skipped `ENDTURN_BLOCKING_PRODUCTION` and unit 131073. Both turns ended | 2026-11-27 |
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, a leader screen on 2026-11-13, the wonder built popup on 2026-11-14, and a queued move that stops short on 2026-11-19.
+Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows: the end turn on 2026-10-23, the end turn action on 2026-11-11, a leader screen on 2026-11-13, the wonder built popup on 2026-11-14, a queued move that stops short on 2026-11-19, and a forced end on 2026-11-27.

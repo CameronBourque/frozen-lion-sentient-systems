@@ -25,7 +25,7 @@ The `#` column sets the order, and a step's file has no number. A step is one pu
 | 7 | Agent loop | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | Done. See [done.md](done.md#agent-loop) |
 | 8 | End turn | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | Done. See [done.md](done.md#end-turn) |
 | 9 | Turn limits | Retries per action, actions per turn, and time per turn | `feat(core): add turn limits` | Done. See [done.md](done.md#turn-limits) |
-| 10 | [Forced end turn](forced-end-turn.md) | Another try after a blocked end turn, and a forced end at a limit | `feat(core): force the end turn at the turn limit` | |
+| 10 | Forced end turn | Another try after a blocked end turn, and a forced end at a limit | `feat(core): force the end turn at the turn limit` | Done. See [done.md](done.md#forced-end-turn) |
 | 11 | [Idle units and scouts](idle-units.md) | Fortify idle military units and set scouts to explore in plain code | `feat(core): handle idle units and scouts in plain code` | |
 | 12 | [Game options](game-options.md) | Warn when quick movement or quick combat is off | `feat(core): warn when quick movement or quick combat is off` | |
 | 13 | [Stopping and spending limits](stopping.md) | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | |

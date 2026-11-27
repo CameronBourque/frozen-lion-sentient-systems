@@ -6,7 +6,7 @@ When the agent calls `end_turn`, the bridge checks the state for wasted resource
 
 Models leave value on the table in long games. They forget a builder, let gold pile up, or leave a policy slot empty, and nothing in the game stops the turn for it.
 
-The game's end-turn blockers catch only some of these cases, and the agent finds the blockers one at a time, each on a failed `end_turn` call. The [forced end turn](../../roadmap/phase-2/forced-end-turn.md) step forces the end turn when the loop hits a limit, and a forced end skips the blockers that are left.
+The game's end-turn blockers catch only some of these cases, and the agent finds the blockers one at a time, each on a failed `end_turn` call. The loop [forces the end turn](../agents/turn-loop/failure-handling.md) when it hits a limit, and a forced end skips the blockers that are left.
 
 The check lists the blockers and the waste together in one result, so the agent fixes them in one pass. Fewer failed calls means fewer forced ends.
 

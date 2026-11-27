@@ -123,6 +123,17 @@ It added three limits on each agent turn, set in `limits` in the config file: `r
 
 A turn at a limit stops, and logs `turn_stopped` as a warning that names the limit. A reply with no tool call counts as a failure, in place of the old stop after two such replies.
 
-On 2026-11-27, the bridge executable on a ChatGPT plan, with `actionsPerTurn` set to `1`, took one `move_unit` on turn 1 and logged that the turn reached the actions per turn limit of 1. The game stayed on turn 1, because a stopped turn sends no end turn until the [forced end turn](forced-end-turn.md) step.
+On 2026-11-27, the bridge executable on a ChatGPT plan, with `actionsPerTurn` set to `1`, took one `move_unit` on turn 1 and logged that the turn reached the actions per turn limit of 1. The game stayed on turn 1, because a stopped turn then sent no end turn. The [forced end turn](#forced-end-turn) step changed that.
 
 - The limits, their defaults, and what each one counts are in [design/agents/turn-loop/failure-handling.md](../../design/agents/turn-loop/failure-handling.md), and the `limits` field in [design/core/settings.md](../../design/core/settings.md).
+
+## Forced end turn
+
+Pull request: feat(core): force the end turn at the turn limit.
+
+A turn limit now ends the turn with `force`. The forced end's result lists the blockers and the units it skipped, and the loop logs each one as a warning. A forced end that fails stops the turn as before.
+
+On 2026-11-27, the bridge executable on a ChatGPT plan, with `actionsPerTurn` set to `1`, forced the end of turns 1 and 2 and named each skipped blocker and unit. Turn 3 began with no manual help.
+
+- The forced end and its log are in [design/agents/turn-loop/failure-handling.md](../../design/agents/turn-loop/failure-handling.md), and the skipped list in [design/core/mod/actions/turn.md](../../design/core/mod/actions/turn.md).
+- What each forced end skipped is in [findings/actions/end-turn.md](../../findings/actions/end-turn.md#the-end-turn-action).
