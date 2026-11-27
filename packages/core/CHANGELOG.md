@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.39.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.38.0...core-v0.39.0) (2026-11-27)
+
+
+### Features
+
+* **core:** add the stop key and spending limits ([#158](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/158)) ([03869e0](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/03869e06f37f6c82e9b6e49650e23d3ac2ff91fa))
+
 ## [0.38.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.37.0...core-v0.38.0) (2026-11-27)
 
 
