@@ -80,7 +80,7 @@ The bridge's loop and the model client stay the same, and the provider model get
 
 The agent SDK and CLI modes run their own tool loop, so they replace the bridge's agent loop for a turn. The model client stays out of it.
 
-An `AgentRunner` in `src/agents/runner.ts` runs one turn. `runTurn(turn, signal)` takes the system prompt, the turn message, the MCP tools, and the turn limits. It returns how the turn ended and its usage.
+An `AgentRunner` in `src/agents/runner.ts` runs one turn. `runTurn(turn, signal)` takes the system prompt, the turn message, the MCP tools, and the turn limits. It returns how the turn ended and its usage. [turn-loop/](../agents/turn-loop/README.md#runners) has the interface.
 
 The API key and subscription token modes share one runner, the bridge's own loop. Each agent SDK and each CLI adds one.
 

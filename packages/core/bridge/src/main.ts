@@ -4,6 +4,7 @@
 
 import path from "node:path";
 import { getAsset, getAssetKeys, isSea } from "node:sea";
+import { bridgeRunner } from "./agents/runner.js";
 import { describeSpend, noSpend, spendWarnings } from "./agents/spend.js";
 import { type TurnSignal, turnSignal } from "./agents/turn-signal.js";
 import { KEY_VARIABLES } from "./config.js";
@@ -136,7 +137,7 @@ const startAgents = async (): Promise<boolean> => {
 			void stopBridge(reason);
 		};
 
-		agents = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, runSpend, now: () => new Date(), knowledge, memory, onTurnEnded, onStopRun });
+		agents = turnSignal({ client, logger, runner: bridgeRunner, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, runSpend, now: () => new Date(), knowledge, memory, onTurnEnded, onStopRun });
 	} else {
 		logger.warn("agents_off", `Agents won't play their turns: ${target.error}`, { reason: target.error });
 	}

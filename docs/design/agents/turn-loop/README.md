@@ -50,9 +50,20 @@ With `--mcp`, the bridge skips the [picker](../../core/picker.md), logs `agents_
 
    Only an end turn that goes through counts, so a turn that stops plays again on the next signal.
 3. It reads the agent's [memory](../../memory.md). On the agent's first turn after the bridge starts or a [game loads](../game-load.md#cancel-and-reset), it calls `startMemory`, so [stale memory](../../memory.md#stale-memory) moves aside. On later turns, it calls `readMemory`. It logs each warning either returns as `memory_warning`.
-4. It sends the system prompt, the [turn message](../prompt.md#two-calls), and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.
-5. It runs the reply's tool calls in order through the MCP server, and sends each result back, marked as an error when the tool failed. A blocked `end_turn` goes back the same way, so the model resolves the blocker and tries again.
-6. It calls the model again with the reply and the results added, until an `end_turn` goes through, and keeps that game turn on the agent. The calls after it in the same reply don't run, because it is then another player's turn.
+4. It hands the [turn message](../prompt.md#two-calls) to the run mode's [runner](#runners), which plays the turn's tool calls.
+5. It turns how the runner's turn ended into the turn's result: it keeps the game turn on the agent after an `end_turn` that goes through, ends the turn with `force` at a limit, stops the turn or the run, or cancels it.
+
+## Runners
+
+An `AgentRunner` in `src/agents/runner.ts` plays one turn's tool calls. `runTurn({ agent, message, context }, signal)` takes the agent's system prompt and MCP tools, the turn message, and the turn limits. It returns how the turn ended and what its model calls spent.
+
+The runner only reports the end: an `end_turn` that went through, a turn limit, a run spending limit, a failed model call, or an aborted signal. `playTurn` acts on it, so each runner shares the forced end turn, the logs, and the cancel. [run-modes.md](../../core/run-modes.md#runners) says which run mode uses which runner.
+
+`bridgeRunner` is the bridge's own loop, for the API key and subscription token modes:
+
+1. It sends the system prompt, the turn message, and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.
+2. It runs the reply's tool calls in order through the MCP server, and sends each result back, marked as an error when the tool failed. A blocked `end_turn` goes back the same way, so the model resolves the blocker and tries again.
+3. It calls the model again with the reply and the results added, until an `end_turn` goes through. The calls after it in the same reply don't run, because it is then another player's turn.
 
 An aborted `signal` cancels the turn after the state read, during the model call, or before the next tool call, so no call from the old game acts in the new one. After a failed tool call, the turn waits for a [silent game](../game-load.md#silent-game) before it goes on.
 
