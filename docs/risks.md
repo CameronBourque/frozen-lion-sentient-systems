@@ -38,5 +38,5 @@ What could go wrong, what it would cost, and the fallback. Open questions that a
 
   xAI publishes no way for an app it hasn't announced to use its plan sign-in. Fallback or mitigation: API keys work for every provider.
 
-  The Claude agent SDK mode stays behind a flag until Anthropic approves. xAI's plan sign-in gets a step only once xAI answers. Tracked in: [plan-access/anthropic.md](findings/plan-access/anthropic.md), [plan-access/xai.md](findings/plan-access/xai.md), [run-modes.md](design/core/run-modes.md#claude-runner).
+  The Claude agent SDK mode stays behind a flag until Anthropic approves. xAI's plan sign-in gets a step only once xAI answers. Tracked in: [plan-access/anthropic.md](findings/plan-access/anthropic.md), [plan-access/xai.md](findings/plan-access/xai.md), [claude-runner.md](design/core/claude-runner.md).
 - **Cost per game.** Impact: Users pay their own API bills. Fallback or mitigation: Measure in phase 2 and publish the results. Spending limits per turn and per run stop the agent, as [turn-loop/stopping.md](design/agents/turn-loop/stopping.md) describes. Tracked in: [distribution.md](design/distribution.md#decisions), [phase 2](roadmap/phase-2/README.md).

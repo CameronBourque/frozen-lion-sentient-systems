@@ -63,7 +63,7 @@ The menus after it depend on the mode:
 
 - **API key.** Provider, model, and effort, as today.
 - **Subscription token.** Provider, then the mode's `signIn`, then model and effort from the provider's own list. A signed-out provider's row shows its sign-in label, such as "Continue with ChatGPT". A failed sign-in warns with its reason and shows the **What now?** menu.
-- **Agent SDK.** Provider, a login check, then model and effort from the SDK's list.
+- **Agent SDK.** Provider, a login check, the [sign-in](claude-runner.md#sign-in) menu when there is both a key and a login, then model and effort from the SDK's list.
 - **CLI.** Provider, a check that the CLI is installed and logged in, then model and effort.
 
 A provider menu with one provider is skipped, unless that provider needs a sign-in, so the browser never opens before the user picks its row.
@@ -100,19 +100,7 @@ An agent SDK or a CLI becomes a run mode for a provider only when it does everyt
 
 ### Claude runner
 
-`@anthropic-ai/claude-agent-sdk` passes the check on its docs. The runner calls `query()` with:
-
-- `systemPrompt` set to the system prompt, and the turn message as the prompt,
-- `tools: []`, the bridge's MCP server in `mcpServers`, `strictMcpConfig: true`, and `settingSources: []`,
-- `PreToolUse` and `PostToolUse` hooks that log each call and count it against the turn limits, and end the run after `end_turn`,
-- an `abortController` that the stop key aborts,
-- `model` and `effort` from the config file.
-
-The SDK's `total_cost_usd` is an estimate at API prices, not what a plan costs, so the price stays unset, as with a subscription token.
-
-`CLAUDE_AGENT_SDK_ENABLED` in `src/model/providers/anthropic.ts` is `false`. While it is, Anthropic's `modes` has no agent SDK entry, so the mode reads `(not available yet)`.
-
-Anthropic's terms bar a third-party app from offering claude.ai login without approval. The constant becomes `true` once Anthropic approves.
+`@anthropic-ai/claude-agent-sdk` passes the check on its docs. [claude-runner.md](claude-runner.md) has its options, its sign-in, and the flag that keeps it off until Anthropic approves.
 
 ### CLI
 
