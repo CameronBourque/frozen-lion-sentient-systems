@@ -1,30 +1,21 @@
-# Phase 4: Personalities and play quality
+# Phase 4: You and several agents
 
-This phase makes agents distinct and better. It adds personalities, all sweat levels, civ notes, fuller memory, deep reviews, and the narrator and messaging panels.
+This phase adds games with a human and several agents, the cover card, and memory snapshots that survive reloads.
 
-**Gate.** In playtests, agents with different sweat levels and personalities play visibly different games. Compare the victory type pursued, wars declared, and districts built.
+**Gate.** You play a game against two agents, with at least one reload to an earlier save.
 
 ## Scope
 
-- Personality files and concept guides
-- Descriptions for all three sweat levels
-- Civ notes for Gathering Storm civs, generation and cache for other civs, and the `overrides/` folder
-- Relationships memory and journal compaction
-- Deep strategic reviews with a stronger model
-- Recommend models from testing in the model picker
-- The decision support parts that the smoke test and MVP gate records point to, and the scenario tests that measure them. See [decision-support/](../../design/decision-support/README.md) and [testing.md](../../design/testing.md#scenario-tests)
-- A tool that puts each policy in a slot of the right type, so the agent can call `setPolicies` without matching every slot itself
-- Citizen focus and worked tiles in the state, with an action that changes them
-- Each city's next border expansion in the state
-- Gossip, and climate and disasters in the state, with the climate stage
-- Game mode actions and state: the Apocalypse mode's soothsayer, the Heroes and Legends mode's heroes, the Barbarian Clans mode's clans, the Zombie Defense mode's barricades and traps, and the Monopolies and Corporations mode's corporations, which a great merchant with a charge left founds
-- Diplomacy actions beyond answering a proposed deal, declaring war, and proposing peace, such as proposing other deals and sending gifts
-- Messaging panel and `send_message`
-- Narrator panel in the game UI
-- Run the test matrix
-- An action that joins or rejects an emergency, for `ENDTURN_BLOCKING_EMERGENCY_NEEDS_ATTENTION`, tested with Rise and Fall alone once the test matrix adds it. See [choices/emergencies.md](../../findings/choices/emergencies.md#questions)
+- Run the [computer slot test](../../design/agents/slot-type.md#computer-slot-test), and pick the game mode for you and several agents
+- Handle the hotseat pass screen, if that game mode is hotseat
+- For an agent in a computer slot, remove the [diplomacy session](../phase-1/done/turn-actions.md#diplomacy-sessions) state, the closing of goodbye sessions, and their messages. No leader screen opens between two AIs or two humans. Give the agent only what the computer slot test finds a native AI gets, and match the messages in a human slot to it
+- Cover card during agent turns
+- Verify that no agent sees outside its fog of war
+- Checkpoint IDs and memory snapshots, and the checkpoint ID on each [metrics line](../../design/evaluation.md#metrics-line)
+- Remove the phase 2 rule that moves stale memory aside on turn 1 or an earlier turn, since a restored snapshot replaces it. See [memory.md](../../design/memory.md)
+- A `logs` command in the bridge executable that filters a log file by level, event, and player, since several agents write to one log
 
-Design: [knowledge-files.md](../../design/knowledge-files.md), [agents/sweat-level.md](../../design/agents/sweat-level.md), [agents/narration-and-messaging.md](../../design/agents/narration-and-messaging.md) (includes an open question for this phase), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md#test-matrix).
+Design: [agents/slot-type.md](../../design/agents/slot-type.md), [agents/cover-and-spectator.md](../../design/agents/cover-and-spectator.md), [memory.md](../../design/memory.md#checkpoint-ids). Open questions: [game-api.md](../../findings/game-api.md#questions), questions 1 and 2. The active player in hotseat is answered in [game-api.md](../../findings/game-api.md#active-player).
 
 ## Steps
 

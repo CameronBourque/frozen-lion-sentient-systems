@@ -6,7 +6,7 @@ import type { Logger } from "../log.js";
 import type { TunerClient } from "../tuner/client.js";
 import type { PlayerSource } from "./player.js";
 
-// Returns the player's memory folder. Phase 3 can return a restored snapshot.
+// Returns the player's memory folder. Phase 4 can return a restored snapshot.
 export type MemorySource = (playerID: number) => string;
 
 export interface ToolContext {

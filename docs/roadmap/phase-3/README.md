@@ -1,21 +1,21 @@
-# Phase 3: You and several agents
+# Phase 3: Bridge GUI
 
-This phase adds games with a human and several agents, the cover card, and memory snapshots that survive reloads.
+This phase gives the bridge a window, so you set up and control an agent without a terminal. The console stays as a fallback for headless runs, on the same code as the window. It is about the bridge only. The panels and options in the game come in later phases.
 
-**Gate.** You play a game against two agents, with at least one reload to an earlier save.
+**Gate.** You set up a single-agent game, start it, stop it, and resume it from the bridge window, without a terminal.
 
 ## Scope
 
-- Run the [computer slot test](../../design/agents/slot-type.md#computer-slot-test), and pick the game mode for you and several agents
-- Handle the hotseat pass screen, if that game mode is hotseat
-- For an agent in a computer slot, remove the [diplomacy session](../phase-1/done/turn-actions.md#diplomacy-sessions) state, the closing of goodbye sessions, and their messages. No leader screen opens between two AIs or two humans. Give the agent only what the computer slot test finds a native AI gets, and match the messages in a human slot to it
-- Cover card during agent turns
-- Verify that no agent sees outside its fog of war
-- Checkpoint IDs and memory snapshots, and the checkpoint ID on each [metrics line](../../design/evaluation.md#metrics-line)
-- Remove the phase 2 rule that moves stale memory aside on turn 1 or an earlier turn, since a restored snapshot replaces it. See [memory.md](../../design/memory.md)
-- A `logs` command in the bridge executable that filters a log file by level, event, and player, since several agents write to one log
+- A design doc for the bridge GUI in [core/](../../design/core/README.md), with the choice of toolkit
+- One shared control layer for setup and control, which both the window and the console call, so each adds only its own way to show and ask
+- The setup screens: the run mode, the provider, the [model picker](../../design/core/picker.md), the API key, and the ChatGPT sign-in, in place of the console prompts
+- The opt-in to save plan tokens, which [subscription-token.md](../../design/core/subscription-token.md#decisions) leaves to a GUI
+- A start button that also resumes. When a run stops, the bridge process stays open, and start begins a new run from the turn in progress, as [stopping.md](../../design/agents/turn-loop/stopping.md) describes for a restart today
+- A stop button in place of the stop key, and settings for the turn count and the spending limits. Decide whether a run's spending limit counts one start of the run or one start of the bridge
+- A status view: the turn, the agent's actions, the cost so far, and the newest log lines
+- A console redesign on the shared layer: keys that run the window's buttons and switch its toggles, such as start, stop, and the limits, in place of the prompts that only the console has
 
-Design: [agents/slot-type.md](../../design/agents/slot-type.md), [agents/cover-and-spectator.md](../../design/agents/cover-and-spectator.md), [memory.md](../../design/memory.md#checkpoint-ids). Open questions: [game-api.md](../../findings/game-api.md#questions), questions 1 and 2. The active player in hotseat is answered in [game-api.md](../../findings/game-api.md#active-player).
+Design: [core/run-modes.md](../../design/core/run-modes.md), [core/picker.md](../../design/core/picker.md), [core/settings.md](../../design/core/settings.md), [core/subscription-token.md](../../design/core/subscription-token.md), [agents/turn-loop/stopping.md](../../design/agents/turn-loop/stopping.md), [core/logs.md](../../design/core/logs.md).
 
 ## Steps
 

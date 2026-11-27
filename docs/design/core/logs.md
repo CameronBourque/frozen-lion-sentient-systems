@@ -24,7 +24,7 @@ The console prints the local time and `msg`, with `warning: ` or `error: ` in fr
 
 | Decision | Reason |
 | --- | --- |
-| Structured log records, each with a fixed event name | A filter, such as the `logs` command planned for [phase 3](../../roadmap/phase-3/README.md#scope), reads fields instead of matching message text. The console still shows one plain line per record |
+| Structured log records, each with a fixed event name | A filter, such as the `logs` command planned for [phase 4](../../roadmap/phase-4/README.md#scope), reads fields instead of matching message text. The console still shows one plain line per record |
 | Five levels, with `decisions` between `info` and `debug`, and `decisions` as the default | Prompts and responses make `debug` logs large. `decisions` shows each agent's actions and reasons without them, and those reasons are what a player watches for |
 | A small logger class of our own, with no logging library | The bridge needs one console format and one file. pino sends output through worker threads, which a single executable has to bundle |
 | A new log file starts on `LOAD_READY`, not on a reconnect or on `GAME_READY` | A quit to the main menu keeps the socket open, so a reconnect doesn't mark a new game. `LOAD_READY` comes before the click, so the new game's file holds its loading screen and the reconnect at the click |

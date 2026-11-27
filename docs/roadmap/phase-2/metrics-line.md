@@ -1,6 +1,6 @@
 # Metrics line
 
-Write a metrics line with the score for each player after each agent turn, so the MVP gate game is the baseline that phase 4 changes are measured against. The [yield and empire metrics](metrics-yields.md) and the [era and victory metrics](metrics-victories.md) add the other numbers. The design is in [evaluation.md](../../design/evaluation.md#metrics-line). Part of [phase 2](README.md).
+Write a metrics line with the score for each player after each agent turn, so the MVP gate game is the baseline that phase 5 changes are measured against. The [yield and empire metrics](metrics-yields.md) and the [era and victory metrics](metrics-victories.md) add the other numbers. The design is in [evaluation.md](../../design/evaluation.md#metrics-line). Part of [phase 2](README.md).
 
 ## Tasks
 

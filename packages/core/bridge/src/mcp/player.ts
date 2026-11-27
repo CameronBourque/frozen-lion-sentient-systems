@@ -1,5 +1,5 @@
 // Where an MCP server's tools get the player they act for. The tools only call
-// the source, so phase 3 can give each agent's server its own player.
+// the source, so phase 4 can give each agent's server its own player.
 // docs/design/core/mcp-server.md has the design.
 
 import type { TunerClient } from "../tuner/client.js";

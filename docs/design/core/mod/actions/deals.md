@@ -57,11 +57,11 @@ An AI answers after the call. On the bridge, `proposePeace` in `src/actions/deal
 | The action closes the session | Neither button closes it. While the session is open, the deal stays waiting and the AI turns don't go on |
 | A refusal is always the `NEGATIVE` response | It is the screen's own refusal of an AI's deal. `REJECTED_PERMANENT`, for a deal with an unacceptable item, asks the AI to stop proposing it, which is a different choice |
 | Accepting a war deal declares the war without a prompt | The screen's prompt asks the player to confirm. The agent confirms by accepting |
-| The action answers the whole deal and can't change it | A counter-offer is proposing a deal, which is planned for phase 4 |
+| The action answers the whole deal and can't change it | A counter-offer is proposing a deal, which is planned for phase 5 |
 | The session action takes an option key, not a response | The key is what the state lists, and the action maps it as the leader screen does, so the agent never needs the game's response names |
 | Stop asking needs no confirmation | The leader screen asks the player to confirm. The agent confirms by choosing the option |
 | The bridge doesn't wait for the AI's reply to a session | The reply comes in the same session. A goodbye closes on its own and a choice shows in the next state, so the agent reads it there |
-| Declaring war is always a surprise war | The formal war and the other casus belli need conditions the state doesn't show yet. They come with the other diplomacy actions in phase 4 |
-| Peace is the game's own peace deal, with nothing added | It keeps the cities the player occupies, which the game cedes to the player. Asking for more is proposing a deal, which is planned for phase 4 |
+| Declaring war is always a surprise war | The formal war and the other casus belli need conditions the state doesn't show yet. They come with the other diplomacy actions in phase 5 |
+| Peace is the game's own peace deal, with nothing added | It keeps the cities the player occupies, which the game cedes to the player. Asking for more is proposing a deal, which is planned for phase 5 |
 | The bridge waits for an AI's answer to peace | The answer comes after the call, within a second. A result that waits tells the agent whether the war is over, so it doesn't plan the next move on a guess. An AI that answers after the wait shows in the state |
 | The war and peace actions close their session at once, and refuse while another session is open | An open session holds up the AI turns. A session asked for behind an open one waits, and closing it then cancels it. A city-state's operation opens no session, so it skips the check |
