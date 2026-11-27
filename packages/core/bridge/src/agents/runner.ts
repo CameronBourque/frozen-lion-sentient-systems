@@ -3,7 +3,7 @@
 
 import type { ModelMessage, ToolModelMessage } from "ai";
 import type { Limits } from "../config.js";
-import { callTool } from "../mcp/in-process.js";
+import { type ToolOutput, callTool } from "../mcp/in-process.js";
 import { type ToolCall, type ToolDefinition, type Usage, callModel } from "../model/client.js";
 import { logModelCall } from "../model/usage.js";
 import { waitForGame } from "./game-wait.js";
@@ -55,8 +55,8 @@ interface Tally {
 	spend: Spend;
 }
 
-// What the calls of one turn share.
-interface TurnRun {
+// What the calls of one turn share, in every runner.
+export interface TurnRun {
 	agent: Agent;
 	context: LoopContext;
 	signal: AbortSignal;
@@ -67,12 +67,16 @@ interface TurnRun {
 // The API key and subscription token modes share it.
 export const bridgeRunner: AgentRunner = {
 	runTurn: async ({ agent, message, context }, signal) => {
-		const tally: Tally = { actions: 0, failures: 0, spend: noSpend() };
-		const end = await converse({ agent, context, signal, actions: actionTools(agent.definitions), tally }, [{ role: "user", content: message }]);
+		const run = startRun(agent, context, signal);
+		const end = await converse(run, [{ role: "user", content: message }]);
 
-		return { end, spend: tally.spend };
+		return { end, spend: run.tally.spend };
 	},
 };
+
+export function startRun(agent: Agent, context: LoopContext, signal: AbortSignal): TurnRun {
+	return { agent, context, signal, actions: actionTools(agent.definitions), tally: { actions: 0, failures: 0, spend: noSpend() } };
+}
 
 // The action tools are the ones with a reason, which every action takes.
 function actionTools(definitions: ToolDefinition[]): Set<string> {
@@ -145,36 +149,22 @@ function spendCall({ context, tally }: TurnRun, usage: Usage): TurnEnd | undefin
 	return limit === undefined ? undefined : { limit };
 }
 
-// Runs the calls in order. Once end_turn goes through, it's another
-// player's turn, so the rest don't run. After an abort, the rest would act in
-// a new game or a stopped run, so they don't run either, and none run past a
-// limit. An abort waits for the call in progress, so no Lua command is cut off.
+// Runs the calls in order, and stops at the first that ends the turn.
 async function runCalls(run: TurnRun, calls: ToolCall[]): Promise<TurnEnd | ToolModelMessage> {
-	const { agent, context, signal, actions, tally } = run;
-	const { client, logger } = context;
 	const message: ToolModelMessage = { role: "tool", content: [] };
 
 	for (const call of calls) {
-		if (signal.aborted) {
-			return { aborted: true };
+		const aborted = beforeCall(run);
+
+		if (aborted !== undefined) {
+			return aborted;
 		}
 
-		const output = await callTool(agent.tools, call.name, call.input);
+		const output = await callTool(run.agent.tools, call.name, call.input);
+		const end = await afterCall(run, call.name, call.input, output);
 
-		// The failure is the text the model gets, which says why, such as a
-		// game that didn't answer. The message keeps its first line.
-		const outcome = output.isError ? `failed: ${output.text.split("\n")[0]}` : "done";
-
-		logger.debug("tool_call", `${call.name}: ${outcome}`, { player: agent.playerID, tool: call.name, input: call.input, ok: !output.isError, ...(output.isError ? { failure: output.text } : {}) });
-
-		if (call.name === END_TURN && !output.isError) {
-			return { ended: true };
-		}
-
-		const limit = actions.has(call.name) ? countAction(tally, output.isError, context.limits) : undefined;
-
-		if (limit !== undefined) {
-			return { limit };
+		if (end !== undefined) {
+			return end;
 		}
 
 		message.content.push({
@@ -183,16 +173,49 @@ async function runCalls(run: TurnRun, calls: ToolCall[]): Promise<TurnEnd | Tool
 			toolName: call.name,
 			output: { type: output.isError ? "error-text" : "text", value: output.text },
 		});
-
-		// A failed call may mean the game stopped answering, and the next
-		// call or model call would only fail the same way. The wait ends
-		// only when the game answers or the turn's signal aborts.
-		if (output.isError && !await waitForGame(client, logger, agent.playerID, signal, context.gameWaitMs)) {
-			return { aborted: true };
-		}
 	}
 
 	return message;
+}
+
+// After an abort, a call would act in a new game or a stopped run, so it
+// doesn't run. An abort waits for the call in progress, so no Lua command is
+// cut off.
+export function beforeCall({ signal }: TurnRun): TurnEnd | undefined {
+	return signal.aborted ? { aborted: true } : undefined;
+}
+
+// Logs a call that ran, and returns the end it brings, if any. Once end_turn
+// goes through, it's another player's turn, so no later call runs, and none
+// runs past a limit.
+export async function afterCall(run: TurnRun, name: string, input: unknown, output: ToolOutput): Promise<TurnEnd | undefined> {
+	const { agent, context, signal, actions, tally } = run;
+	const { client, logger } = context;
+
+	// The failure is the text the model gets, which says why, such as a
+	// game that didn't answer. The message keeps its first line.
+	const outcome = output.isError ? `failed: ${output.text.split("\n")[0]}` : "done";
+
+	logger.debug("tool_call", `${name}: ${outcome}`, { player: agent.playerID, tool: name, input, ok: !output.isError, ...(output.isError ? { failure: output.text } : {}) });
+
+	if (name === END_TURN && !output.isError) {
+		return { ended: true };
+	}
+
+	const limit = actions.has(name) ? countAction(tally, output.isError, context.limits) : undefined;
+
+	if (limit !== undefined) {
+		return { limit };
+	}
+
+	// A failed call may mean the game stopped answering, and the next call
+	// or model call would only fail the same way. The wait ends only when the
+	// game answers or the turn's signal aborts.
+	if (output.isError && !await waitForGame(client, logger, agent.playerID, signal, context.gameWaitMs)) {
+		return { aborted: true };
+	}
+
+	return undefined;
 }
 
 // Adds an action to the tally, and returns the limit it reaches, if any. A

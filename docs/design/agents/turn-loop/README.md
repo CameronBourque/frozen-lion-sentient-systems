@@ -59,6 +59,11 @@ An `AgentRunner` in `src/agents/runner.ts` plays one turn's tool calls. `runTurn
 
 The runner only reports the end: an `end_turn` that went through, a turn limit, a run spending limit, a failed model call, or an aborted signal. `playTurn` acts on it, so each runner shares the forced end turn, the logs, and the cancel. [run-modes.md](../../core/run-modes.md#runners) says which run mode uses which runner.
 
+Every runner plays each tool call through the same two steps in `src/agents/runner.ts`, on a `TurnRun` from `startRun`:
+
+- `beforeCall` ends the turn after an abort, so no call acts in a new game or a stopped run.
+- `afterCall` logs the call as `tool_call`, ends the turn after an `end_turn` that goes through, counts an action against the turn limits, and waits for a [silent game](../game-load.md#silent-game) after a failed call.
+
 `bridgeRunner` is the bridge's own loop, for the API key and subscription token modes:
 
 1. It sends the system prompt, the turn message, and the MCP tools to the model, which `toolDefinitions` in `src/mcp/in-process.ts` lists from the in-process server.
