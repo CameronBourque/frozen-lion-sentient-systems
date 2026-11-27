@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.34.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.33.2...core-v0.34.0) (2026-11-27)
+
+
+### Features
+
+* **core:** play turn after turn ([#147](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/147)) ([624f068](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/624f068d0c60b1fe77d4f4c5721997ef0c8390b2))
+
 ## [0.33.2](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.33.1...core-v0.33.2) (2026-11-26)
 
 
