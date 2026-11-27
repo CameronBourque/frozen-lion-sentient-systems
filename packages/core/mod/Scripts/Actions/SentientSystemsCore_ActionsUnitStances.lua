@@ -3,13 +3,14 @@
 
 -- The stance actions, by action name, as unit operations. UnitPanel.lua reads
 -- each hash from GameInfo.UnitOperations, because UnitOperationTypes lacks
--- sleep, skip, and heal.
+-- sleep, skip, and heal. Explore is the panel's auto-explore.
 local STANCES = {
 	fortify = "UNITOPERATION_FORTIFY",
 	sleep = "UNITOPERATION_SLEEP",
 	skip = "UNITOPERATION_SKIP_TURN",
 	alert = "UNITOPERATION_ALERT",
 	heal = "UNITOPERATION_HEAL",
+	explore = "UNITOPERATION_AUTOMATE_EXPLORE",
 }
 
 -- How the reasons say an action, when its name is not the verb.

@@ -19,6 +19,7 @@ const ORDERS: Record<OrderAction, string> = {
 	skip: "Skip this turn.",
 	alert: "Sleep until an enemy comes into view.",
 	heal: "Fortify until healed.",
+	explore: "Explore on its own each turn until woken, as the game's auto-explore does.",
 	wake: "Wake a sleeping or fortified unit.",
 	delete: "Disband the unit.",
 	found_city: "Found a city on the unit's tile.",
