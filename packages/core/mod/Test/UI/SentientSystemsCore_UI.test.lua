@@ -78,6 +78,12 @@ before_each(function()
 		end,
 	}
 	env.PlayerManager = {}
+	env.options = { QuickMovement = true, QuickCombat = true }
+	env.UserConfiguration = {
+		GetValue = function(name)
+			return env.options[name]
+		end,
+	}
 	SetPlayers({})
 	Game.run(env, "UI/SentientSystemsCore_UI.lua")
 	env.SentientSystems_CancelDeadMoves = function() end
@@ -116,6 +122,40 @@ end)
 
 describe("the turn event", function()
 	it("prints AGENT_TURN when a human player's turn starts", function()
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		Fire("PlayerTurnActivated", 0, true)
+
+		assert.same({ "[SENTIENTSYSTEMS] AGENT_TURN 0" }, env.printed)
+	end)
+
+	it("prints OPTION_OFF before AGENT_TURN for each option that's off", function()
+		env.options = { QuickMovement = false, QuickCombat = 0 }
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		Fire("PlayerTurnActivated", 0, true)
+
+		assert.same({
+			"[SENTIENTSYSTEMS] OPTION_OFF QuickMovement",
+			"[SENTIENTSYSTEMS] OPTION_OFF QuickCombat",
+			"[SENTIENTSYSTEMS] AGENT_TURN 0",
+		}, env.printed)
+	end)
+
+	it("prints no OPTION_OFF for an option that's on as 1", function()
+		env.options = { QuickMovement = 1, QuickCombat = false }
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		Fire("PlayerTurnActivated", 0, true)
+
+		assert.same({
+			"[SENTIENTSYSTEMS] OPTION_OFF QuickCombat",
+			"[SENTIENTSYSTEMS] AGENT_TURN 0",
+		}, env.printed)
+	end)
+
+	it("prints no OPTION_OFF for an option the game doesn't report", function()
+		env.options = {}
 		SetPlayers({ [0] = Player(0, true, true) })
 
 		Fire("PlayerTurnActivated", 0, true)
@@ -364,7 +404,21 @@ describe("SentientSystems_Resync", function()
 		assert.same({ "[SENTIENTSYSTEMS] AGENT_TURN 0" }, env.printed)
 	end)
 
-	it("prints nothing between turns", function()
+	-- The game read 0 for both options when they were off, on 2026-11-27.
+	it("prints OPTION_OFF before AGENT_TURN for an option that's off", function()
+		env.options = { QuickMovement = 1, QuickCombat = 0 }
+		SetPlayers({ [0] = Player(0, true, true) })
+
+		env.SentientSystems_Resync()
+
+		assert.same({
+			"[SENTIENTSYSTEMS] OPTION_OFF QuickCombat",
+			"[SENTIENTSYSTEMS] AGENT_TURN 0",
+		}, env.printed)
+	end)
+
+	it("prints nothing between turns, even with an option off", function()
+		env.options = { QuickMovement = 0, QuickCombat = 0 }
 		SetPlayers({ [0] = Player(0, true, false) })
 
 		env.SentientSystems_Resync()

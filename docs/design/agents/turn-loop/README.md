@@ -17,7 +17,13 @@ The loop starts when the bridge sees the turn-start event for an agent slot. It 
 3. Take the agent's other actions.
 4. End the turn.
 
-The model gives every unit order, including fortify and auto-explore. Plain code gives none on its own. Quick movement and quick combat stay on during agent turns. [Standing orders](../../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
+The model gives every unit order, including fortify and auto-explore. Plain code gives none on its own. Quick movement and quick combat stay on during agent turns, as [game options](#game-options) says. [Standing orders](../../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
+
+## Game options
+
+Two game options slow an agent's turn when they're off: `QuickMovement` and `QuickCombat`, the quick movement and quick combat options in the game's Gameplay options. Each unit move or fight then plays its full animation before the next action.
+
+When an agent turn starts, the core mod checks both and prints an `OPTION_OFF` line for each one that's off, before the turn signal, as [lines.md](../../core/mod/lines.md#turn-events) says. The bridge logs it as an `option_off` warning and plays the turn anyway. Nothing turns the options on, because they're the user's settings.
 
 ## Turn signal
 
@@ -30,6 +36,8 @@ One turn runs at a time for each agent. A signal for a turn that is still runnin
 A game load cancels the running turns and resets the agents, as [game-load.md](../game-load.md) says. A turn that ends logs `turn_ended` with the game turn it ended, and one that throws logs `turn_failed` as a warning, so the bridge keeps running and the next signal tries again.
 
 The agents play only in a run mode the [model client](../../core/model-client.md) calls. In the Agent SDK and CLI modes, or with no model, the bridge logs `agents_off` once and plays no turns.
+
+With `--mcp`, the bridge skips the [picker](../../core/picker.md), logs `agents_off`, and plays no turns, because the MCP client plays them. A model playing too would act on the same turn and cost model calls.
 
 ## One turn
 
@@ -76,4 +84,5 @@ Every action tool has a required `reason` field. See [narration-and-messaging.md
 | The bridge plays every player that `AGENT_TURN` names, with no list of agents in the config | The core mod decides which players are agents, and agent slots save with the game, as [settings.md](../../core/settings.md) says. A computer slot agent needs no bridge change |
 | The loop sends replies back as the SDK's own messages | The messages keep the model's reasoning, which Anthropic needs back in a tool call conversation with extended thinking |
 | The model gives every unit order | A unit built this turn may need another order. A fresh fortify can't be undone until the turn changes, as [unit-orders.md](../../../findings/actions/unit-orders.md#unit-orders) shows. A fortified unit also leaves the `units` blocker list, so the model misses it |
+| `--mcp` turns the agent loop off | The MCP client plays the turns in a live test. A model playing too acts on the same turn and spends model calls no one asked for |
 | The agent keeps the game turn it last ended, and skips a later signal on that turn | The turn signal drives the loop, so it needs no poll of the turn number and no timeout that a long AI turn could trip |

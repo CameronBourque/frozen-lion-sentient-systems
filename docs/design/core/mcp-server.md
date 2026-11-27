@@ -45,6 +45,8 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
   `toolDefinitions(client)` lists the server's tools as the [model client](model-client.md)'s tool definitions, each with its name, description, and input schema. The schemas are already JSON Schema, so they pass through as they are.
 - **Over HTTP.** With `--mcp`, `src/mcp/http.ts` also serves the server over Streamable HTTP at `http://127.0.0.1:<mcpPort>/mcp`, for Claude Code and the MCP Inspector. `npm run mcp` starts the bridge this way, and `mcpPort` is in the [config file](settings.md).
 
+  In this mode the client plays the turns, so the agent loop is off, as [turn-loop/](../agents/turn-loop/README.md#turn-signal) says.
+
   The SDK's handler builds a server for each request, so a server holds no state between calls. The bridge keeps its one tuner connection and its console logs, and every client shares them.
 - **Local only.** The HTTP server listens on `127.0.0.1`, so no other machine reaches it. The Host and Origin checks from `@modelcontextprotocol/node` refuse any other host name or web origin with a `403`, so a web page can't reach the tools through DNS rebinding. Any path but `/mcp` gets a `404`.
 - **Taken port.** If the port is taken, the bridge logs `mcp_failed` as a warning and runs without the HTTP server. A failed request logs `mcp_request_failed`.

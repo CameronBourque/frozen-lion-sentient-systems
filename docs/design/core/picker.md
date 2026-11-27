@@ -4,7 +4,7 @@ How you pick the run mode, provider, model, and effort when the bridge starts, a
 
 ## Menus
 
-When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. It returns the run mode, which is API key without a terminal, or nothing when the user cancels.
+When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker in a terminal, or checks the saved model without one. It returns the run mode, which is API key without a terminal, or nothing when the user cancels. With `--mcp`, the bridge skips the picker, as [turn-loop/](../agents/turn-loop/README.md#turn-signal) says.
 
 In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for the **Run mode**, from `RUN_MODES` in `src/model/providers/provider.ts`, as [run-modes.md](run-modes.md#picker) describes. Then it asks three menus, each starting on the saved choice:
 

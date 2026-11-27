@@ -50,15 +50,33 @@ local function IsAgentID(playerID)
 	return player ~= nil and IsAgentPlayer(player)
 end
 
+-- The options that slow an agent's turn when they're off. Each is a key that
+-- Options.lua sets in UserConfiguration from the Gameplay options.
+local FAST_TURN_OPTIONS = { "QuickMovement", "QuickCombat" }
+
+-- Prints "[SENTIENTSYSTEMS] OPTION_OFF <option>" for each fast turn option
+-- that's off. A value the game doesn't report prints nothing.
+local function PrintOptionsOff()
+	for _, option in ipairs(FAST_TURN_OPTIONS) do
+		local value = UserConfiguration.GetValue(option)
+
+		if value == false or value == 0 then
+			SentientSystems_Print("OPTION_OFF", option)
+		end
+	end
+end
+
 -- Prints the turn signal, "[SENTIENTSYSTEMS] AGENT_TURN <playerID>", when an
--- agent player's turn starts. It also forgets the end turn request, and
--- cancels the moves that no path reaches. isFirstTime is false when the event
--- fires again for a turn that already started, as it does when the game
--- cancels the end of the turn. Then the line ends with "again".
+-- agent player's turn starts, after a line for each fast turn option that's
+-- off. It also forgets the end turn request, and cancels the moves that no
+-- path reaches. isFirstTime is false when the event fires again for a turn
+-- that already started, as it does when the game cancels the end of the turn.
+-- Then the line ends with "again".
 local function OnPlayerTurnActivated(playerID, isFirstTime)
 	if IsAgentID(playerID) then
 		SentientSystems_ForgetEndTurn()
 		SentientSystems_CancelDeadMoves(playerID)
+		PrintOptionsOff()
 
 		if isFirstTime == false then
 			SentientSystems_Print("AGENT_TURN", playerID, "again")
@@ -159,13 +177,16 @@ end
 Events.LoadGameViewStateDone.Add(SentientSystems_CatchErrors("TurnOffTechAndCivicPopups", TurnOffTechAndCivicPopups))
 
 -- Prints the turn signal again for each agent player whose turn is active now,
--- so a bridge that connects in the middle of a turn learns of it. Prints
+-- after the lines for the fast turn options that are off, so a bridge that
+-- connects in the middle of a turn learns of it. After a load, the turn event
+-- may not fire, and this is the only turn start the bridge sees. Prints
 -- nothing between turns or during AI turns. PlayerManager.GetAlive() lists
 -- every living player, AI and city-states too, so the loop needs no change when
 -- agents can play other slots.
 function SentientSystems_Resync()
 	for _, player in ipairs(PlayerManager.GetAlive()) do
 		if IsAgentPlayer(player) and player:IsTurnActive() then
+			PrintOptionsOff()
 			SentientSystems_Print("AGENT_TURN", player:GetID())
 		end
 	end

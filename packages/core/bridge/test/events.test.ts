@@ -52,6 +52,15 @@ describe("describeEvent", () => {
 		expect(describeEvent({ type: "game_ready", turn: 1 })).toEqual({ level: "info", event: "game_ready", msg: "The game is ready on turn 1", fields: { turn: 1 } });
 	});
 
+	test("warns about a game option that's off", () => {
+		expect(describeEvent({ type: "option_off", option: "QuickCombat" })).toEqual({
+			level: "warn",
+			event: "option_off",
+			msg: "The game option QuickCombat is off, so the agent's turns run slower. Turn it on in the game's Gameplay options",
+			fields: { option: "QuickCombat" },
+		});
+	});
+
 	test("names the handler and the message of an error", () => {
 		expect(describeEvent({ type: "error", handler: "OnPlayerTurnActivated", message: "boom" })).toEqual({
 			level: "error",
@@ -98,6 +107,10 @@ describe("parseLine", () => {
 
 	test("reads the turn of a game line", () => {
 		expect(parseLine("[SENTIENTSYSTEMS] GAME_READY 152")).toEqual({ result: "event", event: { type: "game_ready", turn: 152 } });
+	});
+
+	test("reads the option of an option line", () => {
+		expect(parseLine("[SENTIENTSYSTEMS] OPTION_OFF QuickMovement")).toEqual({ result: "event", event: { type: "option_off", option: "QuickMovement" } });
 	});
 
 	test("reads an error's message with its spaces", () => {
@@ -204,6 +217,9 @@ describe("parseLine", () => {
 		{ name: "a game line with nil", line: "[SENTIENTSYSTEMS] GAME_READY nil", reason: "GAME_READY needs one turn, and got \"nil\"" },
 		{ name: "a negative turn", line: "[SENTIENTSYSTEMS] GAME_READY -1", reason: "GAME_READY needs one turn, and got \"-1\"" },
 		{ name: "two turns", line: "[SENTIENTSYSTEMS] GAME_READY 1 2", reason: "GAME_READY needs one turn, and got \"1 2\"" },
+		{ name: "an option line with no option", line: "[SENTIENTSYSTEMS] OPTION_OFF", reason: "OPTION_OFF needs one option, and got \"\"" },
+		{ name: "an option with a dot", line: "[SENTIENTSYSTEMS] OPTION_OFF Quick.Combat", reason: "OPTION_OFF needs one option, and got \"Quick.Combat\"" },
+		{ name: "two options", line: "[SENTIENTSYSTEMS] OPTION_OFF QuickCombat QuickMovement", reason: "OPTION_OFF needs one option, and got \"QuickCombat QuickMovement\"" },
 		{ name: "an error with no handler", line: "[SENTIENTSYSTEMS] ERROR", reason: "ERROR needs a handler name and a message, and got \"\"" },
 		{ name: "an error with no message", line: "[SENTIENTSYSTEMS] ERROR OnPlayerTurnActivated", reason: "ERROR needs a handler name and a message, and got \"OnPlayerTurnActivated\"" },
 		{ name: "an error with a bad handler name", line: "[SENTIENTSYSTEMS] ERROR On.Turn boom", reason: "ERROR needs a handler name and a message, and got \"On.Turn boom\"" },

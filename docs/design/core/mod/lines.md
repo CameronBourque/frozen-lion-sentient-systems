@@ -1,6 +1,6 @@
 # Core mod lines
 
-The lines the core mod prints for the bridge: turn signals, load lines, the version report, and errors. Part of the [core mod](README.md).
+The lines the core mod prints for the bridge: turn signals, game option warnings, load lines, the version report, and errors. Part of the [core mod](README.md).
 
 ## Tagged lines
 
@@ -14,11 +14,17 @@ The UI script listens for `Events.PlayerTurnActivated` and prints `AGENT_TURN <p
 
 When the event's `isFirstTime` is false, the line is `AGENT_TURN <playerID> again`. The game fires the event again when it cancels the end of a turn, such as when a queued move stops short. The bridge logs that the turn started again. See [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-a-queued-move-that-stops-short).
 
+Before the turn line, the script prints `OPTION_OFF <option>` for each [fast turn option](../../agents/turn-loop/README.md#game-options) that's off.
+
+It reads each option with `UserConfiguration.GetValue(<option>)`, which returned the number `0` for an option that was off, on Windows on 2026-11-27. The check counts `false` and `0` as off, and a `nil` value prints nothing. The bridge logs the line as an `option_off` warning.
+
 One function, `IsAgentPlayer`, decides which players are agent players. For now it picks the human players. When agents can play any slot, only that function changes.
 
 ## Resync
 
-`SentientSystems_Resync()` in the UI script prints `AGENT_TURN <playerID>` for each living agent player whose turn is active, the same line the turn event prints. Between turns it prints nothing.
+`SentientSystems_Resync()` in the UI script prints `AGENT_TURN <playerID>` for each living agent player whose turn is active, after the same `OPTION_OFF` lines, as the turn event does. Between turns it prints nothing.
+
+After a load, the turn event can fire during the socket reset or not at all, so the resync's lines may be the only turn start the bridge gets. See [end-turn.md](../../../findings/actions/end-turn.md#with-a-queued-move-that-stops-short).
 
 The bridge calls it when it connects, so a restart in the middle of a turn doesn't miss the turn.
 
@@ -71,4 +77,5 @@ That happens when a file is added to the `.modinfo` and the game isn't restarted
 | The error helper uses `pcall`, not `xpcall` with `debug.traceback` | The error message already holds the stack trace, and UI states have no `debug` library. `pcall` also passes the handler's arguments, so the helper needs no closure |
 | The error helper escapes newlines and backslashes | The tuner sends each line of a print as its own line, and only the first one has the state's name. Without the escapes, the trace would arrive as untagged lines |
 | The turn signal comes from the UI state | The gameplay and UI events both fire once per human turn. The bridge already calls the UI state for the version report and for actions |
+| The core mod checks the game options and prints a line, and the bridge only logs it | The options live in the game's `UserConfiguration`, which a UI state reads at no cost. The bridge would need a command on each turn to read them |
 | The load signal is two tagged lines from the loading screen's events | The bridge reads only tagged lines. `LOAD_READY` comes before the click, so the new log file and a later tool's click start there. `GAME_READY` arrives before the socket resets, so it needs no resync |

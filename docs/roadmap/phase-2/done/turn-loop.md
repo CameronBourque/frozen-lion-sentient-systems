@@ -1,6 +1,6 @@
 # Phase 2: turn loop steps
 
-The finished steps of [phase 2](../README.md) that play the agent's turns: the loop, the end turn, the limits, and the unit orders it adds. The step table's `#` column sets their order.
+The finished steps of [phase 2](../README.md) that play the agent's turns: the loop, the end turn, the limits, the unit orders it adds, and the game options it checks. The step table's `#` column sets their order.
 
 ## Agent loop
 
@@ -63,3 +63,17 @@ On 2026-11-27, a scout set to explore moved at once and left the unit blockers. 
 
 - The explore order and the wake fallback are in [design/core/mod/actions/units.md](../../../design/core/mod/actions/units.md#stances), and the rule that the model gives every unit order is in [design/agents/turn-loop/](../../../design/agents/turn-loop/README.md#decisions).
 - How auto-explore behaves is in [findings/actions/unit-orders.md](../../../findings/actions/unit-orders.md#auto-explore).
+
+## Game options
+
+Pull request: feat(core): warn when quick movement or quick combat is off.
+
+When an agent turn starts, the core mod prints an `OPTION_OFF` line for quick movement or quick combat when either is off, and the bridge logs it as an `option_off` warning. The turn plays anyway. The resync runs the same check, because after a load the turn event may not fire.
+
+The step also made `--mcp` skip the model picker and play no agent turns, because the MCP client plays them.
+
+On 2026-11-27, with both options off in a running game, the bridge logged both warnings before the turn line, once on connect and once after the end of turn 1. With `--mcp`, it asked for no model and made no model calls.
+
+- The options the loop checks are in [design/agents/turn-loop/](../../../design/agents/turn-loop/README.md#game-options), and the `OPTION_OFF` line and the value the game returns in [design/core/mod/lines.md](../../../design/core/mod/lines.md#turn-events).
+- The load that fired no turn event is in [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-a-queued-move-that-stops-short).
+- `--mcp` turning the agent loop off is in [design/agents/turn-loop/](../../../design/agents/turn-loop/README.md#turn-signal).
