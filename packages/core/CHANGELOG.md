@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.38.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.37.0...core-v0.38.0) (2026-11-27)
+
+
+### Features
+
+* **core:** warn when quick movement or quick combat is off ([#156](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/156)) ([e7480c1](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/e7480c16e1d63fb430ee8e65f1ccd79010f2d2f0))
+
 ## [0.37.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.36.0...core-v0.37.0) (2026-11-27)
 
 
