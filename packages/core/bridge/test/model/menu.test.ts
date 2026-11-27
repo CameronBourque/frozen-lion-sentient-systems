@@ -2,8 +2,8 @@
 // the keys that answer it, through a fake terminal.
 
 import { PassThrough } from "node:stream";
-import { describe, expect, test } from "vitest";
-import { type Key, type Terminal, WINDOW_SIZE, askMenu, menuLines, moveMenu, startMenu } from "../../src/model/menu.js";
+import { describe, expect, test, vi } from "vitest";
+import { type Key, type Terminal, WINDOW_SIZE, askMenu, menuLines, moveMenu, processTerminal, screenRows, startMenu } from "../../src/model/menu.js";
 
 const LONG = Array.from({ length: 25 }, (_, index) => `item ${index}`);
 
@@ -66,7 +66,7 @@ describe("menuLines", () => {
 
 // A terminal whose input takes keypress events, and whose output and raw mode
 // the test reads.
-function fakeTerminal(): Terminal & { output: string; raw: boolean[]; press: (key: Key) => void } {
+function fakeTerminal(columns?: number): Terminal & { output: string; raw: boolean[]; press: (key: Key) => void } {
 	const input = Object.assign(new PassThrough(), {
 		setRawMode: (raw: boolean) => {
 			terminal.raw.push(raw);
@@ -80,6 +80,7 @@ function fakeTerminal(): Terminal & { output: string; raw: boolean[]; press: (ke
 			terminal.output += text;
 		},
 		press: (key: Key) => input.emit("keypress", undefined, key),
+		columns: () => columns,
 	};
 
 	return terminal;
@@ -162,5 +163,47 @@ describe("askMenu", () => {
 		await answer;
 
 		expect(terminal.output).toBe("\x1b[0JPick (arrow keys, then Enter)\n> a\n  b\n\x1b[3A\x1b[0JPick (arrow keys, then Enter)\n  a\n> b\n");
+	});
+
+	test("moves up past the rows that a wide line wraps onto", async () => {
+		// The heading is 29 characters and the first row 27, so each fills 2
+		// rows of 20, and the second row fills 1.
+		const terminal = fakeTerminal(20);
+		const answer = askMenu("Pick", ["a, $8 in, $40 out per mil", "b"], 0, terminal);
+
+		terminal.press({ name: "down" });
+		terminal.press({ name: "return" });
+		await answer;
+
+		expect(terminal.output).toContain("\x1b[5A");
+	});
+});
+
+describe("screenRows", () => {
+	test("counts one row for each line that fits, and more for a line that wraps", () => {
+		expect(screenRows(["abc", "", "abcd"], 4)).toBe(3);
+		expect(screenRows(["abcde", "abcdefghi"], 4)).toBe(5);
+	});
+
+	test("counts characters, not the bytes or code units that hold them", () => {
+		expect(screenRows(["  ↓ more"], 8)).toBe(1);
+		expect(screenRows(["𝔸𝔹𝔺𝔻"], 4)).toBe(1);
+	});
+
+	test("counts one row for each line when the width is unknown", () => {
+		expect(screenRows(["a".repeat(500), "b"], undefined)).toBe(2);
+		expect(screenRows(["a".repeat(500)], 0)).toBe(1);
+	});
+});
+
+describe("processTerminal", () => {
+	test("writes to the process's output, and reads its width", () => {
+		const write = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+
+		processTerminal().write("menu");
+
+		expect(write).toHaveBeenCalledWith("menu");
+		expect(processTerminal().columns()).toBe(process.stdout.columns);
+		write.mockRestore();
 	});
 });

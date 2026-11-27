@@ -55,10 +55,21 @@ export interface Key {
 	ctrl?: boolean;
 }
 
-// The parts of process.stdin and process.stdout the menu uses.
+// The parts of process.stdin and process.stdout the menu uses. columns is
+// read at each drawing, since the user may resize the terminal, and is
+// undefined when the output isn't a terminal.
 export interface Terminal {
 	input: NodeJS.ReadableStream & { setRawMode: (raw: boolean) => unknown };
 	write: (text: string) => void;
+	columns: () => number | undefined;
+}
+
+export function processTerminal(): Terminal {
+	return {
+		input: process.stdin,
+		write: (text) => process.stdout.write(text),
+		columns: () => process.stdout.columns,
+	};
 }
 
 // Up and down a row, a window, or to either end.
@@ -87,12 +98,20 @@ export function keyAction(key: Key | undefined): "cancel" | "choose" | number | 
 	return Object.hasOwn(STEPS, name) ? STEPS[name] : undefined;
 }
 
-// Draws over the last drawing: up to its first line, then clear below.
-// Returns the number of lines drawn, for the next drawing.
+// The rows the lines fill on the screen. A line wider than the terminal wraps
+// onto more rows, such as a model's name with its price in a narrow panel.
+export function screenRows(lines: string[], columns: number | undefined): number {
+	const width = columns !== undefined && columns > 0 ? columns : Infinity;
+
+	return lines.reduce((rows, line) => rows + Math.max(1, Math.ceil([...line].length / width)), 0);
+}
+
+// Draws over the last drawing: up to its first row, then clear below.
+// Returns the number of rows drawn, for the next drawing.
 function drawMenu(terminal: Terminal, lines: string[], previous: number): number {
 	terminal.write(`${previous > 0 ? `\x1b[${previous}A` : ""}\x1b[0J${lines.join("\n")}\n`);
 
-	return lines.length;
+	return screenRows(lines, terminal.columns());
 }
 
 // Returns the chosen row, or undefined when the user presses Ctrl+C or the

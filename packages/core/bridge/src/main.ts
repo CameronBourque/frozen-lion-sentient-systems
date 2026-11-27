@@ -17,7 +17,7 @@ import { type McpHttp, startMcpHttp } from "./mcp/http.js";
 import { localPlayer } from "./mcp/player.js";
 import { memoryFolder } from "./memory/store.js";
 import { chooseModel } from "./model/choose.js";
-import { askMenu } from "./model/menu.js";
+import { askMenu, processTerminal } from "./model/menu.js";
 import { cachedFacts, factsCachePath } from "./model/model-facts.js";
 import { providers } from "./model/providers/index.js";
 import { modelTarget } from "./model/target.js";
@@ -109,7 +109,7 @@ const onTurnEnded = turns === undefined ? undefined : (ended: number): void => {
 	}
 };
 
-const terminal = { input: process.stdin, write: (text: string) => process.stdout.write(text) };
+const terminal = processTerminal();
 // Without a terminal, such as a piped input, the bridge can't ask.
 const ask = process.stdin.isTTY ? (title: string, labels: string[], start: number) => askMenu(title, labels, start, terminal) : undefined;
 

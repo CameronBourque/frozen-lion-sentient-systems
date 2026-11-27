@@ -28,6 +28,8 @@ The first row is never the saved model, and the saved model is a row only when i
 
 `askMenu` in `src/model/menu.ts` draws a menu that the arrow keys and Enter answer. Page Up, Page Down, Home, and End jump. A list longer than 5 rows scrolls in a window, with a marker when there are more rows above or below.
 
+Each key press draws the menu over the last drawing. A line wider than the terminal wraps onto more rows, such as a model with its price in a narrow panel, so the menu counts the rows each line fills at the terminal's width.
+
 Without a terminal, the bridge uses the saved model. `savedModelWarning` warns when no model is picked, or when its provider has no key, because then agents can't play.
 
 ## Model facts
