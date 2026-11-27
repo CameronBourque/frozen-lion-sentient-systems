@@ -4,7 +4,8 @@
 
 import path from "node:path";
 import { getAsset, getAssetKeys, isSea } from "node:sea";
-import { turnSignal } from "./agents/turn-signal.js";
+import { describeSpend, noSpend, spendWarnings } from "./agents/spend.js";
+import { type TurnSignal, turnSignal } from "./agents/turn-signal.js";
 import { KEY_VARIABLES } from "./config.js";
 import { onConnect } from "./connect.js";
 import { type CoreEvent, readLine } from "./events.js";
@@ -16,7 +17,7 @@ import { type McpHttp, startMcpHttp } from "./mcp/http.js";
 import { localPlayer } from "./mcp/player.js";
 import { memoryFolder } from "./memory/store.js";
 import { chooseModel } from "./model/choose.js";
-import { askMenu } from "./model/menu.js";
+import { askMenu, processTerminal } from "./model/menu.js";
 import { cachedFacts, factsCachePath } from "./model/model-facts.js";
 import { providers } from "./model/providers/index.js";
 import { modelTarget } from "./model/target.js";
@@ -50,12 +51,12 @@ logger.info("knowledge_loaded", `Read ${knowledge.size} knowledge files`, { coun
 const client = new TunerClient();
 const memory = (playerID: number): string => memoryFolder(started.path, playerID);
 // Undefined until the model is chosen, and when agents can't play.
-let onTurn: ((event: CoreEvent) => Promise<void>) | undefined;
+let agents: TurnSignal | undefined;
 
 // The turn's own promise never rejects, so nothing waits on it.
 const onEvent = (event: CoreEvent): void => {
 	onLoadEvent(event, client, logger, () => logFilePath(started.path, new Date()));
-	void onTurn?.(event);
+	void agents?.onEvent(event);
 };
 
 client.on("connected", () => {
@@ -69,14 +70,46 @@ client.on("output", (line) => readLine(line, logger, onEvent));
 // Undefined until the MCP server starts, and without --mcp.
 let mcp: McpHttp | undefined;
 
-process.on("SIGINT", () => {
+let stopping = false;
+const runSpend = noSpend();
+
+// Sends no end turn, so the game waits on the agent's turn, and a restart
+// resumes it. docs/design/agents/turn-loop/stopping.md has the design.
+const stopBridge = async (reason: string): Promise<void> => {
+	// A turn that ends while the bridge stops may reach the turn count.
+	if (stopping) {
+		return;
+	}
+
+	stopping = true;
+	logger.info("stopping", "Stopping once the Lua command in progress ends. Press Ctrl+C again to exit at once.");
+	// Each turn waits for its Lua command, so the client closes after them.
+	await agents?.stop();
+	logger.warn("stopped", `Stopped the bridge: ${reason}. The run spent ${describeSpend(runSpend)}`, { reason, ...runSpend });
 	client.close();
+	// Closes the MCP server first, so no request is cut off mid-reply.
+	await mcp?.close();
 	logger.closeFile();
-	// Exits after the MCP server closes, so no request is cut off mid-reply.
-	void (mcp?.close() ?? Promise.resolve()).finally(() => process.exit(0));
+	process.exit(0);
+};
+
+process.on("SIGINT", () => {
+	if (stopping) {
+		process.exit(1);
+	}
+
+	void stopBridge("Ctrl+C was pressed");
 });
 
-const terminal = { input: process.stdin, write: (text: string) => process.stdout.write(text) };
+const { turns } = started;
+
+const onTurnEnded = turns === undefined ? undefined : (ended: number): void => {
+	if (ended === turns) {
+		void stopBridge(`The agents reached --turns ${turns}`);
+	}
+};
+
+const terminal = processTerminal();
 // Without a terminal, such as a piped input, the bridge can't ask.
 const ask = process.stdin.isTTY ? (title: string, labels: string[], start: number) => askMenu(title, labels, start, terminal) : undefined;
 
@@ -96,7 +129,14 @@ const startAgents = async (): Promise<boolean> => {
 	if (target.ok) {
 		const { config } = started;
 
-		onTurn = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, now: () => new Date(), knowledge, memory });
+		// After the picker, which may have filled in the price.
+		spendWarnings(config.limits, config.model.price).forEach((warning) => logger.warn("spend_warning", warning));
+
+		const onStopRun = (reason: string): void => {
+			void stopBridge(reason);
+		};
+
+		agents = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, runSpend, now: () => new Date(), knowledge, memory, onTurnEnded, onStopRun });
 	} else {
 		logger.warn("agents_off", `Agents won't play their turns: ${target.error}`, { reason: target.error });
 	}

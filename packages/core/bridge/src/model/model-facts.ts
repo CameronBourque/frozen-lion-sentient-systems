@@ -5,8 +5,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import { EFFORTS, type Effort, type Price, type Provider } from "../config.js";
+import { EFFORTS, type Effort, type Price, type Provider, UNSET } from "../config.js";
 import type { Fetch } from "./list-models.js";
+import { hasPrice } from "./usage.js";
 
 export const MODELS_URL = "https://openrouter.ai/api/v1/models";
 
@@ -133,12 +134,12 @@ function perMillion(perToken: number): number {
 	return Number((perToken * 1_000_000).toFixed(6));
 }
 
-function optionalPerMillion(perToken: number | undefined): number | "" {
-	return perToken === undefined ? "" : perMillion(perToken);
+function optionalPerMillion(perToken: number | undefined): number {
+	return perToken === undefined ? UNSET : perMillion(perToken);
 }
 
 // Undefined when the list has no price for the model. A cache price the list
-// doesn't give stays blank.
+// doesn't give stays unset.
 export function priceFor(facts: Facts, provider: Provider, id: string): Price | undefined {
 	const entry = PRICED.safeParse(entryFor(facts, provider, id));
 
@@ -209,7 +210,7 @@ export function effortsFor(facts: Facts, provider: Provider, id: string): Effort
 }
 
 export function priceLabel(price: Price | undefined): string {
-	return price === undefined || price.input === "" || price.output === ""
+	return price === undefined || !hasPrice(price)
 		? "no price"
 		: `$${price.input} in, $${price.output} out per million tokens`;
 }

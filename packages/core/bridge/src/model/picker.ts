@@ -2,10 +2,11 @@
 // the bridge starts in a terminal. docs/design/core/run-modes.md and
 // docs/design/core/picker.md have the design.
 
-import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider } from "../config.js";
+import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider, UNSET } from "../config.js";
 import type { ModelInfo } from "./list-models.js";
 import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
 import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunModeRow, runModeLabel } from "./providers/provider.js";
+import { hasPrice } from "./usage.js";
 
 export interface PickerIo {
 	// Returns the chosen row, or undefined when the user cancels.
@@ -75,12 +76,8 @@ function effortLabel(effort: Effort, defaultEffort: string | undefined): string 
 	return effort === "provider-default" && defaultEffort !== undefined ? `${effort} (${defaultEffort})` : effort;
 }
 
-function isPriced(price: Price): boolean {
-	return price.input !== "" && price.output !== "";
-}
-
 // Each price the user saved for the same model wins, since they may have
-// entered it themselves. A blank one takes OpenRouter's, so a price saved
+// entered it themselves. An unset one takes OpenRouter's, so a price saved
 // before the cache prices existed gains them.
 function chosenPrice(saved: ModelSetting, provider: Provider, id: string, facts: Facts): Price {
 	const listed = priceFor(facts, provider, id) ?? NO_PRICE;
@@ -91,7 +88,7 @@ function chosenPrice(saved: ModelSetting, provider: Provider, id: string, facts:
 
 	const fields = Object.keys(listed) as (keyof Price)[];
 
-	return Object.fromEntries(fields.map((field) => [field, saved.price[field] === "" ? listed[field] : saved.price[field]])) as Price;
+	return Object.fromEntries(fields.map((field) => [field, saved.price[field] === UNSET ? listed[field] : saved.price[field]])) as Price;
 }
 
 // Asks one menu, starting on the saved choice, or on the first row when the
@@ -252,7 +249,7 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 
 	const price = priced ? chosenPrice(saved, provider, id, facts) : NO_PRICE;
 
-	if (priced && fetched.ok && !isPriced(price)) {
+	if (priced && fetched.ok && !hasPrice(price)) {
 		io.warn(`OpenRouter lists no price for ${id}, so the log shows no cost. Set model.price in the config file to see it`);
 	}
 

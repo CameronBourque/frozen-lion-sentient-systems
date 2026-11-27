@@ -24,19 +24,19 @@ describe("callCost", () => {
 	});
 
 	test("counts cached tokens with no cache price as plain input", () => {
-		const noCachePrices: Price = { ...PRICE, cacheRead: "", cacheWrite: "" };
+		const noCachePrices: Price = { ...PRICE, cacheRead: -1, cacheWrite: -1 };
 
 		expect(callCost(usage(200_000, 10_000, 80_000, 20_000), noCachePrices)).toBeCloseTo(0.75);
 	});
 
 	test("is undefined when the call used input or output with no price", () => {
 		expect(callCost(usage(200_000, 10_000), NO_PRICE)).toBeUndefined();
-		expect(callCost(usage(200_000, 10_000), { ...PRICE, input: "" })).toBeUndefined();
-		expect(callCost(usage(200_000, 10_000), { ...PRICE, output: "" })).toBeUndefined();
+		expect(callCost(usage(200_000, 10_000), { ...PRICE, input: -1 })).toBeUndefined();
+		expect(callCost(usage(200_000, 10_000), { ...PRICE, output: -1 })).toBeUndefined();
 	});
 
 	test("needs no output price for a call with no output", () => {
-		expect(callCost(usage(200_000, 0), { ...PRICE, output: "" })).toBeCloseTo(0.6);
+		expect(callCost(usage(200_000, 0), { ...PRICE, output: -1 })).toBeCloseTo(0.6);
 	});
 
 	test("counts a free price as no cost", () => {

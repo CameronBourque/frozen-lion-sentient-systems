@@ -9,7 +9,7 @@ When the bridge starts, `chooseModel` in `src/model/choose.ts` runs the picker i
 In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for the **Run mode**, from `RUN_MODES` in `src/model/providers/provider.ts`, as [run-modes.md](run-modes.md#picker) describes. Then it asks three menus, each starting on the saved choice:
 
 1. **Provider**, from the providers that can play in the run mode. With only one, the picker skips this menu, unless it needs a sign-in.
-2. **Model**, from the provider's list, by name, ID, and price. Any other mode shows no price and leaves it blank.
+2. **Model**, from the provider's list, by name, ID, and price. Any other mode shows no price and leaves it unset.
 3. **Effort**, from the levels the model supports, with `provider-default` first. `effortsFor` in `src/model/model-facts.ts` reads them from OpenRouter's list:
    - every level for a model OpenRouter doesn't list,
    - only `provider-default` for a model without reasoning,
@@ -28,6 +28,8 @@ The first row is never the saved model, and the saved model is a row only when i
 
 `askMenu` in `src/model/menu.ts` draws a menu that the arrow keys and Enter answer. Page Up, Page Down, Home, and End jump. A list longer than 5 rows scrolls in a window, with a marker when there are more rows above or below.
 
+Each key press draws the menu over the last drawing. A line wider than the terminal wraps onto more rows, such as a model with its price in a narrow panel, so the menu counts the rows each line fills at the terminal's width.
+
 Without a terminal, the bridge uses the saved model. `savedModelWarning` warns when no model is picked, or when its provider has no key, because then agents can't play.
 
 ## Model facts
@@ -40,7 +42,7 @@ It also finds a model whose ID ends in a release date, which Anthropic uses for 
 
 The bridge keeps the facts in `cache/models.json` in the config file's folder, and fetches it again once the copy is a day old. When the fetch fails, an older copy still serves.
 
-The picked model gets the list's price, unless you saved a price for the same model. When the file can't be read, or has no price for the model, the picker warns and the price stays blank.
+The picked model gets the list's price, unless you saved a price for the same model. When the file can't be read, or has no price for the model, the picker warns and the price stays unset.
 
 ## Decisions
 
@@ -53,7 +55,7 @@ The picked model gets the list's price, unless you saved a price for the same mo
 | The menu uses `node:readline`, with no prompt package | Raw mode and keypress events are in Node. The menu is short, and its logic is tested without a terminal |
 | Model facts come from OpenRouter's public model list | No library or provider API gives a price. Its prices match the providers' own, it needs no key, and it also lists each model's tool support and effort levels |
 | The model facts are cached for a day | The list is about a megabyte, and prices change rarely. Without the cache, every start in a terminal waits for it |
-| Each price the user saved for the same model wins over the list, and a blank one takes the list's | The user may have entered it, such as a discount the list doesn't know. A price saved before the cache prices existed gains them |
+| Each price the user saved for the same model wins over the list, and an unset one takes the list's | The user may have entered it, such as a discount the list doesn't know. A price saved before the cache prices existed gains them |
 | Picking another model replaces the price | The price belonged to the old model, and a stale price gives a wrong cost |
 | After a failed list, the user chooses the saved model, and Enter never does | The saved model may cost more than the user meant to spend. A switch the user didn't see could run it for a whole game |
 | The effort menu offers only the model's own levels | The SDK swaps an unsupported level for another without asking, so a pick of `minimal` can run at `low`. OpenRouter lists each model's levels |

@@ -8,7 +8,9 @@ import { APICallError } from "ai";
 import type { MockLanguageModelV4 } from "ai/test";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { type Agent, type LoopContext, playTurn } from "../../src/agents/loop.js";
-import { DEFAULT_LIMITS, type Limits, NO_MODEL } from "../../src/config.js";
+import { noSpend } from "../../src/agents/spend.js";
+import { DEFAULT_LIMITS, type Limits, type ModelSetting, NO_MODEL } from "../../src/config.js";
+import { USAGE_LIMIT_CODE } from "../../src/model/client.js";
 import { Logger } from "../../src/log.js";
 import { toolDefinitions } from "../../src/mcp/in-process.js";
 import { addJournalEntry } from "../../src/memory/store.js";
@@ -50,8 +52,8 @@ async function agent(first = false): Promise<Agent> {
 	return { playerID: 3, system: SYSTEM, tools, definitions: await toolDefinitions(tools), memoryFolder: folder, first };
 }
 
-function context(model: MockLanguageModelV4, limits: Partial<Limits> = {}): LoopContext {
-	return { client, logger, target: { model, provider: "anthropic", mode: "api-key", effort: "" }, model: NO_MODEL, journalEntries: 5, limits: { ...DEFAULT_LIMITS, ...limits }, now: () => new Date("2026-11-25T12:00:00Z") };
+function context(model: MockLanguageModelV4, limits: Partial<Limits> = {}, setting: ModelSetting = NO_MODEL): LoopContext {
+	return { client, logger, target: { model, provider: "anthropic", mode: "api-key", effort: "" }, model: setting, journalEntries: 5, limits: { ...DEFAULT_LIMITS, ...limits }, runSpend: noSpend(), now: () => new Date("2026-11-25T12:00:00Z") };
 }
 
 function endTurn(id: string, force: boolean): Content {
@@ -301,7 +303,70 @@ test("a failed model call stops the turn with its reason, and sends no end turn"
 
 	model.doStream = () => Promise.reject(new APICallError({ message: "Bad key", url: "https://api.example.com", requestBodyValues: {}, statusCode: 401 }));
 
-	expect(await playTurn(await agent(), context(model))).toMatchObject({ ended: false, reason: expect.stringContaining("Bad key") as unknown });
+	expect(await playTurn(await agent(), context(model))).toEqual({ ended: false, reason: expect.stringContaining("Bad key") as unknown });
+	expect(lua().some((text) => text.includes("EndTurn"))).toBe(false);
+});
+
+test("a plan's usage limit stops the run, and sends no end turn", async () => {
+	const model = scripted([]);
+
+	model.doStream = () => Promise.reject(new APICallError({ message: "Limit", url: "https://api.example.com", requestBodyValues: {}, statusCode: 429, responseBody: JSON.stringify({ code: USAGE_LIMIT_CODE }), isRetryable: false }));
+
+	expect(await playTurn(await agent(), context(model))).toEqual({ ended: false, reason: expect.stringContaining("usage limit") as unknown, stopRun: true });
+	expect(lua().some((text) => text.includes("EndTurn"))).toBe(false);
+});
+
+// Each mock call spends 10 input and 5 output tokens.
+test("a turn at its token limit ends with force, and the reply's tool calls don't run", async () => {
+	const warn = vi.spyOn(logger, "warn");
+	const model = scripted([reply([updatePlan("call-1", "Never written.")])]);
+
+	expect(await playTurn(await agent(), context(model, { tokensPerTurn: 15 }))).toEqual({ ended: true });
+	expect(forcedEnds()).toHaveLength(1);
+	expect(fs.existsSync(path.join(folder, "plan.md"))).toBe(false);
+	expect(warn).toHaveBeenCalledWith("turn_forced", "Player 3's turn was ended with force: It reached the tokens per turn limit of 15", expect.objectContaining({ limit: "tokensPerTurn" }));
+});
+
+test("a turn at its cost limit ends with force", async () => {
+	const warn = vi.spyOn(logger, "warn");
+	const model = scripted([reply([endTurn("call-1", false)])]);
+	const priced = { ...NO_MODEL, price: { input: 1000, output: 1000, cacheRead: -1, cacheWrite: -1 } } as const;
+
+	expect(await playTurn(await agent(), context(model, { costPerTurn: 0.01 }, priced))).toEqual({ ended: true });
+	expect(forcedEnds()).toHaveLength(1);
+	expect(warn).toHaveBeenCalledWith("turn_forced", "Player 3's turn was ended with force: It reached the cost per turn limit of $0.01", expect.objectContaining({ limit: "costPerTurn" }));
+});
+
+test("a turn under its token limit plays on, and the next turn's count starts over", async () => {
+	const model = scripted([reply([research("call-1")]), reply([endTurn("call-2", true)]), reply([endTurn("call-3", true)])]);
+	const limits = { tokensPerTurn: 31 };
+	const shared = context(model, limits);
+
+	expect(await playTurn(await agent(), shared)).toEqual({ ended: true });
+	nextTurn();
+	expect(await playTurn(await agent(), shared)).toEqual({ ended: true });
+	expect(forcedEnds()).toHaveLength(2);
+	expect(shared.runSpend).toEqual({ tokens: 45, cost: 0 });
+});
+
+test("a run at its token limit stops the run without an end turn, ahead of the turn's own limit", async () => {
+	const model = scripted([reply([endTurn("call-1", true)]), reply([endTurn("call-2", true)])]);
+	// Each turn reaches its limit, and the run reaches its own on the second.
+	const shared = context(model, { tokensPerRun: 30, tokensPerTurn: 15 });
+
+	expect(await playTurn(await agent(), shared)).toEqual({ ended: true });
+	nextTurn();
+	expect(await playTurn(await agent(), shared)).toEqual({ ended: false, reason: "The run reached the tokens per run limit of 30", stopRun: true });
+	expect(forcedEnds()).toHaveLength(1);
+});
+
+test("a run at its cost limit stops the run, with the model's price", async () => {
+	const model = scripted([reply([endTurn("call-1", true)])]);
+	const priced = { ...NO_MODEL, price: { input: 1000, output: 1000, cacheRead: -1, cacheWrite: -1 } } as const;
+	const shared = context(model, { costPerRun: 0.01 }, priced);
+
+	expect(await playTurn(await agent(), shared)).toEqual({ ended: false, reason: "The run reached the cost per run limit of $0.01", stopRun: true });
+	expect(shared.runSpend).toEqual({ tokens: 15, cost: 0.015 });
 	expect(lua().some((text) => text.includes("EndTurn"))).toBe(false);
 });
 
@@ -363,6 +428,20 @@ test("a game load during the model call cancels the turn, without a stop warning
 	expect(await turn).toEqual({ ended: false, cancelled: true });
 	expect(info).toHaveBeenCalledWith("turn_cancelled", "Player 3's turn was cancelled, because a game loaded", { player: 3 });
 	expect(warn).not.toHaveBeenCalledWith("turn_stopped", expect.anything(), expect.anything());
+});
+
+test("a stop during the model call cancels the turn and says the bridge is stopping", async () => {
+	const info = vi.spyOn(logger, "info");
+	const controller = new AbortController();
+	const { model, started } = waitingForAbort([]);
+	const turn = playTurn(await agent(), context(model), { signal: controller.signal });
+
+	await started;
+	controller.abort("stop");
+
+	expect(await turn).toEqual({ ended: false, cancelled: true });
+	expect(info).toHaveBeenCalledWith("turn_cancelled", "Player 3's turn was cancelled, because the bridge is stopping", { player: 3 });
+	expect(game.commands.some(({ lua }) => lua.includes("EndTurn"))).toBe(false);
 });
 
 test("a game load during a tool call runs none of the reply's later calls", async () => {

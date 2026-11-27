@@ -1,19 +1,24 @@
 // Logs each model call's tokens, and its cost when the model has a price.
 // docs/design/core/model-client.md has the design.
 
-import type { ModelSetting, Price } from "../config.js";
+import { type ModelSetting, type Price, UNSET } from "../config.js";
 import type { Logger } from "../log.js";
 import type { Usage } from "./client.js";
 
+// The cache prices are optional, since they fall back to the input price.
+export function hasPrice(price: Price): boolean {
+	return price.input !== UNSET && price.output !== UNSET;
+}
+
 // Each kind of token, its count, and its price per million. A cache read or
 // write with no cache price counts as plain input.
-function charges(usage: Usage, price: Price): [number, number | ""][] {
+function charges(usage: Usage, price: Price): [number, number][] {
 	const uncached = usage.inputTokens - usage.cacheReadTokens - usage.cacheWriteTokens;
 
 	return [
 		[uncached, price.input],
-		[usage.cacheReadTokens, price.cacheRead === "" ? price.input : price.cacheRead],
-		[usage.cacheWriteTokens, price.cacheWrite === "" ? price.input : price.cacheWrite],
+		[usage.cacheReadTokens, price.cacheRead === UNSET ? price.input : price.cacheRead],
+		[usage.cacheWriteTokens, price.cacheWrite === UNSET ? price.input : price.cacheWrite],
 		[usage.outputTokens, price.output],
 	];
 }
@@ -27,7 +32,7 @@ export function callCost(usage: Usage, price: Price): number | undefined {
 			continue;
 		}
 
-		if (perMillion === "") {
+		if (perMillion === UNSET) {
 			return undefined;
 		}
 

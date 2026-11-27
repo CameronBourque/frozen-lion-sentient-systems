@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, UNSET, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 import { RUN_MODE_NAMES } from "./model/providers/provider.js";
 
@@ -42,12 +42,13 @@ model:
   effort: ""
   # The model's price in US dollars per million tokens. The picker fills it from a public price
   # list, and you can change it. With a price, the log shows each call's cost. Picking another
-  # model replaces it.
+  # model replaces it. ${UNSET} is no price, and a cache price of ${UNSET} uses the input price. Write
+  # each price as a plain number, with no quotes.
   price:
-    input: ""
-    output: ""
-    cacheRead: ""
-    cacheWrite: ""
+    input: ${UNSET}
+    output: ${UNSET}
+    cacheRead: ${UNSET}
+    cacheWrite: ${UNSET}
 
 # The port where the bridge serves its MCP tools when it starts with --mcp, for Claude Code and
 # the MCP Inspector. Change it if another program uses it.
@@ -61,10 +62,20 @@ journalEntries: ${DEFAULT_JOURNAL_ENTRIES}
 # bridge logs a warning and ends its turn. retriesPerAction is how many actions in a row may fail,
 # where a reply with no tool call counts as a failure. actionsPerTurn counts the tools that act in
 # the game, not the ones that read it. turnMinutes is how long a turn may take.
+#
+# The spending limits cap the model calls, so an agent never spends more than you allow. Tokens
+# count input and output. Cost is in US dollars, and needs the model's price. A turn that reaches
+# its limit ends as it does at the limits above. A run, which is one start of the bridge, stops at
+# its limit, and the game waits on the agent's turn until you start the bridge again. ${UNSET} is no
+# limit. Write each limit as a plain number, with no quotes.
 limits:
   retriesPerAction: ${DEFAULT_LIMITS.retriesPerAction}
   actionsPerTurn: ${DEFAULT_LIMITS.actionsPerTurn}
   turnMinutes: ${DEFAULT_LIMITS.turnMinutes}
+  tokensPerTurn: ${UNSET}
+  tokensPerRun: ${UNSET}
+  costPerTurn: ${UNSET}
+  costPerRun: ${UNSET}
 `;
 
 // Where the bridge runs from. In development, tsx runs the bridge with
@@ -77,32 +88,38 @@ export interface Runtime {
 	env: Record<string, string | undefined>;
 }
 
+// turns is how many agent turns the bridge plays before it stops, with no
+// limit when it is undefined.
 export type FindResult =
-	| { ok: true; path: string; mcp: boolean }
+	| { ok: true; path: string; mcp: boolean; turns: number | undefined }
 	| { ok: false; error: string };
+
+const TURN_COUNT = /^[1-9]\d*$/;
 
 // Returns the config file's path from --config, or the default for how the
 // bridge runs: next to the executable, or in the current folder when tsx runs
-// it. Also says whether --mcp is set.
+// it. Also says whether --mcp is set, and the --turns count.
 export function findConfigPath(runtime: Runtime): FindResult {
 	let config: string | undefined;
 	let mcp: boolean | undefined;
+	let turns: string | undefined;
 
 	try {
-		({ values: { config, mcp } } = parseArgs({ args: runtime.args, options: { config: { type: "string" }, mcp: { type: "boolean" } } }));
+		({ values: { config, mcp, turns } } = parseArgs({ args: runtime.args, options: { config: { type: "string" }, mcp: { type: "boolean" }, turns: { type: "string" } } }));
 	} catch (error) {
 		// parseArgs throws for an unknown or incomplete option, such as a
 		// misspelled "--confg".
 		return { ok: false, error: (error as Error).message };
 	}
 
-	if (config !== undefined) {
-		return { ok: true, path: path.resolve(runtime.cwd, config), mcp: mcp ?? false };
+	if (turns !== undefined && !TURN_COUNT.test(turns)) {
+		return { ok: false, error: `--turns needs a whole number above 0, and got "${turns}"` };
 	}
 
 	const folder = runtime.isExecutable ? path.dirname(runtime.execPath) : runtime.cwd;
+	const file = config === undefined ? path.join(folder, CONFIG_NAME) : path.resolve(runtime.cwd, config);
 
-	return { ok: true, path: path.join(folder, CONFIG_NAME), mcp: mcp ?? false };
+	return { ok: true, path: file, mcp: mcp ?? false, turns: turns === undefined ? undefined : Number(turns) };
 }
 
 export type LoadResult =
@@ -148,8 +165,10 @@ export function keyWarning(config: Config, file: string): string | undefined {
 // What the bridge does with its config when it starts: run with the config and
 // print the warnings, or print the error and exit.
 export type StartResult =
-	| { ok: true; config: Config; path: string; mcp: boolean; warnings: string[]; environmentKeys: Provider[] }
+	| { ok: true; config: Config; path: string; mcp: boolean; turns: number | undefined; warnings: string[]; environmentKeys: Provider[] }
 	| { ok: false; error: string };
+
+const OPTIONS = "The options are --config <path>, --mcp, and --turns <n>";
 
 // Finds and loads the config file, and says what the user should do about each
 // problem.
@@ -157,7 +176,7 @@ export function startConfig(runtime: Runtime): StartResult {
 	const found = findConfigPath(runtime);
 
 	if (!found.ok) {
-		return { ok: false, error: `${found.error}. The options are --config <path> and --mcp` };
+		return { ok: false, error: `${found.error}. ${OPTIONS}` };
 	}
 
 	const loaded = loadConfig(found.path);
@@ -171,7 +190,13 @@ export function startConfig(runtime: Runtime): StartResult {
 	}
 
 	const { config, providers } = withEnvironmentKeys(loaded.config, runtime.env);
-	const missingKey = keyWarning(config, found.path);
+	const warnings = [keyWarning(config, found.path), turnsWarning(found.mcp, found.turns)].filter((warning) => warning !== undefined);
 
-	return { ok: true, config, path: found.path, mcp: found.mcp, warnings: missingKey ? [missingKey] : [], environmentKeys: providers };
+	return { ok: true, config, path: found.path, mcp: found.mcp, turns: found.turns, warnings, environmentKeys: providers };
+}
+
+// With --mcp, the MCP client plays the turns, so no agent turn ends and the
+// count is never reached.
+function turnsWarning(mcp: boolean, turns: number | undefined): string | undefined {
+	return mcp && turns !== undefined ? "--turns does nothing with --mcp, because the bridge plays no agent turns" : undefined;
 }

@@ -1,6 +1,6 @@
 # Phase 2: turn loop steps
 
-The finished steps of [phase 2](../README.md) that play the agent's turns: the loop, the end turn, the limits, the unit orders it adds, and the game options it checks. The step table's `#` column sets their order.
+The finished steps of [phase 2](../README.md) that play the agent's turns: the loop, the end turn, the limits, the unit orders it adds, the game options it checks, and how it stops. The step table's `#` column sets their order.
 
 ## Agent loop
 
@@ -77,3 +77,24 @@ On 2026-11-27, with both options off in a running game, the bridge logged both w
 - The options the loop checks are in [design/agents/turn-loop/](../../../design/agents/turn-loop/README.md#game-options), and the `OPTION_OFF` line and the value the game returns in [design/core/mod/lines.md](../../../design/core/mod/lines.md#turn-events).
 - The load that fired no turn event is in [findings/actions/end-turn.md](../../../findings/actions/end-turn.md#with-a-queued-move-that-stops-short).
 - `--mcp` turning the agent loop off is in [design/agents/turn-loop/](../../../design/agents/turn-loop/README.md#turn-signal).
+
+## Stopping and spending limits
+
+Pull request: feat(core): add the stop key and spending limits.
+
+Ctrl+C now cancels the running turns the way a game load does, waits for the Lua command in progress, logs `stopped` with the run's tokens and cost, and exits with code 0. A second Ctrl+C exits at once with code 1. `--turns <n>` stops the bridge the same way after the agents end n turns.
+
+`limits` gained `tokensPerTurn`, `tokensPerRun`, `costPerTurn`, and `costPerRun`, each `-1` for no limit. A turn at its limit ends with `force`. A run at its limit, or a plan's usage limit, stops the bridge as Ctrl+C does.
+
+The pull request also made an unset model price `-1`, with a blank price from an older file read as `-1`, and fixed the model menu, which drew a new copy on each key press when a row wrapped in a narrow terminal.
+
+On 2026-11-27, the bridge executable passed each check in a running game:
+
+1. Ctrl+C during the first model call of turn 1, on a ChatGPT plan, stopped the bridge 7 ms later, with no action and no end turn.
+2. A restart after that stop played turn 1 again with the agent's memory kept, and ended it.
+3. `--turns 2` exited after the agent ended turn 2, with exit code 0 and the 105,242 tokens of its seven calls.
+4. `tokensPerRun: 1000` stopped the run after the first call, at 14,806 tokens, with no tool call and no end turn.
+5. `costPerRun: 0.0005`, on Claude Haiku 5.5 in the API key mode, stopped the run after the first call, at $0.0028.
+
+- The stop key, the turn count, the spending limits, and resuming are in [design/agents/turn-loop/stopping.md](../../../design/agents/turn-loop/stopping.md), and the turn limits they join in [design/agents/turn-loop/failure-handling.md](../../../design/agents/turn-loop/failure-handling.md).
+- The `limits` fields, the price's `-1`, and their defaults are in [design/core/settings.md](../../../design/core/settings.md), and the menu's wrapped rows in [design/core/picker.md](../../../design/core/picker.md).

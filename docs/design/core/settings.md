@@ -11,10 +11,16 @@ Git ignores `tmp/`. `src/config.ts` holds the `zod` schema, and `src/load-config
 - `providers`, an API key for each provider: `anthropic`, `openai`, `google`, or `xai`, such as `anthropic: { apiKey: "..." }`. A blank key comes from `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`, or `XAI_API_KEY` when it is set, and the bridge logs which keys came from there,
 - `model`, the model the agents use: `mode`, `provider`, `id`, `effort`, and `price`. `mode` is the [run mode](run-modes.md) the model was picked in, `api-key` by default. The rest are blank until you pick them. `effort` is one of the AI SDK's reasoning levels, and blank leaves the provider's default.
 
-  `price` has `input`, `output`, `cacheRead`, and `cacheWrite`, in US dollars per million tokens. The cache prices are for input read from or written to the provider's prompt cache. The picker fills it from OpenRouter's public model list, and you can change it. See [picker.md](picker.md#model-facts),
+  `price` has `input`, `output`, `cacheRead`, and `cacheWrite`, in US dollars per million tokens. The cache prices are for input read from or written to the provider's prompt cache. The picker fills it from OpenRouter's public model list, and you can change it. See [picker.md](picker.md#model-facts).
+
+  Each price is `-1` until it is set, which is no price, and a cache price of `-1` uses the input price. A blank string, which older files hold, reads as `-1`, and the next model save writes `-1`,
 - `mcpPort`, where `--mcp` serves the [MCP server](bridge.md), with `4320` as the default. The game listens on 4318 and 4319 ([protocol.md](../../findings/tuner/protocol.md)), so the default is the next port,
 - `journalEntries`, how many of an agent's newest journal entries each turn's [prompt](../agents/prompt.md#two-calls) holds, with `10` as the default,
 - `limits`, the [turn limits](../agents/turn-loop/failure-handling.md): `retriesPerAction`, `actionsPerTurn`, and `turnMinutes`, with `3`, `250`, and `15` as the defaults.
+
+  `limits` also holds the [spending limits](../agents/turn-loop/stopping.md): `tokensPerTurn` and `tokensPerRun`, a whole number of input and output tokens, and `costPerTurn` and `costPerRun`, in US dollars. Each is `-1` by default, which is no limit.
+
+  Any other limit must be above 0, and a quoted number is an error. A cost limit needs `model.price`.
 
 The schema rejects unknown fields, so a misspelled field is an error instead of a silent default. If the file is missing, the bridge writes a commented example there, names its path, and exits. A bad file exits with one error per field, such as `logLevel: Invalid option`.
 
@@ -32,5 +38,7 @@ If no provider has a key, the bridge warns and keeps running. Agent slots, perso
 | The `yaml` package parses the config file | It ships its own types and keeps comments when it rewrites a file, which the in-game key box needs. `js-yaml` drops comments when it writes |
 | The config file holds only settings for the whole bridge | Agent slots, personalities, and sweat levels belong to a game, so they save with it. A player ID in the config would point at the wrong player after loading another save |
 | One API key per provider in `providers` | An agent and its subagents can each use a model from a different provider |
+| An unset price or spending limit is `-1`, not a blank string | A user who quotes a number gets an error that says to drop the quotes. A blank string would make a quoted number look valid |
+| A blank price from an older file reads as `-1`, with no schema version bump | Files saved before the change keep loading with no migration, and the picker's next save writes `-1` |
 | A blank key comes from an environment variable, and a key in the file wins | A key in the environment stays out of the file, which users may share or show. A key in the file is the one the user chose for the bridge |
 | A missing config file gets an example and exits, and an empty key only warns | The example shows every field. Without a terminal, the parts that don't call a model still run with no key. In a terminal, the **Run mode** menu asks again until you pick a mode that can play or **Quit** |

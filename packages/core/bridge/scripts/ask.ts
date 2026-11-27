@@ -8,7 +8,7 @@ import { startConfig } from "../src/load-config.js";
 import { Logger } from "../src/log.js";
 import { chooseModel } from "../src/model/choose.js";
 import { type ModelRequest, callModel } from "../src/model/client.js";
-import { askMenu } from "../src/model/menu.js";
+import { askMenu, processTerminal } from "../src/model/menu.js";
 import { cachedFacts, factsCachePath } from "../src/model/model-facts.js";
 import { providers } from "../src/model/providers/index.js";
 import { modelTarget } from "../src/model/target.js";
@@ -43,7 +43,7 @@ async function main(): Promise<void> {
 	}
 
 	const { config } = started;
-	const terminal = { input: process.stdin, write: (text: string) => process.stdout.write(text) };
+	const terminal = processTerminal();
 	const ask = process.stdin.isTTY ? (title: string, labels: string[], start: number) => askMenu(title, labels, start, terminal) : undefined;
 
 	logger.level = config.logLevel;

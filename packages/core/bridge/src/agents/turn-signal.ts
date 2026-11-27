@@ -8,29 +8,44 @@ import type { MemorySource } from "../mcp/context.js";
 import { connectClient, toolDefinitions } from "../mcp/in-process.js";
 import { createServer } from "../mcp/server.js";
 import { DEFAULT_PROFILE, systemPrompt } from "./prompt.js";
-import { type Agent, type LoopContext, playTurn } from "./loop.js";
+import { type Agent, type CancelReason, type LoopContext, playTurn } from "./loop.js";
 
+// onTurnEnded gets the count of agent turns ended since the bridge started,
+// across all agents, each time one ends. onStopRun gets why a turn asked the
+// bridge to stop, such as a run spending limit.
 export interface SignalContext extends LoopContext {
 	knowledge: Knowledge;
 	memory: MemorySource;
+	onTurnEnded?: (ended: number) => void;
+	onStopRun?: (reason: string) => void;
 }
 
-// A turn in progress, and the controller a game load aborts it with.
+// onEvent handles the core mod's events. stop cancels the running turns and
+// settles once they end, and no turn starts after it.
+export interface TurnSignal {
+	onEvent: (event: CoreEvent) => Promise<void>;
+	stop: () => Promise<void>;
+}
+
+// A turn in progress, and the controller that cancels it.
 interface RunningTurn {
 	controller: AbortController;
 	done: Promise<void>;
 }
 
-// Returns the handler for the core mod's events. One turn runs at a time for
-// each agent, so a signal for a turn that is still running is skipped. A game
-// load cancels the running turns. The returned promise settles when the turn
-// it started ends, and never rejects.
-export function turnSignal(context: SignalContext): (event: CoreEvent) => Promise<void> {
+// One turn runs at a time for each agent, so a signal for a turn that is still
+// running is skipped. A game load cancels the running turns. The promise
+// onEvent returns settles when the turn it started ends, and never rejects.
+export function turnSignal(context: SignalContext): TurnSignal {
 	const { logger } = context;
 	const agents = new Map<number, Agent>();
 	const running = new Map<number, RunningTurn>();
 	// The agents whose game loaded since their last turn.
 	const loaded = new Set<number>();
+	let stopped = false;
+	let ended = 0;
+
+	const cancelAll = (reason: CancelReason): void => running.forEach(({ controller }) => controller.abort(reason));
 
 	const play = async (playerId: number, again: boolean, signal: AbortSignal): Promise<void> => {
 		try {
@@ -49,6 +64,10 @@ export function turnSignal(context: SignalContext): (event: CoreEvent) => Promis
 
 			if (result.ended) {
 				logger.info("turn_ended", `Player ${playerId} ended turn ${agent.endedTurn}`, { player: playerId, turn: agent.endedTurn });
+				ended += 1;
+				context.onTurnEnded?.(ended);
+			} else if ("stopRun" in result && result.stopRun === true) {
+				context.onStopRun?.(result.reason);
 			}
 		} catch (error) {
 			// A turn that throws must not stop the bridge, and the next signal
@@ -59,10 +78,16 @@ export function turnSignal(context: SignalContext): (event: CoreEvent) => Promis
 		}
 	};
 
-	return async (event) => {
+	const stop = async (): Promise<void> => {
+		stopped = true;
+		cancelAll("stop");
+		await Promise.all([...running.values()].map(({ done }) => done));
+	};
+
+	const onEvent = async (event: CoreEvent): Promise<void> => {
 		if (event.type === "game_ready") {
 			agents.forEach((_, playerId) => loaded.add(playerId));
-			running.forEach(({ controller }) => controller.abort());
+			cancelAll("load");
 
 			return;
 		}
@@ -80,6 +105,12 @@ export function turnSignal(context: SignalContext): (event: CoreEvent) => Promis
 			await current.done;
 		}
 
+		// A stopping bridge exits once its turns end, so a new one would only
+		// be cut off.
+		if (stopped) {
+			return;
+		}
+
 		if (running.has(playerId)) {
 			logger.info("turn_skipped", `Player ${playerId}'s turn is already being played`, { player: playerId });
 
@@ -92,6 +123,8 @@ export function turnSignal(context: SignalContext): (event: CoreEvent) => Promis
 		running.set(playerId, { controller, done });
 		await done;
 	};
+
+	return { onEvent, stop };
 }
 
 // Each agent gets its own MCP server, whose tools act for its player.
