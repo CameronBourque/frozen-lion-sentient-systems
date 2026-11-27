@@ -8,7 +8,7 @@ import { APICallError } from "ai";
 import type { MockLanguageModelV4 } from "ai/test";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { type Agent, type LoopContext, playTurn } from "../../src/agents/loop.js";
-import { NO_MODEL } from "../../src/config.js";
+import { DEFAULT_LIMITS, type Limits, NO_MODEL } from "../../src/config.js";
 import { Logger } from "../../src/log.js";
 import { toolDefinitions } from "../../src/mcp/in-process.js";
 import { addJournalEntry } from "../../src/memory/store.js";
@@ -50,13 +50,24 @@ async function agent(first = false): Promise<Agent> {
 	return { playerID: 3, system: SYSTEM, tools, definitions: await toolDefinitions(tools), memoryFolder: folder, first };
 }
 
-function context(model: MockLanguageModelV4): LoopContext {
-	return { client, logger, target: { model, provider: "anthropic", mode: "api-key", effort: "" }, model: NO_MODEL, journalEntries: 5, now: () => new Date("2026-11-25T12:00:00Z") };
+function context(model: MockLanguageModelV4, limits: Partial<Limits> = {}): LoopContext {
+	return { client, logger, target: { model, provider: "anthropic", mode: "api-key", effort: "" }, model: NO_MODEL, journalEntries: 5, limits: { ...DEFAULT_LIMITS, ...limits }, now: () => new Date("2026-11-25T12:00:00Z") };
 }
 
 function endTurn(id: string, force: boolean): Content {
 	return { type: "tool-call", toolCallId: id, toolName: "end_turn", input: JSON.stringify({ reason: REASON, force }) };
 }
+
+// An action that goes through, once the game answers it.
+function research(id: string): Content {
+	return { type: "tool-call", toolCallId: id, toolName: "set_research", input: JSON.stringify({ reason: REASON, type: "TECH_MINING" }) };
+}
+
+function updatePlan(id: string, plan: string): Content {
+	return { type: "tool-call", toolCallId: id, toolName: "update_plan", input: JSON.stringify({ plan }) };
+}
+
+const THINK: Content = { type: "text", text: "Hmm." };
 
 // Moves the game to turn 2, and keeps the other answers.
 function nextTurn(): void {
@@ -137,20 +148,91 @@ test("a reply with no tool call gets a nudge, and the model acts", async () => {
 	expect(model.doStreamCalls[1].prompt.at(-1)).toEqual({ role: "user", content: [{ type: "text", text: expect.stringContaining("call end_turn") as unknown }] });
 });
 
-test("two replies in a row with no tool call stop the turn without an end turn", async () => {
+test("replies with no tool call count as failures, and past the retries limit they stop the turn without an end turn", async () => {
 	const warn = vi.spyOn(logger, "warn");
-	const model = scripted([reply([{ type: "text", text: "Hmm." }]), reply([{ type: "text", text: "Still thinking." }])]);
+	const model = scripted([reply([THINK]), reply([THINK]), reply([endTurn("call-1", true)])]);
 
-	expect(await playTurn(await agent(), context(model))).toEqual({ ended: false, reason: "The model called no tool twice in a row. It wrote: Still thinking." });
-	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.stringContaining("Still thinking."), expect.objectContaining({ player: 3 }));
+	expect(await playTurn(await agent(), context(model, { retriesPerAction: 1 }))).toEqual({ ended: false, reason: "It reached the retries per action limit of 1, with 2 failures in a row" });
+	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.stringContaining("retries per action limit"), expect.objectContaining({ player: 3, limit: "retriesPerAction" }));
 	expect(lua().some((text) => text.includes("EndTurn"))).toBe(false);
 });
 
-test("a nudge resets once the model calls a tool", async () => {
-	const think: Content = { type: "text", text: "Hmm." };
-	const model = scripted([reply([think]), reply([endTurn("call-1", false)]), reply([think]), reply([endTurn("call-2", true)])]);
+test("failed actions in a row past the retries limit stop the turn", async () => {
+	const model = scripted([reply([endTurn("call-1", false)]), reply([endTurn("call-2", false)]), reply([endTurn("call-3", true)])]);
 
-	expect(await playTurn(await agent(), context(model))).toEqual({ ended: true });
+	expect(await playTurn(await agent(), context(model, { retriesPerAction: 1 }))).toMatchObject({ ended: false, reason: expect.stringContaining("retries per action") as unknown });
+	expect(model.doStreamCalls).toHaveLength(2);
+});
+
+test("an action that goes through resets the failures in a row", async () => {
+	answerStash(game, {
+		"SentientSystems_GetState(3)": MINIMAL_STATE,
+		"SentientSystems_EndTurn(3, false)": { ok: false, reason: "Choose a research." },
+		"SentientSystems_EndTurn(3, true)": { ok: true },
+		"SentientSystems_SetResearch(3, \"TECH_MINING\")": { ok: true },
+	});
+
+	const model = scripted([reply([THINK]), reply([research("call-1")]), reply([endTurn("call-2", false)]), reply([endTurn("call-3", true)])]);
+
+	expect(await playTurn(await agent(), context(model, { retriesPerAction: 1 }))).toEqual({ ended: true });
+});
+
+test("a failed read doesn't count against the retries", async () => {
+	const lookup: Content = { type: "tool-call", toolCallId: "call-1", toolName: "no_such_tool", input: "{}" };
+	const model = scripted([reply([lookup]), reply([lookup]), reply([endTurn("call-2", true)])]);
+
+	expect(await playTurn(await agent(), context(model, { retriesPerAction: 0 }))).toEqual({ ended: true });
+});
+
+test("the actions per turn limit stops the turn after that many actions, and the reply's later calls don't run", async () => {
+	const warn = vi.spyOn(logger, "warn");
+	const model = scripted([reply([endTurn("call-1", false), updatePlan("call-2", "Too late.")])]);
+
+	expect(await playTurn(await agent(), context(model, { actionsPerTurn: 1 }))).toEqual({ ended: false, reason: "It reached the actions per turn limit of 1" });
+	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.stringContaining("actions per turn limit of 1"), expect.objectContaining({ limit: "actionsPerTurn" }));
+	expect(fs.existsSync(path.join(folder, "plan.md"))).toBe(false);
+});
+
+test("tools that don't act in the game don't count as actions", async () => {
+	const model = scripted([reply([updatePlan("call-1", "Build a settler."), updatePlan("call-2", "Build a builder.")]), reply([endTurn("call-3", true)])]);
+
+	expect(await playTurn(await agent(), context(model, { actionsPerTurn: 1 }))).toEqual({ ended: true });
+});
+
+test("an end turn that goes through ends the turn, though it reaches the actions limit", async () => {
+	expect(await playTurn(await agent(), context(scripted([reply([endTurn("call-1", true)])]), { actionsPerTurn: 1 }))).toEqual({ ended: true });
+});
+
+test("the time limit stops the model call in progress, and stops the turn rather than cancelling it", async () => {
+	const warn = vi.spyOn(logger, "warn");
+	const { model } = waitingForAbort([]);
+
+	expect(await playTurn(await agent(), context(model, { turnMinutes: 0.0001 }), { signal: new AbortController().signal })).toEqual({ ended: false, reason: "It reached the time per turn limit of 0.0001 minutes" });
+	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.anything(), expect.objectContaining({ limit: "turnMinutes" }));
+});
+
+test("the time limit stops the turn before the next tool call", async () => {
+	vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+
+	const answer = game.onCommand;
+
+	// The blocked end turn takes past the limit.
+	game.onCommand = (stateIndex, text) => {
+		if (text.includes("EndTurn")) {
+			vi.advanceTimersByTime(60_000);
+		}
+
+		return answer(stateIndex, text);
+	};
+
+	try {
+		const model = scripted([reply([endTurn("call-1", false), updatePlan("call-2", "Too late.")])]);
+
+		expect(await playTurn(await agent(), context(model, { turnMinutes: 1 }))).toMatchObject({ ended: false, reason: expect.stringContaining("time per turn") as unknown });
+		expect(fs.existsSync(path.join(folder, "plan.md"))).toBe(false);
+	} finally {
+		vi.useRealTimers();
+	}
 });
 
 test("a failed model call stops the turn with its reason", async () => {
@@ -208,10 +290,9 @@ test("a turn started again plays, though the agent already ended it", async () =
 
 test("a turn that stops doesn't count as ended, so the next signal plays it", async () => {
 	const player = await agent();
-	const think: Content = { type: "text", text: "Hmm." };
-	const model = scripted([reply([think]), reply([think]), reply([endTurn("call-1", true)])]);
+	const model = scripted([reply([THINK]), reply([endTurn("call-1", true)])]);
 
-	expect(await playTurn(player, context(model))).toMatchObject({ ended: false });
+	expect(await playTurn(player, context(model, { retriesPerAction: 0 }))).toMatchObject({ ended: false });
 	expect(player.endedTurn).toBeUndefined();
 	expect(await playTurn(player, context(model))).toEqual({ ended: true });
 });

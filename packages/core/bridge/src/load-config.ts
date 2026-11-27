@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_MCP_PORT,EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 import { RUN_MODE_NAMES } from "./model/providers/provider.js";
 
@@ -56,6 +56,15 @@ mcpPort: ${DEFAULT_MCP_PORT}
 # How many of an agent's newest journal entries each turn's prompt holds. More entries give the
 # agent more of its past, and cost more tokens on every turn.
 journalEntries: ${DEFAULT_JOURNAL_ENTRIES}
+
+# Limits on each agent turn, so one stuck turn can't stop a game. When the agent reaches one, the
+# bridge logs a warning and ends its turn. retriesPerAction is how many actions in a row may fail,
+# where a reply with no tool call counts as a failure. actionsPerTurn counts the tools that act in
+# the game, not the ones that read it. turnMinutes is how long a turn may take.
+limits:
+  retriesPerAction: ${DEFAULT_LIMITS.retriesPerAction}
+  actionsPerTurn: ${DEFAULT_LIMITS.actionsPerTurn}
+  turnMinutes: ${DEFAULT_LIMITS.turnMinutes}
 `;
 
 // Where the bridge runs from. In development, tsx runs the bridge with

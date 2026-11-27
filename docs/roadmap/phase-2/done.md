@@ -114,3 +114,15 @@ On 2026-11-26, the bridge executable ended turns 1 to 10 in a row with no manual
 - The turn change, the `again` case, and the tool call log are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#one-turn), and the turn message's `again` line in [design/agents/prompt.md](../../design/agents/prompt.md#two-calls).
 - The cancel, the reset, and the wait for a silent game are in [design/agents/game-load.md](../../design/agents/game-load.md), and the stale memory check after a load in [design/memory.md](../../design/memory.md#stale-memory).
 - The run, its tokens, its plan usage, and the load signal's turn are in [findings/agent-runs.md](../../findings/agent-runs.md#end-turn-run).
+
+## Turn limits
+
+Pull request: feat(core): add turn limits.
+
+It added three limits on each agent turn, set in `limits` in the config file: `retriesPerAction`, `actionsPerTurn`, and `turnMinutes`, with `3`, `250`, and `15` as the defaults.
+
+A turn at a limit stops, and logs `turn_stopped` as a warning that names the limit. A reply with no tool call counts as a failure, in place of the old stop after two such replies.
+
+On 2026-11-27, the bridge executable on a ChatGPT plan, with `actionsPerTurn` set to `1`, took one `move_unit` on turn 1 and logged that the turn reached the actions per turn limit of 1. The game stayed on turn 1, because a stopped turn sends no end turn until the [forced end turn](forced-end-turn.md) step.
+
+- The limits, their defaults, and what each one counts are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#failure-handling), and the `limits` field in [design/core/settings.md](../../design/core/settings.md).

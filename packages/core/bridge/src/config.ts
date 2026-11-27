@@ -84,6 +84,20 @@ export type ModelSetting = z.infer<typeof MODEL>;
 
 export const NO_MODEL: ModelSetting = { mode: "api-key", provider: "", id: "", effort: "", price: NO_PRICE };
 
+// A late-game turn moves many units and runs many cities, so the actions per
+// turn leave room for it.
+export const DEFAULT_LIMITS = { retriesPerAction: 3, actionsPerTurn: 250, turnMinutes: 15 };
+
+// When the loop reaches one, it ends the turn, so one stuck turn can't stop a
+// game.
+const LIMITS = z.strictObject({
+	retriesPerAction: z.int().min(0).default(DEFAULT_LIMITS.retriesPerAction),
+	actionsPerTurn: z.int().min(1).default(DEFAULT_LIMITS.actionsPerTurn),
+	turnMinutes: z.number().positive().default(DEFAULT_LIMITS.turnMinutes),
+});
+
+export type Limits = z.infer<typeof LIMITS>;
+
 // Strict objects, so a misspelled field is an error and not a silent default.
 const CONFIG = z.strictObject({
 	schemaVersion: z.literal(SCHEMA_VERSION),
@@ -96,6 +110,7 @@ const CONFIG = z.strictObject({
 	mcpPort: z.int().min(1).max(65535).default(DEFAULT_MCP_PORT),
 	// How many of the newest journal entries each turn's prompt holds.
 	journalEntries: z.int().min(0).default(DEFAULT_JOURNAL_ENTRIES),
+	limits: LIMITS.default(DEFAULT_LIMITS),
 });
 
 export type Config = z.infer<typeof CONFIG>;

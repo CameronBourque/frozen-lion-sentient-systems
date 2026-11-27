@@ -7,7 +7,7 @@ import path from "node:path";
 import type { MockLanguageModelV4 } from "ai/test";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { type SignalContext, turnSignal } from "../../src/agents/turn-signal.js";
-import { NO_MODEL } from "../../src/config.js";
+import { DEFAULT_LIMITS, NO_MODEL } from "../../src/config.js";
 import type { CoreEvent } from "../../src/events.js";
 import { Logger } from "../../src/log.js";
 import { addJournalEntry } from "../../src/memory/store.js";
@@ -50,6 +50,7 @@ function context(model: MockLanguageModelV4, memory = (playerID: number) => path
 		target: { model, provider: "anthropic", mode: "api-key", effort: "" },
 		model: NO_MODEL,
 		journalEntries: 5,
+		limits: DEFAULT_LIMITS,
 		now: () => new Date("2026-11-26T12:00:00Z"),
 		knowledge: new Map(),
 		memory,
