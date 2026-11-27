@@ -17,7 +17,7 @@ The loop starts when the bridge sees the turn-start event for an agent slot. It 
 3. Take the agent's other actions.
 4. End the turn.
 
-Plain code handles trivial cases without the LLM, such as fortifying idle units and setting scouts to auto-explore. Quick movement and quick combat stay on during agent turns. [Standing orders](../../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
+The model gives every unit order, including fortify and auto-explore. Plain code gives none on its own. Quick movement and quick combat stay on during agent turns. [Standing orders](../../decision-support/standing-orders.md) let plain code play whole quiet turns without the model.
 
 ## Turn signal
 
@@ -75,4 +75,5 @@ Every action tool has a required `reason` field. See [narration-and-messaging.md
 | One tool per kind of decision | A small set of general tools is easier for the model to use, and it still covers every action |
 | The bridge plays every player that `AGENT_TURN` names, with no list of agents in the config | The core mod decides which players are agents, and agent slots save with the game, as [settings.md](../../core/settings.md) says. A computer slot agent needs no bridge change |
 | The loop sends replies back as the SDK's own messages | The messages keep the model's reasoning, which Anthropic needs back in a tool call conversation with extended thinking |
+| The model gives every unit order | A unit built this turn may need another order. A fresh fortify can't be undone until the turn changes, as [unit-orders.md](../../../findings/actions/unit-orders.md#unit-orders) shows. A fortified unit also leaves the `units` blocker list, so the model misses it |
 | The agent keeps the game turn it last ended, and skips a later signal on that turn | The turn signal drives the loop, so it needs no poll of the turn number and no timeout that a long AI turn could trip |
