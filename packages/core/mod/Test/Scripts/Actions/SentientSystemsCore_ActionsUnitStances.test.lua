@@ -133,6 +133,27 @@ describe("the stance, wake, delete, plunder, and promote actions", function()
 		assert.equal(Failed("The unit can't wake now."), Load(With(KNIGHT, { activity = "SLEEP", canEver = { "wake" } })).SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
 	end)
 
+	it("cancels an auto-explore or a queued move that wake can't stop", function()
+		local env = Load(With(KNIGHT, { canNow = { "cancel" } }))
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
+		assert.same({ { unit = KNIGHT.id, command = env.UnitCommandTypes.CANCEL } }, env.requests)
+	end)
+
+	it("wakes a unit that the game would both wake and cancel", function()
+		local env = Load(Allowing({ "wake", "cancel" }, { activity = "SLEEP" }))
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
+		assert.same({ { unit = KNIGHT.id, command = env.UnitCommandTypes.WAKE } }, env.requests)
+	end)
+
+	it("never cancels a spy's mission", function()
+		local env = Load(With(KNIGHT, { type = "UNIT_SPY", activity = "OPERATION", canEver = { "wake" }, canNow = { "cancel" } }))
+
+		assert.equal(Failed("The unit can't wake now."), env.SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
+		assert.same({}, env.requests)
+	end)
+
 	describe("promote", function()
 		local CARAVEL = With(KNIGHT, { type = "UNIT_CARAVEL", experience = { points = 45, nextLevel = 45, promotions = {}, available = { "PROMOTION_HELMSMAN", "PROMOTION_REINFORCED_HULL" } } })
 

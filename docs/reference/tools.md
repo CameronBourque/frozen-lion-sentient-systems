@@ -128,8 +128,8 @@ Give one of your units an order. A failed order returns the game's reason, or th
 - skip: Skip this turn.
 - alert: Sleep until an enemy comes into view.
 - heal: Fortify until healed.
-- explore: Explore on its own each turn until woken, as the game's auto-explore does.
-- wake: Wake a sleeping or fortified unit.
+- explore: Explore on its own each turn, as the game's auto-explore does, until you wake it. It moves at once, and leaves the units that need orders.
+- wake: Wake a sleeping or fortified unit, or stop its auto-explore or queued move.
 - delete: Disband the unit.
 - found_city: Found a city on the unit's tile.
 - pillage: Pillage the improvement or district on the unit's tile, then the road on a second order.

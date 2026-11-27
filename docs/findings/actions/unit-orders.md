@@ -32,6 +32,15 @@ It then checks for real, with `CanStartOperation(unit, hash, nil, false, Operati
   `RequestCommand(unit, PROMOTE, { [UnitCommandTypes.PARAM_PROMOTION_TYPE] = index })` took the promotion, with the `GameInfo.UnitPromotions` index. A second request for the same promotion found none to pick.
 - `RequestCommand(unit, UnitCommandTypes.DELETE)` removed a knight at once, with no dialog. The UI asks "are you sure" in `OnPromptToDeleteUnit` first, and has no call to answer for it.
 
+### Auto-explore
+
+Auto-explore is the unit operation `UNITOPERATION_AUTOMATE_EXPLORE`, in `Gameplay/Data/UnitOperations.xml`. The panel lists it with the other operations. Confirmed in files on 2026-11-27. Confirmed on Windows on 2026-11-27, with a scout:
+
+- The request moved the scout one tile at once and spent its 3 moves. Its activity was `OPERATION`, and `IsReadyToSelect()` was `false`, so it left the unit blockers.
+- On that turn, `WAKE` failed the real check, and a second auto-explore was allowed. The activity then read `HOLD`.
+- On the next turn, the scout had 3 moves, and `IsReadyToSelect()` was still `false`. Its activity was `OPERATION` after one request, and `ACTIVITY_AWAKE` after the second request. It hadn't moved 5 seconds into the turn. In the `ACTIVITY_AWAKE` case, `WAKE` failed both checks.
+- `UnitCommandTypes.CANCEL` passed both checks, and its request ended the auto-explore. `IsReadyToSelect()` was `true` after it, so the scout needed orders again.
+
 ### Orders on the unit's tile
 
 Found city, build improvement, and pillage all act on the tile the unit stands on, as `UnitPanel.lua` does. Confirmed in files. Confirmed on Windows on 2026-11-04:
@@ -85,6 +94,8 @@ Its `AddUpgradeResourceCost` returns an empty string. `OnUnitActionClicked` requ
 Run each step through the tuner, and record the Lua state you ran it in. Steps 1 and 2 of [game-api.md](../game-api.md#method) give a unit ID.
 
 1. **Unit orders.** For each order, call the loose check and then the real check, then request it. Read `UnitManager.GetActivityType(unit)` and the unit's moves before and after.
+
+   For auto-explore, end the turn with the unit exploring. Then read `IsReadyToSelect()` and the checks for `WAKE` and `CANCEL`, and request `CANCEL`.
 2. **Orders on the unit's tile.** Call the check and the request for found city, build improvement, and pillage with the unit on a tile that allows the order and on one that doesn't, and print `FAILURE_REASONS`.
 3. **Upgrade.** Call the loose check and the real check with results for units that can upgrade and units that can't, then request it and read the gold and the unit afterward.
 
@@ -103,4 +114,6 @@ The bridge ran these steps in a single-player game.
 
   Each other case gave a reason: the territory, no upgrade, no moves, gold, and the resource. Run in `SentientSystemsCore_UI` on 2026-11-05.
 
-Date checked: game files on 2026-10-16 and 2026-10-23. Running game on Windows on 2026-11-04 for the unit orders and the orders on a unit's tile, on 2026-11-05 for upgrades, and on 2026-11-06 for pillaging roads.
+- **`SentientSystems_UnitAction` for `explore` and `wake` on a scout.** Explore moved the scout and took it off the unit blockers. On the next turn, wake returned ok, and the scout was awake and on the unit blockers again. Run in `SentientSystemsCore_UI` on 2026-11-27.
+
+Date checked: game files on 2026-10-16, 2026-10-23, and 2026-11-27. Running game on Windows on 2026-11-04 for the unit orders and the orders on a unit's tile, on 2026-11-05 for upgrades, on 2026-11-06 for pillaging roads, and on 2026-11-27 for auto-explore.

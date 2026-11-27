@@ -24,6 +24,8 @@ Each order file registers its orders with `SentientSystems_AddUnitAction` in `Se
 
 `SentientSystems_UnitAction` gives a unit a stance (`fortify`, `sleep`, `skip`, `alert`, `heal`, `explore`), `wake`, `delete`, or `promote`, with the promotion in `type`. The game gives no reasons for these, so the reason says what the unit is doing and whether to wake it first.
 
+Wake can't stop an auto-explore or a queued move, so `wake` sends the game's cancel command when the game refuses wake and allows cancel. It never cancels a spy's mission, which the [spy actions](cities.md#spies) own.
+
 ## Attacks
 
 `attack` (with `x` and `y`) picks a melee, ranged, or air attack as the UI does, never starts a war, and lists the targets when the tile isn't one.

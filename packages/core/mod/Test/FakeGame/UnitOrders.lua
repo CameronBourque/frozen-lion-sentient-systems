@@ -7,7 +7,7 @@ return function(env, world, ctx)
 		launch_inquisition = 135, concert = 136,
 		build_road = 120, remove_feature = 121, harvest = 122, repair = 123, repair_route = 124, remove_improvement = 125, clear_fallout = 126 }
 	local OPERATION_TYPES = { skip = "SKIP_TURN", explore = "AUTOMATE_EXPLORE", heal_followers = "RELIGIOUS_HEAL", found_city = "FOUND_CITY", build_road = "BUILD_ROUTE", harvest = "HARVEST_RESOURCE", clear_fallout = "CLEAR_CONTAMINATION", concert = "TOURISM_BOMB" }
-	local COMMANDS = { wake = 110, delete = 111, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117,
+	local COMMANDS = { wake = 110, delete = 111, cancel = 150, upgrade = 113, form_corps = 114, form_army = 115, enter_formation = 116, exit_formation = 117,
 		plunder = 144, condemn_heretic = 147, activate = 145, harvest_wonder = 146, building_production = 140, district_production = 141, wonder_production = 142, project_production = 143 }
 	local PlotIndex = ctx.PlotIndex
 	local operationNames, commandNames = {}, {}
@@ -36,6 +36,7 @@ return function(env, world, ctx)
 	env.UnitOperationTypes.BUILD_IMPROVEMENT = 6
 	env.UnitOperationTypes.PARAM_IMPROVEMENT_TYPE = 7
 	env.UnitCommandTypes.WAKE = COMMANDS.wake
+	env.UnitCommandTypes.CANCEL = COMMANDS.cancel
 	env.UnitCommandTypes.PLUNDER_TRADE_ROUTE = COMMANDS.plunder
 	env.UnitCommandTypes.CONDEMN_HERETIC = COMMANDS.condemn_heretic
 	env.UnitCommandTypes.DELETE = COMMANDS.delete
@@ -80,6 +81,7 @@ return function(env, world, ctx)
 			row.RequiresInquisition = unit.type == "UNIT_INQUISITOR"
 			row.EvangelizeBelief = unit.type == "UNIT_APOSTLE"
 			row.LaunchInquisition = unit.type == "UNIT_APOSTLE"
+			row.Spy = unit.type == "UNIT_SPY"
 			row.FormationClass = unit.formationClass or "FORMATION_CLASS_LAND_COMBAT"
 
 			-- An upgrade is a chain of steps, and a step may need a tech.
