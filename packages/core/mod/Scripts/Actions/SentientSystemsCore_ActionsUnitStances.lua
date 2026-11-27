@@ -3,13 +3,14 @@
 
 -- The stance actions, by action name, as unit operations. UnitPanel.lua reads
 -- each hash from GameInfo.UnitOperations, because UnitOperationTypes lacks
--- sleep, skip, and heal.
+-- sleep, skip, and heal. Explore is the panel's auto-explore.
 local STANCES = {
 	fortify = "UNITOPERATION_FORTIFY",
 	sleep = "UNITOPERATION_SLEEP",
 	skip = "UNITOPERATION_SKIP_TURN",
 	alert = "UNITOPERATION_ALERT",
 	heal = "UNITOPERATION_HEAL",
+	explore = "UNITOPERATION_AUTOMATE_EXPLORE",
 }
 
 -- How the reasons say an action, when its name is not the verb.
@@ -173,11 +174,29 @@ for action, operationType in pairs(STANCES) do
 	end)
 end
 
-for _, action in ipairs({ "wake", "delete" }) do
-	SentientSystems_AddUnitAction(action, function(_, unit)
-		return SentientSystems_DoCommand(unit, action)
-	end)
+-- Wakes the unit, or cancels its auto-explore or queued move, which wake can't
+-- stop. The panel's cancel does both. A spy's cancel ends its mission, which
+-- the spy tools own. See docs/findings/actions/unit-orders.md.
+local function Wake(unit)
+	local isSpy = GameInfo.Units[unit:GetUnitType()].Spy
+
+	if not isSpy and not UnitManager.CanStartCommand(unit, UnitCommandTypes.WAKE, false)
+		and UnitManager.CanStartCommand(unit, UnitCommandTypes.CANCEL, false) then
+		UnitManager.RequestCommand(unit, UnitCommandTypes.CANCEL)
+
+		return nil
+	end
+
+	return SentientSystems_DoCommand(unit, "wake")
 end
+
+SentientSystems_AddUnitAction("wake", function(_, unit)
+	return Wake(unit)
+end)
+
+SentientSystems_AddUnitAction("delete", function(_, unit)
+	return SentientSystems_DoCommand(unit, "delete")
+end)
 
 -- The trader ability of the economic golden age dedication, which makes its
 -- route immune to plunder. See docs/findings/actions/trade.md.

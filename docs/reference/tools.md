@@ -128,7 +128,8 @@ Give one of your units an order. A failed order returns the game's reason, or th
 - skip: Skip this turn.
 - alert: Sleep until an enemy comes into view.
 - heal: Fortify until healed.
-- wake: Wake a sleeping or fortified unit.
+- explore: Explore on its own each turn, as the game's auto-explore does, until you wake it. It moves at once, and leaves the units that need orders.
+- wake: Wake a sleeping or fortified unit, or stop its auto-explore or queued move.
 - delete: Disband the unit.
 - found_city: Found a city on the unit's tile.
 - pillage: Pillage the improvement or district on the unit's tile, then the road on a second order.
@@ -169,7 +170,7 @@ Give one of your units an order. A failed order returns the game's reason, or th
 | --- | --- | --- | --- |
 | `reason` | string | yes | One sentence, in your own voice, on why you take this action. The narrator panel shows it, and the log keeps it. |
 | `unitID` | integer | yes | The unit's id, from get_state. |
-| `action` | one of 41 values | yes |  |
+| `action` | one of 42 values | yes |  |
 | `x` | integer | no | The target tile, for the orders that take one. |
 | `y` | integer | no |  |
 | `with` | integer | no | The other unit's id, for form_corps, form_army, and enter_formation. |

@@ -26,9 +26,11 @@ describe("the stance, wake, delete, plunder, and promote actions", function()
 	end
 
 	it("requests each stance operation the game allows", function()
-		for _, action in ipairs({ "fortify", "sleep", "skip", "alert", "heal" }) do
+		local operations = { fortify = "FORTIFY", sleep = "SLEEP", skip = "SKIP_TURN", alert = "ALERT", heal = "HEAL", explore = "AUTOMATE_EXPLORE" }
+
+		for action, operation in pairs(operations) do
 			local env = Load(Allowing({ action }))
-			local hash = env.GameInfo.UnitOperations["UNITOPERATION_" .. (action == "skip" and "SKIP_TURN" or action:upper())].Hash
+			local hash = env.GameInfo.UnitOperations["UNITOPERATION_" .. operation].Hash
 
 			assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, action))
 			assert.same({ { unit = KNIGHT.id, operation = hash } }, env.requests)
@@ -129,6 +131,27 @@ describe("the stance, wake, delete, plunder, and promote actions", function()
 	it("fails to wake a unit that is awake, or that the game won't wake", function()
 		assert.equal(Failed("The unit is already awake."), Load(With(KNIGHT, { canEver = { "wake" } })).SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
 		assert.equal(Failed("The unit can't wake now."), Load(With(KNIGHT, { activity = "SLEEP", canEver = { "wake" } })).SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
+	end)
+
+	it("cancels an auto-explore or a queued move that wake can't stop", function()
+		local env = Load(With(KNIGHT, { canNow = { "cancel" } }))
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
+		assert.same({ { unit = KNIGHT.id, command = env.UnitCommandTypes.CANCEL } }, env.requests)
+	end)
+
+	it("wakes a unit that the game would both wake and cancel", function()
+		local env = Load(Allowing({ "wake", "cancel" }, { activity = "SLEEP" }))
+
+		assert.equal("{\"ok\":true}", env.SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
+		assert.same({ { unit = KNIGHT.id, command = env.UnitCommandTypes.WAKE } }, env.requests)
+	end)
+
+	it("never cancels a spy's mission", function()
+		local env = Load(With(KNIGHT, { type = "UNIT_SPY", activity = "OPERATION", canEver = { "wake" }, canNow = { "cancel" } }))
+
+		assert.equal(Failed("The unit can't wake now."), env.SentientSystems_UnitAction(0, KNIGHT.id, "wake"))
+		assert.same({}, env.requests)
 	end)
 
 	describe("promote", function()

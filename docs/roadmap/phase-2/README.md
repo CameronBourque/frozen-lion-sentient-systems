@@ -14,19 +14,21 @@ Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design
 
 The `#` column sets the order, and a step's file has no number. A step is one pull request, and its tasks are its commits. Steps that share a pull request have the same title.
 
+The finished steps are in [done/](done/README.md).
+
 | # | Step | Covers | Pull request title | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Model client | The Vercel AI SDK behind one interface, and the model picker | `feat(core): add the model client` | Done. See [done.md](done.md#model-client) |
-| 2 | Personality and sweat level | The neutral personality, the balanced sweat level, and the prompt | `feat(core): add the neutral personality and the balanced sweat level` | Done. See [done.md](done.md#personality-and-sweat-level) |
-| 3 | Memory and decision records | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | Done. See [done.md](done.md#memory-and-decision-records) |
-| 4 | Run mode menu | A file for each provider and the four run modes in the picker, with only the API key working | `feat(core): add the run mode menu` | Done. See [done.md](done.md#run-mode-menu) |
-| 5 | ChatGPT plan | The subscription token mode for OpenAI: sign-in, token refresh, and plan calls | `feat(core): run agents on a ChatGPT plan` | Done. See [done.md](done.md#chatgpt-plan) |
-| 6 | xAI provider | xAI as a fourth provider in the API key mode, for Grok models | `feat(core): add xAI as a provider` | Done. See [done.md](done.md#xai-provider) |
-| 7 | Agent loop | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | Done. See [done.md](done.md#agent-loop) |
-| 8 | End turn | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | Done. See [done.md](done.md#end-turn) |
-| 9 | Turn limits | Retries per action, actions per turn, and time per turn | `feat(core): add turn limits` | Done. See [done.md](done.md#turn-limits) |
-| 10 | Forced end turn | Another try after a blocked end turn, and a forced end at a limit | `feat(core): force the end turn at the turn limit` | Done. See [done.md](done.md#forced-end-turn) |
-| 11 | [Idle units and scouts](idle-units.md) | Fortify idle military units and set scouts to explore in plain code | `feat(core): handle idle units and scouts in plain code` | |
+| 1 | Model client | The Vercel AI SDK behind one interface, and the model picker | `feat(core): add the model client` | Done. See [models.md](done/models.md#model-client) |
+| 2 | Personality and sweat level | The neutral personality, the balanced sweat level, and the prompt | `feat(core): add the neutral personality and the balanced sweat level` | Done. See [agent.md](done/agent.md#personality-and-sweat-level) |
+| 3 | Memory and decision records | Plan and journal files, their tools, and decision records | `feat(core): add plan and journal memory` | Done. See [agent.md](done/agent.md#memory-and-decision-records) |
+| 4 | Run mode menu | A file for each provider and the four run modes in the picker, with only the API key working | `feat(core): add the run mode menu` | Done. See [models.md](done/models.md#run-mode-menu) |
+| 5 | ChatGPT plan | The subscription token mode for OpenAI: sign-in, token refresh, and plan calls | `feat(core): run agents on a ChatGPT plan` | Done. See [models.md](done/models.md#chatgpt-plan) |
+| 6 | xAI provider | xAI as a fourth provider in the API key mode, for Grok models | `feat(core): add xAI as a provider` | Done. See [models.md](done/models.md#xai-provider) |
+| 7 | Agent loop | The MCP tools for the model, one agent turn, and the turn signal | `feat(core): add the agent loop` | Done. See [turn-loop.md](done/turn-loop.md#agent-loop) |
+| 8 | End turn | Wait for the turn to change, a turn that starts again, and a game load | `feat(core): play turn after turn` | Done. See [turn-loop.md](done/turn-loop.md#end-turn) |
+| 9 | Turn limits | Retries per action, actions per turn, and time per turn | `feat(core): add turn limits` | Done. See [turn-loop.md](done/turn-loop.md#turn-limits) |
+| 10 | Forced end turn | Another try after a blocked end turn, and a forced end at a limit | `feat(core): force the end turn at the turn limit` | Done. See [turn-loop.md](done/turn-loop.md#forced-end-turn) |
+| 11 | Auto-explore | An `explore` order in `unit_action` for the model, and a `wake` that stops it | `feat(core): add auto-explore to unit actions` | Done. See [turn-loop.md](done/turn-loop.md#auto-explore) |
 | 12 | [Game options](game-options.md) | Warn when quick movement or quick combat is off | `feat(core): warn when quick movement or quick combat is off` | |
 | 13 | [Stopping and spending limits](stopping.md) | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | |
 | 14 | [Claude runner](claude-agent-sdk.md) | The agent runner, and the Claude Agent SDK runner behind a flag | `feat(core): run Claude agents through the Agent SDK` | |

@@ -68,7 +68,7 @@ The person then sent the turn prompt, and Claude Code took it as turn 10. Its fi
 
 ### Agent loop run
 
-The bridge executable played with no one prompting it, for the [agent loop](../roadmap/phase-2/done.md#agent-loop) step's check. It ran from a folder with no `knowledge` folder, and read its 3 knowledge files from the executable.
+The bridge executable played with no one prompting it, for the [agent loop](../roadmap/phase-2/done/turn-loop.md#agent-loop) step's check. It ran from a folder with no `knowledge` folder, and read its 3 knowledge files from the executable.
 
 The model was `gpt-6.2-sol` on a ChatGPT plan, in the subscription token mode, with the provider's default effort. The game was a saved game on turn 1.
 
@@ -96,7 +96,7 @@ Each problem got its own pull request before the second run, except the turn num
 
 ### End turn run
 
-The bridge executable played turn after turn, for the [end turn](../roadmap/phase-2/done.md#end-turn) step's check. It ran from an empty folder with `logLevel: debug`, on the same model, plan, and effort as the agent loop run, and the same saved game.
+The bridge executable played turn after turn, for the [end turn](../roadmap/phase-2/done/turn-loop.md#end-turn) step's check. It ran from an empty folder with `logLevel: debug`, on the same model, plan, and effort as the agent loop run, and the same saved game.
 
 It ended turns 1 to 10 in a row with no help, with 41 model calls, 48 tool calls, and 38 actions, each with its reason. No record was a warning or an error.
 
