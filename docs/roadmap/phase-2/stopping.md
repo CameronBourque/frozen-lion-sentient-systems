@@ -1,6 +1,6 @@
 # Stopping and spending limits
 
-Add the stop key, the turn count, and the spending limits, so an agent never spends more than you allow. The design is in [turn-loop.md](../../design/agents/turn-loop.md#stopping). Part of [phase 2](README.md).
+Add the stop key, the turn count, and the spending limits, so an agent never spends more than you allow. The design is in [turn-loop/stopping.md](../../design/agents/turn-loop/stopping.md). Part of [phase 2](README.md).
 
 ## Tasks
 
@@ -29,4 +29,4 @@ All of these hold in a running game:
 ## Record
 
 - The `limits` fields and their defaults, in [settings.md](../../design/core/settings.md).
-- Whether the restart resumes the turn as [turn-loop.md](../../design/agents/turn-loop.md#stopping) says. Fix the section if it doesn't.
+- Whether the restart resumes the turn as [turn-loop/stopping.md](../../design/agents/turn-loop/stopping.md) says. Fix the section if it doesn't.

@@ -1,6 +1,6 @@
 # Game options
 
-Warn when a game option that slows the agent's turns is off. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 2](README.md).
+Warn when a game option that slows the agent's turns is off. The design is in [turn-loop/](../../design/agents/turn-loop/README.md). Part of [phase 2](README.md).
 
 ## Tasks
 
@@ -12,4 +12,4 @@ In a running game with quick combat off, the log shows the warning when the agen
 
 ## Record
 
-- The options the loop checks, in [turn-loop.md](../../design/agents/turn-loop.md).
+- The options the loop checks, in [turn-loop/](../../design/agents/turn-loop/README.md).

@@ -17,5 +17,5 @@ The agent plays the smoke test preset to turn 100 or later with no manual help, 
 ## Record
 
 - The run's numbers and its evaluation report, in `docs/findings/agent-runs.md`.
-- Any new limit defaults, in [turn-loop.md](../../design/agents/turn-loop.md).
+- Any new limit defaults, in [turn-loop/](../../design/agents/turn-loop/README.md).
 - The measured tokens and cost per turn, as a guide for setting the spending limits, in [settings.md](../../design/core/settings.md).

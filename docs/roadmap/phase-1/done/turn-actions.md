@@ -45,5 +45,5 @@ The other screens, such as a request, a promise, or a first meeting, are a new `
 The messages and the closing are for a human slot only. Phase 3 replaces them with what the [computer slot test](../../../design/agents/slot-type.md#computer-slot-test) finds a native AI gets.
 
 - The sessions section and the messages are in [design/core/mod/state.md](../../../design/core/mod/state.md#decisions), and the reasons in [design/core/mod/actions/deals.md](../../../design/core/mod/actions/deals.md#respond-to-a-session) and [turn.md](../../../design/core/mod/actions/turn.md).
-- The calls are in [actions/ai-sessions.md](../../../findings/actions/ai-sessions.md), [actions/ai-requests.md](../../../findings/actions/ai-requests.md), [actions/first-meetings.md](../../../findings/actions/first-meetings.md), and [actions/end-turn.md](../../../findings/actions/end-turn.md#with-a-leader-screen-up).
+- The calls are in [actions/ai-sessions.md](../../../findings/actions/ai-sessions.md), [actions/ai-requests.md](../../../findings/actions/ai-requests.md), [actions/first-meetings.md](../../../findings/actions/first-meetings.md), and [actions/end-turn-holds.md](../../../findings/actions/end-turn-holds.md#with-a-leader-screen-up).
 - The parts of an action are in the [core README](../../../../packages/core/README.md#parts-of-an-action).

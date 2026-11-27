@@ -1,9 +1,10 @@
 // Plays one agent turn: reads the state and memory, sends the turn message,
-// and runs the model's tool calls until end_turn goes through or a limit.
-// docs/design/agents/turn-loop.md has the design.
+// and runs the model's tool calls until end_turn goes through or a limit
+// forces the end. docs/design/agents/turn-loop/README.md has the design.
 
 import type { Client } from "@modelcontextprotocol/client";
 import type { ModelMessage, ToolModelMessage } from "ai";
+import { endTurn } from "../actions/turn.js";
 import type { Limits, ModelSetting } from "../config.js";
 import type { LogFields, Logger } from "../log.js";
 import { callTool } from "../mcp/in-process.js";
@@ -40,7 +41,7 @@ export interface LoopContext {
 	gameWaitMs?: number;
 }
 
-// A turn that stops without end_turn leaves the game waiting on the agent. A
+// A turn that stops without an end turn leaves the game waiting on the agent. A
 // skipped turn was already ended, so the game has moved on. A cancelled turn
 // belongs to a game that is no longer loaded.
 export type TurnResult =
@@ -158,7 +159,7 @@ async function converse(run: TurnRun, messages: ModelMessage[]): Promise<TurnRes
 	for (;;) {
 		const result = await callModel(context.target, { system: agent.system, messages, tools: agent.definitions, signal: signals.turn });
 		// An aborted call fails, and that failure isn't the model's.
-		const ended = endedBySignal(run);
+		const ended = await endedBySignal(run);
 
 		if (ended !== undefined) {
 			return ended;
@@ -175,7 +176,7 @@ async function converse(run: TurnRun, messages: ModelMessage[]): Promise<TurnRes
 			tally.failures += 1;
 
 			if (tally.failures > context.limits.retriesPerAction) {
-				return reachLimit(run, "retriesPerAction");
+				return await reachLimit(run, "retriesPerAction");
 			}
 
 			messages.push({ role: "user", content: NUDGE });
@@ -201,7 +202,7 @@ async function runCalls(run: TurnRun, calls: ToolCall[]): Promise<TurnResult | T
 	const message: ToolModelMessage = { role: "tool", content: [] };
 
 	for (const call of calls) {
-		const ended = endedBySignal(run);
+		const ended = await endedBySignal(run);
 
 		if (ended !== undefined) {
 			return ended;
@@ -222,7 +223,7 @@ async function runCalls(run: TurnRun, calls: ToolCall[]): Promise<TurnResult | T
 		const limit = actions.has(call.name) ? countAction(tally, output.isError, context.limits) : undefined;
 
 		if (limit !== undefined) {
-			return reachLimit(run, limit);
+			return await reachLimit(run, limit);
 		}
 
 		message.content.push({
@@ -236,7 +237,7 @@ async function runCalls(run: TurnRun, calls: ToolCall[]): Promise<TurnResult | T
 		// call or model call would only fail the same way. The wait ends
 		// only when the game answers or the turn's signal aborts.
 		if (output.isError && !await waitForGame(client, logger, agent.playerID, signals.turn, context.gameWaitMs)) {
-			return endedBySignal(run) as TurnResult;
+			return await endedBySignal(run) as TurnResult;
 		}
 	}
 
@@ -256,17 +257,42 @@ function countAction(tally: Tally, failed: boolean, limits: Limits): keyof Limit
 	return tally.actions >= limits.actionsPerTurn ? "actionsPerTurn" : undefined;
 }
 
-// A game load cancels the turn, and the time limit stops it.
-function endedBySignal(run: TurnRun): TurnResult | undefined {
+// A game load cancels the turn, and the time limit forces its end.
+async function endedBySignal(run: TurnRun): Promise<TurnResult | undefined> {
 	if (run.signals.load?.aborted === true) {
 		return cancelTurn(run.context.logger, run.agent);
 	}
 
-	return run.signals.turn.aborted ? reachLimit(run, "turnMinutes") : undefined;
+	return run.signals.turn.aborted ? await reachLimit(run, "turnMinutes") : undefined;
 }
 
-function reachLimit({ agent, context }: TurnRun, limit: keyof Limits): TurnResult {
-	return stopTurn(context.logger, agent, LIMIT_TEXT[limit](context.limits[limit]), { limit });
+// Ends the turn with force, so one stuck turn can't stop the game, and warns
+// of the blockers and the units it skipped. A forced end that fails, such as
+// with a deal waiting, stops the turn, and the game waits on the agent.
+async function reachLimit({ agent, context }: TurnRun, limit: keyof Limits): Promise<TurnResult> {
+	const { client, logger } = context;
+	const player = agent.playerID;
+	const reason = LIMIT_TEXT[limit](context.limits[limit]);
+	const result = await endTurn(client, player, true);
+
+	if (!result.ok) {
+		return stopTurn(logger, agent, `${reason}, and the forced end turn failed: ${result.reason}`, { limit });
+	}
+
+	logger.warn("turn_forced", `Player ${player}'s turn was ended with force: ${reason}`, { player, reason, limit });
+
+	const blockers = result.skipped?.list ?? [];
+	const units = result.skipped?.units ?? [];
+
+	if (blockers.length > 0) {
+		logger.warn("blockers_skipped", `Player ${player}'s forced end turn skipped the blockers ${blockers.map(({ type }) => type).join(", ")}`, { player, blockers });
+	}
+
+	if (units.length > 0) {
+		logger.warn("units_skipped", `Player ${player}'s forced end turn skipped the units that needed orders: ${units.join(", ")}`, { player, units });
+	}
+
+	return { ended: true };
 }
 
 function cancelTurn(logger: Logger, agent: Agent): TurnResult {

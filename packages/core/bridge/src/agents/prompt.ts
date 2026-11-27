@@ -68,7 +68,7 @@ export function turnMessage(input: TurnInput): string {
 }
 
 // The records from the agent's last turn before this one that have no result
-// yet. docs/design/agents/turn-loop.md has decision records.
+// yet. docs/design/agents/turn-loop/decision-records.md has the design.
 function decisionsText(decisions: DecisionRecord[], turn: number): string | undefined {
 	const lastTurn = Math.max(-1, ...decisions.filter((record) => record.turn < turn).map((record) => record.turn));
 	const open = decisions.filter((record) => record.turn === lastTurn && record.result === undefined);

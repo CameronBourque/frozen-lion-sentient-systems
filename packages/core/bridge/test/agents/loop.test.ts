@@ -81,6 +81,11 @@ function lua(): string[] {
 	return game.commands.map(({ lua: text }) => text);
 }
 
+// The forced end turns the turn sent.
+function forcedEnds(): string[] {
+	return lua().filter((text) => text.includes("SentientSystems_EndTurn(3, true)"));
+}
+
 test("sends the system prompt and the turn message, and ends when end_turn goes through", async () => {
 	const model = scripted([reply([endTurn("call-1", true)])]);
 
@@ -148,20 +153,73 @@ test("a reply with no tool call gets a nudge, and the model acts", async () => {
 	expect(model.doStreamCalls[1].prompt.at(-1)).toEqual({ role: "user", content: [{ type: "text", text: expect.stringContaining("call end_turn") as unknown }] });
 });
 
-test("replies with no tool call count as failures, and past the retries limit they stop the turn without an end turn", async () => {
+test("replies with no tool call count as failures, and past the retries limit the turn ends with force", async () => {
 	const warn = vi.spyOn(logger, "warn");
+	const player = await agent();
 	const model = scripted([reply([THINK]), reply([THINK]), reply([endTurn("call-1", true)])]);
 
-	expect(await playTurn(await agent(), context(model, { retriesPerAction: 1 }))).toEqual({ ended: false, reason: "It reached the retries per action limit of 1, with 2 failures in a row" });
-	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.stringContaining("retries per action limit"), expect.objectContaining({ player: 3, limit: "retriesPerAction" }));
-	expect(lua().some((text) => text.includes("EndTurn"))).toBe(false);
+	expect(await playTurn(player, context(model, { retriesPerAction: 1 }))).toEqual({ ended: true });
+	expect(warn).toHaveBeenCalledWith("turn_forced", "Player 3's turn was ended with force: It reached the retries per action limit of 1, with 2 failures in a row", expect.objectContaining({ player: 3, limit: "retriesPerAction" }));
+	expect(model.doStreamCalls).toHaveLength(2);
+	expect(forcedEnds()).toHaveLength(1);
+	expect(player.endedTurn).toBe(1);
 });
 
-test("failed actions in a row past the retries limit stop the turn", async () => {
+test("failed actions in a row past the retries limit end the turn with force", async () => {
 	const model = scripted([reply([endTurn("call-1", false)]), reply([endTurn("call-2", false)]), reply([endTurn("call-3", true)])]);
 
-	expect(await playTurn(await agent(), context(model, { retriesPerAction: 1 }))).toMatchObject({ ended: false, reason: expect.stringContaining("retries per action") as unknown });
+	expect(await playTurn(await agent(), context(model, { retriesPerAction: 1 }))).toEqual({ ended: true });
 	expect(model.doStreamCalls).toHaveLength(2);
+	expect(forcedEnds()).toHaveLength(1);
+});
+
+test("a forced end warns of the blockers it skipped on one line, and the units on another", async () => {
+	const warn = vi.spyOn(logger, "warn");
+
+	answerStash(game, {
+		"SentientSystems_GetState(3)": MINIMAL_STATE,
+		"SentientSystems_EndTurn(3, true)": {
+			ok: true,
+			skipped: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }, { type: "ENDTURN_BLOCKING_UNIT_PROMOTION" }], units: [131073, 131074] },
+		},
+	});
+
+	expect(await playTurn(await agent(), context(scripted([reply([THINK])]), { retriesPerAction: 0 }))).toEqual({ ended: true });
+	expect(warn.mock.calls.filter(([event]) => event.endsWith("_skipped"))).toEqual([
+		["blockers_skipped", "Player 3's forced end turn skipped the blockers ENDTURN_BLOCKING_RESEARCH, ENDTURN_BLOCKING_UNIT_PROMOTION", { player: 3, blockers: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }, { type: "ENDTURN_BLOCKING_UNIT_PROMOTION" }] }],
+		["units_skipped", "Player 3's forced end turn skipped the units that needed orders: 131073, 131074", { player: 3, units: [131073, 131074] }],
+	]);
+});
+
+test("a forced end with nothing left to skip warns of no blockers or units", async () => {
+	const warn = vi.spyOn(logger, "warn");
+
+	answerStash(game, {
+		"SentientSystems_GetState(3)": MINIMAL_STATE,
+		"SentientSystems_EndTurn(3, true)": { ok: true, skipped: { list: [], units: [] } },
+	});
+
+	expect(await playTurn(await agent(), context(scripted([reply([THINK])]), { retriesPerAction: 0 }))).toEqual({ ended: true });
+	expect(warn.mock.calls.filter(([event]) => event.endsWith("_skipped"))).toEqual([]);
+});
+
+test("a forced end that fails stops the turn with both reasons, and the next signal plays it", async () => {
+	const warn = vi.spyOn(logger, "warn");
+	const player = await agent();
+	const reason = "It reached the retries per action limit of 0, with 1 failures in a row, and the forced end turn failed: Player 4 has a deal waiting for you.";
+
+	answerStash(game, {
+		"SentientSystems_GetState(3)": MINIMAL_STATE,
+		"SentientSystems_EndTurn(3, true)": { ok: false, reason: "Player 4 has a deal waiting for you." },
+	});
+
+	expect(await playTurn(player, context(scripted([reply([THINK])]), { retriesPerAction: 0 }))).toEqual({ ended: false, reason });
+	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.stringContaining(reason), expect.objectContaining({ limit: "retriesPerAction" }));
+	expect(player.endedTurn).toBeUndefined();
+
+	answerStash(game, { "SentientSystems_GetState(3)": MINIMAL_STATE, "SentientSystems_EndTurn(3, true)": { ok: true } });
+
+	expect(await playTurn(player, context(scripted([reply([endTurn("call-1", true)])])))).toEqual({ ended: true });
 });
 
 test("an action that goes through resets the failures in a row", async () => {
@@ -184,12 +242,13 @@ test("a failed read doesn't count against the retries", async () => {
 	expect(await playTurn(await agent(), context(model, { retriesPerAction: 0 }))).toEqual({ ended: true });
 });
 
-test("the actions per turn limit stops the turn after that many actions, and the reply's later calls don't run", async () => {
+test("the actions per turn limit ends the turn with force after that many actions, and the reply's later calls don't run", async () => {
 	const warn = vi.spyOn(logger, "warn");
 	const model = scripted([reply([endTurn("call-1", false), updatePlan("call-2", "Too late.")])]);
 
-	expect(await playTurn(await agent(), context(model, { actionsPerTurn: 1 }))).toEqual({ ended: false, reason: "It reached the actions per turn limit of 1" });
-	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.stringContaining("actions per turn limit of 1"), expect.objectContaining({ limit: "actionsPerTurn" }));
+	expect(await playTurn(await agent(), context(model, { actionsPerTurn: 1 }))).toEqual({ ended: true });
+	expect(warn).toHaveBeenCalledWith("turn_forced", expect.stringContaining("actions per turn limit of 1"), expect.objectContaining({ limit: "actionsPerTurn" }));
+	expect(forcedEnds()).toHaveLength(1);
 	expect(fs.existsSync(path.join(folder, "plan.md"))).toBe(false);
 });
 
@@ -203,22 +262,23 @@ test("an end turn that goes through ends the turn, though it reaches the actions
 	expect(await playTurn(await agent(), context(scripted([reply([endTurn("call-1", true)])]), { actionsPerTurn: 1 }))).toEqual({ ended: true });
 });
 
-test("the time limit stops the model call in progress, and stops the turn rather than cancelling it", async () => {
+test("the time limit stops the model call in progress, and ends the turn with force rather than cancelling it", async () => {
 	const warn = vi.spyOn(logger, "warn");
 	const { model } = waitingForAbort([]);
 
-	expect(await playTurn(await agent(), context(model, { turnMinutes: 0.0001 }), { signal: new AbortController().signal })).toEqual({ ended: false, reason: "It reached the time per turn limit of 0.0001 minutes" });
-	expect(warn).toHaveBeenCalledWith("turn_stopped", expect.anything(), expect.objectContaining({ limit: "turnMinutes" }));
+	expect(await playTurn(await agent(), context(model, { turnMinutes: 0.0001 }), { signal: new AbortController().signal })).toEqual({ ended: true });
+	expect(warn).toHaveBeenCalledWith("turn_forced", "Player 3's turn was ended with force: It reached the time per turn limit of 0.0001 minutes", expect.objectContaining({ limit: "turnMinutes" }));
+	expect(forcedEnds()).toHaveLength(1);
 });
 
-test("the time limit stops the turn before the next tool call", async () => {
+test("the time limit ends the turn with force before the next tool call", async () => {
 	vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
 
 	const answer = game.onCommand;
 
 	// The blocked end turn takes past the limit.
 	game.onCommand = (stateIndex, text) => {
-		if (text.includes("EndTurn")) {
+		if (text.includes("EndTurn(3, false)")) {
 			vi.advanceTimersByTime(60_000);
 		}
 
@@ -228,19 +288,21 @@ test("the time limit stops the turn before the next tool call", async () => {
 	try {
 		const model = scripted([reply([endTurn("call-1", false), updatePlan("call-2", "Too late.")])]);
 
-		expect(await playTurn(await agent(), context(model, { turnMinutes: 1 }))).toMatchObject({ ended: false, reason: expect.stringContaining("time per turn") as unknown });
+		expect(await playTurn(await agent(), context(model, { turnMinutes: 1 }))).toEqual({ ended: true });
 		expect(fs.existsSync(path.join(folder, "plan.md"))).toBe(false);
+		expect(forcedEnds()).toHaveLength(1);
 	} finally {
 		vi.useRealTimers();
 	}
 });
 
-test("a failed model call stops the turn with its reason", async () => {
+test("a failed model call stops the turn with its reason, and sends no end turn", async () => {
 	const model = scripted([]);
 
 	model.doStream = () => Promise.reject(new APICallError({ message: "Bad key", url: "https://api.example.com", requestBodyValues: {}, statusCode: 401 }));
 
 	expect(await playTurn(await agent(), context(model))).toMatchObject({ ended: false, reason: expect.stringContaining("Bad key") as unknown });
+	expect(lua().some((text) => text.includes("EndTurn"))).toBe(false);
 });
 
 test("a state that can't be read stops the turn before the model is called", async () => {
@@ -286,15 +348,6 @@ test("a turn started again plays, though the agent already ended it", async () =
 	expect(model.doStreamCalls).toHaveLength(2);
 	expect(JSON.stringify(model.doStreamCalls[0].prompt)).not.toContain("still the same turn");
 	expect(JSON.stringify(model.doStreamCalls[1].prompt)).toContain("still the same turn");
-});
-
-test("a turn that stops doesn't count as ended, so the next signal plays it", async () => {
-	const player = await agent();
-	const model = scripted([reply([THINK]), reply([endTurn("call-1", true)])]);
-
-	expect(await playTurn(player, context(model, { retriesPerAction: 0 }))).toMatchObject({ ended: false });
-	expect(player.endedTurn).toBeUndefined();
-	expect(await playTurn(player, context(model))).toEqual({ ended: true });
 });
 
 test("a game load during the model call cancels the turn, without a stop warning", async () => {

@@ -22,7 +22,7 @@ Each agent's files are private. No agent can read another agent's memory.
 | --- | --- | --- |
 | `plan.md` | Markdown after YAML front matter | `update_plan` |
 | `journal.md` | Markdown after YAML front matter, one `## Turn N` section per entry | `add_journal_entry` |
-| `decisions.jsonl` | One JSON [decision record](agents/turn-loop.md#decision-records) per line | `record_decision`, `record_result` |
+| `decisions.jsonl` | One JSON [decision record](agents/turn-loop/decision-records.md) per line | `record_decision`, `record_result` |
 
 Phase 2 has no relationships file. Each file carries `schemaVersion`, as [versioning.md](versioning.md#bump-rules) requires: the front matter holds it for the Markdown files, and each line holds it for `decisions.jsonl`.
 

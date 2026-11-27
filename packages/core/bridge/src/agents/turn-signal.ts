@@ -1,6 +1,6 @@
 // Starts an agent's turn on its turn signal. The core mod prints AGENT_TURN
 // only for agent players, so each player it names gets an agent, built the
-// first time. docs/design/agents/turn-loop.md has the design.
+// first time. docs/design/agents/turn-loop/README.md has the design.
 
 import type { CoreEvent } from "../events.js";
 import type { Knowledge } from "../knowledge.js";

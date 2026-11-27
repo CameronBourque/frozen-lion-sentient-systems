@@ -97,7 +97,7 @@ The game won't save with a leader screen up. The player has to leave the screen 
 
 A session waits behind another open session, and a war request then fails. See [declaring war](war-and-peace.md#declaring-war).
 
-An end turn request with a leader screen up closes the screen and doesn't end the turn. See [ending the turn](end-turn.md#ending-the-turn).
+An end turn request with a leader screen up closes the screen and doesn't end the turn. See [with a leader screen up](end-turn-holds.md#with-a-leader-screen-up).
 
 ## Method
 

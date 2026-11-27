@@ -3,9 +3,9 @@
 // section of the core mod's Lua does.
 
 import { z } from "zod";
+import { BLOCKERS } from "../schemas.js";
 import { readStash, type StashResult } from "../stash.js";
 import type { TunerClient } from "../tuner/client.js";
-import { BLOCKERS } from "./blockers.js";
 import { CITY } from "./cities.js";
 import { CONTINENT } from "./continents.js";
 import { DIPLOMACY } from "./diplomacy.js";
