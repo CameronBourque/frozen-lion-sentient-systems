@@ -56,11 +56,24 @@ describe("SentientSystems_EndTurn", function()
 		assert.equal("{\"ok\":true}", Load({ blockers = { "ENDTURN_BLOCKING_UNITS" } }).SentientSystems_EndTurn(0))
 	end)
 
-	it("ends the turn anyway with force", function()
-		local env = Load({ blockers = { "ENDTURN_BLOCKING_RESEARCH" }, units = { Unit(131073, true) } })
+	it("ends the turn anyway with force, and lists the blockers it skipped", function()
+		local env = Load({
+			blockers = { "ENDTURN_BLOCKING_UNITS", "ENDTURN_BLOCKING_RESEARCH" },
+			units = { Unit(131073, true) },
+		})
 
-		assert.equal("{\"ok\":true}", env.SentientSystems_EndTurn(0, true))
+		assert.equal(
+			"{\"ok\":true,\"skipped\":{\"list\":[{\"choice\":\"techs\",\"type\":\"ENDTURN_BLOCKING_RESEARCH\"}],\"units\":[131073]}}",
+			env.SentientSystems_EndTurn(0, true)
+		)
 		assert.same({ { action = env.ActionTypes.ACTION_ENDTURN } }, env.requests)
+	end)
+
+	it("lists no skipped blockers with force when none are left", function()
+		assert.equal(
+			"{\"ok\":true,\"skipped\":{\"list\":[],\"units\":[]}}",
+			Load().SentientSystems_EndTurn(0, true)
+		)
 	end)
 
 	it("sends one request at most in a turn, even with force", function()

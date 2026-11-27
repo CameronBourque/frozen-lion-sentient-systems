@@ -24,16 +24,29 @@ function SentientSystems_ForgetEndTurn()
 	requestedTurn = nil
 end
 
--- Returns the blockers other than the unit blockers, as a reason lists them.
+-- Returns the player's blockers, with the unit blockers left out of the list,
+-- since the units that need orders stand in for them.
+local function GetTurnBlockers(playerID)
+	local blockers = SentientSystems_GetBlockerState(playerID)
+	local list = {}
+
+	for _, blocker in ipairs(blockers.list) do
+		if not UNIT_BLOCKERS[blocker.type] then
+			list[#list + 1] = blocker
+		end
+	end
+
+	return { list = list, units = blockers.units }
+end
+
+-- Returns the blockers as a reason lists them.
 local function ListBlockers(list)
 	local listed = {}
 
 	for _, blocker in ipairs(list) do
-		if not UNIT_BLOCKERS[blocker.type] then
-			local choice = blocker.choice and " (the " .. blocker.choice .. " choice)" or ""
+		local choice = blocker.choice and " (the " .. blocker.choice .. " choice)" or ""
 
-			listed[#listed + 1] = blocker.type .. choice
-		end
+		listed[#listed + 1] = blocker.type .. choice
 	end
 
 	return listed
@@ -41,8 +54,7 @@ end
 
 -- Returns why the turn can't end, or nil. The Next Turn button ends the turn
 -- only with no blocker left. See DoEndTurn in ActionPanel.lua.
-local function GetBlockedFailure(playerID)
-	local blockers = SentientSystems_GetBlockerState(playerID)
+local function GetBlockedFailure(blockers)
 	local listed = ListBlockers(blockers.list)
 	local parts = {}
 
@@ -93,8 +105,10 @@ local function EndTurn(playerID, force)
 		return sessionFailure
 	end
 
+	local blockers = GetTurnBlockers(playerID)
+
 	if not force then
-		local failure = GetBlockedFailure(playerID)
+		local failure = GetBlockedFailure(blockers)
 
 		if failure ~= nil then
 			return failure
@@ -104,12 +118,17 @@ local function EndTurn(playerID, force)
 	UI.RequestAction(ActionTypes.ACTION_ENDTURN)
 	requestedTurn = turn
 
+	if force then
+		return nil, { skipped = blockers }
+	end
+
 	return nil
 end
 
 -- Ends the player's turn, and returns the result as JSON. Without force, it
--- fails while a blocker is left. With force, the game skips the blockers. It
--- fails while a diplomacy session is open, with or without force.
+-- fails while a blocker is left. With force, the game skips the blockers, and
+-- the result lists them. It fails while a diplomacy session is open, with or
+-- without force.
 function SentientSystems_EndTurn(playerID, force)
 	return SentientSystems_RunAction("EndTurn", EndTurn, playerID, force)
 end

@@ -18,4 +18,16 @@ describe("endTurn", () => {
 
 		expect(await endTurn(client, 0, force)).toEqual({ ok: true });
 	});
+
+	test("reads the blockers a forced end skipped", async () => {
+		const { game, client } = await startGame();
+		const skipped = { list: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }], units: [131073] };
+
+		game.onCommand = (_stateIndex, command) => ({
+			"SentientSystems_Stash(SentientSystems_EndTurn(0, true))": { output: ["1"] },
+			"SentientSystems_PrintPiece(1)": { output: [JSON.stringify({ ok: true, skipped })] },
+		})[command] ?? {};
+
+		expect(await endTurn(client, 0, true)).toEqual({ ok: true, skipped });
+	});
 });

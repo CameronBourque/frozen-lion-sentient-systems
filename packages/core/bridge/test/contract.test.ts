@@ -7,6 +7,7 @@ import path from "node:path";
 import { describe, expect, test } from "vitest";
 import type { z } from "zod";
 import { ACTION_RESULT } from "../src/actions/actions.js";
+import { END_TURN_RESULT } from "../src/actions/turn.js";
 import { CHOICES } from "../src/choices/choices.js";
 import { PAGE_REPLY, SEARCH, SECTION_REPLY, SECTIONS } from "../src/lookup/lookup.js";
 import { PLACEMENT } from "../src/placement/placement.js";
@@ -28,6 +29,7 @@ const CALLS: Record<string, z.ZodType> = {
 	GetGovernorTree: GOVERNOR_TREE,
 	GetPlacement: PLACEMENT,
 	MoveUnit: ACTION_RESULT,
+	EndTurn: END_TURN_RESULT,
 	GetCityRoutes: CITY_ROUTES,
 	GetGreatWorkMoves: GREAT_WORK_MOVES,
 	Lookup: SEARCH,

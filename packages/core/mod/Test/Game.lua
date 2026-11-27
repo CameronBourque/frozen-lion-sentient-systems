@@ -32,6 +32,7 @@ local RECORDED = {
 	"GetCityRoutes",
 	"GetGreatWorkMoves",
 	"MoveUnit",
+	"EndTurn",
 	"Lookup",
 	"LookupPage",
 	"LookupSections",

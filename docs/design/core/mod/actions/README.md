@@ -32,6 +32,8 @@ Every action returns the same JSON, `{ "ok": true }` or `{ "ok": false, "reason"
 
 The action is a named local function that takes the arguments after it. It returns nothing when it worked and the reason as text when it failed.
 
+An action that worked can return a table second, and its fields go in the result beside `ok`. The [end turn action](turn.md) lists the blockers that `force` skipped that way. The bridge reads such a result with the action's own schema, which `sendAction` takes.
+
 The public function is one line that passes its arguments to `RunAction`, so a search for the global finds its parameters and its comment. A Lua error in it comes back as a failure with the error's first line, so the bridge always reads a reason.
 
 The bridge reads the result through the stash. `sendAction` in [actions.ts](../../../../../packages/core/bridge/src/actions/actions.ts) turns a failure to reach the game, or a reply that isn't a result, into a failed result with that error as the reason. The shape is the schema in the same file.

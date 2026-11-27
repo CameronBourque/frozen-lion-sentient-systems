@@ -12,16 +12,23 @@ local MAX_LISTED = 8
 -- Runs an action with the arguments after it and returns its result as JSON
 -- for the bridge. The action returns nil when it worked, and the reason it
 -- failed as text otherwise. A Lua error in it comes back as a failure too, with
--- the error's first line.
+-- the error's first line. An action that worked can return a table of fields
+-- second, which the result holds beside ok.
 function SentientSystems_RunAction(name, action, ...)
-	local ok, reason = pcall(action, ...)
+	local ok, reason, fields = pcall(action, ...)
 
 	if not ok then
 		reason = name .. " failed: " .. tostring(reason):match("[^\n]*")
 	end
 
 	if reason == nil then
-		return SentientSystems_EncodeJson({ ok = true })
+		local result = { ok = true }
+
+		for key, value in pairs(fields or {}) do
+			result[key] = value
+		end
+
+		return SentientSystems_EncodeJson(result)
 	end
 
 	return SentientSystems_EncodeJson({ ok = false, reason = tostring(reason) })
