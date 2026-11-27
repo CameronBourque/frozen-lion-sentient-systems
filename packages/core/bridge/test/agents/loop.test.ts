@@ -173,23 +173,34 @@ test("failed actions in a row past the retries limit end the turn with force", a
 	expect(forcedEnds()).toHaveLength(1);
 });
 
-test("a forced end warns of each blocker and unit it skipped", async () => {
+test("a forced end warns of the blockers it skipped on one line, and the units on another", async () => {
 	const warn = vi.spyOn(logger, "warn");
 
 	answerStash(game, {
 		"SentientSystems_GetState(3)": MINIMAL_STATE,
 		"SentientSystems_EndTurn(3, true)": {
 			ok: true,
-			skipped: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }, { type: "ENDTURN_BLOCKING_UNIT_PROMOTION" }], units: [131073] },
+			skipped: { list: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }, { type: "ENDTURN_BLOCKING_UNIT_PROMOTION" }], units: [131073, 131074] },
 		},
 	});
 
 	expect(await playTurn(await agent(), context(scripted([reply([THINK])]), { retriesPerAction: 0 }))).toEqual({ ended: true });
-	expect(warn.mock.calls.filter(([event]) => event === "blocker_skipped")).toEqual([
-		["blocker_skipped", "Player 3's forced end turn skipped ENDTURN_BLOCKING_RESEARCH", { player: 3, blocker: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }],
-		["blocker_skipped", "Player 3's forced end turn skipped ENDTURN_BLOCKING_UNIT_PROMOTION", { player: 3, blocker: "ENDTURN_BLOCKING_UNIT_PROMOTION" }],
-		["blocker_skipped", "Player 3's forced end turn skipped unit 131073, which needed orders", { player: 3, unit: 131073 }],
+	expect(warn.mock.calls.filter(([event]) => event.endsWith("_skipped"))).toEqual([
+		["blockers_skipped", "Player 3's forced end turn skipped the blockers ENDTURN_BLOCKING_RESEARCH, ENDTURN_BLOCKING_UNIT_PROMOTION", { player: 3, blockers: [{ type: "ENDTURN_BLOCKING_RESEARCH", choice: "techs" }, { type: "ENDTURN_BLOCKING_UNIT_PROMOTION" }] }],
+		["units_skipped", "Player 3's forced end turn skipped the units that needed orders: 131073, 131074", { player: 3, units: [131073, 131074] }],
 	]);
+});
+
+test("a forced end with nothing left to skip warns of no blockers or units", async () => {
+	const warn = vi.spyOn(logger, "warn");
+
+	answerStash(game, {
+		"SentientSystems_GetState(3)": MINIMAL_STATE,
+		"SentientSystems_EndTurn(3, true)": { ok: true, skipped: { list: [], units: [] } },
+	});
+
+	expect(await playTurn(await agent(), context(scripted([reply([THINK])]), { retriesPerAction: 0 }))).toEqual({ ended: true });
+	expect(warn.mock.calls.filter(([event]) => event.endsWith("_skipped"))).toEqual([]);
 });
 
 test("a forced end that fails stops the turn with both reasons, and the next signal plays it", async () => {

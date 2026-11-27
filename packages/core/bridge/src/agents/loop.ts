@@ -267,8 +267,8 @@ async function endedBySignal(run: TurnRun): Promise<TurnResult | undefined> {
 }
 
 // Ends the turn with force, so one stuck turn can't stop the game, and warns
-// of each blocker it skipped. A forced end that fails, such as with a deal
-// waiting, stops the turn, and the game waits on the agent.
+// of the blockers and the units it skipped. A forced end that fails, such as
+// with a deal waiting, stops the turn, and the game waits on the agent.
 async function reachLimit({ agent, context }: TurnRun, limit: keyof Limits): Promise<TurnResult> {
 	const { client, logger } = context;
 	const player = agent.playerID;
@@ -281,12 +281,15 @@ async function reachLimit({ agent, context }: TurnRun, limit: keyof Limits): Pro
 
 	logger.warn("turn_forced", `Player ${player}'s turn was ended with force: ${reason}`, { player, reason, limit });
 
-	for (const { type, choice } of result.skipped?.list ?? []) {
-		logger.warn("blocker_skipped", `Player ${player}'s forced end turn skipped ${type}`, { player, blocker: type, ...(choice === undefined ? {} : { choice }) });
+	const blockers = result.skipped?.list ?? [];
+	const units = result.skipped?.units ?? [];
+
+	if (blockers.length > 0) {
+		logger.warn("blockers_skipped", `Player ${player}'s forced end turn skipped the blockers ${blockers.map(({ type }) => type).join(", ")}`, { player, blockers });
 	}
 
-	for (const unit of result.skipped?.units ?? []) {
-		logger.warn("blocker_skipped", `Player ${player}'s forced end turn skipped unit ${unit}, which needed orders`, { player, unit });
+	if (units.length > 0) {
+		logger.warn("units_skipped", `Player ${player}'s forced end turn skipped the units that needed orders: ${units.join(", ")}`, { player, units });
 	}
 
 	return { ended: true };
