@@ -50,6 +50,8 @@ A failed model call stops the turn with the failure's message. A turn that stops
 
 The action tools log each action with its `reason`, and the loop logs every tool call at the debug level as `tool_call`. Each model call logs its tokens and cost as `model_call`.
 
+A failed call's record holds the text the model got in `failure`, and its message holds the first line, so the log says why, such as a game that didn't answer.
+
 ## Tools
 
 There is one tool per kind of decision. For example, `move_unit` moves any unit, and `unit_action(unit, action, target)` covers fortify, found city, build improvement, and pillage.

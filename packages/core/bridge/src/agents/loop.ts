@@ -161,7 +161,11 @@ async function runCalls(agent: Agent, context: LoopContext, calls: ToolCall[], s
 
 		const output = await callTool(agent.tools, call.name, call.input);
 
-		logger.debug("tool_call", `${call.name}: ${output.isError ? "failed" : "done"}`, { player: agent.playerID, tool: call.name, input: call.input, ok: !output.isError });
+		// The failure is the text the model gets, which says why, such as a
+		// game that didn't answer. The message keeps its first line.
+		const outcome = output.isError ? `failed: ${output.text.split("\n")[0]}` : "done";
+
+		logger.debug("tool_call", `${call.name}: ${outcome}`, { player: agent.playerID, tool: call.name, input: call.input, ok: !output.isError, ...(output.isError ? { failure: output.text } : {}) });
 
 		if (call.name === END_TURN && !output.isError) {
 			return { ended: true };

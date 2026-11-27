@@ -27,4 +27,5 @@ The turn's abort signal ends the wait, so a load cancels a waiting turn as it ca
 | Decision | Reason |
 | --- | --- |
 | A game load cancels the running turn, and resets the agents | The load resets the socket, which fails the Lua call in progress, but the model call would go on and act in the new game. The new game may be an earlier save of the same turn |
+| The check asks the game, and doesn't read the failure text | The text is written for the model, so a check on its wording breaks when the wording changes. Only the game can say whether it answers |
 | A failed tool call waits for the game before the next call or model call | A game that doesn't answer can only fail each call after a timeout, and each model call on those failures costs tokens. A check after each failed call is one fast Lua command when the game answers |

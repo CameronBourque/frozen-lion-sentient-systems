@@ -93,6 +93,19 @@ test("a blocked end_turn goes back to the model with its reason, and the model t
 	expect(second.at(-1)).toMatchObject({ role: "tool", content: [{ type: "tool-result", toolCallId: "call-1", output: { type: "error-text", value: expect.stringContaining("Choose a research.") as unknown } }] });
 });
 
+test("a failed call logs why it failed, and a call that goes through logs no failure", async () => {
+	const debug = vi.spyOn(logger, "debug");
+
+	await playTurn(await agent(), context(scripted([reply([endTurn("call-1", false)]), reply([endTurn("call-2", true)])])));
+
+	const [failed, done] = debug.mock.calls.filter(([event]) => event === "tool_call");
+
+	expect(failed[1]).toMatch(/^end_turn: failed: .*Choose a research\./);
+	expect(failed[2]).toMatchObject({ ok: false, failure: expect.stringContaining("Choose a research.") as unknown });
+	expect(done[1]).toBe("end_turn: done");
+	expect(done[2]).not.toHaveProperty("failure");
+});
+
 test("every call in a reply runs in order, and its result goes back", async () => {
 	const plan: Content = { type: "tool-call", toolCallId: "call-1", toolName: "update_plan", input: JSON.stringify({ plan: "Build a settler." }) };
 	const model = scripted([reply([plan, endTurn("call-2", false)]), reply([endTurn("call-3", true)])]);
