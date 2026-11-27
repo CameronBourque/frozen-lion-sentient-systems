@@ -30,7 +30,7 @@ The finished steps are in [done/](done/README.md).
 | 10 | Forced end turn | Another try after a blocked end turn, and a forced end at a limit | `feat(core): force the end turn at the turn limit` | Done. See [turn-loop.md](done/turn-loop.md#forced-end-turn) |
 | 11 | Auto-explore | An `explore` order in `unit_action` for the model, and a `wake` that stops it | `feat(core): add auto-explore to unit actions` | Done. See [turn-loop.md](done/turn-loop.md#auto-explore) |
 | 12 | Game options | Warn when quick movement or quick combat is off | `feat(core): warn when quick movement or quick combat is off` | Done. See [turn-loop.md](done/turn-loop.md#game-options) |
-| 13 | [Stopping and spending limits](stopping.md) | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | |
+| 13 | Stopping and spending limits | The stop key, a turn count, and cost limits per turn and per run | `feat(core): add the stop key and spending limits` | Done. See [turn-loop.md](done/turn-loop.md#stopping-and-spending-limits) |
 | 14 | [Claude runner](claude-agent-sdk.md) | The agent runner, and the Claude Agent SDK runner behind a flag | `feat(core): run Claude agents through the Agent SDK` | |
 | 15 | [Metrics line](metrics-line.md) | A line with each player's score after each agent turn, for the baseline | `feat(core): add the metrics line` | |
 | 16 | [Yield and empire metrics](metrics-yields.md) | Yields, military strength, cities, population, techs, and civics | `feat(core): add yields and empire counts to the metrics` | |
