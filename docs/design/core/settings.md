@@ -16,6 +16,10 @@ Git ignores `tmp/`. `src/config.ts` holds the `zod` schema, and `src/load-config
 - `journalEntries`, how many of an agent's newest journal entries each turn's [prompt](../agents/prompt.md#two-calls) holds, with `10` as the default,
 - `limits`, the [turn limits](../agents/turn-loop/failure-handling.md): `retriesPerAction`, `actionsPerTurn`, and `turnMinutes`, with `3`, `250`, and `15` as the defaults.
 
+  `limits` also holds the [spending limits](../agents/turn-loop/stopping.md): `tokensPerTurn` and `tokensPerRun`, a whole number of input and output tokens, and `costPerTurn` and `costPerRun`, in US dollars. Each is `-1` by default, which is no limit.
+
+  Any other limit must be above 0, and a quoted number is an error. A cost limit needs `model.price`.
+
 The schema rejects unknown fields, so a misspelled field is an error instead of a silent default. If the file is missing, the bridge writes a commented example there, names its path, and exits. A bad file exits with one error per field, such as `logLevel: Invalid option`.
 
 A plan's sign-in lives apart from the config file, in `auth/` in the config file's folder. `auth/openai.json` holds the ChatGPT plan's host ID, issued client ID, and tokens, with its own `schemaVersion`, as [subscription-token.md](subscription-token.md) describes.

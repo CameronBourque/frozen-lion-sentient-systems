@@ -84,16 +84,44 @@ export type ModelSetting = z.infer<typeof MODEL>;
 
 export const NO_MODEL: ModelSetting = { mode: "api-key", provider: "", id: "", effort: "", price: NO_PRICE };
 
-// A late-game turn moves many units and runs many cities, so the actions per
-// turn leave room for it.
-export const DEFAULT_LIMITS = { retriesPerAction: 3, actionsPerTurn: 250, turnMinutes: 15 };
+// A spending limit with this value has no limit. A number, not a blank
+// string, so a user who quotes a number gets an error.
+export const NO_LIMIT = -1;
 
-// When the loop reaches one, it ends the turn, so one stuck turn can't stop a
-// game.
+// A late-game turn moves many units and runs many cities, so the actions per
+// turn leave room for it. There is no spending limit until the user sets one.
+export const DEFAULT_LIMITS = {
+	retriesPerAction: 3,
+	actionsPerTurn: 250,
+	turnMinutes: 15,
+	tokensPerTurn: NO_LIMIT,
+	tokensPerRun: NO_LIMIT,
+	costPerTurn: NO_LIMIT,
+	costPerRun: NO_LIMIT,
+};
+
+// Every bad value gets the same error, which says how to write a good one.
+function spendLimit(valid: (value: number) => boolean, what: string): z.ZodDefault<z.ZodNumber> {
+	const error = `Write ${NO_LIMIT} for no limit, or ${what} above 0, with no quotes`;
+
+	return z.number({ error }).refine((value) => value === NO_LIMIT || (value > 0 && valid(value)), { error }).default(NO_LIMIT);
+}
+
+const TOKEN_LIMIT = spendLimit(Number.isInteger, "a whole number");
+
+// In US dollars, which needs the model's price.
+const COST_LIMIT = spendLimit(Number.isFinite, "a dollar amount");
+
+// When the loop reaches a turn limit, it ends the turn, so one stuck turn can't
+// stop a game. A run limit stops the bridge.
 const LIMITS = z.strictObject({
 	retriesPerAction: z.int().min(0).default(DEFAULT_LIMITS.retriesPerAction),
 	actionsPerTurn: z.int().min(1).default(DEFAULT_LIMITS.actionsPerTurn),
 	turnMinutes: z.number().positive().default(DEFAULT_LIMITS.turnMinutes),
+	tokensPerTurn: TOKEN_LIMIT,
+	tokensPerRun: TOKEN_LIMIT,
+	costPerTurn: COST_LIMIT,
+	costPerRun: COST_LIMIT,
 });
 
 export type Limits = z.infer<typeof LIMITS>;

@@ -9,12 +9,13 @@ import type { Limits, ModelSetting } from "../config.js";
 import type { LogFields, Logger } from "../log.js";
 import { callTool } from "../mcp/in-process.js";
 import { readMemory, startMemory } from "../memory/store.js";
-import { type ModelTarget, type ToolCall, type ToolDefinition, callModel } from "../model/client.js";
+import { type ModelTarget, type ToolCall, type ToolDefinition, type Usage, callModel } from "../model/client.js";
 import { logModelCall } from "../model/usage.js";
 import { readState } from "../state/state.js";
 import type { TunerClient } from "../tuner/client.js";
 import { waitForGame } from "./game-wait.js";
 import { turnMessage } from "./prompt.js";
+import { type Spend, addSpend, noSpend, reachedSpendLimit } from "./spend.js";
 
 // What stays the same for an agent from turn to turn. first is true until
 // its first turn after the bridge starts.
@@ -36,17 +37,20 @@ export interface LoopContext {
 	model: ModelSetting;
 	journalEntries: number;
 	limits: Limits;
+	// What every agent's model calls spent since the bridge started.
+	runSpend: Spend;
 	now: () => Date;
 	// How long a turn waits between checks on a game that doesn't answer.
 	gameWaitMs?: number;
 }
 
-// A turn that stops without an end turn leaves the game waiting on the agent. A
-// skipped turn was already ended, so the game has moved on. A cancelled turn
-// belongs to a game that is no longer loaded, or to a bridge that is stopping.
+// A turn that stops without an end turn leaves the game waiting on the agent,
+// and stopRun asks the bridge to stop too. A skipped turn was already ended, so
+// the game has moved on. A cancelled turn belongs to a game that is no longer
+// loaded, or to a bridge that is stopping.
 export type TurnResult =
 	| { ended: true }
-	| { ended: false; reason: string }
+	| { ended: false; reason: string; stopRun?: true }
 	| { ended: false; skipped: true }
 	| { ended: false; cancelled: true };
 
@@ -71,17 +75,26 @@ const END_TURN = "end_turn";
 const NUDGE = "You wrote no tool call. Take your next action, or call end_turn when you are done.";
 
 // How each limit reads in the log when the turn reaches it.
-const LIMIT_TEXT: Record<keyof Limits, (value: number) => string> = {
-	retriesPerAction: (value) => `It reached the retries per action limit of ${value}, with ${value + 1} failures in a row`,
-	actionsPerTurn: (value) => `It reached the actions per turn limit of ${value}`,
-	turnMinutes: (value) => `It reached the time per turn limit of ${value} minutes`,
+const LIMIT_TEXT: Record<keyof Limits, (limits: Limits) => string> = {
+	retriesPerAction: ({ retriesPerAction }) => `It reached the retries per action limit of ${retriesPerAction}, with ${retriesPerAction + 1} failures in a row`,
+	actionsPerTurn: ({ actionsPerTurn }) => `It reached the actions per turn limit of ${actionsPerTurn}`,
+	turnMinutes: ({ turnMinutes }) => `It reached the time per turn limit of ${turnMinutes} minutes`,
+	tokensPerTurn: ({ tokensPerTurn }) => `It reached the tokens per turn limit of ${tokensPerTurn}`,
+	costPerTurn: ({ costPerTurn }) => `It reached the cost per turn limit of $${costPerTurn}`,
+	tokensPerRun: ({ tokensPerRun }) => `The run reached the tokens per run limit of ${tokensPerRun}`,
+	costPerRun: ({ costPerRun }) => `The run reached the cost per run limit of $${costPerRun}`,
 };
+
+// The model call failure that stops the run: a plan's usage limit, which fails
+// every call until the plan resets.
+const RUN_FAILURE = "limit";
 
 // What a turn has spent against its limits. failures counts the failed
 // actions in a row, and the replies with no tool call.
 interface Tally {
 	actions: number;
 	failures: number;
+	spend: Spend;
 }
 
 // The abort reason of a turn that reaches its time limit. Any other reason
@@ -147,7 +160,7 @@ async function converseInTime(agent: Agent, context: LoopContext, messages: Mode
 	const signal = cancel === undefined ? clock.signal : AbortSignal.any([cancel, clock.signal]);
 
 	try {
-		return await converse({ agent, context, signal, actions: actionTools(agent.definitions), tally: { actions: 0, failures: 0 } }, messages);
+		return await converse({ agent, context, signal, actions: actionTools(agent.definitions), tally: { actions: 0, failures: 0, spend: noSpend() } }, messages);
 	} finally {
 		clearTimeout(timer);
 	}
@@ -173,10 +186,17 @@ async function converse(run: TurnRun, messages: ModelMessage[]): Promise<TurnRes
 		}
 
 		if (!result.ok) {
-			return stopTurn(context.logger, agent, result.error);
+			return result.kind === RUN_FAILURE ? stopRun(context.logger, agent, result.error) : stopTurn(context.logger, agent, result.error);
 		}
 
 		logModelCall(context.logger, context.model, result.reply.usage);
+
+		const spent = await spendCall(run, result.reply.usage);
+
+		if (spent !== undefined) {
+			return spent;
+		}
+
 		messages.push(...result.reply.messages);
 
 		if (result.reply.toolCalls.length === 0) {
@@ -198,6 +218,26 @@ async function converse(run: TurnRun, messages: ModelMessage[]): Promise<TurnRes
 
 		messages.push(ran);
 	}
+}
+
+// Adds the call to the turn's and the run's spend. At a spending limit, the
+// reply's tool calls don't run. A run at its limit stops, which wins over a
+// turn at its limit, since a forced end would start more turns.
+async function spendCall(run: TurnRun, usage: Usage): Promise<TurnResult | undefined> {
+	const { agent, context, tally } = run;
+
+	addSpend(tally.spend, usage, context.model.price);
+	addSpend(context.runSpend, usage, context.model.price);
+
+	const runLimit = reachedSpendLimit(context.runSpend, context.limits, "run");
+
+	if (runLimit !== undefined) {
+		return stopRun(context.logger, agent, LIMIT_TEXT[runLimit](context.limits), { limit: runLimit });
+	}
+
+	const turnLimit = reachedSpendLimit(tally.spend, context.limits, "turn");
+
+	return turnLimit === undefined ? undefined : await reachLimit(run, turnLimit);
 }
 
 // Runs the calls in order. Once end_turn goes through, it's another
@@ -282,7 +322,7 @@ async function endedBySignal(run: TurnRun): Promise<TurnResult | undefined> {
 async function reachLimit({ agent, context }: TurnRun, limit: keyof Limits): Promise<TurnResult> {
 	const { client, logger } = context;
 	const player = agent.playerID;
-	const reason = LIMIT_TEXT[limit](context.limits[limit]);
+	const reason = LIMIT_TEXT[limit](context.limits);
 	const result = await endTurn(client, player, true);
 
 	if (!result.ok) {
@@ -317,4 +357,11 @@ function stopTurn(logger: Logger, agent: Agent, reason: string, fields: LogField
 	logger.warn("turn_stopped", `Player ${agent.playerID}'s turn stopped without an end turn: ${reason}`, { player: agent.playerID, reason, ...fields });
 
 	return { ended: false, reason };
+}
+
+// The bridge stops once the turn returns, as it does for the stop key.
+function stopRun(logger: Logger, agent: Agent, reason: string, fields: LogFields = {}): TurnResult {
+	stopTurn(logger, agent, reason, { ...fields, stopRun: true });
+
+	return { ended: false, reason, stopRun: true };
 }

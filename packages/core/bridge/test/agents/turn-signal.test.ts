@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import type { MockLanguageModelV4 } from "ai/test";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { noSpend } from "../../src/agents/spend.js";
 import { type SignalContext, turnSignal } from "../../src/agents/turn-signal.js";
 import { DEFAULT_LIMITS, NO_MODEL } from "../../src/config.js";
 import type { CoreEvent } from "../../src/events.js";
@@ -51,6 +52,7 @@ function context(model: MockLanguageModelV4, memory = (playerID: number) => path
 		model: NO_MODEL,
 		journalEntries: 5,
 		limits: DEFAULT_LIMITS,
+		runSpend: noSpend(),
 		now: () => new Date("2026-11-26T12:00:00Z"),
 		knowledge: new Map(),
 		memory,
@@ -181,6 +183,18 @@ test("a stop cancels a model call that never answers, sends no end turn, and set
 	expect(sent().some((lua) => lua.includes("SentientSystems_EndTurn"))).toBe(false);
 
 	await turn;
+});
+
+test("a turn at the run's spending limit asks the bridge to stop, and counts as no ended turn", async () => {
+	const reasons: string[] = [];
+	const counts: number[] = [];
+	const limits = { ...DEFAULT_LIMITS, tokensPerRun: 1 };
+	const { onEvent } = turnSignal({ ...context(scripted([endTurn()])), limits, onStopRun: (reason) => reasons.push(reason), onTurnEnded: (ended) => counts.push(ended) });
+
+	await onEvent(TURN_3);
+
+	expect(reasons).toEqual(["The run reached the tokens per run limit of 1"]);
+	expect(counts).toEqual([]);
 });
 
 test("no turn starts after a stop, even one waiting on a cancelled turn", async () => {

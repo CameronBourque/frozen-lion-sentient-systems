@@ -4,6 +4,7 @@
 
 import path from "node:path";
 import { getAsset, getAssetKeys, isSea } from "node:sea";
+import { describeSpend, noSpend, spendWarnings } from "./agents/spend.js";
 import { type TurnSignal, turnSignal } from "./agents/turn-signal.js";
 import { KEY_VARIABLES } from "./config.js";
 import { onConnect } from "./connect.js";
@@ -70,6 +71,7 @@ client.on("output", (line) => readLine(line, logger, onEvent));
 let mcp: McpHttp | undefined;
 
 let stopping = false;
+const runSpend = noSpend();
 
 // Sends no end turn, so the game waits on the agent's turn, and a restart
 // resumes it. docs/design/agents/turn-loop/stopping.md has the design.
@@ -83,7 +85,7 @@ const stopBridge = async (reason: string): Promise<void> => {
 	logger.info("stopping", "Stopping once the Lua command in progress ends. Press Ctrl+C again to exit at once.");
 	// Each turn waits for its Lua command, so the client closes after them.
 	await agents?.stop();
-	logger.warn("stopped", `Stopped the bridge, because ${reason}`, { reason });
+	logger.warn("stopped", `Stopped the bridge: ${reason}. The run spent ${describeSpend(runSpend)}`, { reason, ...runSpend });
 	client.close();
 	// Closes the MCP server first, so no request is cut off mid-reply.
 	await mcp?.close();
@@ -103,7 +105,7 @@ const { turns } = started;
 
 const onTurnEnded = turns === undefined ? undefined : (ended: number): void => {
 	if (ended === turns) {
-		void stopBridge(`the agents reached --turns ${turns}`);
+		void stopBridge(`The agents reached --turns ${turns}`);
 	}
 };
 
@@ -127,7 +129,14 @@ const startAgents = async (): Promise<boolean> => {
 	if (target.ok) {
 		const { config } = started;
 
-		agents = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, now: () => new Date(), knowledge, memory, onTurnEnded });
+		// After the picker, which may have filled in the price.
+		spendWarnings(config.limits, config.model.price).forEach((warning) => logger.warn("spend_warning", warning));
+
+		const onStopRun = (reason: string): void => {
+			void stopBridge(reason);
+		};
+
+		agents = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, runSpend, now: () => new Date(), knowledge, memory, onTurnEnded, onStopRun });
 	} else {
 		logger.warn("agents_off", `Agents won't play their turns: ${target.error}`, { reason: target.error });
 	}

@@ -16,6 +16,8 @@ A forced end can still fail, such as with a deal waiting or a game that doesn't 
 | `actionsPerTurn` | `250` | Calls to the action tools, the tools with a `reason` field, whether they fail or go through. Tools that read the state, look up rules, or change memory don't count |
 | `turnMinutes` | `15` | Time from the first model call of the turn. The limit aborts the model call in progress |
 
+The token and cost limits for each turn end the turn the same way. They are in [stopping.md](stopping.md), with the run limits that stop the bridge.
+
 A blocked `end_turn` counts as a failed action, and one that goes through ends the turn even at the actions limit. A [game load](../game-load.md) still cancels the turn, and sends no end turn.
 
 ## Decisions

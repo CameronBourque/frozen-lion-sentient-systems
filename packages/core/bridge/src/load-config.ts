@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
+import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, EFFORTS, KEY_VARIABLES, type ModelSetting, NO_LIMIT, PROVIDER_NAMES, type Provider, SCHEMA_VERSION, parseConfig, withEnvironmentKeys, withModel } from "./config.js";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "./log.js";
 import { RUN_MODE_NAMES } from "./model/providers/provider.js";
 
@@ -61,10 +61,20 @@ journalEntries: ${DEFAULT_JOURNAL_ENTRIES}
 # bridge logs a warning and ends its turn. retriesPerAction is how many actions in a row may fail,
 # where a reply with no tool call counts as a failure. actionsPerTurn counts the tools that act in
 # the game, not the ones that read it. turnMinutes is how long a turn may take.
+#
+# The spending limits cap the model calls, so an agent never spends more than you allow. Tokens
+# count input and output. Cost is in US dollars, and needs the model's price. A turn that reaches
+# its limit ends as it does at the limits above. A run, which is one start of the bridge, stops at
+# its limit, and the game waits on the agent's turn until you start the bridge again. ${NO_LIMIT} is no
+# limit. Write each limit as a plain number, with no quotes.
 limits:
   retriesPerAction: ${DEFAULT_LIMITS.retriesPerAction}
   actionsPerTurn: ${DEFAULT_LIMITS.actionsPerTurn}
   turnMinutes: ${DEFAULT_LIMITS.turnMinutes}
+  tokensPerTurn: ${NO_LIMIT}
+  tokensPerRun: ${NO_LIMIT}
+  costPerTurn: ${NO_LIMIT}
+  costPerRun: ${NO_LIMIT}
 `;
 
 // Where the bridge runs from. In development, tsx runs the bridge with

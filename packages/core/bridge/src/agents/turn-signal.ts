@@ -11,11 +11,13 @@ import { DEFAULT_PROFILE, systemPrompt } from "./prompt.js";
 import { type Agent, type CancelReason, type LoopContext, playTurn } from "./loop.js";
 
 // onTurnEnded gets the count of agent turns ended since the bridge started,
-// across all agents, each time one ends.
+// across all agents, each time one ends. onStopRun gets why a turn asked the
+// bridge to stop, such as a run spending limit.
 export interface SignalContext extends LoopContext {
 	knowledge: Knowledge;
 	memory: MemorySource;
 	onTurnEnded?: (ended: number) => void;
+	onStopRun?: (reason: string) => void;
 }
 
 // onEvent handles the core mod's events. stop cancels the running turns and
@@ -64,6 +66,8 @@ export function turnSignal(context: SignalContext): TurnSignal {
 				logger.info("turn_ended", `Player ${playerId} ended turn ${agent.endedTurn}`, { player: playerId, turn: agent.endedTurn });
 				ended += 1;
 				context.onTurnEnded?.(ended);
+			} else if ("stopRun" in result && result.stopRun === true) {
+				context.onStopRun?.(result.reason);
 			}
 		} catch (error) {
 			// A turn that throws must not stop the bridge, and the next signal
