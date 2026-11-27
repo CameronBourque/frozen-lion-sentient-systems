@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.37.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.36.0...core-v0.37.0) (2026-11-27)
+
+
+### Features
+
+* **core:** add auto-explore to unit actions ([#154](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/154)) ([ca47000](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/ca4700033625f582f55dead20f38ceb987e9d094))
+
 ## [0.36.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.35.0...core-v0.36.0) (2026-11-27)
 
 
