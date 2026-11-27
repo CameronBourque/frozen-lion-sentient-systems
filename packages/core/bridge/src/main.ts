@@ -73,12 +73,17 @@ let stopping = false;
 
 // Sends no end turn, so the game waits on the agent's turn, and a restart
 // resumes it. docs/design/agents/turn-loop/stopping.md has the design.
-const stopBridge = async (): Promise<void> => {
+const stopBridge = async (reason: string): Promise<void> => {
+	// A turn that ends while the bridge stops may reach the turn count.
+	if (stopping) {
+		return;
+	}
+
 	stopping = true;
 	logger.info("stopping", "Stopping once the Lua command in progress ends. Press Ctrl+C again to exit at once.");
 	// Each turn waits for its Lua command, so the client closes after them.
 	await agents?.stop();
-	logger.warn("stopped", "Stopped the bridge");
+	logger.warn("stopped", `Stopped the bridge, because ${reason}`, { reason });
 	client.close();
 	// Closes the MCP server first, so no request is cut off mid-reply.
 	await mcp?.close();
@@ -91,8 +96,16 @@ process.on("SIGINT", () => {
 		process.exit(1);
 	}
 
-	void stopBridge();
+	void stopBridge("Ctrl+C was pressed");
 });
+
+const { turns } = started;
+
+const onTurnEnded = turns === undefined ? undefined : (ended: number): void => {
+	if (ended === turns) {
+		void stopBridge(`the agents reached --turns ${turns}`);
+	}
+};
 
 const terminal = { input: process.stdin, write: (text: string) => process.stdout.write(text) };
 // Without a terminal, such as a piped input, the bridge can't ask.
@@ -114,7 +127,7 @@ const startAgents = async (): Promise<boolean> => {
 	if (target.ok) {
 		const { config } = started;
 
-		agents = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, now: () => new Date(), knowledge, memory });
+		agents = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, now: () => new Date(), knowledge, memory, onTurnEnded });
 	} else {
 		logger.warn("agents_off", `Agents won't play their turns: ${target.error}`, { reason: target.error });
 	}

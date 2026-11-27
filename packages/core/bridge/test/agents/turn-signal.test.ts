@@ -200,6 +200,26 @@ test("no turn starts after a stop, even one waiting on a cancelled turn", async 
 	expect(sent().some((lua) => lua.includes("SentientSystems_EndTurn"))).toBe(false);
 });
 
+test("each ended turn reports the count of turns ended so far, and a skipped turn reports nothing", async () => {
+	const counts: number[] = [];
+	const model = scripted([endTurn(), endTurn()]);
+	const { onEvent } = turnSignal({ ...context(model), onTurnEnded: (ended) => counts.push(ended) });
+
+	await onEvent(TURN_3);
+	// The agent already ended turn 1.
+	await onEvent(TURN_3);
+
+	expect(counts).toEqual([1]);
+
+	answerStash(game, {
+		"SentientSystems_GetState(3)": { ...MINIMAL_STATE, turn: 2 },
+		"SentientSystems_EndTurn(3, false)": { ok: true },
+	});
+	await onEvent(TURN_3);
+
+	expect(counts).toEqual([1, 2]);
+});
+
 test("a turn that stops logs no end", async () => {
 	const info = vi.spyOn(logger, "info");
 	const thinking = (): StreamResult => reply([{ type: "text", text: "Hmm." }]);

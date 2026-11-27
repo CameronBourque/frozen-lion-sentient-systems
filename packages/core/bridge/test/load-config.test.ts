@@ -40,6 +40,14 @@ describe("findConfigPath", () => {
 		expect(findConfigPath({ args: ["--config", "my.yaml", "--mcp"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false, env: {} })).toEqual({ ok: true, path: path.join(CWD, "my.yaml"), mcp: true });
 	});
 
+	test("reads --turns as a whole number", () => {
+		expect(findConfigPath({ args: ["--turns", "2"], cwd: CWD, execPath: EXECUTABLE, isExecutable: false, env: {} })).toEqual({ ok: true, path: path.join(CWD, CONFIG_NAME), mcp: false, turns: 2 });
+	});
+
+	test.each(["0", "-1", "1.5", "two", ""])("fails on --turns %j", (turns) => {
+		expect(findConfigPath({ args: [`--turns=${turns}`], cwd: CWD, execPath: EXECUTABLE, isExecutable: false, env: {} })).toEqual({ ok: false, error: `--turns needs a whole number above 0, and got "${turns}"` });
+	});
+
 	test("fails on an unknown option", () => {
 		const found = findConfigPath({ args: ["--confg", "my.yaml"], cwd: CWD, execPath: EXECUTABLE, isExecutable: true, env: {} });
 
@@ -172,7 +180,14 @@ describe("startConfig", () => {
 	});
 
 	test("names the options after an unknown one", () => {
-		expect(start(["--confg", "x"])).toEqual({ ok: false, error: expect.stringContaining("The options are --config <path> and --mcp") as unknown });
+		expect(start(["--confg", "x"])).toEqual({ ok: false, error: expect.stringContaining("The options are --config <path>, --mcp, and --turns <n>") as unknown });
+	});
+
+	test("passes --turns on, and warns that --mcp makes it do nothing", () => {
+		fs.writeFileSync(path.join(folder, CONFIG_NAME), "schemaVersion: 1\nproviders:\n  anthropic:\n    apiKey: key");
+
+		expect(start(["--turns", "2"])).toMatchObject({ ok: true, turns: 2, warnings: [] });
+		expect(start(["--turns", "2", "--mcp"])).toMatchObject({ ok: true, turns: 2, warnings: ["--turns does nothing with --mcp, because the bridge plays no agent turns"] });
 	});
 });
 

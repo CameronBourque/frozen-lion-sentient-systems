@@ -10,9 +10,12 @@ import { createServer } from "../mcp/server.js";
 import { DEFAULT_PROFILE, systemPrompt } from "./prompt.js";
 import { type Agent, type CancelReason, type LoopContext, playTurn } from "./loop.js";
 
+// onTurnEnded gets the count of agent turns ended since the bridge started,
+// across all agents, each time one ends.
 export interface SignalContext extends LoopContext {
 	knowledge: Knowledge;
 	memory: MemorySource;
+	onTurnEnded?: (ended: number) => void;
 }
 
 // onEvent handles the core mod's events. stop cancels the running turns and
@@ -38,6 +41,7 @@ export function turnSignal(context: SignalContext): TurnSignal {
 	// The agents whose game loaded since their last turn.
 	const loaded = new Set<number>();
 	let stopped = false;
+	let ended = 0;
 
 	const cancelAll = (reason: CancelReason): void => running.forEach(({ controller }) => controller.abort(reason));
 
@@ -58,6 +62,8 @@ export function turnSignal(context: SignalContext): TurnSignal {
 
 			if (result.ended) {
 				logger.info("turn_ended", `Player ${playerId} ended turn ${agent.endedTurn}`, { player: playerId, turn: agent.endedTurn });
+				ended += 1;
+				context.onTurnEnded?.(ended);
 			}
 		} catch (error) {
 			// A turn that throws must not stop the bridge, and the next signal

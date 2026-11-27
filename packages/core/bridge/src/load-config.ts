@@ -77,32 +77,38 @@ export interface Runtime {
 	env: Record<string, string | undefined>;
 }
 
+// turns is how many agent turns the bridge plays before it stops, with no
+// limit when it is undefined.
 export type FindResult =
-	| { ok: true; path: string; mcp: boolean }
+	| { ok: true; path: string; mcp: boolean; turns: number | undefined }
 	| { ok: false; error: string };
+
+const TURN_COUNT = /^[1-9]\d*$/;
 
 // Returns the config file's path from --config, or the default for how the
 // bridge runs: next to the executable, or in the current folder when tsx runs
-// it. Also says whether --mcp is set.
+// it. Also says whether --mcp is set, and the --turns count.
 export function findConfigPath(runtime: Runtime): FindResult {
 	let config: string | undefined;
 	let mcp: boolean | undefined;
+	let turns: string | undefined;
 
 	try {
-		({ values: { config, mcp } } = parseArgs({ args: runtime.args, options: { config: { type: "string" }, mcp: { type: "boolean" } } }));
+		({ values: { config, mcp, turns } } = parseArgs({ args: runtime.args, options: { config: { type: "string" }, mcp: { type: "boolean" }, turns: { type: "string" } } }));
 	} catch (error) {
 		// parseArgs throws for an unknown or incomplete option, such as a
 		// misspelled "--confg".
 		return { ok: false, error: (error as Error).message };
 	}
 
-	if (config !== undefined) {
-		return { ok: true, path: path.resolve(runtime.cwd, config), mcp: mcp ?? false };
+	if (turns !== undefined && !TURN_COUNT.test(turns)) {
+		return { ok: false, error: `--turns needs a whole number above 0, and got "${turns}"` };
 	}
 
 	const folder = runtime.isExecutable ? path.dirname(runtime.execPath) : runtime.cwd;
+	const file = config === undefined ? path.join(folder, CONFIG_NAME) : path.resolve(runtime.cwd, config);
 
-	return { ok: true, path: path.join(folder, CONFIG_NAME), mcp: mcp ?? false };
+	return { ok: true, path: file, mcp: mcp ?? false, turns: turns === undefined ? undefined : Number(turns) };
 }
 
 export type LoadResult =
@@ -148,8 +154,10 @@ export function keyWarning(config: Config, file: string): string | undefined {
 // What the bridge does with its config when it starts: run with the config and
 // print the warnings, or print the error and exit.
 export type StartResult =
-	| { ok: true; config: Config; path: string; mcp: boolean; warnings: string[]; environmentKeys: Provider[] }
+	| { ok: true; config: Config; path: string; mcp: boolean; turns: number | undefined; warnings: string[]; environmentKeys: Provider[] }
 	| { ok: false; error: string };
+
+const OPTIONS = "The options are --config <path>, --mcp, and --turns <n>";
 
 // Finds and loads the config file, and says what the user should do about each
 // problem.
@@ -157,7 +165,7 @@ export function startConfig(runtime: Runtime): StartResult {
 	const found = findConfigPath(runtime);
 
 	if (!found.ok) {
-		return { ok: false, error: `${found.error}. The options are --config <path> and --mcp` };
+		return { ok: false, error: `${found.error}. ${OPTIONS}` };
 	}
 
 	const loaded = loadConfig(found.path);
@@ -171,7 +179,13 @@ export function startConfig(runtime: Runtime): StartResult {
 	}
 
 	const { config, providers } = withEnvironmentKeys(loaded.config, runtime.env);
-	const missingKey = keyWarning(config, found.path);
+	const warnings = [keyWarning(config, found.path), turnsWarning(found.mcp, found.turns)].filter((warning) => warning !== undefined);
 
-	return { ok: true, config, path: found.path, mcp: found.mcp, warnings: missingKey ? [missingKey] : [], environmentKeys: providers };
+	return { ok: true, config, path: found.path, mcp: found.mcp, turns: found.turns, warnings, environmentKeys: providers };
+}
+
+// With --mcp, the MCP client plays the turns, so no agent turn ends and the
+// count is never reached.
+function turnsWarning(mcp: boolean, turns: number | undefined): string | undefined {
+	return mcp && turns !== undefined ? "--turns does nothing with --mcp, because the bridge plays no agent turns" : undefined;
 }
