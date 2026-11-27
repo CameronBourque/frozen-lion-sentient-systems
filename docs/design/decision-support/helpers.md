@@ -8,7 +8,7 @@ An agent that reasons over the raw state for each decision spends many tokens, a
 
 Code makes those choices well and at almost no cost. A helper turns a large part of the state into a few lines the model can weigh.
 
-Helpers extend the plain code in [turn-loop.md](../agents/turn-loop.md#steps). Plain code acts on trivial cases without the model. A helper never acts. It ranks options, and the model picks one and writes the `reason`.
+Helpers extend the plain code in [turn-loop/](../agents/turn-loop/README.md#steps). Plain code acts on trivial cases without the model. A helper never acts. It ranks options, and the model picks one and writes the `reason`.
 
 ## Shape
 

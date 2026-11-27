@@ -39,7 +39,7 @@ A file the store can't read moves aside with a warning. Until checkpoint IDs exi
 A test runs two fake turns through the tools and checks all three files. The agent loop calls `startMemory` in the [agent loop](#agent-loop) step.
 
 - The files, their formats, unreadable files, and stale memory are in [design/memory.md](../../design/memory.md#files-on-disk).
-- The decision records and their results are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#decision-records).
+- The decision records and their results are in [design/agents/turn-loop/decision-records.md](../../design/agents/turn-loop/decision-records.md).
 - The memory tools and the `memory` source are in [design/core/mcp-server.md](../../design/core/mcp-server.md).
 - The plan, journal, and decision parts of the turn message are in [design/agents/prompt.md](../../design/agents/prompt.md#two-calls).
 - The `journalEntries` cap is in [design/core/settings.md](../../design/core/settings.md).
@@ -97,7 +97,7 @@ It added the agent loop: `playTurn` in `src/agents/loop.ts` reads the state and 
 
 On 2026-11-26, the bridge executable, alone in an empty folder, played turn 1 of a saved game on a ChatGPT plan with no manual help, and logged each action with its reason. It played on to turn 5, because nothing yet stops it after an end turn.
 
-- The turn signal and one turn are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#turn-signal).
+- The turn signal and one turn are in [design/agents/turn-loop/](../../design/agents/turn-loop/README.md#turn-signal).
 - `connectClient`, `toolDefinitions`, and `callTool` are in [design/core/mcp-server.md](../../design/core/mcp-server.md), and the reply's messages are in [design/core/model-client.md](../../design/core/model-client.md).
 - The live run, its tokens, its plan usage, and the prompt cache question are in [findings/agent-runs.md](../../findings/agent-runs.md#agent-loop-run).
 
@@ -111,7 +111,7 @@ A game load cancels the running turn and resets the agents, and a turn waits whi
 
 On 2026-11-26, the bridge executable ended turns 1 to 10 in a row with no manual help, and logged each tool call and each action with its reason. Two cancelled ends played again once each, and a load mid-turn cancelled the turn and replayed the loaded turn.
 
-- The turn change, the `again` case, and the tool call log are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#one-turn), and the turn message's `again` line in [design/agents/prompt.md](../../design/agents/prompt.md#two-calls).
+- The turn change, the `again` case, and the tool call log are in [design/agents/turn-loop/](../../design/agents/turn-loop/README.md#one-turn), and the turn message's `again` line in [design/agents/prompt.md](../../design/agents/prompt.md#two-calls).
 - The cancel, the reset, and the wait for a silent game are in [design/agents/game-load.md](../../design/agents/game-load.md), and the stale memory check after a load in [design/memory.md](../../design/memory.md#stale-memory).
 - The run, its tokens, its plan usage, and the load signal's turn are in [findings/agent-runs.md](../../findings/agent-runs.md#end-turn-run).
 
@@ -125,4 +125,4 @@ A turn at a limit stops, and logs `turn_stopped` as a warning that names the lim
 
 On 2026-11-27, the bridge executable on a ChatGPT plan, with `actionsPerTurn` set to `1`, took one `move_unit` on turn 1 and logged that the turn reached the actions per turn limit of 1. The game stayed on turn 1, because a stopped turn sends no end turn until the [forced end turn](forced-end-turn.md) step.
 
-- The limits, their defaults, and what each one counts are in [design/agents/turn-loop.md](../../design/agents/turn-loop.md#failure-handling), and the `limits` field in [design/core/settings.md](../../design/core/settings.md).
+- The limits, their defaults, and what each one counts are in [design/agents/turn-loop/failure-handling.md](../../design/agents/turn-loop/failure-handling.md), and the `limits` field in [design/core/settings.md](../../design/core/settings.md).

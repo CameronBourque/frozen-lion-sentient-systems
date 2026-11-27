@@ -18,7 +18,7 @@ Add a setting to the [config file](../design/core/settings.md) that makes `reaso
 
 - Is the setting one value for every agent, or one value for each slot?
 - Does the narrator panel need text in place of a missing reason, such as the action's name?
-- What does a game without reasons lose for [evaluation](../design/evaluation.md) and the decision records in [turn-loop.md](../design/agents/turn-loop.md#decision-records)?
+- What does a game without reasons lose for [evaluation](../design/evaluation.md) and the decision records in [turn-loop/decision-records.md](../design/agents/turn-loop/decision-records.md)?
 - How many tokens does `reason` cost a turn in a real game? The smoke test measures the cost per turn, which answers this.
 
 ## Done when

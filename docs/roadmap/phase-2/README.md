@@ -8,7 +8,7 @@ The minimum viable product is the full agent loop playing a whole single-player 
 
 Phase 1 is done. The MCP server serves the state, the action API, and the lookup as tools, and Claude Code has played 10 turns through them.
 
-Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design/agents/turn-loop.md), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md), [knowledge-files.md](../../design/knowledge-files.md).
+Design: [core/](../../design/core/README.md), [agents/turn-loop.md](../../design/agents/turn-loop/README.md), [memory.md](../../design/memory.md), [testing.md](../../design/testing.md), [knowledge-files.md](../../design/knowledge-files.md).
 
 ## Steps
 

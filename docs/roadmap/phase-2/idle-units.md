@@ -1,6 +1,6 @@
 # Idle units and scouts
 
-Handle the units that need no judgment in plain code before the model call, so the model spends its actions on real decisions. The design is in [turn-loop.md](../../design/agents/turn-loop.md). Part of [phase 2](README.md).
+Handle the units that need no judgment in plain code before the model call, so the model spends its actions on real decisions. The design is in [turn-loop/](../../design/agents/turn-loop/README.md). Part of [phase 2](README.md).
 
 ## Tasks
 
@@ -13,4 +13,4 @@ In a running game, an idle warrior in a city is fortified and an idle scout is e
 
 ## Record
 
-- The plain-code rules, in [turn-loop.md](../../design/agents/turn-loop.md).
+- The plain-code rules, in [turn-loop/](../../design/agents/turn-loop/README.md).

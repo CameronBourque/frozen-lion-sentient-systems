@@ -8,10 +8,10 @@ The file exports two functions, and everything else in it is private.
 
 - **`systemPrompt(knowledge, profile)`** runs once per agent. It joins `rules/play.md`, the personality file, and the sweat level file from the [knowledge files](../knowledge-files.md#file-layout), in that order. It returns the text and any warnings.
 - **`turnMessage({ state, memory, journalEntries, again })`** runs each turn. It joins these parts, in order:
-  1. the turn number, and on a [turn started again](turn-loop.md#one-turn), a line that says it is still the same turn and asks for `end_turn` again,
+  1. the turn number, and on a [turn started again](turn-loop/README.md#one-turn), a line that says it is still the same turn and asks for `end_turn` again,
   2. the plan from [memory](../memory.md#memory-files),
   3. the newest journal entries, oldest first, up to the config file's `journalEntries`, with a line that says how many it left out,
-  4. last turn's [decision records](turn-loop.md#decision-records) that have no result yet, each with its id,
+  4. last turn's [decision records](turn-loop/decision-records.md) that have no result yet, each with its id,
   5. each end-turn blocker with the `get_choices` key that resolves it, and the units that need orders,
   6. the rest of the state as compact JSON. The state part leaves out the turn and the blockers, so each fact appears once.
 

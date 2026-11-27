@@ -34,7 +34,7 @@ The bridge's log already holds the numbers about the agent itself, so the metric
 
 - the cost and the tokens of the model calls,
 - the number of actions and of failed actions,
-- whether the turn hit a limit or a [spending limit](agents/turn-loop.md#stopping), and whether it ended with `force`,
+- whether the turn hit a limit or a [spending limit](agents/turn-loop/stopping.md), and whether it ended with `force`,
 - the waste that the [end-turn check](decision-support/end-turn-check.md) found, such as idle units or unspent gold.
 
 These numbers show whether a change made the agent cheaper or more reliable. The metrics line shows whether it played better.

@@ -22,5 +22,5 @@ All of these hold:
 ## Record
 
 - The answer to question 1, in [plan-access/anthropic.md](../../findings/plan-access/anthropic.md).
-- `AgentRunner`, in [turn-loop.md](../../design/agents/turn-loop.md).
+- `AgentRunner`, in [turn-loop/](../../design/agents/turn-loop/README.md).
 - Any option that differs from the design, in [run-modes.md](../../design/core/run-modes.md#claude-runner).

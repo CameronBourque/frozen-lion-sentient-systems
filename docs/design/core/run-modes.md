@@ -8,7 +8,7 @@ The four run modes differ in who runs the tool loop and how the user signs in.
 
 | Run mode | `RunMode` | Who runs the tool loop | Sign-in | Providers |
 | --- | --- | --- | --- | --- |
-| **API key** | `api-key` | The bridge's [agent loop](../agents/turn-loop.md), through the [model client](model-client.md) | An API key in `providers` in the [config file](settings.md) | Anthropic, OpenAI, Google, xAI |
+| **API key** | `api-key` | The bridge's [agent loop](../agents/turn-loop/README.md), through the [model client](model-client.md) | An API key in `providers` in the [config file](settings.md) | Anthropic, OpenAI, Google, xAI |
 | **Subscription token** | `subscription` | The bridge's agent loop, through the model client | The provider's browser sign-in for the user's plan | OpenAI, on a ChatGPT plan |
 | **Agent SDK** | `agent-sdk` | The provider's agent SDK | The provider's own login for the user's plan | Anthropic, behind a flag |
 | **CLI** | `cli` | The provider's CLI, started once per turn | The CLI's own login | None |
@@ -92,7 +92,7 @@ An agent SDK or a CLI becomes a run mode for a provider only when it does everyt
 - offer only the bridge's MCP tools, with every built-in tool off,
 - load no user or project files, such as `CLAUDE.md` or `AGENTS.md`,
 - show each tool call and its input as it happens, so the log has each `reason`,
-- end the turn when the agent calls `end_turn`, and keep the [turn limits](../agents/turn-loop.md#failure-handling),
+- end the turn when the agent calls `end_turn`, and keep the [turn limits](../agents/turn-loop/failure-handling.md),
 - stop the call in progress on the stop key,
 - report each call's input, output, cache read, and cache write tokens, for the spending limits,
 - take the model and the effort, and list the models,

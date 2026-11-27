@@ -1,6 +1,6 @@
 // Plays one agent turn: reads the state and memory, sends the turn message,
 // and runs the model's tool calls until end_turn goes through or a limit
-// forces the end. docs/design/agents/turn-loop.md has the design.
+// forces the end. docs/design/agents/turn-loop/README.md has the design.
 
 import type { Client } from "@modelcontextprotocol/client";
 import type { ModelMessage, ToolModelMessage } from "ai";

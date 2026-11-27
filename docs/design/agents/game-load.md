@@ -1,6 +1,6 @@
 # Game load
 
-How an agent's turn handles a game load: the cancel and the reset when the load ends, and the wait while the game doesn't answer before it. Part of the [turn loop](turn-loop.md).
+How an agent's turn handles a game load: the cancel and the reset when the load ends, and the wait while the game doesn't answer before it. Part of the [turn loop](turn-loop/README.md).
 
 ## Cancel and reset
 

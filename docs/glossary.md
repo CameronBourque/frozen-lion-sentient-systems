@@ -8,7 +8,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Advisors mod | The feature mod that gives a human player read-only advisors, one per victory condition | [advisors.md](design/advisors.md) |
 | Agent | An LLM that plays Civ VI as a full player in an **Agent** slot. It is not the native AI | [knowledge-files.md](design/knowledge-files.md#file-layout) |
 | **Agent** slot | A player slot that an agent plays. The setup screen shows it as **Agent**. Which engine slot type holds it is open | [slot-type.md](design/agents/slot-type.md) |
-| Agent loop | The bridge code that runs an agent's turn. It sends the model a prompt and passes the model's tool calls to the MCP server | [turn-loop.md](design/agents/turn-loop.md) |
+| Agent loop | The bridge code that runs an agent's turn. It sends the model a prompt and passes the model's tool calls to the MCP server | [turn-loop/](design/agents/turn-loop/README.md) |
 | Agent players mod | The feature mod that adds agents, the turn loop, spectator mode, the narrator panel, and messaging | [agents/](design/agents/README.md) |
 | Bridge | The external TypeScript program that connects to the tuner, runs the agent loop, and stores agent memory. It ships as one executable, and it is part of core | [bridge.md](design/core/bridge.md) |
 | Checkpoint ID | A UUID that a gameplay script writes into the save after each agent turn, so the bridge can restore the matching memory | [memory.md](design/memory.md#checkpoint-ids) |
@@ -47,7 +47,7 @@ The one name for each thing in this project, and what it means. Use these names 
 | Significance score | The bridge's score for how much a model turn matters, from its wake triggers, the decisions waiting, and the scoreboard. It sets the model tier | [model-routing.md](design/decision-support/model-routing.md#significance-score) |
 | Single executable application (SEA) | Node's way to build one executable that holds the Node runtime and a bundled program. The bridge ships as one | [build-tooling.md](findings/build-tooling.md) |
 | Spectator mode | A game setup option for agent-only games that lets you watch agents play | [cover-and-spectator.md](design/agents/cover-and-spectator.md#spectator-mode) |
-| Spending limit | A cap in the config file on what model calls cost in one agent turn or one run of the bridge. A run is one start of the bridge | [turn-loop.md](design/agents/turn-loop.md#stopping) |
+| Spending limit | A cap in the config file on what model calls cost in one agent turn or one run of the bridge. A run is one start of the bridge | [turn-loop/stopping.md](design/agents/turn-loop/stopping.md) |
 | Standing order | A multi-turn plan, such as a build list or a unit goal, that plain code in the bridge carries out each turn until it finishes or the agent cancels it | [standing-orders.md](design/decision-support/standing-orders.md#orders) |
 | State diff | The changes since the agent's last model turn, which the bridge sends in place of the full state | [standing-orders.md](design/decision-support/standing-orders.md#state-diff) |
 | Step | One unit of work in a phase, in its own file `NN-short-name.md` | [rules/docs.md](rules/docs.md#roadmap) |
