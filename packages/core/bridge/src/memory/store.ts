@@ -52,7 +52,7 @@ const FRONT_MATTER = /^---\r?\n(?<yaml>[\s\S]*?)\r?\n---(?:\r?\n|$)/;
 // Each journal entry starts with this heading line.
 const ENTRY_HEADINGS = /^## Turn (?<turn>\d+)[ \t]*$/gm;
 
-// The caller passes the folder to the other calls, so phase 3 can point them
+// The caller passes the folder to the other calls, so phase 4 can point them
 // at a restored snapshot.
 export function memoryFolder(configFile: string, playerID: number): string {
 	return path.join(path.dirname(configFile), "memory", `player-${playerID}`);
@@ -77,7 +77,7 @@ export function readMemory(folder: string, now: Date): { memory: Memory; warning
 // Reads the memory for the agent's first turn after the bridge starts. Memory
 // from a turn after this one, or any memory on turn 1, belongs to another game
 // or a later save, so the folder moves aside and the agent starts empty. The
-// checkpoint IDs replace this, as docs/roadmap/phase-3/README.md says.
+// checkpoint IDs replace this, as docs/roadmap/phase-4/README.md says.
 export function startMemory(folder: string, turn: number, now: Date): { memory: Memory; warnings: string[] } {
 	const read = readMemory(folder, now);
 

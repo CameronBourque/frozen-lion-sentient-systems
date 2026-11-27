@@ -12,7 +12,7 @@ Each action checks the screen's rules first, because the game takes requests the
 
 Each choice and its action share their rules in one file: the city fate options, the escape routes, the session and the available proposals, and the waiting dedication. The captured cities choice became the city fate choice, `cityFates`.
 
-The action that joins or rejects an emergency moved to [phase 4](../../phase-4/README.md): with Gathering Storm, every emergency starts through the World Congress. The popups that a session and its results leave open moved to [popups for agent players](popups.md#popups-for-agent-players).
+The action that joins or rejects an emergency moved to [phase 5](../../phase-5/README.md): with Gathering Storm, every emergency starts through the World Congress. The popups that a session and its results leave open moved to [popups for agent players](popups.md#popups-for-agent-players).
 
 - The reasons are in [design/core/mod/actions/city-fate.md](../../../design/core/mod/actions/city-fate.md), [cities.md](../../../design/core/mod/actions/cities.md#escape-route), [world-congress.md](../../../design/core/mod/actions/world-congress.md), and [dedications.md](../../../design/core/mod/actions/dedications.md).
 - The calls and the checks the game doesn't make are in [actions/city-fate.md](../../../findings/actions/city-fate.md), [actions/spies.md](../../../findings/actions/spies.md#escape-route), [actions/world-congress.md](../../../findings/actions/world-congress.md), and [actions/dedications.md](../../../findings/actions/dedications.md).
@@ -42,7 +42,7 @@ The other screens, such as a request, a promise, or a first meeting, are a new `
 
 `respondToSession` answers one with an option key, and a first meeting goes on through each of its statements. `endTurn` refuses while any session is open, even with `force`. The proposals section leaves out an old deal that stays in the incoming deal while the session holds another statement.
 
-The messages and the closing are for a human slot only. Phase 3 replaces them with what the [computer slot test](../../../design/agents/slot-type.md#computer-slot-test) finds a native AI gets.
+The messages and the closing are for a human slot only. Phase 4 replaces them with what the [computer slot test](../../../design/agents/slot-type.md#computer-slot-test) finds a native AI gets.
 
 - The sessions section and the messages are in [design/core/mod/state.md](../../../design/core/mod/state.md#decisions), and the reasons in [design/core/mod/actions/deals.md](../../../design/core/mod/actions/deals.md#respond-to-a-session) and [turn.md](../../../design/core/mod/actions/turn.md).
 - The calls are in [actions/ai-sessions.md](../../../findings/actions/ai-sessions.md), [actions/ai-requests.md](../../../findings/actions/ai-requests.md), [actions/first-meetings.md](../../../findings/actions/first-meetings.md), and [actions/end-turn-holds.md](../../../findings/actions/end-turn-holds.md#with-a-leader-screen-up).

@@ -36,7 +36,7 @@ Until checkpoint IDs exist, `startMemory` checks the memory on the agent's first
 
 The bridge then moves the folder to `player-<ID>.old-<time>`, warns, and starts the agent with empty memory. Nothing is deleted.
 
-A restart of the bridge during turn 1 also moves that turn's memory aside. [Phase 3](../roadmap/phase-3/README.md) replaces this rule with [checkpoint IDs](#checkpoint-ids).
+A restart of the bridge during turn 1 also moves that turn's memory aside. [Phase 4](../roadmap/phase-4/README.md) replaces this rule with [checkpoint IDs](#checkpoint-ids).
 
 ## Checkpoint IDs
 

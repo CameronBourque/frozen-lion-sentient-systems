@@ -33,7 +33,7 @@ How the bridge serves its tools over MCP: one server, reached in process by the 
   `unit_action` takes every order of the action API's `UnitOrder`, and its description lists them from one table, which TypeScript checks against the type. The core mod checks that an order has the fields it needs.
 
   An action with an optional tile, such as `unit_action` and `set_production`, refuses `x` without `y` through `optionalTile`.
-- **Memory tools.** `src/mcp/memory-tools.ts` registers `update_plan`, `add_journal_entry`, `record_decision`, and `record_result`, which write the player's [memory files](../memory.md#files-on-disk) in the folder that the context's `memory` function returns. Phase 3 can return a restored snapshot's folder from it.
+- **Memory tools.** `src/mcp/memory-tools.ts` registers `update_plan`, `add_journal_entry`, `record_decision`, and `record_result`, which write the player's [memory files](../memory.md#files-on-disk) in the folder that the context's `memory` function returns. Phase 4 can return a restored snapshot's folder from it.
 
   `add_journal_entry` and `record_decision` ask the game for `Game.GetCurrentGameTurn()` and file what they write under that turn. The plan is capped at 2000 characters, an entry at 1000, and a decision, its reason, and its result at 300 each, because every turn's prompt holds them.
 
