@@ -48,7 +48,7 @@ export function turnSignal(context: SignalContext): (event: CoreEvent) => Promis
 			const result = await playTurn(agent, context, { again, signal });
 
 			if (result.ended) {
-				logger.info("turn_ended", `Player ${playerId} ended its turn`, { player: playerId });
+				logger.info("turn_ended", `Player ${playerId} ended turn ${agent.endedTurn}`, { player: playerId, turn: agent.endedTurn });
 			}
 		} catch (error) {
 			// A turn that throws must not stop the bridge, and the next signal

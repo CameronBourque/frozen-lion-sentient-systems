@@ -66,7 +66,7 @@ test("a turn signal plays that player's turn, with tools that act for it", async
 	await turnSignal(context(scripted([endTurn()])))(TURN_3);
 
 	expect(sent().some((lua) => lua.includes("SentientSystems_EndTurn(3, false)"))).toBe(true);
-	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended its turn", { player: 3 });
+	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended turn 1", { player: 3, turn: 1 });
 });
 
 test("other events start no turn", async () => {
@@ -134,7 +134,7 @@ test("a game load cancels the running turn, and the next signal plays the loaded
 	await Promise.all([cancelled, onTurn(TURN_3)]);
 
 	expect(info).toHaveBeenCalledWith("turn_cancelled", expect.anything(), { player: 3 });
-	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended its turn", { player: 3 });
+	expect(info).toHaveBeenCalledWith("turn_ended", "Player 3 ended turn 1", { player: 3, turn: 1 });
 	expect(model.doStreamCalls).toHaveLength(2);
 });
 

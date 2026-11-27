@@ -21,7 +21,7 @@ The first signal for a player builds its agent: the system prompt, an in-process
 
 One turn runs at a time for each agent. A signal for a turn that is still running logs `turn_skipped`, and so does a signal on a turn the agent already ended, as [one turn](#one-turn) says.
 
-A turn that ends logs `turn_ended`, and one that throws logs `turn_failed` as a warning, so the bridge keeps running and the next signal tries again.
+A turn that ends logs `turn_ended` with the game turn it ended, and one that throws logs `turn_failed` as a warning, so the bridge keeps running and the next signal tries again.
 
 ### Game load
 
