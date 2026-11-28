@@ -46,6 +46,19 @@ The bridge keeps the facts in `cache/models.json` in the config file's folder, a
 
 The picked model gets the list's price, unless you saved a price for the same model. When the file can't be read, or has no price for the model, the picker warns and the price stays unset.
 
+## Plan login
+
+A [run mode](run-modes.md#providers) with a `planLogin` can play on a plan's own login, such as a Claude plan in the Agent SDK, or on the provider's API key. After the provider menu, `chooseSignIn` in `src/model/picker.ts` checks both:
+
+- the plan, with the mode's `planLogin.check()`,
+- the key, with the `ready(config)` of the same provider's **API key** mode, so no provider needs its own key check.
+
+With both ready, the picker shows a **Sign-in** menu with the plan's `label` and **API key**, starting on the plan.
+
+With one ready, it skips the menu and picks that one. With neither, it warns with both reasons and shows the **What now?** menu, as after a failed sign-in. It then tells the mode the pick with `planLogin.use()`. Each start asks again, as the **Run mode** menu does.
+
+A new provider with a plan login of its own adds a `planLogin` to its mode, and the picker needs no change.
+
 ## Decisions
 
 | Decision | Reason |

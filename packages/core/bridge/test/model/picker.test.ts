@@ -8,7 +8,7 @@ import type { ListResult, ModelInfo } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 import type { SecretResult } from "../../src/model/providers/mode.js";
-import type { CallModeSupport, ModeSupport } from "../../src/model/providers/provider.js";
+import type { CallModeSupport, ModeSupport, Ready, SignInChoice } from "../../src/model/providers/provider.js";
 import { providersListing, realProviders } from "./fake-providers.js";
 
 const MODELS: ListResult = {
@@ -455,6 +455,74 @@ describe("pickModel", () => {
 		const { io } = scriptedIo(rows);
 
 		expect(await pickModel(configWith(["anthropic", "openai"]), io)).toEqual({ result: "cancelled" });
+	});
+});
+
+// An Agent SDK mode for anthropic that can play on a plan login, which records
+// the sign-in the picker tells it to use.
+function withPlanLogin(io: PickerIo, plan: Ready): SignInChoice[] {
+	const used: SignInChoice[] = [];
+	const sdk: ModeSupport = {
+		ready: () => ({ ok: true }),
+		planLogin: { label: "Claude plan", check: () => Promise.resolve(plan), use: (choice) => used.push(choice) },
+		listModels: () => Promise.resolve({ ok: true, models: [{ id: "opus", name: "Opus", efforts: ["provider-default"] }] }),
+		runner: () => ({ ok: false, error: "unused" }),
+	};
+
+	io.providers = io.providers.map((provider) => provider.name === "anthropic" ? { ...provider, modes: { ...provider.modes, "agent-sdk": sdk } } : provider);
+
+	return used;
+}
+
+const PLAN_READY: Ready = { ok: true };
+
+const NO_PLAN: Ready = { ok: false, reason: "No Claude plan is logged in" };
+
+describe("the Sign-in menu", () => {
+	test("asks for the plan or the key when both are ready, and tells the mode which", async () => {
+		const { io, asked } = scriptedIo([1, 0, 0], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, PLAN_READY);
+
+		expect(await pickModel(configWith(["anthropic"]), io)).toMatchObject({ result: "picked", mode: "agent-sdk", model: { id: "opus" } });
+		expect(asked[0]).toEqual({ title: "Sign-in", labels: ["Claude plan", "API key"], start: 0 });
+		expect(used).toEqual(["api-key"]);
+	});
+
+	test("uses the plan with no menu when the provider has no key", async () => {
+		const { io, asked } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, PLAN_READY);
+
+		await pickModel(configWith([]), io);
+
+		expect(asked.map(({ title }) => title)).toEqual(["anthropic model", "Effort"]);
+		expect(used).toEqual(["plan"]);
+	});
+
+	test("uses the key with no menu when no plan is logged in", async () => {
+		const { io } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, NO_PLAN);
+
+		await pickModel(configWith(["anthropic"]), io);
+
+		expect(used).toEqual(["api-key"]);
+	});
+
+	test("warns with both reasons when neither is ready, and asks what now", async () => {
+		const { io, asked, warnings } = scriptedIo([undefined], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, NO_PLAN);
+
+		expect(await pickModel(configWith([]), io)).toEqual({ result: "cancelled" });
+		expect(warnings[0]).toMatch(/^anthropic can't sign in\. No Claude plan is logged in\. No API key for anthropic/);
+		expect(asked[0].title).toBe("What now?");
+		expect(used).toEqual([]);
+	});
+
+	test("a cancel in the menu cancels the pick", async () => {
+		const { io } = scriptedIo([undefined], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, PLAN_READY);
+
+		expect(await pickModel(configWith(["anthropic"]), io)).toEqual({ result: "cancelled" });
+		expect(used).toEqual([]);
 	});
 });
 

@@ -16,8 +16,9 @@ import { type AgentRunner, NUDGE, type TurnEnd, type TurnRun, afterCall, beforeC
 // The SDK's query(), or a fake that a test passes in.
 export type QueryFunction = (params: { prompt: AsyncIterable<SDKUserMessage>; options: Options }) => AsyncIterable<SDKMessage>;
 
-// The model and the effort the runner plays with, from config.model.
-export type AgentSdkModel = Pick<ModelSetting, "id" | "effort">;
+// The model and the effort the runner plays with, from config.model, and the
+// environment the SDK runs in, which holds only the sign-in the user picked.
+export type AgentSdkModel = Pick<ModelSetting, "id" | "effort"> & { env: Options["env"] };
 
 // The SDK prefixes each tool with the server's name.
 const TOOL_PREFIX = `mcp__${SERVER_NAME}__`;
@@ -101,7 +102,7 @@ async function runQuery(query: QueryFunction, model: AgentSdkModel, sdkRun: SdkR
 
 // The options keep the SDK to the bridge's tools and prompt, as
 // docs/design/core/run-modes.md#parity-check says.
-function queryOptions(sdkRun: SdkRun, { id, effort }: AgentSdkModel, url: string, abortController: AbortController): Options {
+function queryOptions(sdkRun: SdkRun, { id, effort, env }: AgentSdkModel, url: string, abortController: AbortController): Options {
 	const { agent } = sdkRun.run;
 
 	// The memory folder holds no AGENTS.md, which the SDK's plugin would load.
@@ -116,6 +117,7 @@ function queryOptions(sdkRun: SdkRun, { id, effort }: AgentSdkModel, url: string
 		cwd: agent.memoryFolder,
 		persistSession: false,
 		permissionMode: "dontAsk",
+		env,
 		abortController,
 		hooks: {
 			PreToolUse: [{ hooks: [hook(sdkRun, beforeHook)] }],

@@ -31,6 +31,7 @@ The object's type is `ProviderDef` in `src/model/providers/provider.ts`. It has 
 
 - `ready(config)`, which says whether the provider can play in that mode, or why not, such as a missing API key,
 - `signIn`, only in a subscription token mode, with the `label` of its row in the provider menu, and `run()`, which gets a valid token: the saved one, a refreshed one, or one from the browser sign-in,
+- `planLogin`, only in a mode that can play on a plan's own login as well as the provider's API key, as [picker.md](picker.md#plan-login) says,
 - `listModels(config)`, which lists the models for the picker,
 - `runner(config)`, which builds the [runner](#runners) that plays the agents' turns with the model in `config.model`, or says why it can't.
 

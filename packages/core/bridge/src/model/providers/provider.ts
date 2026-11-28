@@ -45,10 +45,25 @@ export interface SignIn {
 	run: () => Promise<SecretResult>;
 }
 
+// Which login a mode with a plan login plays on: the plan's, or the
+// provider's API key.
+export type SignInChoice = "plan" | "api-key";
+
+// A plan login that a mode can play on beside the provider's API key: its row
+// in the Sign-in menu, a check that the user is logged in, and use, which
+// tells the mode which login the user picked.
+export interface PlanLogin {
+	label: string;
+	check: () => Promise<Ready>;
+	use: (choice: SignInChoice) => void;
+}
+
 export interface ModeSupport {
 	ready: (config: Config) => Ready;
 	// Only in a mode that signs in through the browser.
 	signIn?: SignIn;
+	// Only in a mode that can play on a plan's own login.
+	planLogin?: PlanLogin;
 	listModels: (config: Config, fetchPage?: Fetch) => Promise<ListResult>;
 	// Plays the agents' turns with the model in config.model.
 	runner: (config: Config) => BuiltRunner;

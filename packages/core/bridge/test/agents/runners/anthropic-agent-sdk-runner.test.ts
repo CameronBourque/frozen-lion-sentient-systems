@@ -22,6 +22,9 @@ import { type FakeCall, type FakeQuery, type FakeScript, SUCCESS, fakeQuery } fr
 
 const REASON = "Nothing left to do.";
 
+// The environment the mode builds for the sign-in the user picked.
+const ENV = { PATH: "/opt/game" };
+
 let game: FakeGame;
 let client: TunerClient;
 let root: string;
@@ -49,7 +52,7 @@ function context(fake: FakeQuery, limits: Partial<Limits> = {}, model: ModelSett
 	return {
 		client,
 		logger,
-		runner: anthropicAgentSdkRunner(model, fake.query),
+		runner: anthropicAgentSdkRunner({ id: model.id, effort: model.effort, env: ENV }, fake.query),
 		model,
 		journalEntries: 5,
 		limits: { ...DEFAULT_LIMITS, ...limits },
@@ -99,7 +102,7 @@ test("the query keeps to the bridge's prompt and tools, and runs in the memory f
 	const [prompt] = fake.prompts;
 
 	expect(prompt).toContain("turn");
-	expect(options).toMatchObject({ systemPrompt: SYSTEM, tools: [], strictMcpConfig: true, settingSources: [], cwd: folder, persistSession: false, permissionMode: "dontAsk", model: "claude-opus-5-5", effort: "high" });
+	expect(options).toMatchObject({ systemPrompt: SYSTEM, tools: [], strictMcpConfig: true, settingSources: [], cwd: folder, persistSession: false, permissionMode: "dontAsk", env: ENV, model: "claude-opus-5-5", effort: "high" });
 	expect(fs.existsSync(folder)).toBe(true);
 });
 

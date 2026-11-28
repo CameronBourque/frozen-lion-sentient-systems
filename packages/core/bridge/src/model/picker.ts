@@ -5,7 +5,7 @@
 import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider, UNSET } from "../config.js";
 import type { ModelInfo } from "./list-models.js";
 import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
-import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunModeRow, runModeLabel } from "./providers/provider.js";
+import { type ModeSupport, type ProviderDef, RUN_MODES, type Ready, type RunMode, type RunModeRow, type SignInChoice, runModeLabel } from "./providers/provider.js";
 import { hasPrice } from "./usage.js";
 
 export interface PickerIo {
@@ -188,6 +188,18 @@ async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Pro
 		return pickAfterFailure(config, io, runMode);
 	}
 
+	const chosen = await chooseSignIn(config, io, provider, mode);
+
+	if (chosen === "cancelled") {
+		return { result: "cancelled" };
+	}
+
+	if (!chosen.ok) {
+		io.warn(chosen.reason);
+
+		return pickAfterFailure(config, io, runMode);
+	}
+
 	const [listed, fetched] = await Promise.all([mode.listModels(config), io.facts()]);
 
 	if (!fetched.ok) {
@@ -203,6 +215,36 @@ async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Pro
 	io.warn(listed.ok ? `${provider} listed no models that call tools` : listed.error);
 
 	return pickAfterFailure(config, io, runMode);
+}
+
+const SIGN_INS: SignInChoice[] = ["plan", "api-key"];
+
+// A mode that can play on a plan's own login or on the provider's API key asks
+// which, when both are ready. The key is ready when the provider's API key
+// mode is, so the check is the same for every provider.
+async function chooseSignIn(config: Config, io: PickerIo, provider: Provider, mode: ModeSupport): Promise<Ready | "cancelled"> {
+	const login = mode.planLogin;
+
+	if (login === undefined) {
+		return { ok: true };
+	}
+
+	const plan = await login.check();
+	const key = io.providers.find(({ name }) => name === provider)?.modes["api-key"]?.ready(config) ?? { ok: false, reason: `${provider} has no API key mode` };
+
+	if (!plan.ok && !key.ok) {
+		return { ok: false, reason: `${provider} can't sign in. ${plan.reason}. ${key.reason}` };
+	}
+
+	const choice = plan.ok && key.ok ? await askFor(io, "Sign-in", SIGN_INS, [login.label, "API key"], "plan") : plan.ok ? "plan" : "api-key";
+
+	if (choice === undefined) {
+		return "cancelled";
+	}
+
+	login.use(choice);
+
+	return { ok: true };
 }
 
 // Asks what now after a failed sign-in or model list, with the providers as

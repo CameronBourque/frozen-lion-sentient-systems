@@ -57,11 +57,13 @@ The price comes from the config file. On a Claude plan it stays unset, as with a
 
 The SDK runs the Claude Code binary, which signs in with `ANTHROPIC_API_KEY` when it is set, and with the user's claude.ai login when it isn't. The key wins, so a user with both would play on the key without knowing it.
 
-When the Anthropic key in `providers` and the claude.ai login are both ready, the picker shows a **Sign-in** menu with **Claude plan** and **API key**, starting on **Claude plan**.
+The mode's `planLogin` lets the user pick, as the [picker](picker.md#plan-login) does for any provider:
 
-With only one ready, the menu is skipped and that one is used. With neither, the picker warns and shows the **Run mode** menu again.
+- `label` is **Claude plan**.
+- `check` opens a session on the plan's environment and reads `accountInfo()`, with no model call. A Claude plan login has a `subscriptionType`.
+- `use` keeps the pick. Until the picker calls it, the mode plays on the plan.
 
-The runner passes the SDK an `env` built from the bridge's own environment:
+The mode builds the SDK's `env` for the model list and the runner from the pick, and from the bridge's own environment:
 
 - **Claude plan.** `ANTHROPIC_API_KEY` is removed, so the binary uses the login.
 - **API key.** `ANTHROPIC_API_KEY` is set to the key from `providers`. The price comes from the config file, as in the API key mode.
