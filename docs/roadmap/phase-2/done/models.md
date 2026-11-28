@@ -55,3 +55,21 @@ On 2026-11-25, `npm run ask` named a refused OpenAI key's config field, and **Us
 
 - The xAI lister is in [design/core/model-client.md](../../../design/core/model-client.md#model-lists), and its key is in [design/core/settings.md](../../../design/core/settings.md).
 - The saved run mode and **Use** are in [design/core/run-modes.md](../../../design/core/run-modes.md#picker), and the menus are in [design/core/picker.md](../../../design/core/picker.md#menus).
+
+## Anthropic Agent SDK runner
+
+Pull request: feat(core): run Claude agents through the Agent SDK.
+
+Each run mode now builds an `AgentRunner` that plays a turn's tool calls, and the runners share each call's steps, the spend, and the nudge. The API key and subscription token modes keep the bridge's own loop, in `modelClientRunner`.
+
+The **Agent SDK** mode for Anthropic plays a turn through the Claude Agent SDK's own loop, with hooks that keep the bridge's limits and logs. It sits behind `CLAUDE_AGENT_SDK_ENABLED`, which stays `false` until Anthropic approves plan logins.
+
+A mode with a plan login of its own gets a **Sign-in** menu when the provider's API key is ready too.
+
+On 2026-11-28, a local build with the flag on played turns on `haiku` with an API key, and logged each action with its reason and each round with its tokens.
+
+The SDK listed no built-in tool, an `AGENTS.md` in the memory folder never reached the model, and Ctrl+C during a turn exited within 6 seconds.
+
+- The runners and their shared steps are in [design/agents/turn-loop/](../../../design/agents/turn-loop/README.md#runners), and each mode's runner in [design/core/run-modes.md](../../../design/core/run-modes.md#runners).
+- The SDK's options, hooks, spend, sign-in, and flag are in [design/core/anthropic-agent-sdk-runner.md](../../../design/core/anthropic-agent-sdk-runner.md), and the **Sign-in** menu in [design/core/picker.md](../../../design/core/picker.md#plan-login).
+- The tools check and the live turns are in [findings/plan-access/anthropic.md](../../../findings/plan-access/anthropic.md#results). The AGENTS.md check used a marker word in place of the input tokens, which varied with each turn's calls.

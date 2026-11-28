@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import type { MockLanguageModelV4 } from "ai/test";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { modelClientRunner } from "../../src/agents/runners/model-client-runner.js";
 import { noSpend } from "../../src/agents/spend.js";
 import { type SignalContext, turnSignal } from "../../src/agents/turn-signal.js";
 import { DEFAULT_LIMITS, NO_MODEL } from "../../src/config.js";
@@ -48,7 +49,7 @@ function context(model: MockLanguageModelV4, memory = (playerID: number) => path
 	return {
 		client,
 		logger,
-		target: { model, provider: "anthropic", mode: "api-key", effort: "" },
+		runner: modelClientRunner({ model, provider: "anthropic", mode: "api-key", effort: "" }),
 		model: NO_MODEL,
 		journalEntries: 5,
 		limits: DEFAULT_LIMITS,

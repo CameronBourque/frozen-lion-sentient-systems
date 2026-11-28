@@ -4,11 +4,11 @@
 
 import { describe, expect, test } from "vitest";
 import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
-import type { ListResult } from "../../src/model/list-models.js";
+import type { ListResult, ModelInfo } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 import type { SecretResult } from "../../src/model/providers/mode.js";
-import type { ModeSupport } from "../../src/model/providers/provider.js";
+import type { CallModeSupport, ModeSupport, Ready, SignInChoice } from "../../src/model/providers/provider.js";
 import { providersListing, realProviders } from "./fake-providers.js";
 
 const MODELS: ListResult = {
@@ -50,6 +50,7 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[
 	const asked: Asked[] = [];
 	const modesAsked: Asked[] = [];
 	const warnings: string[] = [];
+	const debugs: string[] = [];
 	const listed: string[] = [];
 	const io: PickerIo = {
 		ask: (title, labels, start) => {
@@ -70,15 +71,16 @@ function scriptedIo(rows: (number | undefined)[], list: ListResult | ListResult[
 		}),
 		facts: () => Promise.resolve(facts),
 		warn: (text) => warnings.push(text),
+		debug: (event, text) => debugs.push(`${event}: ${text}`),
 	};
 
-	return { io, asked, modesAsked, warnings, listed };
+	return { io, asked, modesAsked, warnings, debugs, listed };
 }
 
 // A plan mode for openai only, which records each sign-in.
 function withPlan(io: PickerIo, ready: boolean, signedIn: SecretResult = { ok: true, secret: "token" }): string[] {
 	const signIns: string[] = [];
-	const plan: ModeSupport = {
+	const plan: CallModeSupport = {
 		ready: () => ready ? { ok: true } : { ok: false, reason: "Not signed in" },
 		signIn: {
 			label: "Continue with ChatGPT",
@@ -90,6 +92,7 @@ function withPlan(io: PickerIo, ready: boolean, signedIn: SecretResult = { ok: t
 		},
 		listModels: () => Promise.resolve(MODELS),
 		model: () => ({ ok: false, error: "unused" }),
+		runner: () => ({ ok: false, error: "unused" }),
 	};
 
 	io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
@@ -234,10 +237,11 @@ describe("pickModel", () => {
 		});
 
 		test("offers only the providers that have the mode", async () => {
-			const plan: ModeSupport = {
+			const plan: CallModeSupport = {
 				ready: () => ({ ok: true }),
 				listModels: () => Promise.resolve(MODELS),
 				model: () => ({ ok: false, error: "unused" }),
+				runner: () => ({ ok: false, error: "unused" }),
 			};
 			const { io, asked, modesAsked } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [1]);
 
@@ -246,6 +250,21 @@ describe("pickModel", () => {
 			expect(await pickModel(configWith(["anthropic", "openai"]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { mode: "subscription", provider: "openai" } });
 			expect(modesAsked[0].labels[1]).toBe("Subscription token");
 			expect(asked.map(({ title }) => title)).toEqual(["openai model", "Effort"]);
+		});
+
+		test("keeps a listed model that OpenRouter doesn't know, and offers the efforts its list gives", async () => {
+			const listed: ModelInfo = { id: "opus", name: "Opus", efforts: ["provider-default", "high"] };
+			const sdk: ModeSupport = {
+				ready: () => ({ ok: true }),
+				listModels: () => Promise.resolve({ ok: true, models: [listed] }),
+				runner: () => ({ ok: false, error: "unused" }),
+			};
+			const { io, asked } = scriptedIo([0, 1], MODELS, TOOL_FACTS, [2]);
+
+			io.providers = io.providers.map((provider) => provider.name === "anthropic" ? { ...provider, modes: { ...provider.modes, "agent-sdk": sdk } } : provider);
+
+			expect(await pickModel(configWith(["anthropic"]), io)).toMatchObject({ result: "picked", mode: "agent-sdk", model: { provider: "anthropic", id: "opus", effort: "high" } });
+			expect(asked.map(({ labels }) => labels)).toEqual([["Opus (opus)"], ["provider-default", "high"]]);
 		});
 
 		test("asks before signing in, with the sign-in row, even for one provider", async () => {
@@ -294,7 +313,7 @@ describe("pickModel", () => {
 			const { io } = scriptedIo([2], { ok: false, error: "offline" }, TOOL_FACTS, [1]);
 
 			withPlan(io, true);
-			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: { ...provider.modes.subscription as ModeSupport, listModels: () => Promise.resolve({ ok: false as const, error: "offline" }) } } } : provider);
+			io.providers = io.providers.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: { ...provider.modes.subscription as CallModeSupport, listModels: () => Promise.resolve({ ok: false as const, error: "offline" }) } } } : provider);
 
 			expect(await pickModel(configWith([], saved), io)).toEqual({ result: "kept", mode: "subscription", model: { ...saved, price: NO_PRICE } });
 		});
@@ -438,6 +457,77 @@ describe("pickModel", () => {
 		const { io } = scriptedIo(rows);
 
 		expect(await pickModel(configWith(["anthropic", "openai"]), io)).toEqual({ result: "cancelled" });
+	});
+});
+
+// An Agent SDK mode for anthropic that can play on a plan login, which records
+// the sign-in the picker tells it to use.
+function withPlanLogin(io: PickerIo, plan: Ready): SignInChoice[] {
+	const used: SignInChoice[] = [];
+	const sdk: ModeSupport = {
+		ready: () => ({ ok: true }),
+		planLogin: { label: "Claude plan", check: () => Promise.resolve(plan), use: (choice) => used.push(choice) },
+		listModels: () => Promise.resolve({ ok: true, models: [{ id: "opus", name: "Opus", efforts: ["provider-default"] }] }),
+		runner: () => ({ ok: false, error: "unused" }),
+	};
+
+	io.providers = io.providers.map((provider) => provider.name === "anthropic" ? { ...provider, modes: { ...provider.modes, "agent-sdk": sdk } } : provider);
+
+	return used;
+}
+
+const PLAN_READY: Ready = { ok: true };
+
+const NO_PLAN: Ready = { ok: false, reason: "No Claude plan is logged in" };
+
+describe("the Sign-in menu", () => {
+	test("asks for the plan or the key when both are ready, and tells the mode which", async () => {
+		const { io, asked, debugs } = scriptedIo([1, 0, 0], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, PLAN_READY);
+
+		expect(await pickModel(configWith(["anthropic"]), io)).toMatchObject({ result: "picked", mode: "agent-sdk", model: { id: "opus" } });
+		expect(asked[0]).toEqual({ title: "Sign-in", labels: ["Claude plan", "API key"], start: 0 });
+		expect(used).toEqual(["api-key"]);
+		expect(debugs).toEqual([]);
+	});
+
+	test("uses the plan with no menu when the provider has no key", async () => {
+		const { io, asked, debugs } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, PLAN_READY);
+
+		await pickModel(configWith([]), io);
+
+		expect(asked.map(({ title }) => title)).toEqual(["anthropic model", "Effort"]);
+		expect(used).toEqual(["plan"]);
+		expect(debugs).toEqual([expect.stringMatching(/^sign_in_skipped: Skipped the Sign-in menu: No API key for anthropic/)]);
+	});
+
+	test("uses the key with no menu when no plan is logged in", async () => {
+		const { io, debugs } = scriptedIo([0, 0], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, NO_PLAN);
+
+		await pickModel(configWith(["anthropic"]), io);
+
+		expect(used).toEqual(["api-key"]);
+		expect(debugs).toEqual(["sign_in_skipped: Skipped the Sign-in menu: No Claude plan is logged in"]);
+	});
+
+	test("warns with both reasons when neither is ready, and asks what now", async () => {
+		const { io, asked, warnings } = scriptedIo([undefined], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, NO_PLAN);
+
+		expect(await pickModel(configWith([]), io)).toEqual({ result: "cancelled" });
+		expect(warnings[0]).toMatch(/^anthropic can't sign in\. No Claude plan is logged in\. No API key for anthropic/);
+		expect(asked[0].title).toBe("What now?");
+		expect(used).toEqual([]);
+	});
+
+	test("a cancel in the menu cancels the pick", async () => {
+		const { io } = scriptedIo([undefined], MODELS, TOOL_FACTS, [2]);
+		const used = withPlanLogin(io, PLAN_READY);
+
+		expect(await pickModel(configWith(["anthropic"]), io)).toEqual({ result: "cancelled" });
+		expect(used).toEqual([]);
 	});
 });
 

@@ -7,7 +7,7 @@ import path from "node:path";
 import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, NO_MODEL, type Provider } from "../../src/config.js";
 import type { ListResult } from "../../src/model/list-models.js";
 import { providers } from "../../src/model/providers/index.js";
-import type { ModeSupport, ProviderDef } from "../../src/model/providers/provider.js";
+import type { CallModeSupport, ProviderDef } from "../../src/model/providers/provider.js";
 
 export function configWithKeys(providers: Config["providers"]): Config {
 	return { schemaVersion: 1, logLevel: "decisions", providers, model: NO_MODEL, mcpPort: DEFAULT_MCP_PORT, journalEntries: DEFAULT_JOURNAL_ENTRIES, limits: DEFAULT_LIMITS };
@@ -22,6 +22,6 @@ export function realProviders(): ProviderDef[] {
 export function providersListing(list: (provider: Provider, config: Config) => Promise<ListResult>): ProviderDef[] {
 	return realProviders().map(({ name, modes }) => ({
 		name,
-		modes: { "api-key": { ...modes["api-key"] as ModeSupport, listModels: (config) => list(name, config) } },
+		modes: { "api-key": { ...modes["api-key"] as CallModeSupport, listModels: (config) => list(name, config) } },
 	}));
 }

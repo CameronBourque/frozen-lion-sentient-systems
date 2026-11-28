@@ -5,7 +5,7 @@
 import { type Config, KEY_VARIABLES, type Provider } from "../../config.js";
 import type { Lister } from "../list-models.js";
 import { type Credential, type Factory, credentialMode } from "./mode.js";
-import type { ModeSupport } from "./provider.js";
+import type { CallModeSupport } from "./provider.js";
 
 export function apiKeyCredential(name: Provider): Credential<string> {
 	const keyOf = (config: Config) => config.providers[name]?.apiKey ?? "";
@@ -21,6 +21,6 @@ export function apiKeyCredential(name: Provider): Credential<string> {
 	};
 }
 
-export function apiKeyMode(name: Provider, factory: Factory<string>, lister: Lister): ModeSupport {
-	return credentialMode(name, apiKeyCredential(name), factory, lister);
+export function apiKeyMode(name: Provider, factory: Factory<string>, lister: Lister): CallModeSupport {
+	return credentialMode(name, "api-key", apiKeyCredential(name), factory, lister);
 }

@@ -10,7 +10,7 @@ import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT,
 import { CONFIG_NAME, EXAMPLE_CONFIG, loadConfig } from "../../src/load-config.js";
 import { Logger } from "../../src/log.js";
 import { type ChooseIo, chooseModel } from "../../src/model/choose.js";
-import type { ModeSupport } from "../../src/model/providers/provider.js";
+import type { CallModeSupport } from "../../src/model/providers/provider.js";
 import { providersListing } from "./fake-providers.js";
 
 const LISTING = providersListing(() => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }));
@@ -54,10 +54,11 @@ describe("in a terminal", () => {
 	});
 
 	test("names the picked run mode in the log", async () => {
-		const plan: ModeSupport = {
+		const plan: CallModeSupport = {
 			ready: () => ({ ok: true }),
 			listModels: () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }),
 			model: () => ({ ok: false, error: "unused" }),
+			runner: () => ({ ok: false, error: "unused" }),
 		};
 		const providers = LISTING.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
 		// Subscription token, then the first row of each menu after it.
@@ -70,10 +71,11 @@ describe("in a terminal", () => {
 	});
 
 	test("logs a plan's model when no provider has an API key", async () => {
-		const plan: ModeSupport = {
+		const plan: CallModeSupport = {
 			ready: () => ({ ok: true }),
 			listModels: () => Promise.resolve({ ok: true, models: [{ id: "model-a", name: "model-a" }] }),
 			model: () => ({ ok: false, error: "unused" }),
+			runner: () => ({ ok: false, error: "unused" }),
 		};
 		const providers = LISTING.map((provider) => provider.name === "openai" ? { ...provider, modes: { ...provider.modes, subscription: plan } } : provider);
 		const subscription: ChooseIo["ask"] = (title) => Promise.resolve(title === "Run mode" ? 1 : 0);

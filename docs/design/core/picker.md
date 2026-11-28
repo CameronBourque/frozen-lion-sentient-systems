@@ -16,7 +16,9 @@ In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for t
    - `provider-default` and the model's levels, when OpenRouter lists them, with the level that `provider-default` means, such as `provider-default (high)`,
    - otherwise every level, but `none` only when reasoning can be turned off.
 
-The model menu lists the provider's models from its own API, as [model-client.md](model-client.md#model-lists) describes. It keeps only the models that OpenRouter lists with `tools`.
+   A model list that gives each model its efforts, as the [Agent SDK](anthropic-agent-sdk-runner.md#models) does, takes the place of OpenRouter's list for that model.
+
+The model menu lists the provider's models from its own API, as [model-client.md](model-client.md#model-lists) describes. It keeps only the models that OpenRouter lists with `tools`, and every model whose list gives its efforts, since only a mode that plays them gives them.
 
 That drops speech, image, embedding, and realtime models, which OpenRouter lists without tools or not at all. When OpenRouter's list can't be read and there is no cache, the menu lists every model, with a warning.
 
@@ -43,6 +45,21 @@ It also finds a model whose ID ends in a release date, which Anthropic uses for 
 The bridge keeps the facts in `cache/models.json` in the config file's folder, and fetches it again once the copy is a day old. When the fetch fails, an older copy still serves.
 
 The picked model gets the list's price, unless you saved a price for the same model. When the file can't be read, or has no price for the model, the picker warns and the price stays unset.
+
+## Plan login
+
+A [run mode](run-modes.md#providers) with a `planLogin` can play on a plan's own login, such as a Claude plan in the Agent SDK, or on the provider's API key. After the provider menu, `chooseSignIn` in `src/model/picker.ts` checks both:
+
+- the plan, with the mode's `planLogin.check()`,
+- the key, with the `ready(config)` of the same provider's **API key** mode, so no provider needs its own key check.
+
+With both ready, the picker shows a **Sign-in** menu with the plan's `label` and **API key**, starting on the plan.
+
+With one ready, it skips the menu, picks that one, and logs the other's reason at the debug level as `sign_in_skipped`. You chose no plan login, or set no key, so a warning would only be noise.
+
+With neither, it warns with both reasons and shows the **What now?** menu, as after a failed sign-in. It then tells the mode the pick with `planLogin.use()`. Each start asks again, as the **Run mode** menu does.
+
+A new provider with a plan login of its own adds a `planLogin` to its mode, and the picker needs no change.
 
 ## Decisions
 

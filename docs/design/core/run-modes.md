@@ -31,12 +31,17 @@ The object's type is `ProviderDef` in `src/model/providers/provider.ts`. It has 
 
 - `ready(config)`, which says whether the provider can play in that mode, or why not, such as a missing API key,
 - `signIn`, only in a subscription token mode, with the `label` of its row in the provider menu, and `run()`, which gets a valid token: the saved one, a refreshed one, or one from the browser sign-in,
+- `planLogin`, only in a mode that can play on a plan's own login as well as the provider's API key, as [picker.md](picker.md#plan-login) says,
 - `listModels(config)`, which lists the models for the picker,
-- `model(config, id)`, which builds the model for the model client.
+- `runner(config)`, which builds the [runner](#runners) that plays the agents' turns with the model in `config.model`, or says why it can't.
 
-A run mode missing from a provider's `modes` isn't available for that provider. An agent SDK or a CLI mode gives its [runner](#runners) in place of `model`.
+The API key and subscription token modes are a `CallModeSupport`, which also has `model(config, id)`. It builds the model alone, for a single call such as `npm run ask`. An agent SDK or a CLI mode has no `model`, since the model client can't call it.
 
-`credentialMode(name, credential, factory, lister)` in `src/model/providers/mode.ts` builds a `ModeSupport` from three parts:
+A run mode missing from a provider's `modes` isn't available for that provider.
+
+`agentRunner(config, mode, providers)` in `src/model/target.ts` finds the chosen provider's mode and builds its runner, and the bridge plays every turn with it. `modelTarget` finds the same mode and builds its model target, for a single call.
+
+`credentialMode(name, mode, credential, factory, lister)` in `src/model/providers/mode.ts` builds a `CallModeSupport` from three parts. Its runner is `modelClientRunner`, with the model target from the factory:
 
 - a `Credential`, whose `ready` says whether it is ready, `source` gives what a model is built from, and `secret` gives the string a request sends now, or why it can't, such as a refused refresh,
 - a factory, which builds the model from the credential's source through the provider's AI SDK package,
@@ -63,7 +68,7 @@ The menus after it depend on the mode:
 
 - **API key.** Provider, model, and effort, as today.
 - **Subscription token.** Provider, then the mode's `signIn`, then model and effort from the provider's own list. A signed-out provider's row shows its sign-in label, such as "Continue with ChatGPT". A failed sign-in warns with its reason and shows the **What now?** menu.
-- **Agent SDK.** Provider, a login check, then model and effort from the SDK's list.
+- **Agent SDK.** Provider, a login check, the [sign-in](anthropic-agent-sdk-runner.md#sign-in) menu when there is both a key and a login, then model and effort from the SDK's list.
 - **CLI.** Provider, a check that the CLI is installed and logged in, then model and effort.
 
 A provider menu with one provider is skipped, unless that provider needs a sign-in, so the browser never opens before the user picks its row.
@@ -80,7 +85,7 @@ The bridge's loop and the model client stay the same, and the provider model get
 
 The agent SDK and CLI modes run their own tool loop, so they replace the bridge's agent loop for a turn. The model client stays out of it.
 
-An `AgentRunner` in `src/agents/runner.ts` runs one turn. `runTurn(turn, signal)` takes the system prompt, the turn message, the MCP tools, and the turn limits. It returns how the turn ended and its usage.
+An `AgentRunner` in `src/agents/runners/` runs one turn. `runTurn(turn, signal)` takes the system prompt, the turn message, the MCP tools, and the turn limits. It returns how the turn ended and its usage. [turn-loop/](../agents/turn-loop/README.md#runners) has the interface.
 
 The API key and subscription token modes share one runner, the bridge's own loop. Each agent SDK and each CLI adds one.
 
@@ -98,21 +103,9 @@ An agent SDK or a CLI becomes a run mode for a provider only when it does everyt
 - take the model and the effort, and list the models,
 - start a fresh context each turn.
 
-### Claude runner
+### Anthropic Agent SDK runner
 
-`@anthropic-ai/claude-agent-sdk` passes the check on its docs. The runner calls `query()` with:
-
-- `systemPrompt` set to the system prompt, and the turn message as the prompt,
-- `tools: []`, the bridge's MCP server in `mcpServers`, `strictMcpConfig: true`, and `settingSources: []`,
-- `PreToolUse` and `PostToolUse` hooks that log each call and count it against the turn limits, and end the run after `end_turn`,
-- an `abortController` that the stop key aborts,
-- `model` and `effort` from the config file.
-
-The SDK's `total_cost_usd` is an estimate at API prices, not what a plan costs, so the price stays unset, as with a subscription token.
-
-`CLAUDE_AGENT_SDK_ENABLED` in `src/model/providers/anthropic.ts` is `false`. While it is, Anthropic's `modes` has no agent SDK entry, so the mode reads `(not available yet)`.
-
-Anthropic's terms bar a third-party app from offering claude.ai login without approval. The constant becomes `true` once Anthropic approves.
+`@anthropic-ai/claude-agent-sdk` passes the check on its docs. [anthropic-agent-sdk-runner.md](anthropic-agent-sdk-runner.md) has its options, its sign-in, and the flag that keeps it off until Anthropic approves.
 
 ### CLI
 
@@ -130,5 +123,6 @@ No provider uses the CLI mode yet, so its menu row reads `(not available yet)`. 
 | A subscription token comes first, then an agent SDK, then a CLI | A token keeps the bridge's own loop, so nothing is lost. An SDK runs its own loop, and a CLI adds a process and output to parse |
 | An agent SDK or a CLI must pass the parity check | Users get the same game in every mode. A mode that loses the log, the limits, or the stop key isn't worth offering |
 | The Claude flag is a constant in the code, not a config setting | A setting would let anyone turn it on before Anthropic approves, which is the same as offering it. Tests turn it on through injection |
+| Every run mode builds its own runner, and only a call mode builds a model | The bridge plays every mode the same way, with no case for who runs the tool loop. A new agent SDK is one entry in `modes`, like a new provider |
 | `signIn` is an optional part of `ModeSupport`, and the picker calls it when the mode has one | Only a subscription token mode signs in. A new plan provider is still one entry, with no change to the picker |
 | A plan mode leaves the price unset | A plan has no price per token. An estimate at API prices would make cost limits stop runs that cost the user nothing more |

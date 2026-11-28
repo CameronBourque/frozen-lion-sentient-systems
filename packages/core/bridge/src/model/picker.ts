@@ -5,7 +5,7 @@
 import { type Config, type Effort, type ModelSetting, NO_PRICE, type Price, type Provider, UNSET } from "../config.js";
 import type { ModelInfo } from "./list-models.js";
 import { type Facts, type FactsResult, callsTools, effortsFor, priceFor, priceLabel } from "./model-facts.js";
-import { type ModeSupport, type ProviderDef, RUN_MODES, type RunMode, type RunModeRow, runModeLabel } from "./providers/provider.js";
+import { type ModeSupport, type ProviderDef, RUN_MODES, type Ready, type RunMode, type RunModeRow, type SignInChoice, runModeLabel } from "./providers/provider.js";
 import { hasPrice } from "./usage.js";
 
 export interface PickerIo {
@@ -15,6 +15,8 @@ export interface PickerIo {
 	providers: ProviderDef[];
 	facts: () => Promise<FactsResult>;
 	warn: (text: string) => void;
+	// Says why the picker skipped a menu, for the debug log.
+	debug: (event: string, text: string) => void;
 }
 
 // The new choice, or the saved one when the user keeps it, each with its run
@@ -123,7 +125,8 @@ async function askAfterFailure(io: PickerIo, config: Config, offered: Offered[])
 // The models that call tools. Without OpenRouter's facts there is nothing to
 // go on, so every model stays.
 function usableModels(models: ModelInfo[], provider: Provider, fetched: FactsResult): ModelInfo[] {
-	return fetched.ok ? models.filter(({ id }) => callsTools(fetched.facts, provider, id)) : models;
+	// A list that gives the efforts lists only the models its mode can play.
+	return fetched.ok ? models.filter(({ id, efforts }) => efforts !== undefined || callsTools(fetched.facts, provider, id)) : models;
 }
 
 // Asks for the run mode until the user picks one that a provider has, or
@@ -187,6 +190,18 @@ async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Pro
 		return pickAfterFailure(config, io, runMode);
 	}
 
+	const chosen = await chooseSignIn(config, io, provider, mode);
+
+	if (chosen === "cancelled") {
+		return { result: "cancelled" };
+	}
+
+	if (!chosen.ok) {
+		io.warn(chosen.reason);
+
+		return pickAfterFailure(config, io, runMode);
+	}
+
 	const [listed, fetched] = await Promise.all([mode.listModels(config), io.facts()]);
 
 	if (!fetched.ok) {
@@ -202,6 +217,43 @@ async function pickProvider(config: Config, io: PickerIo, runMode: RunMode): Pro
 	io.warn(listed.ok ? `${provider} listed no models that call tools` : listed.error);
 
 	return pickAfterFailure(config, io, runMode);
+}
+
+const SIGN_INS: SignInChoice[] = ["plan", "api-key"];
+
+// A mode that can play on a plan's own login or on the provider's API key asks
+// which, when both are ready. The key is ready when the provider's API key
+// mode is, so the check is the same for every provider.
+async function chooseSignIn(config: Config, io: PickerIo, provider: Provider, mode: ModeSupport): Promise<Ready | "cancelled"> {
+	const login = mode.planLogin;
+
+	if (login === undefined) {
+		return { ok: true };
+	}
+
+	const plan = await login.check();
+	const key = io.providers.find(({ name }) => name === provider)?.modes["api-key"]?.ready(config) ?? { ok: false, reason: `${provider} has no API key mode` };
+
+	if (!plan.ok && !key.ok) {
+		return { ok: false, reason: `${provider} can't sign in. ${plan.reason}. ${key.reason}` };
+	}
+
+	// Only one is ready here, so the reason is the other one's.
+	const skipped = plan.ok ? key : plan;
+
+	if (!skipped.ok) {
+		io.debug("sign_in_skipped", `Skipped the Sign-in menu: ${skipped.reason}`);
+	}
+
+	const choice = plan.ok && key.ok ? await askFor(io, "Sign-in", SIGN_INS, [login.label, "API key"], "plan") : plan.ok ? "plan" : "api-key";
+
+	if (choice === undefined) {
+		return "cancelled";
+	}
+
+	login.use(choice);
+
+	return { ok: true };
 }
 
 // Asks what now after a failed sign-in or model list, with the providers as
@@ -239,7 +291,8 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 		return { result: "cancelled" };
 	}
 
-	const { efforts, defaultEffort } = effortsFor(facts, provider, id);
+	const listed = models[ids.indexOf(id)].efforts;
+	const { efforts, defaultEffort } = listed === undefined ? effortsFor(facts, provider, id) : { efforts: listed, defaultEffort: undefined };
 	const effortLabels = efforts.map((effort) => effortLabel(effort, defaultEffort));
 	const effort = await askFor(io, "Effort", efforts, effortLabels, saved.effort);
 

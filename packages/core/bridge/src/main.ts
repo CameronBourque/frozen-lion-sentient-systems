@@ -20,7 +20,7 @@ import { chooseModel } from "./model/choose.js";
 import { askMenu, processTerminal } from "./model/menu.js";
 import { cachedFacts, factsCachePath } from "./model/model-facts.js";
 import { providers } from "./model/providers/index.js";
-import { modelTarget } from "./model/target.js";
+import { agentRunner } from "./model/target.js";
 import { TunerClient } from "./tuner/client.js";
 
 // The default level until the config file sets one. Lines before then go to the
@@ -124,9 +124,9 @@ const startAgents = async (): Promise<boolean> => {
 		return false;
 	}
 
-	const target = modelTarget(started.config, mode, offered);
+	const built = agentRunner(started.config, mode, offered);
 
-	if (target.ok) {
+	if (built.ok) {
 		const { config } = started;
 
 		// After the picker, which may have filled in the price.
@@ -136,9 +136,9 @@ const startAgents = async (): Promise<boolean> => {
 			void stopBridge(reason);
 		};
 
-		agents = turnSignal({ client, logger, target: target.target, model: config.model, journalEntries: config.journalEntries, limits: config.limits, runSpend, now: () => new Date(), knowledge, memory, onTurnEnded, onStopRun });
+		agents = turnSignal({ client, logger, runner: built.runner, model: config.model, journalEntries: config.journalEntries, limits: config.limits, runSpend, now: () => new Date(), knowledge, memory, onTurnEnded, onStopRun });
 	} else {
-		logger.warn("agents_off", `Agents won't play their turns: ${target.error}`, { reason: target.error });
+		logger.warn("agents_off", `Agents won't play their turns: ${built.error}`, { reason: built.error });
 	}
 
 	return true;

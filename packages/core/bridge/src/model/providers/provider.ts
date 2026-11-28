@@ -2,7 +2,9 @@
 // does. docs/design/core/run-modes.md has the design.
 
 import type { LanguageModel } from "ai";
+import type { AgentRunner } from "../../agents/runners/shared.js";
 import type { Config, Provider } from "../../config.js";
+import type { CallMode } from "../client.js";
 import type { Fetch, ListResult } from "../list-models.js";
 import type { SecretResult } from "./mode.js";
 
@@ -32,6 +34,10 @@ export type ModelResult =
 	| { ok: true; model: LanguageModel }
 	| { ok: false; error: string };
 
+export type BuiltRunner =
+	| { ok: true; runner: AgentRunner }
+	| { ok: false; error: string };
+
 // A plan mode's sign-in: its row in the provider menu, and what picking it
 // runs.
 export interface SignIn {
@@ -39,16 +45,40 @@ export interface SignIn {
 	run: () => Promise<SecretResult>;
 }
 
+// Which login a mode with a plan login plays on: the plan's, or the
+// provider's API key.
+export type SignInChoice = "plan" | "api-key";
+
+// A plan login that a mode can play on beside the provider's API key: its row
+// in the Sign-in menu, a check that the user is logged in, and use, which
+// tells the mode which login the user picked.
+export interface PlanLogin {
+	label: string;
+	check: () => Promise<Ready>;
+	use: (choice: SignInChoice) => void;
+}
+
 export interface ModeSupport {
 	ready: (config: Config) => Ready;
 	// Only in a mode that signs in through the browser.
 	signIn?: SignIn;
+	// Only in a mode that can play on a plan's own login.
+	planLogin?: PlanLogin;
 	listModels: (config: Config, fetchPage?: Fetch) => Promise<ListResult>;
+	// Plays the agents' turns with the model in config.model.
+	runner: (config: Config) => BuiltRunner;
+}
+
+// A mode the model client calls also builds the model on its own, for a
+// single call.
+export interface CallModeSupport extends ModeSupport {
 	model: (config: Config, modelId: string) => ModelResult;
 }
+
+export type ModeSupports = { [Mode in RunMode]?: Mode extends CallMode ? CallModeSupport : ModeSupport };
 
 export interface ProviderDef {
 	name: Provider;
 	// A run mode missing here isn't available for the provider.
-	modes: Partial<Record<RunMode, ModeSupport>>;
+	modes: ModeSupports;
 }
