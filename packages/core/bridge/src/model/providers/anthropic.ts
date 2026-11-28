@@ -4,6 +4,7 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import { type Lister, withParam } from "../list-models.js";
+import { type AgentSdk, agentSdkMode } from "./anthropic-agent-sdk.js";
 import { apiKeyMode } from "./api-key.js";
 import type { ProviderDef } from "./provider.js";
 
@@ -27,9 +28,16 @@ const API_KEY_LISTER: Lister = {
 	},
 };
 
-export const anthropic: ProviderDef = {
-	name: "anthropic",
-	modes: {
-		"api-key": apiKeyMode("anthropic", (apiKey) => createAnthropic({ apiKey }), API_KEY_LISTER),
-	},
-};
+// Off until Anthropic approves claude.ai login for the bridge. A setting would
+// let anyone turn it on, so it is a constant, and tests pass enabled.
+export const CLAUDE_AGENT_SDK_ENABLED = false;
+
+export function anthropic(enabled = CLAUDE_AGENT_SDK_ENABLED, sdk?: AgentSdk): ProviderDef {
+	return {
+		name: "anthropic",
+		modes: {
+			"api-key": apiKeyMode("anthropic", (apiKey) => createAnthropic({ apiKey }), API_KEY_LISTER),
+			...(enabled ? { "agent-sdk": agentSdkMode(sdk) } : {}),
+		},
+	};
+}

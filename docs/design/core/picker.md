@@ -16,7 +16,9 @@ In a terminal, `pickModel(config, io)` in `src/model/picker.ts` first asks for t
    - `provider-default` and the model's levels, when OpenRouter lists them, with the level that `provider-default` means, such as `provider-default (high)`,
    - otherwise every level, but `none` only when reasoning can be turned off.
 
-The model menu lists the provider's models from its own API, as [model-client.md](model-client.md#model-lists) describes. It keeps only the models that OpenRouter lists with `tools`.
+   A model list that gives each model its efforts, as the [Agent SDK](anthropic-agent-sdk-runner.md#models) does, takes the place of OpenRouter's list for that model.
+
+The model menu lists the provider's models from its own API, as [model-client.md](model-client.md#model-lists) describes. It keeps only the models that OpenRouter lists with `tools`, and every model whose list gives its efforts, since only a mode that plays them gives them.
 
 That drops speech, image, embedding, and realtime models, which OpenRouter lists without tools or not at all. When OpenRouter's list can't be read and there is no cache, the menu lists every model, with a warning.
 

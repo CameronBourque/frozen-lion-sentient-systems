@@ -70,7 +70,21 @@ Each start asks again, as the **Run mode** menu does.
 
 ## Flag
 
-`CLAUDE_AGENT_SDK_ENABLED` in `src/model/providers/anthropic.ts` is `false`. While it is, Anthropic's `modes` has no agent SDK entry, so the mode reads `(not available yet)`.
+`CLAUDE_AGENT_SDK_ENABLED` in `src/model/providers/anthropic.ts` is `false`. While it is, Anthropic's `modes` has no agent SDK entry, so the mode reads `(not available yet)`. `anthropic(enabled)` takes the flag, so a test can turn the mode on.
+
+## Mode
+
+`agentSdkMode()` in `src/model/providers/anthropic-agent-sdk.ts` is Anthropic's `agent-sdk` entry in `modes`:
+
+- `ready` passes, since the login is checked when the user picks the provider.
+- `listModels` lists the [models](#models).
+- `runner` builds `anthropicAgentSdkRunner` with `config.model`.
+
+## Models
+
+`listModels` opens a session with no tools, settings, or files, reads `supportedModels()`, and closes it, with no model call.
+
+The SDK names its models by alias, such as `opus`, which OpenRouter doesn't list. So each model brings its own efforts: `provider-default`, then the SDK's `supportedEffortLevels`.
 
 Anthropic's terms bar a third-party app from offering claude.ai login without approval. The constant becomes `true` once Anthropic approves.
 

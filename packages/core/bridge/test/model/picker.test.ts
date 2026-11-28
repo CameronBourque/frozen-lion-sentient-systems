@@ -4,11 +4,11 @@
 
 import { describe, expect, test } from "vitest";
 import { type Config, DEFAULT_JOURNAL_ENTRIES, DEFAULT_LIMITS, DEFAULT_MCP_PORT, type ModelSetting, NO_MODEL, NO_PRICE } from "../../src/config.js";
-import type { ListResult } from "../../src/model/list-models.js";
+import type { ListResult, ModelInfo } from "../../src/model/list-models.js";
 import type { FactsResult } from "../../src/model/model-facts.js";
 import { type PickerIo, pickModel, savedModelWarning } from "../../src/model/picker.js";
 import type { SecretResult } from "../../src/model/providers/mode.js";
-import type { CallModeSupport } from "../../src/model/providers/provider.js";
+import type { CallModeSupport, ModeSupport } from "../../src/model/providers/provider.js";
 import { providersListing, realProviders } from "./fake-providers.js";
 
 const MODELS: ListResult = {
@@ -248,6 +248,21 @@ describe("pickModel", () => {
 			expect(await pickModel(configWith(["anthropic", "openai"]), io)).toMatchObject({ result: "picked", mode: "subscription", model: { mode: "subscription", provider: "openai" } });
 			expect(modesAsked[0].labels[1]).toBe("Subscription token");
 			expect(asked.map(({ title }) => title)).toEqual(["openai model", "Effort"]);
+		});
+
+		test("keeps a listed model that OpenRouter doesn't know, and offers the efforts its list gives", async () => {
+			const listed: ModelInfo = { id: "opus", name: "Opus", efforts: ["provider-default", "high"] };
+			const sdk: ModeSupport = {
+				ready: () => ({ ok: true }),
+				listModels: () => Promise.resolve({ ok: true, models: [listed] }),
+				runner: () => ({ ok: false, error: "unused" }),
+			};
+			const { io, asked } = scriptedIo([0, 1], MODELS, TOOL_FACTS, [2]);
+
+			io.providers = io.providers.map((provider) => provider.name === "anthropic" ? { ...provider, modes: { ...provider.modes, "agent-sdk": sdk } } : provider);
+
+			expect(await pickModel(configWith(["anthropic"]), io)).toMatchObject({ result: "picked", mode: "agent-sdk", model: { provider: "anthropic", id: "opus", effort: "high" } });
+			expect(asked.map(({ labels }) => labels)).toEqual([["Opus (opus)"], ["provider-default", "high"]]);
 		});
 
 		test("asks before signing in, with the sign-in row, even for one provider", async () => {

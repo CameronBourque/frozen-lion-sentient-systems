@@ -3,11 +3,14 @@
 // docs/design/core/model-client.md has the design.
 
 import { z } from "zod";
-import type { Provider } from "../config.js";
+import type { Effort, Provider } from "../config.js";
 
+// efforts, from a list that gives them, take the place of OpenRouter's facts
+// for the model.
 export interface ModelInfo {
 	id: string;
 	name: string;
+	efforts?: Effort[];
 }
 
 export type ListResult =

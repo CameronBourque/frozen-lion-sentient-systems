@@ -10,5 +10,5 @@ import { xai } from "./xai.js";
 
 // The folder is the config file's, where a plan's tokens are saved.
 export function providers(folder: string, log: Pick<Logger, "info" | "warn">): ProviderDef[] {
-	return [anthropic, openai(folder, log), google, xai];
+	return [anthropic(), openai(folder, log), google, xai];
 }

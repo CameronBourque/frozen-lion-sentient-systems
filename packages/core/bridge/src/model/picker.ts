@@ -123,7 +123,8 @@ async function askAfterFailure(io: PickerIo, config: Config, offered: Offered[])
 // The models that call tools. Without OpenRouter's facts there is nothing to
 // go on, so every model stays.
 function usableModels(models: ModelInfo[], provider: Provider, fetched: FactsResult): ModelInfo[] {
-	return fetched.ok ? models.filter(({ id }) => callsTools(fetched.facts, provider, id)) : models;
+	// A list that gives the efforts lists only the models its mode can play.
+	return fetched.ok ? models.filter(({ id, efforts }) => efforts !== undefined || callsTools(fetched.facts, provider, id)) : models;
 }
 
 // Asks for the run mode until the user picks one that a provider has, or
@@ -239,7 +240,8 @@ async function pickFromList(config: Config, io: PickerIo, runMode: RunMode, prov
 		return { result: "cancelled" };
 	}
 
-	const { efforts, defaultEffort } = effortsFor(facts, provider, id);
+	const listed = models[ids.indexOf(id)].efforts;
+	const { efforts, defaultEffort } = listed === undefined ? effortsFor(facts, provider, id) : { efforts: listed, defaultEffort: undefined };
 	const effortLabels = efforts.map((effort) => effortLabel(effort, defaultEffort));
 	const effort = await askFor(io, "Effort", efforts, effortLabels, saved.effort);
 
