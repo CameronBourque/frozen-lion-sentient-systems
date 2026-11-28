@@ -121,6 +121,16 @@ test("a blank model and the provider's default effort leave the SDK's defaults",
 	expect(fake.options[0]).not.toHaveProperty("effort");
 });
 
+test("the session's sign-in, model, and built-in tools log at the debug level", async () => {
+	endTurnGoesThrough();
+
+	const debug = vi.spyOn(logger, "debug");
+
+	await play({ calls: [END_TURN] });
+
+	expect(debug).toHaveBeenCalledWith("sdk_session", "The Agent SDK signed in with ANTHROPIC_API_KEY on claude-haiku-5-5, with 2 tools, 0 of them built in", { player: 3, apiKeySource: "ANTHROPIC_API_KEY", model: "claude-haiku-5-5", builtIn: [] });
+});
+
 test("an end turn that goes through ends the turn, and the calls after it don't run", async () => {
 	endTurnGoesThrough();
 

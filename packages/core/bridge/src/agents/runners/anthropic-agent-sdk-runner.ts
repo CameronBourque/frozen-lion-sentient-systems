@@ -3,7 +3,7 @@
 // docs/design/core/anthropic-agent-sdk-runner.md has the design.
 
 import fs from "node:fs";
-import type { EffortLevel, HookCallback, HookInput, HookJSONOutput, Options, PostToolUseFailureHookInput, PostToolUseHookInput, PreToolUseHookInput, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
+import type { EffortLevel, HookCallback, HookInput, HookJSONOutput, Options, PostToolUseFailureHookInput, PostToolUseHookInput, PreToolUseHookInput, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKSystemMessage, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
 import { query as sdkQuery } from "@anthropic-ai/claude-agent-sdk";
 import type { ModelSetting } from "../../config.js";
 import { startMcpHttp } from "../../mcp/http.js";
@@ -179,6 +179,12 @@ async function readMessages(messages: AsyncIterable<SDKMessage>, sdkRun: SdkRun)
 }
 
 function readMessage(sdkRun: SdkRun, message: SDKMessage): TurnEnd | undefined {
+	if (message.type === "system" && message.subtype === "init") {
+		logSession(sdkRun, message);
+
+		return undefined;
+	}
+
 	if (message.type === "assistant") {
 		return countCall(sdkRun, message);
 	}
@@ -200,6 +206,14 @@ function readMessage(sdkRun: SdkRun, message: SDKMessage): TurnEnd | undefined {
 	}
 
 	return end;
+}
+
+// The session's first message says how the SDK signed in and which tools it
+// has, which shows the pick and the options took.
+function logSession({ run }: SdkRun, { apiKeySource, model, tools }: SDKSystemMessage): void {
+	const builtIn = tools.filter((tool) => !tool.startsWith(TOOL_PREFIX));
+
+	run.context.logger.debug("sdk_session", `The Agent SDK signed in with ${apiKeySource} on ${model}, with ${tools.length} tools, ${builtIn.length} of them built in`, { player: run.agent.playerID, apiKeySource, model, builtIn });
 }
 
 // Each model call counts against the spending limits as it comes, so a long

@@ -44,7 +44,8 @@ export interface FakeQuery {
 	called: string[];
 }
 
-const INIT = { type: "system", subtype: "init" } as SDKMessage;
+// The SDK's first message, with the bridge's tools and the sign-in.
+export const INIT = { type: "system", subtype: "init", apiKeySource: "ANTHROPIC_API_KEY", model: "claude-haiku-5-5", tools: [`mcp__${SERVER_NAME}__end_turn`, `mcp__${SERVER_NAME}__get_state`] } as unknown as SDKMessage;
 
 export const SUCCESS = { type: "result", subtype: "success", usage: { output_tokens: 0 } } as SDKMessage;
 

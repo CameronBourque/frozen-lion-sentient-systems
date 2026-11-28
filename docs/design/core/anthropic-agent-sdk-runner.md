@@ -24,6 +24,8 @@ Each turn serves the agent's MCP server over HTTP on a free loopback port, with 
 
 The SDK's in-process `sdk` server type needs version 1 of the MCP SDK, and the bridge uses version 2. `query()` itself loads without version 1. npm still installs it, as a peer of the Agent SDK, but no bridge code loads it.
 
+The session's first message, the SDK's `init`, logs at the debug level as `sdk_session`. It holds the sign-in the SDK used as `apiKeySource`, the model, and any tool that isn't the bridge's as `builtIn`, so a log shows that the sign-in pick and `tools: []` took.
+
 ## Hooks
 
 The hooks are adapters. They play each call through the `beforeCall` and `afterCall` steps that every [runner](../agents/turn-loop/README.md#runners) shares, on a `TurnRun` from `startRun`, so the logs and the limits match the bridge's own loop:
