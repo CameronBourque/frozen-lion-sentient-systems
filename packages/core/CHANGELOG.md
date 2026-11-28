@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.40.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.39.0...core-v0.40.0) (2026-11-28)
+
+
+### Features
+
+* **core:** run Claude agents through the Agent SDK ([#160](https://github.com/CameronBourque/frozen-lion-sentient-systems/issues/160)) ([6c48261](https://github.com/CameronBourque/frozen-lion-sentient-systems/commit/6c48261c6f954e1d3ec4762aaefc829b3eaa0a0c))
+
 ## [0.39.0](https://github.com/CameronBourque/frozen-lion-sentient-systems/compare/core-v0.38.0...core-v0.39.0) (2026-11-27)
 
 
