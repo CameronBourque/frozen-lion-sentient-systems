@@ -3,7 +3,7 @@
 // docs/design/core/anthropic-agent-sdk-runner.md has the design.
 
 import fs from "node:fs";
-import type { EffortLevel, HookCallback, HookInput, HookJSONOutput, Options, PostToolUseFailureHookInput, PostToolUseHookInput, PreToolUseHookInput, SDKAssistantMessage, SDKMessage, SDKResultSuccess, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
+import type { EffortLevel, HookCallback, HookInput, HookJSONOutput, Options, PostToolUseFailureHookInput, PostToolUseHookInput, PreToolUseHookInput, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
 import { query as sdkQuery } from "@anthropic-ai/claude-agent-sdk";
 import type { ModelSetting } from "../../config.js";
 import { startMcpHttp } from "../../mcp/http.js";
@@ -27,6 +27,10 @@ const OUTSIDE_TOOL = "Only the game's tools are allowed.";
 
 const NO_END_TURN = "The model stopped without calling end_turn";
 
+// How long the runner reads on after a hook stops the run, for the result
+// that holds the round's output.
+export const RESULT_WAIT_MS = 5000;
+
 // The efforts that leave the SDK's own default.
 const NO_EFFORT = new Set<AgentSdkModel["effort"]>(["", "provider-default"]);
 
@@ -39,12 +43,16 @@ interface Prompt {
 }
 
 // A turn's shared run, and the end a hook or a spend found, once the run
-// should stop. counted holds the model calls already counted, and the round
+// should stop. stopped is set when a hook stopped the SDK, which then sends a
+// last result, and waitForResult starts the timer that ends a wait for it
+// that runs long. counted holds the model calls already counted, and the round
 // holds the usage since the last result, whose output comes with the result.
 interface SdkRun {
 	run: TurnRun;
 	prompt: Prompt;
 	end?: TurnEnd;
+	stopped?: boolean;
+	waitForResult: () => void;
 	counted: Set<string>;
 	round: Usage;
 	outputTokens: number;
@@ -57,11 +65,12 @@ const STOP: HookJSONOutput = { continue: false };
 
 const GO_ON: HookJSONOutput = {};
 
-export function anthropicAgentSdkRunner(model: AgentSdkModel, query: QueryFunction = sdkQuery): AgentRunner {
+// resultWaitMs is shorter in tests.
+export function anthropicAgentSdkRunner(model: AgentSdkModel, query: QueryFunction = sdkQuery, resultWaitMs = RESULT_WAIT_MS): AgentRunner {
 	return {
 		runTurn: async ({ agent, message, context }, signal) => {
-			const sdkRun: SdkRun = { run: startRun(agent, context, signal), prompt: prompt(message), counted: new Set(), round: noUsage(), outputTokens: 0 };
-			const end = await runQuery(query, model, sdkRun);
+			const sdkRun: SdkRun = { run: startRun(agent, context, signal), prompt: prompt(message), waitForResult: () => undefined, counted: new Set(), round: noUsage(), outputTokens: 0 };
+			const end = await runQuery(query, model, sdkRun, resultWaitMs);
 
 			return { end, spend: sdkRun.run.tally.spend };
 		},
@@ -70,7 +79,7 @@ export function anthropicAgentSdkRunner(model: AgentSdkModel, query: QueryFuncti
 
 // Each turn serves the agent's tools on a free port, and closes it after, so
 // no port stays open between turns.
-async function runQuery(query: QueryFunction, model: AgentSdkModel, sdkRun: SdkRun): Promise<TurnEnd> {
+async function runQuery(query: QueryFunction, model: AgentSdkModel, sdkRun: SdkRun, resultWaitMs: number): Promise<TurnEnd> {
 	const { agent, signal } = sdkRun.run;
 	const http = await startMcpHttp(0, agent.toolContext);
 
@@ -88,11 +97,18 @@ async function runQuery(query: QueryFunction, model: AgentSdkModel, sdkRun: SdkR
 		abort();
 	}
 
+	let wait: NodeJS.Timeout | undefined;
+
+	sdkRun.waitForResult = () => {
+		wait ??= setTimeout(abort, resultWaitMs);
+	};
+
 	try {
 		return await readMessages(query({ prompt: sdkRun.prompt.messages, options: queryOptions(sdkRun, model, http.url, abortController) }), sdkRun);
 	} catch (error) {
 		return signal.aborted ? { aborted: true } : { failed: `The Agent SDK failed: ${String(error)}`, stopRun: false };
 	} finally {
+		clearTimeout(wait);
 		signal.removeEventListener("abort", abort);
 		sdkRun.prompt.close();
 		abortController.abort();
@@ -137,13 +153,25 @@ function hook<Input extends HookInput>(sdkRun: SdkRun, handle: (sdkRun: SdkRun, 
 
 // Reads the session until the turn's end. Each result is a reply with no tool
 // call, which counts as a failure and gets the nudge, as in the bridge's own
-// loop.
+// loop. After a hook stops the run, such as at an end_turn, it reads on to the
+// last result, so the round's output logs and counts.
 async function readMessages(messages: AsyncIterable<SDKMessage>, sdkRun: SdkRun): Promise<TurnEnd> {
-	for await (const message of messages) {
-		sdkRun.end ??= readMessage(sdkRun, message);
+	try {
+		for await (const message of messages) {
+			if (sdkRun.end === undefined) {
+				sdkRun.end = readMessage(sdkRun, message);
+			} else if (message.type === "result") {
+				countRound(sdkRun, message);
+			}
 
-		if (sdkRun.end !== undefined) {
-			break;
+			if (sdkRun.end !== undefined && (sdkRun.stopped !== true || message.type === "result")) {
+				break;
+			}
+		}
+	} catch (error) {
+		// An abort after the end leaves the end as it was.
+		if (sdkRun.end === undefined) {
+			throw error;
 		}
 	}
 
@@ -159,11 +187,13 @@ function readMessage(sdkRun: SdkRun, message: SDKMessage): TurnEnd | undefined {
 		return undefined;
 	}
 
+	const counted = countRound(sdkRun, message);
+
 	if (message.subtype !== "success") {
 		return { failed: `The Agent SDK stopped: ${message.errors.join("; ")}`, stopRun: false };
 	}
 
-	const end = countRound(sdkRun, message) ?? countNoToolCall(sdkRun.run);
+	const end = counted ?? countNoToolCall(sdkRun.run);
 
 	if (end === undefined) {
 		sdkRun.prompt.send(NUDGE);
@@ -194,7 +224,7 @@ function countCall(sdkRun: SdkRun, { message }: SDKAssistantMessage): TurnEnd | 
 
 // The result's output is the session's total so far, so the round's output is
 // what it added. The round logs as one model call.
-function countRound(sdkRun: SdkRun, { usage }: SDKResultSuccess): TurnEnd | undefined {
+function countRound(sdkRun: SdkRun, { usage }: SDKResultMessage): TurnEnd | undefined {
 	const outputTokens = usage.output_tokens - sdkRun.outputTokens;
 	const round = { ...sdkRun.round, outputTokens };
 
@@ -264,7 +294,7 @@ function beforeHook(sdkRun: SdkRun, input: PreToolUseHookInput): HookOutcome {
 	const aborted = beforeCall(sdkRun.run);
 
 	if (aborted !== undefined) {
-		sdkRun.end = aborted;
+		stopRun(sdkRun, aborted);
 
 		return Promise.resolve({ ...STOP, hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "The turn was cancelled." } });
 	}
@@ -293,7 +323,14 @@ async function playAfterCall(sdkRun: SdkRun, tool: string, input: unknown, outpu
 		return GO_ON;
 	}
 
-	sdkRun.end = end;
+	stopRun(sdkRun, end);
 
 	return STOP;
+}
+
+// A hook that stops the run waits for the SDK's last result.
+function stopRun(sdkRun: SdkRun, end: TurnEnd): void {
+	sdkRun.end = end;
+	sdkRun.stopped = true;
+	sdkRun.waitForResult();
 }

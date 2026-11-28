@@ -26,10 +26,13 @@ export interface FakeRound {
 // prompt, such as a nudge. A prompt past the last round gets a round with no
 // call. hang waits for the abort after the first round's calls, as a model
 // that never answers, and throws ends the run in place of its result.
+// noLastResult waits for the abort after a hook stops the run, in place of
+// the last result.
 export interface FakeScript extends FakeRound {
 	rounds?: FakeRound[];
 	hang?: true;
 	throws?: Error;
+	noLastResult?: true;
 }
 
 export interface FakeQuery {
@@ -88,7 +91,11 @@ async function* play(fake: FakeQuery, script: FakeScript, { prompt, options }: P
 			for (const [call, fakeCall] of (round.calls ?? []).entries()) {
 				// A hook that ends the run still gets the SDK's result.
 				if (!await playCall(fake, options, fakeCall, `call-${index}-${call}`, client)) {
-					yield SUCCESS;
+					if (script.noLastResult === true) {
+						await aborted(options.abortController!.signal);
+					}
+
+					yield round.result ?? SUCCESS;
 
 					return;
 				}

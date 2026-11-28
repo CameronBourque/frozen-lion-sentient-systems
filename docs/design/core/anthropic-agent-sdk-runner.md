@@ -32,7 +32,9 @@ The hooks are adapters. They play each call through the `beforeCall` and `afterC
 - **`PostToolUse`** calls `afterCall` with a success.
 - **`PostToolUseFailure`** calls `afterCall` with the failure's text, so a failed action counts against the retries limit and the run waits for a silent game.
 
-A hook ends the run with `continue: false`. The runner reports the end, and `playTurn` ends the turn with force at a limit, as [runners](../agents/turn-loop/README.md#runners) says. An SDK error stops the turn.
+A hook ends the run with `continue: false`. The SDK then sends a last result, which the runner reads before it reports the end, so the stopped round's output logs and counts, as [spend](#spend) says. The runner waits 5 seconds for it, then aborts the SDK and reports the end anyway.
+
+The runner reports the end, and `playTurn` ends the turn with force at a limit, as [runners](../agents/turn-loop/README.md#runners) says. An SDK error stops the turn.
 
 ## Nudge
 
@@ -48,6 +50,10 @@ The runner counts the spend from the SDK's messages, through `spendCall` in `sha
 
   Anthropic's `input_tokens` leaves out the cached input, so the runner adds the cache read and write tokens, as the bridge's `Usage` counts them.
 - **Each result message** gives the session's output tokens so far, since an assistant message's output is a placeholder. The round's output is what the total added. The round logs as one `model_call` line.
+
+  This includes the last result after a hook stops the run, such as at an `end_turn`, so a turn's last round counts too.
+
+  An error result carries the usage too, so it counts before the turn stops.
 
 A turn can go past its token limit by one round's output, which only comes with the result.
 

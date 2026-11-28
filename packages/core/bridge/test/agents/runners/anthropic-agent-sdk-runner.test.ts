@@ -48,11 +48,15 @@ afterEach(() => {
 	fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 });
 });
 
+// A short wait for the last result, so a test of a run that never sends it
+// ends quickly.
+const RESULT_WAIT_MS = 50;
+
 function context(fake: FakeQuery, limits: Partial<Limits> = {}, model: ModelSetting = NO_MODEL): LoopContext {
 	return {
 		client,
 		logger,
-		runner: anthropicAgentSdkRunner({ id: model.id, effort: model.effort, env: ENV }, fake.query),
+		runner: anthropicAgentSdkRunner({ id: model.id, effort: model.effort, env: ENV }, fake.query, RESULT_WAIT_MS),
 		model,
 		journalEntries: 5,
 		limits: { ...DEFAULT_LIMITS, ...limits },
@@ -276,7 +280,7 @@ test("a run with no result message stops the turn too", async () => {
 });
 
 test("an SDK error result stops the turn with its errors", async () => {
-	const failed = { type: "result", subtype: "error_during_execution", errors: ["Overloaded", "Try again"] } as unknown as SDKMessage;
+	const failed = { type: "result", subtype: "error_during_execution", errors: ["Overloaded", "Try again"], usage: { output_tokens: 0 } } as unknown as SDKMessage;
 	const { result } = await play({ calls: [], result: failed });
 
 	expect(result).toEqual({ ended: false, reason: "The Agent SDK stopped: Overloaded; Try again" });
@@ -317,9 +321,30 @@ test("each model call counts once against the spend, and each round logs as one 
 	const turn = context(fake);
 
 	expect(await playTurn(await testAgent(client, logger, folder), turn)).toEqual({ ended: true });
-	// The second round's result never comes, since end_turn ends the run.
-	expect(turn.runSpend.tokens).toBe(125 + 40 + 10);
+	expect(turn.runSpend.tokens).toBe(125 + 40 + 10 + 30);
 	expect(decision).toHaveBeenCalledWith("model_call", ": 125 input (20 read from the cache, 5 written to it) and 40 output tokens", expect.anything());
+});
+
+test("the round an end turn stops still logs and counts its output, from the SDK's last result", async () => {
+	endTurnGoesThrough();
+
+	const decision = vi.spyOn(logger, "decision");
+	const fake = fakeQuery({ assistant: modelCall("m1", 100, 0, 0), calls: [END_TURN], result: resultWithOutput(60) });
+	const turn = context(fake);
+
+	expect(await playTurn(await testAgent(client, logger, folder), turn)).toEqual({ ended: true });
+	expect(turn.runSpend.tokens).toBe(160);
+	expect(decision).toHaveBeenCalledWith("model_call", ": 100 input and 60 output tokens", expect.anything());
+});
+
+test("a run that sends no last result after an end turn still ends the turn, after the wait", async () => {
+	endTurnGoesThrough();
+
+	const fake = fakeQuery({ assistant: modelCall("m1", 100, 0, 0), calls: [END_TURN], noLastResult: true });
+	const turn = context(fake);
+
+	expect(await playTurn(await testAgent(client, logger, folder), turn)).toEqual({ ended: true });
+	expect(turn.runSpend.tokens).toBe(100);
 });
 
 test("the output a round adds is the change in the session's total", async () => {
