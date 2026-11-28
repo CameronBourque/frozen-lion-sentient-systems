@@ -1,6 +1,6 @@
 # Anthropic plan access
 
-Status: question 1 confirmed by a call on 2026-11-27. The rest was read from Anthropic's docs on 2026-11-22, with no call tested.
+Status: question 1 confirmed by a call on 2026-11-27, and the [Agent SDK runner](#agent-sdk-runner) by live turns on 2026-11-28. The rest was read from Anthropic's docs on 2026-11-22, with no call tested.
 
 What Anthropic's terms and the Claude Agent SDK allow for a user's Claude plan. Part of [plan access](README.md).
 
@@ -43,8 +43,24 @@ The `query()` had `tools: []`, `settingSources: []`, `strictMcpConfig: true`, an
 
   The init message doesn't say whether `cc-plugin-agents-md` loaded the repo's `AGENTS.md`. The [parity check](../../design/core/run-modes.md#parity-check) bars that, so the [Anthropic Agent SDK runner](../../design/core/anthropic-agent-sdk-runner.md) sets `cwd` to a folder with no `AGENTS.md`.
 
+### Agent SDK runner
+
+The [Anthropic Agent SDK runner](../../design/core/anthropic-agent-sdk-runner.md) played live turns on 2026-11-28, in a local build with the flag on, on `haiku` at low effort, with the same SDK version. The bridge ran under `tsx` from `npm run dev`.
+
+- **Turns.** Each turn that ran to its end played to an `end_turn` that went through, and each action logged its `reason`. A blocked `end_turn` went back to the model, which read the state again.
+- **Failed calls.** A tool result with `isError` reached `PostToolUseFailure`, so the failure logged with the game's reason and counted against the retries limit.
+- **Session.** The `sdk_session` line gave `apiKeySource` `ANTHROPIC_API_KEY` after **API key** was picked, on `claude-haiku-5-5`, with 48 tools and none built in.
+- **Spend.** After a hook stopped the run, the SDK sent a last result at once, so each round logged one `model_call` with its output.
+- **Sign-in.** With a claude.ai login and the key, the **Sign-in** menu showed. With an expired login, `accountInfo()` gave no `subscriptionType`, and the picker used the key with no menu. With no key, it skipped the menu and listed the plan's models. No turn was played on the plan.
+
+  A claude.ai login's `subscriptionType` was set, as the plan check expects. An expired login shows in `claude auth status` as `loggedIn: false`.
+- **AGENTS.md.** An `AGENTS.md` in the agent's memory folder, the SDK's `cwd`, told the model to start every reason with a marker word. In two turns, none of 9 reasons had it, so `cc-plugin-agents-md` loaded nothing.
+
+  The input tokens didn't settle it, since each turn's rounds made a different number of calls.
+- **Ctrl+C.** During a turn, the bridge exited 4.6 and 5.5 seconds after Ctrl+C. The turn's signal aborted at once, and the SDK took the rest to stop and send its last result.
+
 ### Question 2
 
 Not checked yet.
 
-Date checked: 2026-11-27.
+Date checked: 2026-11-28.

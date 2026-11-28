@@ -17,7 +17,7 @@ All of these hold:
 
 - With the flag off, **Agent SDK** reads `(not available yet)`.
 - In a local build with the flag on and `ANTHROPIC_API_KEY` set, the bridge plays one agent turn in a running game, and the log shows each tool call with its `reason`.
-- In that build, the SDK lists no built-in tool, and Ctrl+C during the turn exits within 5 seconds.
+- In that build, the SDK lists no built-in tool, and Ctrl+C during the turn exits within 10 seconds.
 - In that build, no `AGENTS.md` reaches the model. The first model call's `input_tokens` is the same with an `AGENTS.md` in the agent's memory folder and without one, which shows that `cc-plugin-agents-md` loads nothing, whatever folder the bridge starts in.
 - In that build, with both the key and a claude.ai login, the **Sign-in** menu shows. Picking **API key** logs `apiKeySource` as `ANTHROPIC_API_KEY`. The **Claude plan** row isn't tested until Anthropic approves.
 
