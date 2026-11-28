@@ -18,7 +18,7 @@ import { answerStash } from "../../mcp/tools.js";
 import { MINIMAL_STATE } from "../../state/minimal-state.js";
 import { type FakeGame, startGame } from "../../tuner/fake-game.js";
 import { SYSTEM, testAgent } from "../agent.js";
-import { type FakeCall, type FakeQuery, type FakeScript, SUCCESS, fakeQuery } from "./fake-agent-sdk-query.js";
+import { type FakeCall, type FakeQuery, type FakeScript, INIT, SUCCESS, fakeQuery } from "./fake-agent-sdk-query.js";
 
 const REASON = "Nothing left to do.";
 
@@ -50,13 +50,13 @@ afterEach(() => {
 
 // A short wait for the last result, so a test of a run that never sends it
 // ends quickly.
-const RESULT_WAIT_MS = 50;
+const SHORT_RESULT_WAIT_MS = 50;
 
 function context(fake: FakeQuery, limits: Partial<Limits> = {}, model: ModelSetting = NO_MODEL): LoopContext {
 	return {
 		client,
 		logger,
-		runner: anthropicAgentSdkRunner({ id: model.id, effort: model.effort, env: ENV }, fake.query, RESULT_WAIT_MS),
+		runner: anthropicAgentSdkRunner({ id: model.id, effort: model.effort, env: ENV }, fake.query, SHORT_RESULT_WAIT_MS),
 		model,
 		journalEntries: 5,
 		limits: { ...DEFAULT_LIMITS, ...limits },
@@ -128,7 +128,21 @@ test("the session's sign-in, model, and built-in tools log at the debug level", 
 
 	await play({ calls: [END_TURN] });
 
-	expect(debug).toHaveBeenCalledWith("sdk_session", "The Agent SDK signed in with ANTHROPIC_API_KEY on claude-haiku-5-5, with 2 tools, 0 of them built in", { player: 3, apiKeySource: "ANTHROPIC_API_KEY", model: "claude-haiku-5-5", builtIn: [] });
+	expect(debug).toHaveBeenCalledWith("sdk_session", "The Agent SDK signed in with api-key on claude-haiku-5-5, with 2 tools, 0 of them built in", { player: 3, signIn: "api-key", model: "claude-haiku-5-5", builtIn: [] });
+});
+
+test.each([
+	["none", "plan"],
+	["oauth", "plan"],
+	["apiKeyHelper", "other"],
+])("the SDK's %s sign-in logs as %s", async (source, signIn) => {
+	endTurnGoesThrough();
+
+	const debug = vi.spyOn(logger, "debug");
+
+	await play({ calls: [END_TURN], init: { ...INIT, apiKeySource: source } as SDKMessage });
+
+	expect(debug).toHaveBeenCalledWith("sdk_session", expect.stringContaining(`signed in with ${signIn} on`), expect.objectContaining({ signIn }));
 });
 
 test("an end turn that goes through ends the turn, and the calls after it don't run", async () => {

@@ -24,7 +24,13 @@ Each turn serves the agent's MCP server over HTTP on a free loopback port, with 
 
 The SDK's in-process `sdk` server type needs version 1 of the MCP SDK, and the bridge uses version 2. `query()` itself loads without version 1. npm still installs it, as a peer of the Agent SDK, but no bridge code loads it.
 
-The session's first message, the SDK's `init`, logs at the debug level as `sdk_session`. It holds the sign-in the SDK used as `apiKeySource`, the model, and any tool that isn't the bridge's as `builtIn`, so a log shows that the sign-in pick and `tools: []` took.
+The session's first message, the SDK's `init`, logs at the debug level as `sdk_session`.
+
+It holds the sign-in the SDK used as `signIn`, the model, and any tool that isn't the bridge's as `builtIn`, so a log shows the sign-in pick and `tools: []` took.
+
+`signIn` puts the SDK's `apiKeySource` in the picker's words: `api-key` for `ANTHROPIC_API_KEY`, `plan` for no key, and `other` for the rest, which no bridge sign-in gives.
+
+The log never copies the SDK's field. The label never holds the key, but CodeQL's clear-text logging check flags any field named for a key.
 
 ## Hooks
 

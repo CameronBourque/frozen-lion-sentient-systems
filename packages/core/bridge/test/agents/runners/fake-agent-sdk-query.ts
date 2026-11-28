@@ -27,8 +27,9 @@ export interface FakeRound {
 // call. hang waits for the abort after the first round's calls, as a model
 // that never answers, and throws ends the run in place of its result.
 // noLastResult waits for the abort after a hook stops the run, in place of
-// the last result.
+// the last result. init replaces the SDK's first message.
 export interface FakeScript extends FakeRound {
+	init?: SDKMessage;
 	rounds?: FakeRound[];
 	hang?: true;
 	throws?: Error;
@@ -82,7 +83,7 @@ async function* play(fake: FakeQuery, script: FakeScript, { prompt, options }: P
 	try {
 		const rounds: FakeRound[] = [script, ...(script.rounds ?? [])];
 
-		yield INIT;
+		yield script.init ?? INIT;
 
 		for (let index = 0; ; index += 1) {
 			const round = rounds[index] ?? {};

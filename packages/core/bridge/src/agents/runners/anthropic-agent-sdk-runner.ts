@@ -3,7 +3,7 @@
 // docs/design/core/anthropic-agent-sdk-runner.md has the design.
 
 import fs from "node:fs";
-import type { EffortLevel, HookCallback, HookInput, HookJSONOutput, Options, PostToolUseFailureHookInput, PostToolUseHookInput, PreToolUseHookInput, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKSystemMessage, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
+import type { ApiKeySource, EffortLevel, HookCallback, HookInput, HookJSONOutput, Options, PostToolUseFailureHookInput, PostToolUseHookInput, PreToolUseHookInput, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKSystemMessage, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
 import { query as sdkQuery } from "@anthropic-ai/claude-agent-sdk";
 import type { ModelSetting } from "../../config.js";
 import { startMcpHttp } from "../../mcp/http.js";
@@ -29,7 +29,7 @@ const NO_END_TURN = "The model stopped without calling end_turn";
 
 // How long the runner reads on after a hook stops the run, for the result
 // that holds the round's output.
-export const RESULT_WAIT_MS = 5000;
+const RESULT_WAIT_MS = 5000;
 
 // The efforts that leave the SDK's own default.
 const NO_EFFORT = new Set<AgentSdkModel["effort"]>(["", "provider-default"]);
@@ -210,10 +210,25 @@ function readMessage(sdkRun: SdkRun, message: SDKMessage): TurnEnd | undefined {
 
 // The session's first message says how the SDK signed in and which tools it
 // has, which shows the pick and the options took.
-function logSession({ run }: SdkRun, { apiKeySource, model, tools }: SDKSystemMessage): void {
+function logSession({ run }: SdkRun, message: SDKSystemMessage): void {
+	const { model, tools } = message;
 	const builtIn = tools.filter((tool) => !tool.startsWith(TOOL_PREFIX));
+	const signIn = signInName(message.apiKeySource);
 
-	run.context.logger.debug("sdk_session", `The Agent SDK signed in with ${apiKeySource} on ${model}, with ${tools.length} tools, ${builtIn.length} of them built in`, { player: run.agent.playerID, apiKeySource, model, builtIn });
+	run.context.logger.debug("sdk_session", `The Agent SDK signed in with ${signIn} on ${model}, with ${tools.length} tools, ${builtIn.length} of them built in`, { player: run.agent.playerID, signIn, model, builtIn });
+}
+
+// The SDK's label in the picker's words. The log gets only the bridge's own
+// strings, since a scanner reads any field named for a key as a secret, though
+// the label never holds the key.
+function signInName(source: ApiKeySource): string {
+	if (source === "ANTHROPIC_API_KEY") {
+		return "api-key";
+	}
+
+	// With no key, the SDK uses the login. No bridge sign-in gives the others,
+	// since the SDK loads no settings.
+	return source === "none" || source === "oauth" ? "plan" : "other";
 }
 
 // Each model call counts against the spending limits as it comes, so a long
