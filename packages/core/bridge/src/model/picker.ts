@@ -15,6 +15,8 @@ export interface PickerIo {
 	providers: ProviderDef[];
 	facts: () => Promise<FactsResult>;
 	warn: (text: string) => void;
+	// Says why the picker skipped a menu, for the debug log.
+	debug: (event: string, text: string) => void;
 }
 
 // The new choice, or the saved one when the user keeps it, each with its run
@@ -234,6 +236,13 @@ async function chooseSignIn(config: Config, io: PickerIo, provider: Provider, mo
 
 	if (!plan.ok && !key.ok) {
 		return { ok: false, reason: `${provider} can't sign in. ${plan.reason}. ${key.reason}` };
+	}
+
+	// Only one is ready here, so the reason is the other one's.
+	const skipped = plan.ok ? key : plan;
+
+	if (!skipped.ok) {
+		io.debug("sign_in_skipped", `Skipped the Sign-in menu: ${skipped.reason}`);
 	}
 
 	const choice = plan.ok && key.ok ? await askFor(io, "Sign-in", SIGN_INS, [login.label, "API key"], "plan") : plan.ok ? "plan" : "api-key";

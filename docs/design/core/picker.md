@@ -55,7 +55,9 @@ A [run mode](run-modes.md#providers) with a `planLogin` can play on a plan's own
 
 With both ready, the picker shows a **Sign-in** menu with the plan's `label` and **API key**, starting on the plan.
 
-With one ready, it skips the menu and picks that one. With neither, it warns with both reasons and shows the **What now?** menu, as after a failed sign-in. It then tells the mode the pick with `planLogin.use()`. Each start asks again, as the **Run mode** menu does.
+With one ready, it skips the menu, picks that one, and logs the other's reason at the debug level as `sign_in_skipped`. You chose no plan login, or set no key, so a warning would only be noise.
+
+With neither, it warns with both reasons and shows the **What now?** menu, as after a failed sign-in. It then tells the mode the pick with `planLogin.use()`. Each start asks again, as the **Run mode** menu does.
 
 A new provider with a plan login of its own adds a `planLogin` to its mode, and the picker needs no change.
 

@@ -40,7 +40,7 @@ export async function chooseModel(config: Config, file: string, logger: Logger, 
 		return "api-key";
 	}
 
-	const picked = await pickModel(config, { ask, providers, facts, warn: (text) => logger.warn("model_warning", text) });
+	const picked = await pickModel(config, { ask, providers, facts, warn: (text) => logger.warn("model_warning", text), debug: (event, text) => logger.debug(event, text) });
 
 	if (picked.result === "cancelled") {
 		return undefined;

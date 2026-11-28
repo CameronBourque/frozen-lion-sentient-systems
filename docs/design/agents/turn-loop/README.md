@@ -35,7 +35,7 @@ One turn runs at a time for each agent. A signal for a turn that is still runnin
 
 A game load cancels the running turns and resets the agents, as [game-load.md](../game-load.md) says. A turn that ends logs `turn_ended` with the game turn it ended, and one that throws logs `turn_failed` as a warning, so the bridge keeps running and the next signal tries again.
 
-The agents play only in a run mode the [model client](../../core/model-client.md) calls. In the Agent SDK and CLI modes, or with no model, the bridge logs `agents_off` once and plays no turns.
+The agents play in any run mode with a [runner](#runners). In the CLI mode, which has none yet, or with no model, the bridge logs `agents_off` once and plays no turns.
 
 With `--mcp`, the bridge skips the [picker](../../core/picker.md), logs `agents_off`, and plays no turns, because the MCP client plays them. A model playing too would act on the same turn and cost model calls.
 
